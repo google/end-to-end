@@ -1,0 +1,123 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.block.Factory</title>
+<script src="../../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.crypt');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.cipher.AES');
+  goog.require('e2e.cipher.Algorithm');
+  goog.require('e2e.cipher.RSA');
+  goog.require('e2e.cipher.factory');
+  goog.require('e2e.compression.all');
+  goog.require('e2e.openpgp.EncryptedCipher');
+  goog.require('e2e.openpgp.S2K');
+  goog.require('e2e.openpgp.block.all');
+  goog.require('e2e.openpgp.block.factory');
+  goog.require('e2e.hash.Sha1');
+</script>
+<script>
+
+function testParsePublicKey() {
+  var packets = [
+    new e2e.openpgp.packet.PublicKey(4, 0,
+        e2e.cipher.factory.get(e2e.cipher.Algorithm.RSA)),
+    new e2e.openpgp.packet.UserId('first userid')
+  ];
+  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  assertTrue(block instanceof e2e.openpgp.block.TransferablePublicKey);
+  assertEquals(0, packets.length);
+}
+
+// Test for bug regression.
+function testPublicKeyExtraPackets() {
+  var packets = [
+    new e2e.openpgp.packet.PublicKey(4, 0,
+        e2e.cipher.factory.get(e2e.cipher.Algorithm.RSA)),
+    new e2e.openpgp.packet.UserId('first userid'),
+    new e2e.openpgp.packet.PublicKey(4, 0,
+        e2e.cipher.factory.get(e2e.cipher.Algorithm.RSA)),
+    new e2e.openpgp.packet.UserId('second userid')
+  ];
+  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  assertTrue(block instanceof e2e.openpgp.block.TransferablePublicKey);
+  assertEquals(2, packets.length);
+}
+
+function testParseSecretKey() {
+  var fakeCipher = new e2e.cipher.AES(
+    e2e.cipher.Algorithm.AES128,
+    {key: goog.array.repeat(0x16, 16)});
+  var encryptedFakeCipher = new e2e.openpgp.EncryptedCipher(
+    goog.array.repeat(0xDD, 32),
+    e2e.openpgp.EncryptedCipher.KeyDerivationType.S2K_SHA1,
+    fakeCipher,
+    e2e.cipher.Algorithm.AES128,
+    goog.array.repeat(0xFF, 16),
+    new e2e.openpgp.SimpleS2K(new e2e.hash.Sha1));
+  var packets = [
+    new e2e.openpgp.packet.SecretKey(4, 0, encryptedFakeCipher),
+    new e2e.openpgp.packet.UserId('first userid'),
+    new e2e.openpgp.packet.PublicKey(4, 0,
+        e2e.cipher.factory.get(e2e.cipher.Algorithm.RSA))
+  ];
+  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  assertTrue(block instanceof e2e.openpgp.block.TransferableSecretKey);
+  assertEquals(1, packets.length);
+}
+
+function testParseEncryptedMessage() {
+  var packets = [
+    new e2e.openpgp.packet.SymmetricKey(4, e2e.cipher.Algorithm.AES256,
+        [], new e2e.openpgp.SimpleS2K(new e2e.hash.Sha1)),
+    new e2e.openpgp.packet.EncryptedData([]),
+    new e2e.openpgp.packet.UserId('unused packet')
+  ];
+  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  assertTrue(block instanceof e2e.openpgp.block.EncryptedMessage);
+  assertEquals(1, packets.length);
+}
+
+function testParseLiteralMessage() {
+  var packets = [
+    new e2e.openpgp.packet.LiteralData(e2e.openpgp.packet.LiteralData.Format.UTF8,
+                                           [], 0, []),
+    new e2e.openpgp.packet.UserId('unused packet')
+  ];
+  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  assertTrue(block instanceof e2e.openpgp.block.LiteralMessage);
+  assertEquals(1, packets.length);
+}
+
+
+function testParseCompressedMessage() {
+  var msg = e2e.stringToByteArray('test');
+  var literal = new e2e.openpgp.packet.LiteralData(
+                  e2e.openpgp.packet.LiteralData.Format.UTF8,
+                  [], 0, msg);
+  var packets = [
+    e2e.openpgp.packet.Compressed.construct(literal.serialize())
+  ];
+
+  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  assertTrue(block instanceof e2e.openpgp.block.Compressed);
+  assertArrayEquals(block.getBlock().getData().data, msg);
+}
+
+
+</script>

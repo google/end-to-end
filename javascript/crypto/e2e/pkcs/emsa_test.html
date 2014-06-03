@@ -1,0 +1,43 @@
+<!-- Copyright 2012 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit test of e2e.pkcs.EMSA_PKCS1_v1_5</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.testing.asserts');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.pkcs.EMSA_PKCS1_v1_5');
+  goog.require('e2e.hash.Sha1');
+</script>
+<script>
+  function testEncode() {
+    var encoded = e2e.pkcs.EMSA_PKCS1_v1_5(
+      new e2e.hash.Sha1(),
+      [0x13, 33, 37],
+      1024);
+    var s = [48, 33, 48, 9, 6, 5, 43, 14, 3, 2, 26, 5,
+             0, 4, 20, 51, 234, 56, 142, 41, 176, 249,
+             228, 236, 111, 199, 161, 213, 198, 179, 13,
+             46, 120, 22, 75];
+    var p = goog.array.repeat(255, 1024 - s.length - 2);
+    var expected = goog.array.concat(0, 1, p, 0, s);
+    assertArrayEquals(
+        'The encoding is done correctly.',
+        expected,
+        encoded);
+  }
+</script>

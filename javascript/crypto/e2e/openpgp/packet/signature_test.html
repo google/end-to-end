@@ -1,0 +1,253 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.packet.Signature</title>
+<script src="../../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.crypt');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.cipher.all');
+  goog.require('e2e.cipher.factory');
+  goog.require('e2e.openpgp.block.all');
+  goog.require('e2e.openpgp.block.factory');
+  goog.require('e2e.openpgp.packet.Signature');
+  goog.require('e2e.openpgp.parse');
+  goog.require('e2e.hash.all');
+  goog.require('e2e.hash.factory');
+  goog.require('e2e.signer.all');
+  goog.require('e2e.signer.factory');
+</script>
+<script>
+
+function testConvertNewlines() {
+  var data = 'one\ntwo\nthree\n';
+  assertEquals('one\r\ntwo\r\nthree\r\n',
+               e2e.openpgp.packet.Signature.convertNewlines(data))
+  data = 'one\r\ntwo\r\n';
+  assertEquals('one\r\ntwo\r\n',
+               e2e.openpgp.packet.Signature.convertNewlines(data))
+}
+
+function testSignDSA() {
+  var publicKeyAscii =  // 1024bit DSA key
+    '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
+    'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
+    '\n' +
+    'mQGiBFJ8FxURBADDow5amQ608iHV6P8azF1Y75R61c1A0EDqVVFYB+ZUOi3/8QJC\n' +
+    'EthxPLwXlXzWQBef9UToB6vvCjqIzChRTQu5sHK+KJyiFSuDZvkvF29tYS2cmJam\n' +
+    'wMfHbF6NwKFt+mmV5BhnkIqYtoM+7/L9wxpKZv6k1xee4YHXFwI8w6mcawCgsCeP\n' +
+    '+KMc57Wh6xTWZgPSaj/kAH8EAI7J8ElD/uU4lYR7HzCEAYU4r7QCleRoVxCRubPl\n' +
+    '4OnLVPZ0dsb7pXR86SV6nQpZME8YL2bCl01GR8X+s8zF+o0b3AxfarrArIUm4n5n\n' +
+    'q7OcopqgfQzEq2o4UnFENnJH/Z20+AyqogPE2ehJ9I2TN7CjKz0qb8RqLZDwJOJS\n' +
+    'vmklA/9UnQYZFLPNzgBd0J8fp/1oB+D8DsFfUBLd/odC+T1vGJe6OBGdcNtPq3jH\n' +
+    'rPeJj6XoIPKsHNP0Fw9VwyQms5ASJaiZozaPoJr4HOVLD/0XhbKjDRGotdFqOoAr\n' +
+    'AcXx25OnyvZOIINiYpaZe8ryiApG63WDQWg3yJsmRFzgz4dtbLQQZHNhIHNpZ25p\n' +
+    'bmcgdXNlcohiBBMRAgAiBQJSfBcVAhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIX\n' +
+    'gAAKCRB/gSewOu/OcVqrAJwLBpA7+Z0EpTx5l96DI5GeDEzKLgCgqyqa64yORpSB\n' +
+    'yTUJDRMapABTQcA=\n' +
+    '=gg4f\n' +
+    '-----END PGP PUBLIC KEY BLOCK-----';
+  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
+
+  var privateKeyAscii =  // 1024bit DSA key
+    '-----BEGIN PGP PRIVATE KEY BLOCK-----\n' +
+    'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
+    '\n' +
+    'lQHhBFJ8FxURBADDow5amQ608iHV6P8azF1Y75R61c1A0EDqVVFYB+ZUOi3/8QJC\n' +
+    'EthxPLwXlXzWQBef9UToB6vvCjqIzChRTQu5sHK+KJyiFSuDZvkvF29tYS2cmJam\n' +
+    'wMfHbF6NwKFt+mmV5BhnkIqYtoM+7/L9wxpKZv6k1xee4YHXFwI8w6mcawCgsCeP\n' +
+    '+KMc57Wh6xTWZgPSaj/kAH8EAI7J8ElD/uU4lYR7HzCEAYU4r7QCleRoVxCRubPl\n' +
+    '4OnLVPZ0dsb7pXR86SV6nQpZME8YL2bCl01GR8X+s8zF+o0b3AxfarrArIUm4n5n\n' +
+    'q7OcopqgfQzEq2o4UnFENnJH/Z20+AyqogPE2ehJ9I2TN7CjKz0qb8RqLZDwJOJS\n' +
+    'vmklA/9UnQYZFLPNzgBd0J8fp/1oB+D8DsFfUBLd/odC+T1vGJe6OBGdcNtPq3jH\n' +
+    'rPeJj6XoIPKsHNP0Fw9VwyQms5ASJaiZozaPoJr4HOVLD/0XhbKjDRGotdFqOoAr\n' +
+    'AcXx25OnyvZOIINiYpaZe8ryiApG63WDQWg3yJsmRFzgz4dtbP4DAwKvNlRx6NDi\n' +
+    'xWB0zyDMWQv3K0LQVzaBZ0BItUF+w1p63tepAAV7hWBW925pzGovrGCwMKqzVz4d\n' +
+    'cKUVtLQQZHNhIHNpZ25pbmcgdXNlcohiBBMRAgAiBQJSfBcVAhsDBgsJCAcDAgYV\n' +
+    'CAIJCgsEFgIDAQIeAQIXgAAKCRB/gSewOu/OcVqrAJwLBpA7+Z0EpTx5l96DI5Ge\n' +
+    'DEzKLgCgqyqa64yORpSByTUJDRMapABTQcA=\n' +
+    '=CHFu\n' +
+    '-----END PGP PRIVATE KEY BLOCK-----';
+  var privateKeyBlock = e2e.openpgp.block.factory.parseAscii(privateKeyAscii);
+  var passphrase = e2e.stringToByteArray('test');
+  privateKeyBlock.keyPacket.cipher.unlockKey(passphrase);  // DSA
+
+  var data = e2e.stringToByteArray('hello world dsa');
+  var sigPacket = e2e.openpgp.packet.Signature.construct(
+    privateKeyBlock.keyPacket, data, e2e.openpgp.packet.Signature.SignatureType.TEXT);
+  assertTrue('Verify success', sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
+  assertFalse('Verify should fail', sigPacket.verify(
+    e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+
+  var sigBytes = sigPacket.serializePacketBody();
+  var sigParsed = e2e.openpgp.packet.Signature.parse(sigBytes);
+  assertTrue('Verify success', sigParsed.verify(data, publicKeyBlock.keyPacket.cipher));
+  assertFalse('Verify should fail', sigParsed.verify(
+    e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+
+  var data = [0, 1, 2, 3];
+  var sigPacket = e2e.openpgp.packet.Signature.construct(
+    privateKeyBlock.keyPacket, data, e2e.openpgp.packet.Signature.SignatureType.BINARY);
+  assertTrue('Verify success', sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
+  assertFalse('Verify should fail', sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher));
+}
+
+function testSignECDSA() {
+  var publicKeyAscii =
+    '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
+    'Version: GnuPG v2.1.0-ecc (GNU/Linux)\n' +
+    '\n' +
+    'mFIEUh5AoBMIKoZIzj0DAQcCAwT68182duSEJFXKa+qkBa0Vgeswnv8GP8tKYiU/\n' +
+    'MCZd6dGTvrtf2gSjyAsVkB0V0idW7i8yW1wfh3y2AbGWDr/dtB9lY2MgcmVhbCBu\n' +
+    'YW1lIDxlY2NAZXhhbXBsZS5jb20+iHoEExMIACIFAlIeQKACGwMGCwkIBwMCBhUI\n' +
+    'AgkKCwQWAgMBAh4BAheAAAoJEOrrinav6MhnxtcA/iAteDFo/P5SU5XV/8/4BN9x\n' +
+    'f28SuvwFipnjjyOmvB0eAP4kPM5LAp2EW+QIyG6+CJP1No9uWyZTdLPkTRgLtYhi\n' +
+    'GLhWBFIeQKASCCqGSM49AwEHAgMEgk1dVpgPCM38NBNoBcvehm7mt6aUmK8mDb/M\n' +
+    'SHo2/NlwfTh+BDCoVX5asSetzuW2RbnP6sCBwfsuLSrSWUVauwMBCAeIYQQYEwgA\n' +
+    'CQUCUh5AoAIbDAAKCRDq64p2r+jIZzqQAQCcv0VOQFiNOM6JNdLHTqlCYxeoz09d\n' +
+    'UP3LdgcnLED/YwD9FqcNrkok9BuXJ9+rXTSu+uqdWB7gpMO9mfk65d5IQ+s=\n' +
+    '=xRCj\n' +
+    '-----END PGP PUBLIC KEY BLOCK-----';
+  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
+
+  var privateKeyAscii =
+    '-----BEGIN PGP PRIVATE KEY BLOCK-----\n' +
+    'Version: GnuPG v2.1.0-ecc (GNU/Linux)\n' +
+    '\n' +
+    'lJ0EUh5AoBMIKoZIzj0DAQcCAwT68182duSEJFXKa+qkBa0Vgeswnv8GP8tKYiU/\n' +
+    'MCZd6dGTvrtf2gSjyAsVkB0V0idW7i8yW1wfh3y2AbGWDr/d/gMDAt9ake5OhVV2\n' +
+    'vphqDL6ay87d7ikCevFkhfACXb6HRHaVim7DU44JVscpFIOUE2lcgTJP5Ygeko/r\n' +
+    'UY5P1g3S3gEFyj1E9MYOtB9lY2MgcmVhbCBuYW1lIDxlY2NAZXhhbXBsZS5jb20+\n' +
+    'iHoEExMIACIFAlIeQKACGwMGCwkIBwMCBhUIAgkKCwQWAgMBAh4BAheAAAoJEOrr\n' +
+    'inav6MhnxtcA/iAteDFo/P5SU5XV/8/4BN9xf28SuvwFipnjjyOmvB0eAP4kPM5L\n' +
+    'Ap2EW+QIyG6+CJP1No9uWyZTdLPkTRgLtYhiGJyhBFIeQKASCCqGSM49AwEHAgME\n' +
+    'gk1dVpgPCM38NBNoBcvehm7mt6aUmK8mDb/MSHo2/NlwfTh+BDCoVX5asSetzuW2\n' +
+    'RbnP6sCBwfsuLSrSWUVauwMBCAf+AwMC31qR7k6FVXa+IvSLivg+6zKHEJ/Wa0Az\n' +
+    'rh02A4SC/mMjAg2VfgxFFKJv9Jph2i1Gwp0xguQ2aWKM3ecwE79i3QyV4UpcRh6I\n' +
+    'YQQYEwgACQUCUh5AoAIbDAAKCRDq64p2r+jIZzqQAP9dEqUKkRjGkEWHFYXl2oQi\n' +
+    'n/ECJvEyoOB0gEMGwqIlWQEA3xJzLg7nerNCcvJerLbQaagVWu8iXKknMwAKy9uN\n' +
+    '0No=\n' +
+    '=BeRO\n' +
+    '-----END PGP PRIVATE KEY BLOCK-----';
+  var privateKeyBlock = e2e.openpgp.block.factory.parseAscii(privateKeyAscii);
+  var passphrase = e2e.stringToByteArray('test');
+  privateKeyBlock.keyPacket.cipher.unlockKey(passphrase);
+
+  var data = e2e.stringToByteArray('hello world ecdsa');
+  var sigPacket = e2e.openpgp.packet.Signature.construct(
+    privateKeyBlock.keyPacket, data, e2e.openpgp.packet.Signature.SignatureType.TEXT);
+  assertTrue('Verify success', sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
+  assertFalse('Verify should fail', sigPacket.verify(
+    e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+
+  var sigBytes = sigPacket.serializePacketBody();
+  var sigParsed = e2e.openpgp.packet.Signature.parse(sigBytes);
+  assertTrue('Verify success', sigParsed.verify(data, publicKeyBlock.keyPacket.cipher));
+  assertFalse('Verify should fail', sigParsed.verify(
+    e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+
+  var data = [0, 1, 2, 3];
+  var sigPacket = e2e.openpgp.packet.Signature.construct(
+    privateKeyBlock.keyPacket, data, e2e.openpgp.packet.Signature.SignatureType.TEXT);
+  assertTrue('Verify success', sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
+  assertFalse('Verify should fail', sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher));
+
+}
+
+function testSignRSA() {
+  var publicKeyAscii =  // "test 4" 1024-bit RSA key, ID 092DA808, 06 ff ...
+    '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
+    'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
+    '\n' +
+    'mI0EUcy6DgEEAJb0T7gQlfKQWmR0dLUrueRMVy8UemcmxsdIH30/HqJvqO6xU0lK\n' +
+    'NaFtaVxBdenAMpEooi1EcTi/bOKfz36FY/FARTiXv1LXuLzFJdPyjTYjh7tw+uOP\n' +
+    'UlLJCTZikgrnM07txTUiVVEetOa+unyKn17EX0PlSpAbGZedyO0nGwXzABEBAAG0\n' +
+    'BnRlc3QgNIi4BBMBAgAiBQJRzLoOAhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIX\n' +
+    'gAAKCRAG/5ysCS2oCL2SA/9EV9j3T/TM3VRD0NvNySHodcxCP1BF0zm/M84I/WHQ\n' +
+    'sGKmHStfCqqEGruB8E6NHQMJwNp1TzcswuxE0wiTJiXKe3w3+GZhPHdW5zcgiMKK\n' +
+    'YLn80Tk6fUMx1zVZtXlSBYCN5Op/axjQRyb+fGnXOhmboqQodYaWS7qhJWQJilH6\n' +
+    'iriNBFHMug4BBADDTMshHtyYhLmWC7793FlOFl5tkcEfdFKJRm30k/9yky4cuz//\n' +
+    'Xe4uXM72SaTI1Dfi6UIz5ZuFTxw3bnAXav+SV4Q4dZo0hb4jU8YaQfDL4TsRp7uO\n' +
+    '6iqxd8nlsh9JnBKE6Fk/CW5FoMZZ3/yEm3pq924Uv2AZlO6dafgXecyqNQARAQAB\n' +
+    'iJ8EGAECAAkFAlHMug4CGwwACgkQBv+crAktqAhENwQAkMY/nds36KgzwfMPpxtB\n' +
+    'aq8GbrUqY1r8lBl6a/bi8qeOuEgQmIxM2OpVPtL04c1c1hLflPCi1SQUlCIh3DkE\n' +
+    'GQIcy0/wxUZdCvZK0mF5nZSq6tez3CwqbeOA4nBOLwbxho50VqxBpR4qypYrB2ip\n' +
+    'ykxlwiqudEe0sE2b1KwNtVw=\n' +
+    '=nHBL\n' +
+    '-----END PGP PUBLIC KEY BLOCK-----';
+  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
+
+  var privateKeyAscii =
+    '-----BEGIN PGP PRIVATE KEY BLOCK-----\n' +
+    'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
+    '\n' +
+    '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\n' +
+    '1KwNtVw=\n' +
+    '=wHzz\n' +
+    '-----END PGP PRIVATE KEY BLOCK-----';
+  var privateKeyBlock = e2e.openpgp.block.factory.parseAscii(privateKeyAscii);
+  var passphrase = e2e.stringToByteArray('test');
+  privateKeyBlock.keyPacket.cipher.unlockKey(passphrase);  // RSA
+
+  var data = e2e.stringToByteArray('hello world rsa');
+  var sigPacket = e2e.openpgp.packet.Signature.construct(
+    privateKeyBlock.keyPacket, data, e2e.openpgp.packet.Signature.SignatureType.TEXT);
+  assertTrue('Verify success', sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
+  assertFalse('Verify should fail', sigPacket.verify(
+    e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+
+  var sigBytes = sigPacket.serializePacketBody();
+  var sigParsed = e2e.openpgp.packet.Signature.parse(sigBytes);
+  assertTrue('Verify success', sigParsed.verify(data, publicKeyBlock.keyPacket.cipher));
+  assertFalse('Verify should fail', sigParsed.verify(
+    e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+
+  var data = [0, 1, 2, 3];
+  var sigPacket = e2e.openpgp.packet.Signature.construct(
+    privateKeyBlock.keyPacket, data, e2e.openpgp.packet.Signature.SignatureType.TEXT);
+  assertTrue('Verify success', sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
+  assertFalse('Verify should fail', sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher));
+}
+</script>

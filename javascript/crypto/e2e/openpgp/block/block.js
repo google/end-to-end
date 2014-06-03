@@ -1,0 +1,57 @@
+// Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+/**
+ * @fileoverview Base class for OpenPGP blocks. Provides serialization of
+ * blocks and initialization.
+ * OpenPGP blocks are defined in RFC 4880 Section 11 and define the sequential
+ * composition of packets that form a message, a key or a detached signature.
+ * @author evn@google.com (Eduardo Vela)
+ */
+
+goog.provide('e2e.openpgp.block.Block');
+
+
+/**
+ * Representation of a collection of packets that have a specific meaning.
+ * @constructor
+ */
+e2e.openpgp.block.Block = function() {
+  /**
+   * @type {Array.<!e2e.openpgp.packet.Packet>}
+   */
+  this.packets = [];
+};
+
+
+/**
+ * Parses a block out of a series of packets.
+ * @param {Array.<e2e.openpgp.packet.Packet>} packets The list of packets
+ *     that hold the block information.
+ * @return {Array.<e2e.openpgp.packet.Packet>} Any extra packets left over
+ *     after parsing this block.
+ */
+e2e.openpgp.block.Block.prototype.parse = goog.abstractMethod;
+
+
+/**
+ * Serializes the block to a byte array.
+ * @return {e2e.ByteArray} The serialization of the block.
+ */
+e2e.openpgp.block.Block.prototype.serialize = goog.abstractMethod;
+
+/**
+ * Text to use in the ASCII Armor message header for this type of block.
+ * @type {string}
+ */
+e2e.openpgp.block.Block.prototype.header;

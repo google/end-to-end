@@ -1,0 +1,63 @@
+// Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+{namespace e2e.ext.templates autoescape="strict"}
+
+
+/**
+ * The base layout for the settings page.
+ * @param extName The name of the extension.
+ * @param pageTitle The title for the settings page.
+ */
+{template .Settings}
+  <html>
+    <head>
+      <title>{$extName}</title>
+      <link rel="stylesheet"/>
+    </head>
+    <body>
+      <div id="{e2e.ext.constants.ElementId.HEADER}">
+        <div>
+          <h1>{$pageTitle}</h1>
+        </div>
+      </div>
+      <div id="{e2e.ext.constants.ElementId.ERROR_DIV}"></div>
+      <div id="{e2e.ext.constants.ElementId.BODY}"></div>
+      <div id="{e2e.ext.constants.ElementId.CALLBACK_DIALOG}"></div>
+    </body>
+  </html>
+{/template}
+
+
+/**
+ * Renders the required UI elements for the dialog component.
+ * @param message The message to display.
+ * @param inputFieldType The type of the input field (e.g. text, password, etc.).
+ * @param inputPlaceholder A placeholder to display when asking for the passphrase.
+ * @param actionButtonTitle The title of the prompt button.
+ * @param cancelButtonTitle The title of the cancel button.
+ */
+{template .Dialog}
+  {if $message}
+    <div>{$message|changeNewlineToBr}</div>
+  {/if}
+  {if $inputFieldType}
+    <input type="{$inputFieldType}" class="{e2e.ext.constants.CssClass.DIALOG_INPUT}"
+           placeholder="{$inputPlaceholder}" autofocus>
+  {/if}
+  <button class="{e2e.ext.constants.CssClass.ACTION}">{$actionButtonTitle}</button>
+  {if length($cancelButtonTitle) > 0}
+    <button class="{e2e.ext.constants.CssClass.CANCEL}">{$cancelButtonTitle}</button>
+  {/if}
+{/template}

@@ -1,0 +1,86 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.ecc.Protocol</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.crypt');
+  goog.require('goog.structs.Set');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.ecc.DomainParam');
+  goog.require('e2e.ecc.PrimeCurve');
+  goog.require('e2e.ecc.Protocol');
+</script>
+<script>
+/**
+ * Tests that generated key pair is valid.
+ */
+function testKeyGeneration() {
+  var domain = e2e.ecc.DomainParam.fromCurve(
+        e2e.ecc.PrimeCurve.P_256);
+  var curve = domain.curve;
+
+  for (var i = 0; i < 5; i++) {
+    var keyPair = e2e.ecc.Protocol.generateKeyPair(
+        e2e.ecc.PrimeCurve.P_256);
+
+    assertNotThrows('Public key should be valid.', function() {
+      var pubKey = curve.pointFromByteArray(keyPair['pubKey']);
+    });
+
+    assertNotThrows('Private key should be valid.', function() {
+      var privKey = curve.elementFromByteArray(keyPair['privKey']);
+    });
+  }
+}
+
+
+/**
+ * Tests that random privateKeys are not repeated.
+ */
+function testRandomPrivateKey() {
+  var protocol = new e2e.ecc.Protocol(
+      e2e.ecc.PrimeCurve.P_256);
+
+  var privateKeySet = new goog.structs.Set();
+  // 100 is definitely not enough, but it's still better than no test.
+  for (var i = 0; i < 100; i++) {
+    var privateKey = protocol.params.generateKeyPair()['privateKey'];
+    var privateKeyStr = goog.crypt.byteArrayToHex(privateKey);
+    assertFalse(privateKeySet.contains(privateKeyStr));
+    privateKeySet.add(privateKeyStr);
+  }
+}
+
+
+/**
+ * Benchmark key generation.
+ */
+function DISABLEDtestBenchmark() {
+  var protocol = new e2e.ecc.Protocol(
+      e2e.ecc.PrimeCurve.P_256);
+  for (var i = 0; i < 1000; i++) {
+    protocol.genererateKeyPair();
+  }
+}
+
+
+function testUnknownCurve() {
+  assertThrows(function() {
+    new e2e.ecc.DomainParam.fromCurve('an invalid curve');
+  });
+}
+</script>

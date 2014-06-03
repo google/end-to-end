@@ -1,0 +1,261 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.ecc.Point</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.crypt');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.BigNum');
+  goog.require('e2e.ecc.DomainParam');
+  goog.require('e2e.ecc.Point');
+  goog.require('e2e.ecc.Point.testData');
+  goog.require('e2e.ecc.PrimeCurve');
+  goog.require('e2e.ecc.constant.P_256');
+</script>
+<script>
+/**
+ * Test point conversion.
+ */
+function testPointConversion() {
+  var params = e2e.ecc.DomainParam.fromCurve(
+    e2e.ecc.PrimeCurve.P_256);
+  var curve = params.curve;
+
+  var G1 = [0x01, /* invalid */
+      // x
+      0x6B, 0x17, 0xD1, 0xF2, 0xE1, 0x2C, 0x42, 0x47,
+      0xF8, 0xBC, 0xE6, 0xE5, 0x63, 0xA4, 0x40, 0xF2,
+      0x77, 0x03, 0x7D, 0x81, 0x2D, 0xEB, 0x33, 0xA0,
+      0xF4, 0xA1, 0x39, 0x45, 0xD8, 0x98, 0xC2, 0x96,
+      // y
+      0x4F, 0xE3, 0x42, 0xE2, 0xFE, 0x1A, 0x7F, 0x9B,
+      0x8E, 0xE7, 0xEB, 0x4A, 0x7C, 0x0F, 0x9E, 0x16,
+      0x2B, 0xCE, 0x33, 0x57, 0x6B, 0x31, 0x5E, 0xCE,
+      0xCB, 0xB6, 0x40, 0x68, 0x37, 0xBF, 0x51, 0xF5];
+
+  assertThrows('Invalid point should not be accepted.', function() {
+    curve.pointFromByteArray(G1);
+  });
+
+  var G2 = [0x04, /* uncompressed */
+      // x (invalid)
+      0x7B, 0x17, 0xD1, 0xF2, 0xE1, 0x2C, 0x42, 0x47,
+      0xF8, 0xBC, 0xE6, 0xE5, 0x63, 0xA4, 0x40, 0xF2,
+      0x77, 0x03, 0x7D, 0x81, 0x2D, 0xEB, 0x33, 0xA0,
+      0xF4, 0xA1, 0x39, 0x45, 0xD8, 0x98, 0xC2, 0x96,
+      // y
+      0x4F, 0xE3, 0x42, 0xE2, 0xFE, 0x1A, 0x7F, 0x9B,
+      0x8E, 0xE7, 0xEB, 0x4A, 0x7C, 0x0F, 0x9E, 0x16,
+      0x2B, 0xCE, 0x33, 0x57, 0x6B, 0x31, 0x5E, 0xCE,
+      0xCB, 0xB6, 0x40, 0x68, 0x37, 0xBF, 0x51, 0xF5];
+
+  assertThrows('Invalid point should not be accepted.', function() {
+    curve.pointFromByteArray(G2);
+  });
+
+  var G = [0x04, /* uncompressed */
+      // x
+      0x6B, 0x17, 0xD1, 0xF2, 0xE1, 0x2C, 0x42, 0x47,
+      0xF8, 0xBC, 0xE6, 0xE5, 0x63, 0xA4, 0x40, 0xF2,
+      0x77, 0x03, 0x7D, 0x81, 0x2D, 0xEB, 0x33, 0xA0,
+      0xF4, 0xA1, 0x39, 0x45, 0xD8, 0x98, 0xC2, 0x96,
+      // y
+      0x4F, 0xE3, 0x42, 0xE2, 0xFE, 0x1A, 0x7F, 0x9B,
+      0x8E, 0xE7, 0xEB, 0x4A, 0x7C, 0x0F, 0x9E, 0x16,
+      0x2B, 0xCE, 0x33, 0x57, 0x6B, 0x31, 0x5E, 0xCE,
+      0xCB, 0xB6, 0x40, 0x68, 0x37, 0xBF, 0x51, 0xF5];
+
+  var Gcompressed = [0x03, /* compressed, odd */
+      // x
+      0x6B, 0x17, 0xD1, 0xF2, 0xE1, 0x2C, 0x42, 0x47,
+      0xF8, 0xBC, 0xE6, 0xE5, 0x63, 0xA4, 0x40, 0xF2,
+      0x77, 0x03, 0x7D, 0x81, 0x2D, 0xEB, 0x33, 0xA0,
+      0xF4, 0xA1, 0x39, 0x45, 0xD8, 0x98, 0xC2, 0x96];
+  assertArrayEquals(G, params.g.toByteArray());
+  assertArrayEquals(Gcompressed, params.g.toByteArray(true));
+
+  assertTrue(curve.pointFromByteArray(G).isEqual(params.g));
+  assertTrue(curve.pointFromByteArray(Gcompressed).isEqual(params.g));
+
+  // The two points should be negatives of each other, with x==5
+  var x5even = curve.pointFromByteArray([0x02, 0x05]);
+  var x5odd = curve.pointFromByteArray([0x03, 0x05]);
+  assertTrue(x5even.getX().isEqual(curve.elementFromByteArray([5])));
+  assertTrue(x5even.isEqual(x5odd.negate()));
+  assertTrue(x5even.getY().toBigNum().isEven());
+  assertTrue(x5odd.getY().toBigNum().isOdd());
+
+  // There is no point with x == 1, according to SAGE.
+  assertThrows('Invalid point should not be accepted.', function() {
+    curve.pointFromByteArray([0x02, 0x01]);
+  });
+}
+
+
+/**
+ * Test point doubling.
+ */
+function testDouble() {
+  var params = e2e.ecc.DomainParam.fromCurve(
+    e2e.ecc.PrimeCurve.P_256);
+  var g = params.g;
+
+  assertTrue(g.isOnCurve());
+  assertArrayEquals(e2e.ecc.constant.P_256.G,
+      g.toByteArray());
+
+  var V = g.add(g);  // will use the twice() function
+  assertTrue(V.isOnCurve());
+
+  // U = e2e.ecc.constant.P_256.G + e2e.ecc.constant.P_256.G;
+  var U = e2e.ecc.Point.testData.G2;
+  assertArrayEquals(U, V.toByteArray());
+
+  // INFINITY + INFINITY = INFINITY
+  assertTrue(params.curve.INFINITY.twice_().isInfinity());
+}
+
+
+/**
+ * Test point addition.
+ */
+function testAdd() {
+  var params = e2e.ecc.DomainParam.fromCurve(
+    e2e.ecc.PrimeCurve.P_256);
+  var curve = params.curve;
+  var g = params.g;
+
+  var V1 = g.add(g);
+  assertTrue(V1.isOnCurve());
+  // U1 = e2e.ecc.constant.P_256.G + e2e.ecc.constant.P_256.G
+  var U1 = e2e.ecc.Point.testData.G2;
+  assertArrayEquals(U1, V1.toByteArray());
+
+  // V2 = 3 * e2e.ecc.constant.P_256.G
+  var V2 = g.add(g).add(g);
+  assertTrue(V2.isOnCurve());
+  var U2 = curve.pointFromByteArray(U1).add(g);
+  assertTrue(U2.isOnCurve());
+  assertTrue(U2.isEqual(V2));
+
+  // V3 = 5 * e2e.ecc.constant.P_256.G
+  var V3 = V2.add(curve.pointFromByteArray(U1));
+  assertTrue(V3.isOnCurve());
+  var U3 = g.add(g).add(g).add(g).add(g);
+  assertTrue(U3.isOnCurve());
+  assertTrue(U3.isEqual(V3));
+
+  // I should be the point at infinity.
+  var I = g.add(g.negate());
+  assertTrue(I.isInfinity());
+}
+
+
+/**
+ * Test point multiplication.
+ */
+function testMultiply() {
+  var params = e2e.ecc.DomainParam.fromCurve(
+    e2e.ecc.PrimeCurve.P_256);
+  var g = params.g;
+
+  var V1 = g.multiply(e2e.BigNum.TWO);
+  assertTrue(V1.isOnCurve());
+  // U1 = e2e.ecc.constant.P_256.G + e2e.ecc.constant.P_256.G;
+  var U1 = e2e.ecc.Point.testData.G2;
+  assertArrayEquals(U1, V1.toByteArray());
+
+  // g * n = ~
+  assertTrue(g.multiply(params.n).isInfinity());
+}
+
+
+/**
+ * If we're using fast multiply, make sure that it gives the same
+ * answer as none-fast multiply.
+ */
+function testFastMultiply() {
+  var params = e2e.ecc.DomainParam.fromCurve(
+    e2e.ecc.PrimeCurve.P_256);
+  var curve = params.curve;
+  var b = curve.B.toBigNum();    // A random large number in range
+  // g1 may have Fast Multiplication enabled, but g2 is a brand new point
+  // so it can't possibly have it enabled.
+  var g1 = params.g;
+  var g2 = curve.pointFromByteArray(g1.toByteArray());
+  assertTrue(g1.multiply(b).isEqual(g2.multiply(b)));
+}
+
+
+/**
+ * Test point multiplication with public vectors.
+ */
+function testMultiplyWithPublicVectors() {
+
+  var params = e2e.ecc.DomainParam.fromCurve(
+    e2e.ecc.PrimeCurve.P_256);
+  var curve = params.curve;
+  var g = params.g;
+
+  goog.array.forEach(e2e.ecc.Point.testData.P_256Vectors,
+      function(vector) {
+        var d = new e2e.BigNum(
+            goog.crypt.hexToByteArray(vector['d']));
+        // Obtain the public key, and check if it matches the test vector.
+        var P = g.multiply(d);
+        var P_ = goog.crypt.hexToByteArray(
+            '04' /* uncompressed */ + vector['Px'] + vector['Py']);
+        assertTrue(P.isEqual(curve.pointFromByteArray(P_)));
+
+        // Derive a shared secret, and check if it matches the test vector.
+        var Q_ = goog.crypt.hexToByteArray(
+            '04' /* uncompressed */ + vector['Qx'] + vector['Qy']);
+        var Q = curve.pointFromByteArray(Q_);
+        var S = Q.multiply(d);
+        var X = goog.crypt.hexToByteArray(vector['Z']);
+        assertArrayEquals(X, S.getX().toBigNum().toByteArray());
+  });
+}
+
+
+/**
+ * Make sure that a bug that almost happened gets caught more quickly.
+ *  -Infinity == Infinity
+ */
+function testInfinityBugs() {
+  var params = e2e.ecc.DomainParam.fromCurve(
+    e2e.ecc.PrimeCurve.P_256);
+  var curve = params.curve;
+  var g = params.g;
+
+  assertTrue(curve.INFINITY.negate().isInfinity());
+  assertTrue(g.add(g.negate()).isInfinity());
+}
+
+
+/**
+ * Make sure that isEqual works with INFINITY.
+ */
+function testEqualInfinity() {
+  var params = e2e.ecc.DomainParam.fromCurve(
+    e2e.ecc.PrimeCurve.P_256);
+  assertTrue(params.curve.INFINITY.isEqual(params.curve.INFINITY.twice_()));
+  assertFalse(params.curve.INFINITY.isEqual(params.g));
+  assertFalse(params.g.isEqual(params.curve.INFINITY));
+}
+</script>

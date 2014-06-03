@@ -1,0 +1,126 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.Cipher.Elgamal</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.cipher.ElGamal');
+  goog.require('goog.array');
+  goog.require('goog.testing.jsunit');
+</script>
+<script>
+function setUp() {
+  // Key generated randomly.
+  window.key = {};
+  key.p = [
+    159, 74, 207, 172, 139, 101, 5, 181, 21, 186, 130, 171, 248, 140,
+    162, 161, 1, 248, 10, 253, 25, 130, 55, 57, 3, 170, 242, 172, 51, 138,
+    118, 169, 19, 65, 234, 31, 149, 104, 205, 91, 26, 161, 146, 199, 230,
+    1, 182, 239, 118, 13, 183, 249, 94, 190, 229, 107, 186, 164, 18, 131,
+    106, 193, 33, 103, 69, 112, 60, 180, 231, 71, 226, 214, 89, 88, 27,
+    115, 35, 18, 99, 19, 223, 17, 135, 192, 123, 85, 123, 99, 239, 96, 63,
+    105, 80, 135, 120, 217, 141, 23, 100, 187, 107, 51, 10, 184, 198, 204,
+    237, 249, 183, 2, 158, 77, 15, 127, 69, 107, 101, 234, 228, 14, 239,
+    227, 190, 27, 191, 188, 249, 83];
+  key.y = [
+    154, 28, 100, 189, 101, 33, 102, 126, 64, 169, 97, 9, 49, 108, 33,
+    9, 162, 43, 224, 104, 82, 117, 186, 34, 91, 107, 187, 73, 68, 29, 182,
+    65, 153, 95, 101, 182, 19, 82, 219, 6, 153, 63, 111, 229, 239, 138,
+    18, 38, 87, 102, 78, 108, 109, 240, 38, 10, 223, 40, 155, 184, 202,
+    89, 87, 148, 251, 150, 47, 44, 201, 165, 108, 152, 202, 254, 118, 240,
+    47, 134, 56, 173, 186, 156, 135, 171, 237, 88, 8, 32, 162, 46, 182,
+    118, 34, 72, 128, 207, 111, 175, 12, 30, 64, 114, 39, 212, 44, 181,
+    89, 56, 1, 39, 54, 233, 254, 233, 72, 191, 91, 56, 133, 156, 153, 198,
+    143, 6, 57, 121, 45, 21];
+  key.g = [5];
+  key.x = [
+    3, 96, 210, 8, 224, 31, 22, 153, 189, 221, 185, 233, 89, 40, 243,
+    96, 97, 216, 31, 180, 160, 254, 15, 114, 210, 255, 102, 213, 91, 163,
+    132, 108];
+
+  // Key from http://www.itl.nist.gov/fipspubs/fip186.htm
+  window.key2 = {};
+
+  key2.p = goog.crypt.hexToByteArray(
+    'd411a4a0e393f6aab0f08b14d18458665b3e4dbdce254454' +
+    '3fe365cf71c8622412db6e7dd02bbe13d88c58d7263e9023' +
+    '6af17ac8a9fe5f249cc81f427fc543f7');
+  key2.q = goog.crypt.hexToByteArray(
+    'b20db0b101df0c6624fc1392ba55f77d577481e5');
+  key2.x = goog.crypt.hexToByteArray(
+    '6b2cd935d0192d54e2c942b574c80102c8f8ef67');
+  key2.y = goog.crypt.hexToByteArray(
+    'b32fbec03175791df08c3f861c81df7de7e0cba7f1c4f726' +
+    '9bb12d6c628784fb742e66ed315754dfe38b5984e94d3725' +
+    '37f655cb3ea4767c878cbd2d783ee662');
+  key2.g = goog.crypt.hexToByteArray(
+    'b3085510021f999049a9e7cd3872ce9958186b5007e7adaf' +
+    '25248b58a3dc4f71781d21f2df89b71747bd54b323bbecc4' +
+    '43ec1d3e020dadabbf7822578255c104');
+}
+
+function testDecryption() {
+  var cipher = new e2e.cipher.ElGamal(
+    e2e.cipher.Algorithm.ELGAMAL, key);
+  var ciphertext = {};
+  ciphertext.u = [
+    49, 22, 68, 233, 204, 102, 60, 92, 154, 79, 58, 117, 86, 195, 101,
+    197, 142, 0, 255, 167, 130, 152, 47, 157, 210, 81, 39, 209, 1, 39,
+    199, 27, 116, 138, 173, 70, 15, 187, 158, 92, 59, 40, 172, 88, 25, 89,
+    170, 160, 235, 101, 109, 243, 105, 36, 195, 222, 246, 197, 251, 105,
+    155, 27, 247, 93, 246, 71, 90, 222, 209, 116, 25, 1, 41, 154, 104,
+    180, 183, 131, 58, 10, 108, 80, 46, 243, 138, 61, 93, 13, 21, 27, 62,
+    138, 22, 131, 192, 198, 52, 157, 215, 245, 44, 75, 111, 183, 65, 95,
+    75, 51, 18, 32, 88, 101, 101, 151, 195, 188, 4, 217, 186, 216, 158,
+    152, 165, 170, 134, 10, 231, 62];
+  ciphertext.v = [
+    47, 228, 218, 255, 215, 167, 106, 196, 21, 38, 30, 72, 163, 217,
+    218, 211, 147, 148, 117, 59, 157, 71, 102, 216, 30, 222, 227, 110,
+    233, 36, 215, 26, 248, 217, 245, 209, 41, 186, 62, 133, 182, 97, 121,
+    12, 235, 177, 156, 180, 108, 99, 205, 85, 237, 110, 177, 185, 37, 69,
+    173, 76, 235, 62, 103, 147, 84, 175, 100, 149, 184, 176, 13, 196, 227,
+    172, 34, 158, 233, 201, 153, 5, 93, 166, 120, 10, 166, 217, 114, 132,
+    74, 181, 194, 48, 29, 90, 97, 50, 225, 7, 175, 1, 93, 63, 3, 222, 232,
+    252, 206, 19, 113, 184, 107, 52, 174, 208, 253, 187, 232, 251, 227,
+    237, 90, 36, 213, 129, 210, 201, 181, 117];
+  assertArrayEquals(
+    [2, 153, 103, 225, 15, 183, 65, 167, 241, 203, 172, 6, 184, 242, 93, 82,
+     35, 109, 195, 182, 94, 202, 156, 196, 244, 88, 177, 77, 132, 255, 116,
+     3, 42, 101, 66, 179, 245, 34, 172, 44, 252, 190, 152, 193, 183, 45, 13,
+     239, 166, 130, 129, 125, 88, 194, 134, 68, 10, 169, 74, 60, 7, 25, 189,
+     183, 84, 5, 69, 89, 25, 84, 146, 182, 115, 131, 118, 161, 63, 14, 170,
+     103, 41, 102, 4, 98, 139, 183, 24, 178, 8, 107, 101, 0, 9, 145, 63, 81,
+     190, 40, 206, 70, 254, 176, 26, 3, 204, 120, 134, 232, 156, 220, 4, 104,
+     124, 225, 195, 28, 223, 242, 63, 208, 41, 5, 194, 225, 163, 17, 12],
+    e2e.async.Result.getValue(cipher.decrypt(ciphertext)));
+}
+
+function testConsistency() {
+  var cipher = new e2e.cipher.ElGamal(
+    e2e.cipher.Algorithm.ELGAMAL, key);
+  var plaintext = goog.array.repeat(0xD, key.p.length - 13);
+  var ciphertext = e2e.async.Result.getValue(cipher.encrypt(plaintext));
+  assertArrayEquals(plaintext, e2e.async.Result.getValue(cipher.decrypt(ciphertext)));
+}
+
+function testElGamalWithSubgroupConsistency() {
+  var cipher = new e2e.cipher.ElGamal(
+    e2e.cipher.Algorithm.ELGAMAL, key2);
+  var plaintext = goog.array.repeat(0xD, key2.p.length - 13);
+  var ciphertext = e2e.async.Result.getValue(cipher.encrypt(plaintext));
+  assertArrayEquals(plaintext, e2e.async.Result.getValue(cipher.decrypt(ciphertext)));
+}
+</script>

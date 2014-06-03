@@ -1,0 +1,119 @@
+// Copyright 2014 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+{namespace e2e.ext.ui.templates.panels.keyringmgmt autoescape="strict"}
+
+
+/**
+ * Lists the PGP keys that are stored within the extension.
+ * @param storedKeys The metadata of the keys that are stored within the extension.
+ * @param sectionTitle The title of the current section.
+ * @param exportLabel The label to use for the export link.
+ * @param removeLabel The label to use for the remove link.
+ * @param noneLabel The label to display when there are no keys.
+ */
+{template .ListKeys}
+  <h1>{$sectionTitle}</h1>
+  <table>
+    {foreach $keyMeta in $storedKeys}
+      <tr>
+        {call .KeyEntry}
+          {param keyMeta: $keyMeta /}
+          {param exportLabel: $exportLabel /}
+          {param removeLabel: $removeLabel /}
+        {/call}
+      </tr>
+    {ifempty}
+      <tr><td><i>{$noneLabel}</i></td></tr>
+    {/foreach}
+  </table>
+{/template}
+
+
+/**
+ * Displays a single PGP key.
+ * @param keyMeta The metadata of the key that must be displayed.
+ * @param exportLabel The label to use for the export link.
+ * @param removeLabel The label to use for the remove link.
+ */
+{template .KeyEntry}
+  <td>
+    <div class="{e2e.ext.constants.CssClass.KEY_UID}">{$keyMeta.userId}</div>
+    {foreach $key in $keyMeta.keys}
+      <div class="{e2e.ext.constants.CssClass.KEY_META}">
+        {$key.type} {$key.algorithm} {$key.fingerprint}
+      </div>
+    {/foreach}
+  </td>
+  <td>
+    <img class="{e2e.ext.constants.CssClass.EXPORT}"
+         src="images/download_item.png" title="{$exportLabel}">
+    <img class="{e2e.ext.constants.CssClass.REMOVE}"
+         src="images/delete.png" title="{$removeLabel}">
+  </td>
+{/template}
+
+
+/**
+ * A form that allows the user to manage the collection of PGP keys stored by the extension.
+ * @param importKeyringLabel The label to use when asking the user to import a keyring.
+ * @param exportKeyringLabel The label to use when asking the user to export the existing keyring.
+ * @param changePassphraseLabel The label to use when asking the user to change the passphrase to
+ *     the keyring.
+ * @param importActionButtonTitle The title for the import submit button.
+ * @param importCancelButtonTitle The title for the import cancel button.
+ * @param changePassphrasePlaceholder The placeholder for the passphrase change input field.
+ * @param confirmPassphrasePlaceholder The placeholder for the passphrase confirm input field.
+ * @param passphraseChangeActionButtonTitle The title for the passphrase change submit button.
+ * @param passphraseConfirmActionButtonTitle The title for the passphrase confirm submit button.
+ * @param passphraseChangeCancelButtonTitle The title for the passphrase change cancel button.
+ */
+{template .ManageKeyring}
+  <div id="{e2e.ext.constants.ElementId.KEYRING_IMPORT_DIV}"
+       class="{e2e.ext.constants.CssClass.HIDDEN}">
+    <input type="file"/>
+    <button class="{e2e.ext.constants.CssClass.ACTION}">{$importActionButtonTitle}</button>
+    <button class="{e2e.ext.constants.CssClass.CANCEL}">{$importCancelButtonTitle}</button>
+  </div>
+  <div id="{e2e.ext.constants.ElementId.KEYRING_PASSPHRASE_CHANGE_DIV}"
+       class="{e2e.ext.constants.CssClass.HIDDEN}">
+    <div>{$changePassphrasePlaceholder}</div>
+    <input type="password" class="{e2e.ext.constants.CssClass.PASSPHRASE}"/>
+    <button class="{e2e.ext.constants.CssClass.ACTION}">
+      {$passphraseChangeActionButtonTitle}
+    </button>
+    <button class="{e2e.ext.constants.CssClass.CANCEL}">
+      {$passphraseChangeCancelButtonTitle}
+    </button>
+  </div>
+  <div id="{e2e.ext.constants.ElementId.KEYRING_PASSPHRASE_CONFIRM_DIV}"
+       class="{e2e.ext.constants.CssClass.HIDDEN}">
+    <div>{$confirmPassphrasePlaceholder}</div>
+    <input type="password" class="{e2e.ext.constants.CssClass.PASSPHRASE}"/>
+    <button class="{e2e.ext.constants.CssClass.ACTION}">
+      {$passphraseConfirmActionButtonTitle}
+    </button>
+    <button class="{e2e.ext.constants.CssClass.CANCEL}">
+      {$passphraseChangeCancelButtonTitle}
+    </button>
+  </div>
+  <div id="{e2e.ext.constants.ElementId.KEYRING_OPTIONS_DIV}">
+    <button class="{e2e.ext.constants.CssClass.KEYRING_IMPORT}
+                   {sp}{e2e.ext.constants.CssClass.CANCEL}">{$importKeyringLabel}</button>
+    <button class="{e2e.ext.constants.CssClass.KEYRING_EXPORT}
+                   {sp}{e2e.ext.constants.CssClass.CANCEL}">{$exportKeyringLabel}</button>
+    <button class="{e2e.ext.constants.CssClass.KEYRING_PASSPHRASE_CHANGE}{sp}
+                   {e2e.ext.constants.CssClass.CANCEL}">{$changePassphraseLabel}</button>
+  </div>
+{/template}

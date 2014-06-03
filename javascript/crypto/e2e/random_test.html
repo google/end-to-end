@@ -1,0 +1,72 @@
+<!-- Copyright 2012 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.random</title>
+<script src="../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.random');
+  goog.require('goog.array');
+  goog.require('goog.crypt.Hmac');
+  goog.require('goog.crypt.Sha1');
+  goog.require('goog.testing.jsunit');
+</script>
+<script>
+  var seed = [245,177,119,226,0,98,135,51,118,75,81,87,115,115,18,15,87,120,219,123,250,234,40,33,50,250,7,117,141,237,23,14,150,149,40,234,239,148,50,149,192,171,104,183,179,210,189,94,125,187,15,143,83,149,35,191,182,66,12,185,142,107,242,44,33,51,239,55,194,2,36,182,222,76,68,228,199,8,40,60,195,1,91,22,150,115,196,104,42,185,9,223,120,150,137,104,201,71,44,172,151,194,227,194,26,13,226,133,56,149,229,210,207,168,78,48,155,207,165,179,247,24,196,250,160,104,124,130,173,189,96,189,16,204,187,157,72,31,69,7,71,154,176,59,37,18,6,185,23,214];
+  function testRandomRespectsBlacklist() {
+    e2e.random.seedRandomBytes(seed);
+    var r1 = e2e.random.getRandomBytes(1e6, [0]);
+    assertTrue('No nulls in random', goog.array.every(r1, function(elem) {
+        return elem != 0;
+    }));
+    var blacklist = [];
+    for (var i = 1; i < 256; i++) {
+      blacklist.push(i);
+    }
+    var r2 = e2e.random.getRandomBytes(3, blacklist);
+    assertArrayEquals('Only nulls in random', r2, [0, 0, 0]);
+  }
+  function testRandomCorrectSize() {
+    e2e.random.seedRandomBytes(seed);
+    var r3 = e2e.random.getRandomBytes(17, []);
+    assertEquals('Correct size of random 17', r3.length, 17);
+    var r4 = e2e.random.getRandomBytes(111, []);
+    assertEquals('Correct size of random 111', r4.length, 111);
+  }
+  // Verify that the hmac library works as we expect.
+  function testHmacer() {
+    var hasher = new goog.crypt.Sha1();
+    var hmacer_empty = new goog.crypt.Hmac(hasher, []);
+    var hmacer_empty_bytes = new goog.crypt.Hmac(hasher, [], 64)
+    var hash_empty = hmacer_empty.getHmac([]);
+    var hash_empty_bytes = hmacer_empty_bytes.getHmac([]);
+    // Hashes taken from http://en.wikipedia.org/wiki/Hash-based_message_authentication_code#Examples_of_HMAC_.28MD5.2C_SHA1.2C_SHA256.29
+    assertArrayEquals([0xfb, 0xdb, 0x1d, 0x1b, 0x18, 0xaa, 0x6c, 0x08, 0x32,
+        0x4b, 0x7d, 0x64, 0xb7, 0x1f, 0xb7, 0x63, 0x70, 0x69, 0x0e, 0x1d],
+        hash_empty);
+    assertArrayEquals(hash_empty, hash_empty_bytes);
+    // Ascii code for "key"
+    var key = [107, 101, 121];
+    var hmacer_key = new goog.crypt.Hmac(hasher, key);
+    var hmacer_key_bytes = new goog.crypt.Hmac(hasher, key, 64);
+    var quick_str = "The quick brown fox jumps over the lazy dog";
+    var hash_key = hmacer_key.getHmac(quick_str);
+    var hash_key_bytes = hmacer_key_bytes.getHmac(quick_str);
+    assertArrayEquals([0xde, 0x7c, 0x9b, 0x85, 0xb8, 0xb7, 0x8a, 0xa6, 0xbc,
+        0x8a, 0x7a, 0x36, 0xf7, 0x0a, 0x90, 0x70, 0x1c, 0x9d, 0xb4, 0xd9],
+        hash_key);
+    assertArrayEquals(hash_key, hash_key_bytes);
+  }
+</script>

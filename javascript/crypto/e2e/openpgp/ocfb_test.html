@@ -1,0 +1,51 @@
+<!-- Copyright 2012 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.openpgp.OCFB</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.cipher.AES');
+  goog.require('e2e.openpgp.OCFB');
+  goog.require('e2e.random');
+  goog.require('goog.array');
+  goog.require('goog.testing.jsunit');
+</script>
+<script>
+  function testConsistencyResync() {
+    e2e.random.seedRandomBytesNative(256);
+    var aes = new e2e.cipher.AES(e2e.cipher.Algorithm.AES128,
+                                         {key:goog.array.repeat(0x77, 16)});
+    var aesocfb = new e2e.openpgp.OCFB(aes, true);
+    var plaintext = goog.array.repeat(0x66, 51);
+    var ciphertext = e2e.async.Result.getValue(aesocfb.encrypt(plaintext));
+    var deciphered = e2e.async.Result.getValue(aesocfb.decrypt(ciphertext));
+    assertArrayEquals("Consistency in encrypting/decrypting.",
+                      plaintext,
+                      deciphered);
+  }
+  function testConsistencyNoResync() {
+    e2e.random.seedRandomBytesNative(256);
+    var aes = new e2e.cipher.AES(e2e.cipher.Algorithm.AES128,
+                                         {key:goog.array.repeat(0x77, 16)});
+    var aesocfb = new e2e.openpgp.OCFB(aes, false);
+    var plaintext = goog.array.repeat(0x66, 51);
+    var ciphertext = e2e.async.Result.getValue(aesocfb.encrypt(plaintext));
+    var deciphered = e2e.async.Result.getValue(aesocfb.decrypt(ciphertext));
+    assertArrayEquals("Consistency in encrypting/decrypting.",
+                      plaintext,
+                      deciphered);
+  }
+</script>

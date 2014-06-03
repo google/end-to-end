@@ -1,0 +1,82 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.ecc.ECDH</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.crypt');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.BigNum');
+  goog.require('e2e.ecc.ECDH');
+  goog.require('e2e.ecc.ECDH.testData');
+  goog.require('e2e.ecc.PrimeCurve');
+  goog.require('e2e.ecc.Protocol');
+</script>
+<script>
+/**
+ * Converts a hex string to a byte array.
+ * @param {string} hexString
+ * @return {e2e.ByteArray}
+ */
+function hexToBigNum(hexStr) {
+  return new e2e.BigNum(goog.crypt.hexToByteArray(hexStr));
+}
+
+
+/**
+ * Test ECDH's shared secret derivation is consistent.
+ */
+function testConsistency() {
+  var curveNames = [
+    e2e.ecc.PrimeCurve.P_256,
+    e2e.ecc.PrimeCurve.P_384,
+    e2e.ecc.PrimeCurve.CURVE_25519
+  ];
+  goog.array.forEach(curveNames, function(curveName) {
+    var bobKeyPair = e2e.ecc.Protocol.generateKeyPair(curveName);
+
+    var aliceECDH = new e2e.ecc.ECDH(curveName);
+    var aliceMessage = aliceECDH.alice(bobKeyPair['pubKey']);
+
+    var bobECDH = new e2e.ecc.ECDH(curveName);
+    var bobMessage = bobECDH.bob(aliceMessage['pubKey'], bobKeyPair['privKey']);
+
+    assertArrayEquals('Failure for key agreement on curve ' + curveName,
+      aliceMessage['secret'], bobMessage['secret']);
+
+  });
+}
+
+
+/**
+ * Tests ECDH's shared secret derivation with public test vectors.
+ */
+function testSharedSecretDerivationWithPublicVectors() {
+  goog.array.forEach(e2e.ecc.ECDH.testData.P256Vectors,
+      function(vector) {
+         var curve = vector['curve'];
+         var key = {
+          'pubKey': goog.crypt.hexToByteArray(
+              '04' /* uncompressed */ + vector['Qx'] + vector['Qy'])
+        };
+        var ecdh = new e2e.ecc.ECDH(curve, key);
+        var S = ecdh.getPublicKeyAsPoint().multiply(hexToBigNum(vector['d']));
+        var Z = S.getX().toBigNum();
+        assertTrue(Z.isEqual(hexToBigNum(vector['Z'])));
+  });
+}
+</script>

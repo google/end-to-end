@@ -1,0 +1,119 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.async</title>
+<script src="../../../closure/base.js"></script>
+<script src="../deps.js"></script>
+<script>
+  goog.require('goog.testing.jsunit');
+  goog.require('goog.testing.AsyncTestCase');
+  goog.require('e2e.async.Client');
+  goog.require('e2e.async.Service');
+  goog.require('e2e.async.Peer');
+</script>
+<script>
+  var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall();
+  function testEndToEnd() {
+    var TEST_SERVICE = "http://test.example/e2e.test";
+    var BAD_SERVICE = "http://test.example/bad.test";
+    var ERROR_MSG = "Test error propagation.";
+
+    function FakeClient(port) {goog.base(this, port);}
+    goog.inherits(FakeClient, e2e.async.Client);
+    FakeClient.prototype.ping = function(msg, callback, opt_errback) {
+      this.call("ping", [msg], callback, function() {
+        if (!opt_errback) {
+          fail("Error while invoking async method.");
+        } else {
+          opt_errback();
+        }
+      });
+    };
+    FakeClient.prototype.err = function(errback) {
+      this.call("err", [], function(error){
+        fail("Error wasn't propagated to client.");
+      }, errback);
+    };
+    FakeClient.prototype.invalid = function(errback) {
+      this.call("invalid", [], function(error){
+        fail("Invalid service succeeded..");
+      }, errback);
+    };
+
+    function FakeService(port) {goog.base(this, port);}
+    goog.inherits(FakeService, e2e.async.Service);
+    FakeService.prototype._public_err = function() {
+      throw new Error(ERROR_MSG);
+    };
+
+    function FakeServiceChild(port) {goog.base(this, port);}
+    goog.inherits(FakeServiceChild, FakeService);
+    FakeServiceChild.prototype._public_ping = function(msg) {
+      if (msg == "loop") {
+        var x = {'z': function(){}, 'y': window, 'w': '1337'};
+        x.x = x;
+        return x;
+      }
+      return "pong " + msg;
+    };
+
+    var fakeNetwork = new MessageChannel();
+    var sideOne = new e2e.async.Peer();
+    sideOne.addPort(fakeNetwork.port1);
+    var sideTwo = new e2e.async.Peer();
+    sideTwo.addPort(fakeNetwork.port2);
+    sideOne.init = sideTwo.init = goog.nullFunction;
+
+    assertArrayEquals("Ports in peer are registered.",
+                      sideOne.getPorts(),
+                      [fakeNetwork.port1]);
+
+    sideOne.registerService(TEST_SERVICE, FakeServiceChild);
+
+    asyncTestCase.waitForAsync("Waiting for test service to be discovered..");
+    sideTwo.findService(BAD_SERVICE, {}, function(res, port) {
+      fail("Invalid service was found.");
+    });
+    sideOne.findService(TEST_SERVICE, {}, function(res, port) {
+      fail("Service on own port shouldn't be found.");
+    });
+    sideTwo.findService(TEST_SERVICE, {}, function(res, port) {
+      asyncTestCase.continueTesting();
+      asyncTestCase.waitForAsync("Waiting for ping RPC..");
+      var fc = new FakeClient(port);
+      fc.ping("asdf", function(ret) {
+        assertEquals("Service/Client communication test.", "pong asdf", ret);
+        asyncTestCase.continueTesting();
+        asyncTestCase.waitForAsync('Waiting for err RPC..');
+        fc.err(function(error){
+          if (error != ERROR_MSG) {
+            fail("Error wasn't propagated correctly.");
+          }
+          asyncTestCase.continueTesting();
+          asyncTestCase.waitForAsync("Waiting for invalid RPC..");
+          fc.invalid(function(){
+            asyncTestCase.continueTesting();
+            asyncTestCase.waitForAsync("Waiting for loop error");
+            fc.ping("loop", function(x) {
+              fail('Unserializable object should trigger an error.' + x.x);
+            }, function() {
+              asyncTestCase.continueTesting();
+            });
+          });
+        });
+      });
+    });
+  }
+</script>

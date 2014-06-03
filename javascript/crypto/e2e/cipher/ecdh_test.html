@@ -1,0 +1,85 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.Cipher.ECDH</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.crypt');
+  goog.require('goog.testing.jsunit');
+  goog.require('goog.testing.AsyncTestCase');
+  goog.require('e2e.async.Result');
+  goog.require('e2e.ecc.PrimeCurveOid');
+  goog.require('e2e.cipher.ECDH');
+  goog.require('e2e.cipher.ECDH.testData');
+  goog.require('e2e.BigNum');
+  goog.require('e2e.random');
+</script>
+<script>
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
+
+
+/**
+ * Tests that ECDH is consistent.
+ */
+function testConsistency() {
+  var key = {
+      'curve': e2e.ecc.PrimeCurveOid.P_256,
+      'kdfInfo': e2e.cipher.ECDH.testData.kdfInfo,
+      'pubKey': e2e.cipher.ECDH.testData.pubKey,
+      'privKey': e2e.cipher.ECDH.testData.privKey,
+      'fingerprint': goog.array.repeat(0x0, 20)
+  };
+  var ecdh = new e2e.cipher.ECDH(
+      e2e.cipher.Algorithm.ECDH, key);
+  for (var i = 0; i < 5; i++) {
+    (function(){
+      var m = e2e.random.getRandomBytes(16);
+      asyncTestCase.waitForAsync('Waiting for encryption.');
+      ecdh.encrypt(m).addCallback(function(c) {
+        asyncTestCase.continueTesting();
+        asyncTestCase.waitForAsync('Waiting for decryption.');
+        ecdh.decrypt(c).addCallback(function(p){
+          asyncTestCase.continueTesting();
+          assertArrayEquals(m, p);
+        });
+      });
+    })();
+  }
+}
+
+
+/**
+ * Tests interoperability with gpg-ecc.
+ */
+function testInteroperabilityWithGPG() {
+  var pubKey = {
+    'curve': e2e.ecc.PrimeCurveOid.P_256,
+    'kdfInfo': e2e.cipher.ECDH.testData.kdfInfo,
+    'pubKey': e2e.cipher.ECDH.testData.gpgEccPubKey,
+    'fingerprint': e2e.cipher.ECDH.testData.gpgEccPubKeyFingerprint};
+
+  var ecdh = new e2e.cipher.ECDH(
+      e2e.cipher.Algorithm.ECDH, pubKey);
+
+  var c = e2e.async.Result.getValue(ecdh.encryptForTestingOnly(
+      e2e.cipher.ECDH.testData.gpgEccMessage,
+      e2e.cipher.ECDH.testData.gpgEccNonce));
+
+  assertArrayEquals(c['u'],
+      e2e.cipher.ECDH.testData.gpgEccCiphertext);
+}
+</script>

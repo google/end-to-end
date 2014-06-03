@@ -1,0 +1,166 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.Cipher.AESKeyWrap</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e');
+  goog.require('e2e.cipher.AES');
+  goog.require('e2e.cipher.AESKeyWrap');
+  goog.require('e2e.cipher.AESKeyWrap.testData');
+  goog.require('e2e.cipher.RSA');
+  goog.require('e2e.openpgp.constants');
+  goog.require('goog.testing.jsunit');
+</script>
+<script>
+/**
+ * Test wrapping key data with a 128-bit KEK.
+ */
+function testWrap128() {
+
+  var wrapPrimitive = e2e.openpgp.constants.getInstance(
+      e2e.openpgp.constants.Type.SYMMETRIC_KEY,
+      e2e.cipher.Algorithm.AES128);
+  var aesKeyWrap = new e2e.cipher.AESKeyWrap(wrapPrimitive);
+  aesKeyWrap.setKey(e2e.cipher.AESKeyWrap.testData.kek128);
+
+  // 128-bit key data.
+  var wrappedKey = aesKeyWrap.wrap(
+      e2e.cipher.AESKeyWrap.testData.keyData128);
+  assertArrayEquals(
+      e2e.cipher.AESKeyWrap.testData.wrappedKeyData128128,
+      wrappedKey);
+  var keyData = aesKeyWrap.unwrap(wrappedKey);
+  assertArrayEquals(
+      e2e.cipher.AESKeyWrap.testData.keyData128,
+      keyData);
+}
+
+
+/**
+ * Test unwrapping checks validity
+ */
+function testValidityCheck() {
+  var wrapPrimitive = e2e.openpgp.constants.getInstance(
+      e2e.openpgp.constants.Type.SYMMETRIC_KEY,
+      e2e.cipher.Algorithm.AES128);
+  var aesKeyWrap = new e2e.cipher.AESKeyWrap(wrapPrimitive);
+  aesKeyWrap.setKey(e2e.cipher.AESKeyWrap.testData.kek128);
+
+  // 128-bit key data.
+  var wrappedKey = aesKeyWrap.wrap(
+      e2e.cipher.AESKeyWrap.testData.keyData128);
+
+  wrappedKey[0] ^= 1;
+  assertThrows('Invalid wrapped key should throw exception', function() {
+    aesKeyWrap.unwrap(wrappedKey);
+  });
+}
+
+
+/**
+ * Test wrapping key data with a 192-bit KEK.
+ */
+function testWrap192() {
+  var wrapPrimitive = e2e.openpgp.constants.getInstance(
+      e2e.openpgp.constants.Type.SYMMETRIC_KEY,
+      e2e.cipher.Algorithm.AES192);
+  var aesKeyWrap = new e2e.cipher.AESKeyWrap(wrapPrimitive);
+  aesKeyWrap.setKey(e2e.cipher.AESKeyWrap.testData.kek192);
+
+  // 128-bit key data.
+  var wrappedKey128 = aesKeyWrap.wrap(
+      e2e.cipher.AESKeyWrap.testData.keyData128);
+  assertArrayEquals(
+      e2e.cipher.AESKeyWrap.testData.wrappedKeyData128192,
+      wrappedKey128);
+  var keyData128 = aesKeyWrap.unwrap(wrappedKey128);
+  assertArrayEquals(
+      e2e.cipher.AESKeyWrap.testData.keyData128,
+      keyData128);
+
+  // 192-bit key data.
+  var wrappedKey192 = aesKeyWrap.wrap(
+      e2e.cipher.AESKeyWrap.testData.keyData192);
+  assertArrayEquals(
+      e2e.cipher.AESKeyWrap.testData.wrappedKeyData192192,
+      wrappedKey192);
+  var keyData192 = aesKeyWrap.unwrap(wrappedKey192);
+  assertArrayEquals(
+      e2e.cipher.AESKeyWrap.testData.keyData192,
+      keyData192);
+}
+
+
+/**
+ * Test wrapping key data with a 256-bit KEK.
+ */
+function testWrap256() {
+  var wrapPrimitive = e2e.openpgp.constants.getInstance(
+      e2e.openpgp.constants.Type.SYMMETRIC_KEY,
+      e2e.cipher.Algorithm.AES256);
+  var aesKeyWrap = new e2e.cipher.AESKeyWrap(wrapPrimitive);
+  aesKeyWrap.setKey(e2e.cipher.AESKeyWrap.testData.kek256);
+
+  // 128-bit key data.
+  var wrappedKey = aesKeyWrap.wrap(
+      e2e.cipher.AESKeyWrap.testData.keyData128);
+  assertArrayEquals(
+      e2e.cipher.AESKeyWrap.testData.wrappedKeyData128256,
+      wrappedKey);
+  var keyData = aesKeyWrap.unwrap(wrappedKey);
+  assertArrayEquals(
+      e2e.cipher.AESKeyWrap.testData.keyData128,
+      keyData);
+
+  // 192-bit key data.
+  var wrappedKey192 = aesKeyWrap.wrap(
+      e2e.cipher.AESKeyWrap.testData.keyData192);
+  assertArrayEquals(
+      e2e.cipher.AESKeyWrap.testData.wrappedKeyData192256,
+      wrappedKey192);
+  var keyData192 = aesKeyWrap.unwrap(wrappedKey192);
+  assertArrayEquals(
+      e2e.cipher.AESKeyWrap.testData.keyData192,
+      keyData192);
+
+  // 256-bit key data.
+  var wrappedKey256 = aesKeyWrap.wrap(
+      e2e.cipher.AESKeyWrap.testData.keyData256);
+  assertArrayEquals(
+      e2e.cipher.AESKeyWrap.testData.wrappedKeyData256256,
+      wrappedKey256);
+  var keyData256 = aesKeyWrap.unwrap(wrappedKey256);
+  assertArrayEquals(
+      e2e.cipher.AESKeyWrap.testData.keyData256,
+      keyData256);
+}
+
+
+/**
+ * Test wrapping with non-AES algorithm fails
+ */
+function testWrapInvalidAlgorithm() {
+  var wrapPrimitive = e2e.openpgp.constants.getInstance(
+      e2e.openpgp.constants.Type.PUBLIC_KEY,
+      e2e.cipher.Algorithm.RSA);
+  assertThrows('Invalid key-wrapping algorithm should throw exception',
+    function() {
+      new e2e.cipher.AESKeyWrap(wrapPrimitive);
+    });
+}
+
+</script>

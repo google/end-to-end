@@ -1,0 +1,127 @@
+<!-- Copyright 2012 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.crypt</title>
+<script src="../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.testing.AsyncTestCase');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e');
+  goog.require('goog.math.Long');
+</script>
+<script>
+      var asyncTest = goog.testing.AsyncTestCase.createAndInstall(document.title);
+      /**
+       * Tests that conversion from 32 bits to 8 bits arrays is correct.
+       */
+      function testDwordArrayToByteArray() {
+        assertArrayEquals([0xDE, 0xAD, 0xBE, 0xEF],
+                          e2e.dwordArrayToByteArray([0xDEADBEEF]));
+        assertArrayEquals([0x00, 0x00, 0xCA, 0xFE],
+                          e2e.dwordArrayToByteArray([0xCAFE]));
+        assertArrayEquals([0x12, 0x34, 0x56, 0x78, 0x90, 0x00, 0x00, 0x00],
+                          e2e.dwordArrayToByteArray(
+                              [0x12345678, 0x90000000]));
+      }
+
+
+      /**
+       * Tests that conversion from 8 bits array to 32 bits arrays is correct.
+       */
+      function testByteArrayToDwordArray() {
+        assertArrayEquals([0xC0CAC01A],
+                          e2e.byteArrayToDwordArray(
+                              [0xC0, 0xCA, 0xC0, 0x1A]));
+        assertArrayEquals([0x00001337],
+                          e2e.byteArrayToDwordArray(
+                              [0x00, 0x00, 0x13, 0x37]));
+        assertArrayEquals([0xFFEEDDCC, 0xBB000000],
+                          e2e.byteArrayToDwordArray(
+                              [0xFF, 0xEE, 0xDD, 0xCC, 0xBB]));
+      }
+
+      function testLongToByteArray() {
+        assertArrayEquals([0x12, 0x34, 0x56, 0x78, 0x9a, 0x00, 0x00, 0x00],
+            e2e.longToByteArray(
+                goog.math.Long.fromString("123456789a000000", 16)));
+      }
+
+      function testMojibakeNotTextDecoder() {
+        asyncTest.waitForAsync('Waiting for byteArrayToString.');
+        e2e.USE_TEXT_DECODER = false;
+        e2e.byteArrayToStringAsync(
+          [0xB0, 0xC2, 0xBC, 0xBC, 0xC6, 0xE0, 0xC8, 0xFE, 0xB7, 0xC3], 'euc-jp').addCallback(
+          function(str) {
+            asyncTest.continueTesting();
+            // Japanese text, used to decode incorrectly.
+            assertEquals('\u5B89\u5BA4\u5948\u7F8E\u6075', str);
+          });
+        e2e.USE_TEXT_DECODER = 'TextDecoder' in goog.global;
+      }
+
+
+      function testMojibakeTextDecoder() {
+        asyncTest.waitForAsync('Waiting for byteArrayToString.');
+        e2e.USE_TEXT_DECODER = 'TextDecoder' in goog.global;
+        e2e.byteArrayToStringAsync(
+          [0xB0, 0xC2, 0xBC, 0xBC, 0xC6, 0xE0, 0xC8, 0xFE, 0xB7, 0xC3], 'euc-jp').addCallback(
+          function(str) {
+            asyncTest.continueTesting();
+            assertEquals('\u5B89\u5BA4\u5948\u7F8E\u6075', str);
+          });
+      }
+
+      function testIsByte() {
+        assert(e2e.isByte(0));
+        assert(e2e.isByte(1));
+        assert(e2e.isByte(255));
+        for (var i = 0; i < 256; i++) {
+          assert(e2e.isByte(i));
+        }
+        assertFalse(e2e.isByte(-1));
+        assertFalse(e2e.isByte(undefined));
+        assertFalse(e2e.isByte(1.1));
+        assertFalse(e2e.isByte(-0.1));
+        assertFalse(e2e.isByte(Infinity));
+        assertFalse(e2e.isByte(-Infinity));
+        assertFalse(e2e.isByte(NaN));
+        assertFalse(e2e.isByte(null));
+        assertFalse(e2e.isByte(undefined));
+        assertFalse(e2e.isByte(true));
+        assertFalse(e2e.isByte(false));
+        assertFalse(e2e.isByte(new Number(1)));
+        assertFalse(e2e.isByte(256));
+        assertFalse(e2e.isByte((1<<31)*2));
+      }
+
+      function testCompareByteArray() {
+        assert(e2e.compareByteArray([1, 2, 3], [1, 2, 3]));
+        assertFalse(e2e.compareByteArray([true, 2, 3], [1, 2, 3]));
+        assertFalse(e2e.compareByteArray([0x100, 2, 3], [0x100, 2, 3]));
+        assertFalse(e2e.compareByteArray([1, 2, 3], [1, 2, 3, 0]));
+        assertFalse(e2e.compareByteArray([1, 2, 3, 4], [1, 2, 3, undefined]));
+        assertFalse(e2e.compareByteArray([1, 2, 3], [1, 2, 3, undefined]));
+        assertFalse(e2e.compareByteArray([1, 2, 3], [0, 1, 2, 3]));
+        assertFalse(e2e.compareByteArray([1, 2, 3], [1, 2, 3, Infinity]));
+        assertFalse(e2e.compareByteArray([0], [undefined]));
+        assertFalse(e2e.compareByteArray([], [undefined]));
+        assertFalse(e2e.compareByteArray([1], [2]));
+        assertFalse(e2e.compareByteArray([1, 2, 3], [2, 2, 3]));
+        assertFalse(e2e.compareByteArray([1, 2, 3], [1, 2, 1]));
+        assertFalse(e2e.compareByteArray([1, 2, 3, 4, 5, 6], [1, 2, 3]));
+        assertFalse(e2e.compareByteArray([1, 2, 3], [1, 2, 3, 4, 5, 6, 7, 8]));
+      }
+</script>

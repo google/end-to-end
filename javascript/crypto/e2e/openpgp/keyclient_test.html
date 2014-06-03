@@ -1,0 +1,131 @@
+<!-- Copyright 2014 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.openpgp.KeyClient</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.net.XhrIo');
+  goog.require('goog.testing.AsyncTestCase');
+  goog.require('goog.testing.jsunit');
+  goog.require('goog.testing.net.XhrIo');
+  goog.require('goog.testing.PropertyReplacer');
+  goog.require('e2e.async.Result');
+  goog.require('e2e.cipher.all');
+  goog.require('e2e.cipher.AES');
+  goog.require('e2e.cipher.Algorithm');
+  goog.require('e2e.openpgp.block.TransferablePublicKey');
+  goog.require('e2e.openpgp.KeyRing.testData');
+  goog.require('e2e.openpgp.block.factory');
+  goog.require('e2e.openpgp.KeyClient');
+  goog.require('e2e.hash.Sha1');
+  goog.require('e2e.signer.Algorithm');
+  goog.require('e2e.signer.ECDSA');
+</script>
+<script>
+
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
+/** @type {goog.testing.PropertyReplacer} */
+var stubs;
+var keyClient;
+
+function setUp() {
+  keyClient = new e2e.openpgp.KeyClient('http://127.0.0.1:8888');
+  stubs = new goog.testing.PropertyReplacer();
+  stubs.replace(goog.net.XhrIo, 'send', goog.testing.net.XhrIo.send);
+}
+
+function tearDown() {
+  stubs.reset();
+  goog.array.clear(goog.testing.net.XhrIo.getSendInstances());
+}
+
+function testAddPublicKeyOKStatusCode() {
+  var key = 'testing key';
+  var result = keyClient.importPublicKey(key);
+  var xhrios = goog.testing.net.XhrIo.getSendInstances();
+  assertEquals(1, xhrios.length);
+  assertEquals('POST', xhrios[0].getLastMethod());
+  assertEquals('http://127.0.0.1:8888/pks/add', xhrios[0].getLastUri());
+  assertEquals('keytext=testing%20key', xhrios[0].getLastContent());
+  xhrios[0].simulateResponse(200, '');
+  result.addCallback(function(isSucceeded) {
+      assertEquals(true, isSucceeded);
+      });
+}
+
+function testAddPublicKeyNotOKStatusCode() {
+  var key = 'testing key';
+  var result = keyClient.importPublicKey(key);
+  var xhrios = goog.testing.net.XhrIo.getSendInstances();
+  assertEquals(1, xhrios.length);
+  assertEquals('POST', xhrios[0].getLastMethod());
+  assertEquals('http://127.0.0.1:8888/pks/add', xhrios[0].getLastUri());
+  assertEquals('keytext=testing%20key', xhrios[0].getLastContent());
+  xhrios[0].simulateResponse(400, '');
+  result.addCallback(function(isSucceeded) {
+      assertEquals(false, isSucceeded);
+      });
+}
+
+function testSearchPublicKeyFoundValidKey() {
+  var email = 'test@google.com';
+  var pubKeys = keyClient.searchPublicKey(email);
+  var xhrios = goog.testing.net.XhrIo.getSendInstances();
+  assertEquals(1, xhrios.length);
+  assertEquals('GET', xhrios[0].getLastMethod());
+  assertEquals(
+      'http://127.0.0.1:8888/pks/lookup?op=get&x-email=test%40google.com',
+      xhrios[0].getLastUri());
+  xhrios[0].simulateResponse(200, e2e.openpgp.KeyRing.testData.pubKeyAscii);
+  pubKeys.addCallback(function(pubKeys) {
+      assertEquals(1, pubKeys.length);
+      assertEquals('ecc real name <ecc@example.com>', pubKeys[0].getUserIds()[0]);
+      });
+}
+
+function testSeachPublicKeyFoundInvalidKey() {
+  var email = 'test@google.com';
+  var pubKeys = keyClient.searchPublicKey(email);
+  var xhrios = goog.testing.net.XhrIo.getSendInstances();
+  assertEquals(1, xhrios.length);
+  assertEquals('GET', xhrios[0].getLastMethod());
+  assertEquals(
+      'http://127.0.0.1:8888/pks/lookup?op=get&x-email=test%40google.com',
+      xhrios[0].getLastUri());
+  xhrios[0].simulateResponse(200, 'invalid key');
+  pubKeys.addCallback(function(pubKeys) {
+      assertArrayEquals([], pubKeys);
+      });
+}
+
+
+function testSearchPublicKeyNotFound() {
+  var email = 'test@google.com';
+  var pubKeys = keyClient.searchPublicKey(email);
+  var xhrios = goog.testing.net.XhrIo.getSendInstances();
+  assertEquals(1, xhrios.length);
+  assertEquals('GET', xhrios[0].getLastMethod());
+  assertEquals(
+      'http://127.0.0.1:8888/pks/lookup?op=get&x-email=test%40google.com',
+      xhrios[0].getLastUri());
+  xhrios[0].simulateResponse(400, '');
+  pubKeys.addCallback(function(pubKeys) {
+      assertArrayEquals([], pubKeys);
+      });
+}
+
+</script>

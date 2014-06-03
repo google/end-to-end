@@ -1,0 +1,126 @@
+<!-- Copyright 2014 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.ecc.Point</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.crypt');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.ecc.DomainParam');
+  goog.require('e2e.ecc.PrimeCurve');
+</script>
+<script>
+/**
+ * Test that basic multiplication works, using public sources.
+ */
+function testCurve25519Multiplication() {
+  var params = e2e.ecc.DomainParam.fromCurve(
+      e2e.ecc.PrimeCurve.CURVE_25519);
+  var curve = params.curve;
+
+  //github.com/cryptosphere/rbnacl/blob/master/lib/rbnacl/test_vectors.rb
+  var alice_private = goog.crypt.hexToByteArray(
+    '77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a');
+  var alice_public = goog.crypt.hexToByteArray(
+    '8520f0098930a754748b7ddcb43ef75a0dbf3a0d26381af4eba4a98eaa9b4e6a');
+  var bob_private = goog.crypt.hexToByteArray(
+    '5dab087e624a8a4b79e17f8b83800ee66f3bb1292618b6fd1c2f8b27ff88e0eb');
+  var bob_public = goog.crypt.hexToByteArray(
+    'de9edb7d7b7dc1b4d35b61c2ece435373f8343c85b78674dadfc7e146f882b4f');
+  var alice_mult_bob = goog.crypt.hexToByteArray(
+    '4a5d9d5ba4ce2de1728e3bf480350f25e07e21c947d19e3376f09b3c1e161742');
+
+  var aliceKeys = params.generateKeyPair(alice_private);
+  var bobKeys = params.generateKeyPair(bob_private);
+
+  var alicePublicPoint = aliceKeys['publicKeyPoint'];
+  var bobPublicPoint = bobKeys['publicKeyPoint'];
+
+  assertArrayEquals(alice_public, alicePublicPoint.toByteArray());
+  assertArrayEquals(bob_public, bobPublicPoint.toByteArray());
+  assertTrue(curve.pointFromByteArray(alice_public).isEqual(alicePublicPoint));
+  assertTrue(curve.pointFromByteArray(bob_public).isEqual(bobPublicPoint));
+
+  var sharedKey1 = params.calculateSharedSecret(
+    alicePublicPoint, params.bigNumFromPrivateKey(bob_private));
+  var sharedKey2 = params.calculateSharedSecret(
+    bobPublicPoint, params.bigNumFromPrivateKey(alice_private));
+
+  assertArrayEquals(alice_mult_bob, sharedKey1);
+  assertArrayEquals(alice_mult_bob, sharedKey2);
+}
+
+
+function testCurve25519Order() {
+  // Check that the base point, params.g mult
+  var params = e2e.ecc.DomainParam.fromCurve(
+      e2e.ecc.PrimeCurve.CURVE_25519);
+  var base = params.g;
+  var order = params.n;
+
+  assertTrue(base.multiply(order).isInfinity());
+  assertFalse(base.multiply(order.subtract(e2e.BigNum.ONE)).isInfinity());
+}
+
+
+function testDegenerateMultiply() {
+  var params = e2e.ecc.DomainParam.fromCurve(
+      e2e.ecc.PrimeCurve.CURVE_25519);
+  var curve = params.curve;
+  var base = params.g;
+  var infinity = curve.INFINITY;
+  var zeroPoint = new e2e.ecc.Point.Curve25519(curve, curve.ZERO);
+
+  assertTrue(base.multiply(e2e.BigNum.ZERO).isEqual(infinity));
+  assertTrue(base.multiply(e2e.BigNum.ONE).isEqual(base));
+
+  assertTrue(infinity.multiply(e2e.BigNum.TWO).isEqual(infinity));
+  assertTrue(infinity.multiply(params.n).isEqual(infinity));
+
+  assertTrue(zeroPoint.multiply(curve.q).isEqual(zeroPoint));
+  assertTrue(zeroPoint.multiply(curve.q.add(e2e.BigNum.ONE)).isEqual(infinity));
+}
+
+
+function testRandomScalarMultiplication() {
+  // Javascript adaptation of code frrom curve25519-donna at
+  // https://github.com/agl/curve25519-donna/blob/master/test-curve25519.c
+
+  var params = e2e.ecc.DomainParam.fromCurve(
+      e2e.ecc.PrimeCurve.CURVE_25519);
+  var curve = params.curve;
+  var q = curve.q;
+
+  var e1 = new e2e.BigNum([3]);
+  var e2 = new e2e.BigNum([5]);
+  var kb = new e2e.BigNum([9]);
+
+  for (var loop = 0; loop < 15; loop++) {
+    var k = new e2e.ecc.Point.Curve25519(
+      curve, new e2e.ecc.Element(q, kb));
+
+    var e1k = k.multiply(e1);
+    var e2k = k.multiply(e2);
+    var e1e2k = e1k.multiply(e2);
+    var e2e1k = e2k.multiply(e1);
+    assertTrue(e1e2k.isEqual(e2e1k));
+
+    e1 = q.residue(e1.add(e2k.getX().toBigNum()));
+    e2 = q.residue(e2.add(e1k.getX().toBigNum()));
+    kb = q.residue(kb.add(e2e1k.getX().toBigNum()));
+  }
+}
+</script>

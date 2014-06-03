@@ -1,0 +1,147 @@
+<!-- Copyright 2012 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.openpgp.S2K</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script src="s2k.js"></script>
+<script>
+  goog.require('e2e.openpgp.S2K');
+  goog.require('e2e.hash.Sha1');
+  goog.require('goog.array');
+  goog.require('goog.testing.jsunit');
+</script>
+<script>
+  function testS2KTypeConsume() {
+    assertNotThrows('Simple S2K is parsed correctly.', function() {
+      var simple = [0x00, 0x02, 0xFF, 0xBB];
+      var simples2k = e2e.openpgp.S2K.parse(simple);
+      assertArrayEquals(
+          'Simple only consumed two bytes.', [0xFF, 0xBB], simple);
+      assert('Simple is instance of SimpleS2K',
+             simples2k instanceof e2e.openpgp.SimpleS2K);
+    });
+    assertNotThrows('Salted S2K is parsed correctly.', function() {
+      var salted = [0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+          0xFF, 0xBB];
+      var salteds2k = e2e.openpgp.S2K.parse(salted);
+      assertArrayEquals(
+          'Salted only consumed ten bytes.', [0xFF, 0xBB], salted);
+      assert('Salted S2K is instance of SaltedS2K',
+             salteds2k instanceof e2e.openpgp.SaltedS2K);
+    });
+    assertNotThrows('Iterated S2K is parsed correctly.', function() {
+      var iterated = [0x03, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+          0x00, 0x01, 0xFF, 0xBB];
+      var iterateds2k = e2e.openpgp.S2K.parse(iterated);
+      assertArrayEquals('Iterated only consumed eleven bytes.', [0xFF, 0xBB],
+          iterated);
+      assert('Iterated S2K is instance of IteratedS2K',
+             iterateds2k instanceof e2e.openpgp.IteratedS2K);
+    });
+  }
+
+
+  function testS2KInvalid() {
+    assertThrows('Invalid S2K type throws errors', function() {
+      var invalid = [0x05, 0x02, 0xFF, 0xBB];
+      var simples2k = e2e.openpgp.S2K.parse(invalid);
+    });
+    assertThrows('Wrong salt length throws errors', function() {
+      var invalid = [0x01, 0x02, 0x01];
+      var simples2k = e2e.openpgp.S2K.parse(invalid);
+    });
+  }
+
+
+  // Test values from https://code.google.com/p/go/source/browse/openpgp/s2k/s2k_test.go?repo=crypto
+  function testSalted() {
+    var expected = [
+      ["hello", "10295ac1"],
+      ["world", "ac587a5e"],
+      ["foo", "4dda8077"],
+      ["bar", "bd8aac6b9ea9cae04eae6a91c6133b58b5d9a61c14f355516ed9370456"],
+      ["x", "f1d3f289"],
+      ["xxxxxxxxxxxxxxxxxxxxxxx", "e00d7b45"],
+    ];
+    goog.array.forEach(expected, function(row) {
+      var s = new e2e.openpgp.SaltedS2K(
+          new e2e.hash.Sha1, [1, 2, 3, 4]);
+      var expectedKey = goog.crypt.hexToByteArray(row[1])
+      var key = s.getKey(goog.crypt.stringToByteArray(row[0]),
+                         expectedKey.length);
+      assertArrayEquals(expectedKey, key);
+    });
+  }
+  function testIterated() {
+    var expected = [
+      ["hello", "83126105"],
+      ["world", "6fa317f9"],
+      ["foo", "8fbc35b9"],
+      ["bar", "2af5a99b54f093789fd657f19bd245af7604d0f6ae06f66602a46a08ae"],
+      ["x", "5a684dfe"],
+      ["xxxxxxxxxxxxxxxxxxxxxxx", "18955174"],
+    ];
+    goog.array.forEach(expected, function(row) {
+      var s = new e2e.openpgp.IteratedS2K(
+          new e2e.hash.Sha1, [4, 3, 2, 1], 31);  // 31 is overwritten.
+      s.count_ = 31;  // Set unencoded count. The 31 previously passed in is
+                      // treated as an encoded count, so overwrite it.
+      var expectedKey = goog.crypt.hexToByteArray(row[1])
+      var key = s.getKey(goog.crypt.stringToByteArray(row[0]),
+                         expectedKey.length);
+      assertArrayEquals(expectedKey, key);
+    });
+  }
+  function testGetCount() {
+    assertEquals(e2e.openpgp.IteratedS2K.getCount_(96), 65536);
+  }
+  function testParse() {
+    var expected = [  // Values: packet bytes, passphrase, expected key
+      /* Simple with SHA1 */
+      ["0002", "hello", "aaf4c61d"],
+      /* Salted with SHA1 */
+      ["01020102030405060708", "hello", "f4f7d67e"],
+      /* Iterated with SHA1. 35651584 (f1 encoded) iterations, which is quite expensive. */
+      ["03020102030405060708f1", "hello", "f2a57b7c"],
+    ];
+    goog.array.forEach(expected, function(row) {
+      var packet = goog.crypt.hexToByteArray(row[0]);
+      var passphrase = goog.crypt.stringToByteArray(row[1]);
+      var expected = goog.crypt.hexToByteArray(row[2]);
+      var s2k = e2e.openpgp.S2K.parse(packet);
+      assertArrayEquals(expected, s2k.getKey(passphrase, expected.length));
+    });
+  }
+  function testSerialize() {
+    var specifications = [
+      new e2e.openpgp.SimpleS2K(new e2e.hash.Sha1),
+      new e2e.openpgp.SaltedS2K(new e2e.hash.Sha1,
+                                    [1, 2, 3, 4, 5, 6, 7, 8]),
+      new e2e.openpgp.IteratedS2K(new e2e.hash.Sha1,
+                                      [1, 2, 3, 4, 5, 6, 7, 8],
+                                      96),
+    ];
+    goog.array.forEach(specifications, function(specification) {
+      var expectedKey = specification.getKey(
+          goog.crypt.stringToByteArray("passphrase"), 16);
+      var serialized = specification.serialize();
+      var parsed = e2e.openpgp.S2K.parse(serialized);
+      assertArrayEquals(expectedKey,
+                        parsed.getKey(
+                            goog.crypt.stringToByteArray("passphrase"), 16));
+    });
+  }
+</script>

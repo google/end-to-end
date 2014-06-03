@@ -1,0 +1,117 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.Cipher.CAST5</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.cipher.CAST5');
+  goog.require('goog.array');
+  goog.require('goog.testing.jsunit');
+</script>
+<script>
+function testBasic() {
+  var key = goog.crypt.hexToByteArray("0123456712345678234567893456789a");
+  var plainText = goog.crypt.hexToByteArray("0123456789abcdef");
+  var cipherText = goog.crypt.hexToByteArray("238b4fe5847e44b2");
+
+  var cipher = new e2e.cipher.CAST5(e2e.cipher.Algorithm.CAST5,
+                                            {key:key});
+  var decrypted = e2e.async.Result.getValue(cipher.decrypt(cipherText));
+  assertArrayEquals(plainText, decrypted);
+  var encrypted = e2e.async.Result.getValue(cipher.encrypt(plainText));
+  assertArrayEquals(cipherText, encrypted);
+}
+
+
+function testInvalidKeys() {
+  var key = goog.crypt.hexToByteArray("0123");
+
+  assertThrows('Wrong key size should throw exception', function() {
+    new e2e.cipher.CAST5(e2e.cipher.Algorithm.CAST5, {
+      key:key
+    });
+  });
+
+  assertThrows('Non ByteArray key should throw exception', function() {
+    new e2e.cipher.CAST5(e2e.cipher.Algorithm.CAST5, {
+      key:'0123456712345678234567893456789a'
+    });
+  });
+}
+
+/**
+ * Full test specified in RFC 2144, App B.2.
+ * Disabled by default due to it being too slow. A more limited version from
+ * from golang's cast5_test.go is included below in testLimited.
+ */
+function disabledTestFull() {
+  var result = iterate(1000000);
+  var expectedA = goog.crypt.hexToByteArray(
+      "eea9d0a249fd3ba6b3436fb89d6dca92");
+  var expectedB = goog.crypt.hexToByteArray(
+      "b2c95eb00c31ad7180ac05b8e83d696e");
+  assertArrayEquals(expectedA, result.a);
+  assertArrayEquals(expectedB, result.b);
+}
+
+function iterate(iterations) {
+  var initValueHex = goog.crypt.hexToByteArray(
+      "0123456712345678234567893456789a");
+  var a = initValueHex.slice();
+  var b = initValueHex.slice();
+  for (var i = 0; i < iterations; i++) {
+    var cipher = new e2e.cipher.CAST5(
+        e2e.cipher.Algorithm.CAST5,
+        {key:b});
+    var input = a.slice(0,8);
+    var newValues = e2e.async.Result.getValue(cipher.encrypt(input));
+    for (var x = 0; x < 8; x++) { // overwrite first 8 elements
+      a[x] = newValues[x];
+    }
+    input = a.slice(8);
+    newValues = e2e.async.Result.getValue(cipher.encrypt(input));
+    for (var x = 0; x < 8; x++) { // overwrite last 8 elements
+      a[8+x] = newValues[x];
+    }
+
+    cipher = new e2e.cipher.CAST5(
+        e2e.cipher.Algorithm.CAST5,
+        {key:a});
+    input = b.slice(0,8);
+    newValues = e2e.async.Result.getValue(cipher.encrypt(input));
+    for (var x = 0; x < 8; x++) { // overwrite first 8 elements
+      b[x] = newValues[x];
+    }
+    input = b.slice(8);
+    newValues = e2e.async.Result.getValue(cipher.encrypt(input));
+    for (var x = 0; x < 8; x++) { // overwrite last 8 elements
+      b[8+x] = newValues[x];
+    }
+  }
+
+  return {a:a, b:b};
+}
+
+function testLimited() {
+  var result = iterate(1000);
+  var expectedA = goog.crypt.hexToByteArray(
+      "23f73b14b02a2ad7dfb9f2c35644798d");
+  var expectedB = goog.crypt.hexToByteArray(
+      "e5bf37eff14c456a40b21ce369370a9f");
+  assertArrayEquals(expectedA, result.a);
+  assertArrayEquals(expectedB, result.b);
+}
+</script>

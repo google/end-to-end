@@ -1,0 +1,22 @@
+{
+  "manifest_version": 2,
+  "name": "__MSG_extName__",
+  "description": "__MSG_extDescription__",
+  "version": "0.3.1337",
+  "permissions": ["activeTab", "notifications"],
+  "optional_permissions": [],
+  "background": {"scripts": ["launcher_binary.js"]},
+  "options_page": "settings.html",
+  "browser_action": {
+    "default_title": "__MSG_extName__",
+    "default_icon": "images/icon-128.png",
+    "default_popup": "prompt.html"
+  },
+  "icons": {
+    "16": "images/icon-16.png",
+    "48": "images/icon-48.png",
+    "128": "images/icon-128.png"
+  },
+  "web_accessible_resources": ["glass.html", "gmonkeystub.js"],
+  "default_locale": "en"
+}

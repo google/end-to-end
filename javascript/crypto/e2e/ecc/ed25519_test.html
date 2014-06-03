@@ -1,0 +1,54 @@
+<!-- Copyright 2014 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.ecc.ECDSA</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.ecc.Ed25519');
+  goog.require('e2e.ecc.PrimeCurve');
+  goog.require('e2e.ecc.Protocol');
+</script>
+<script>
+
+/**
+ * Tests that Ed25519 is consistent.
+ */
+function testConsistency_ED25519() {
+  for (var i = 0; i < 5; i++) {
+    var key = e2e.ecc.Protocol.generateKeyPair(
+          e2e.ecc.PrimeCurve.ED_25519);
+    var ecdsa = new e2e.ecc.Ed25519(
+        e2e.ecc.PrimeCurve.ED_25519, key);
+    var m = goog.array.repeat(i, 20);
+    var sig = ecdsa.sign(m);
+    assertTrue('Length should be 64', sig.length == 64);
+
+    assertTrue(ecdsa.verify(m, sig));
+
+    // Make sure we fail if we change just one byte of the message.
+    var mAlt = goog.array.clone(m);
+    mAlt[0] ^= 1;
+    assertFalse(ecdsa.verify(mAlt, sig));
+
+    // Make sure we fail if we change one byte of the signature
+    sig[0] ^= 1;
+    assertFalse(ecdsa.verify(m, sig));
+  }
+}
+
+</script>

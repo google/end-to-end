@@ -1,0 +1,210 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.ecc.ECDSA</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.BigNum');
+  goog.require('e2e.ecc.ECDSA');
+  goog.require('e2e.ecc.ECDSA.testData');
+  goog.require('e2e.ecc.PrimeCurve');
+  goog.require('e2e.ecc.Protocol');
+  goog.require('e2e.hash.Hash');
+</script>
+<script>
+/**
+ * Tests that ECDSA is consistent.
+ */
+function testConsistency_P256() {
+  for (var i = 0; i < 5; i++) {
+    var key = e2e.ecc.Protocol.generateKeyPair(
+          e2e.ecc.PrimeCurve.P_256);
+    var ecdsa = new e2e.ecc.ECDSA(
+        e2e.ecc.PrimeCurve.P_256, key);
+    var N = ecdsa.params.n;
+    var m = goog.array.repeat(i, 20);
+    var sig = ecdsa.sign(m);
+    var r = new e2e.BigNum(sig['r']);
+    var s = new e2e.BigNum(sig['s']);
+
+    // r and s should be in [1, N-1].
+    assertFalse('r should be smaller than N',
+        r.compare(N) >= 0);
+    assertFalse('r should be bigger than 0',
+        r.compare(e2e.BigNum.ZERO) <= 0);
+    assertFalse('s should be smaller than N',
+        s.compare(N) >= 0);
+    assertFalse('r should be bigger than 0',
+        s.compare(e2e.BigNum.ZERO) <= 0);
+
+    assertTrue(ecdsa.verify(m, sig));
+
+    // Make sure we fail if we change just one byte of the message.
+    var mAlt = goog.array.clone(m);
+    mAlt[0]++;
+    assertFalse(ecdsa.verify(mAlt, sig));
+
+    // Make sure we fail if we change one byte of the signature
+    sig['r'][0] = (sig['r'][0] + 1) % 256;
+    assertFalse(ecdsa.verify(m, sig));
+  }
+}
+
+/**
+ * Make sure that ECDSA correctly handles some awkward hash values.
+ */
+function testUnlikelyHashValues() {
+  var key = e2e.ecc.Protocol.generateKeyPair(
+    e2e.ecc.PrimeCurve.P_256);
+  var ecdsa = new e2e.ecc.ECDSA(
+    e2e.ecc.PrimeCurve.P_256, key);
+  // cripple ecdsa with a hash function that is the identity function.
+  ecdsa.hash_ = new e2e.hash.Hash();
+  ecdsa.hash_.hash = function(m) { return m; };
+
+  var m1 = goog.array.repeat(0, 32);
+  var sig1 = ecdsa.sign(m1);
+  assertTrue(ecdsa.verify(m1, sig1));
+
+  var m2 = goog.array.repeat(0xFF, 32);
+  var sig2 = ecdsa.sign(m2);
+  assertTrue(ecdsa.verify(m2, sig2));
+
+  // Force a pseudo-collision in the hash function, since ecdsa can't tell
+  // the difference between a hash value of N and a hash value of 0.
+  var m3 = ecdsa.params.n.toByteArray();
+  sig3 = ecdsa.sign(m3);
+  assertTrue(ecdsa.verify(m3, sig3));
+  assertTrue(ecdsa.verify(m1, sig3));
+}
+
+
+/**
+ * Tests ECDSA with public test vectors.
+ */
+function testNISTWithPublicTestVectors() {
+  goog.array.forEach(e2e.ecc.ECDSA.testData.testVectors,
+      function(data) {
+        var curve = data['curve'];
+        var key = {
+          'pubKey': data['pubKey'],
+          'privKey': data['privKey']
+        };
+        var ecdsa = new e2e.ecc.ECDSA(curve, key);
+        var nonce = new e2e.BigNum(data['k']);
+        var sig = ecdsa.signForTestingOnly(data['message'], nonce);
+        assertArrayEquals(data['r'], sig['r']);
+        assertArrayEquals(data['s'], sig['s']);
+        assertTrue(ecdsa.verify(data['message'], sig));
+    });
+}
+
+
+/**
+ * Tests that invalid signatures are rejected.
+ */
+function testInvalidSignature() {
+  var key = {
+    'privKey': e2e.ecc.ECDSA.testData.testVectors[0]['privKey']
+  };
+  var ecdsa = new e2e.ecc.ECDSA(
+      e2e.ecc.PrimeCurve.P_256, key);
+  var m = [0x00];
+  var sig = {
+    'r': [0x00],
+    's': [0x00]
+  };
+  assertThrows('Should verify only when pubKey is available.', function() {
+        ecdsa.verify(m, sig);
+  });
+
+  // Tests that invalid signatures are rejected.
+  key = e2e.ecc.Protocol.generateKeyPair(
+      e2e.ecc.PrimeCurve.P_256);
+  ecdsa = new e2e.ecc.ECDSA(
+      e2e.ecc.PrimeCurve.P_256, key);
+  var N = ecdsa.params.n;
+  sig = {
+    'r': e2e.BigNum.ZERO.toByteArray(),
+    's': e2e.BigNum.ONE.toByteArray()
+  };
+  assertFalse('r should be bigger than 0.', ecdsa.verify(m, sig));
+  sig = {
+    'r': N.toByteArray(),
+    's': e2e.BigNum.ONE.toByteArray()
+  };
+  assertFalse('r should be less than N.', ecdsa.verify(m, sig));
+
+  sig = {
+    's': e2e.BigNum.ZERO.toByteArray(),
+    'r': e2e.BigNum.ONE.toByteArray()
+  };
+  assertFalse('s should be bigger than 0.', ecdsa.verify(m, sig));
+  sig = {
+    's': N.toByteArray(),
+    'r': e2e.BigNum.ONE.toByteArray()
+  };
+  assertFalse('s should be less than N.', ecdsa.verify(m, sig));
+}
+
+/**
+ * Benchmark ECDSA
+ */
+function DISABLEDtestBenchmark() {
+  var key = e2e.ecc.Protocol.generateKeyPair(
+    e2e.ecc.PrimeCurve.P_256);
+  for (var i = 0; i < 1000; i++) {
+    var ecdsa = new e2e.ecc.ECDSA(
+        e2e.ecc.PrimeCurve.P_256, key);
+    var m = goog.array.repeat(i % 256, 20);
+    var sig = ecdsa.sign(m);
+    ecdsa.verify(m, sig);
+  }
+}
+
+
+/**
+ * Benchmark ECDSA sign.
+ */
+var testVector = e2e.ecc.ECDSA.testData.testVectors[0];
+var KEY = {
+  'pubKey': testVector['pubKey'],
+  'privKey': testVector['privKey']
+};
+var M = 'The quick brown fox jumps over the lazy dog';
+function DISABLEDtestBenchmarkSign() {
+  for (var i = 0; i < 1000; i++) {
+    var ecdsa = new e2e.ecc.ECDSA(testVector['curve'], KEY);
+    ecdsa.sign(M);
+  }
+}
+
+
+/**
+ * Benchmark ECDSA verify.
+ */
+var SIG = new e2e.ecc.ECDSA(
+    e2e.ecc.PrimeCurve.P_256, KEY).sign(M);
+function DISABLEDtestBenchmarkVerify() {
+  // Loop 200 times only; any larger test will halt Chrome.
+  for (var i = 0; i < 200; i++) {
+    var ecdsa = new e2e.ecc.ECDSA(testVector['curve'], KEY);
+    ecdsa.verify(M, SIG);
+  }
+}
+</script>

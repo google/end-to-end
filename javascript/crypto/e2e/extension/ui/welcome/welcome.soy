@@ -1,0 +1,99 @@
+// Copyright 2014 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+{namespace e2e.ext.ui.templates.welcome autoescape="strict"}
+
+
+/**
+ * The base layout for the welcome page.
+ * @param extName Name of the extension.
+ * @param headerText The header of the page.
+ * @param basicsSection The basics section.
+ * @param noviceSection The novice section.
+ * @param advancedSection The advanced section.
+ * @param preferenceLabel The label to apply to the welcome page preference checkbox.
+ * @param actionButtonTitle The title of the submit button.
+ */
+{template .Welcome}
+<html>
+  <head>
+    <title>{$extName}</title>
+    <link rel="stylesheet"/>
+  </head>
+  <body>
+    <div id="{e2e.ext.constants.ElementId.WELCOME_BODY}">
+      <h1>{$headerText}</h1>
+      <div id="{e2e.ext.constants.ElementId.WELCOME_MENU}">
+        {call .WelcomeSection}
+          {param sectionText: $noviceSection /}
+          {param headerId: e2e.ext.constants.ElementId.WELCOME_MENU_NOVICE /}
+          {param contentId: e2e.ext.constants.ElementId.WELCOME_CONTENT_NOVICE /}
+        {/call}
+        {call .WelcomeSection}
+          {param sectionText: $advancedSection /}
+          {param headerId: e2e.ext.constants.ElementId.WELCOME_MENU_ADVANCED /}
+          {param contentId: e2e.ext.constants.ElementId.WELCOME_CONTENT_ADVANCED /}
+        {/call}
+        {call .WelcomeSection}
+          {param sectionText: $basicsSection /}
+          {param headerId: e2e.ext.constants.ElementId.WELCOME_MENU_BASICS /}
+          {param contentId: e2e.ext.constants.ElementId.WELCOME_CONTENT_BASICS /}
+        {/call}
+      </div>
+      <div class="{e2e.ext.constants.CssClass.PREFERENCE_DIV}">
+        <input type="checkbox" action="{e2e.ext.constants.StorageKey.ENABLE_WELCOME_SCREEN}" />
+        <div>{$preferenceLabel}</div>
+      </div>
+      <div id="{e2e.ext.constants.ElementId.WELCOME_FOOTER}">
+        <button class="{e2e.ext.constants.CssClass.ACTION}">{$actionButtonTitle}</button>
+      </div>
+      <div id="{e2e.ext.constants.ElementId.CALLBACK_DIALOG}"></div>
+    </div>
+  </body>
+</html>
+{/template}
+
+
+/**
+ * Displays a section of the welcome page.
+ * @param sectionText A structure with the section's title and contents.
+ * @param headerId The HTML ID of the section header.
+ * @param contentId The HTML ID of the section content.
+ */
+{template .WelcomeSection}
+  <div id="{$headerId}">
+    <fieldset>
+      <legend>
+        {$sectionText.title}
+      </legend>
+      <div id="{$contentId}">
+        {foreach $subsection in $sectionText.subsections}
+          {if $subsection.iframe}
+            <iframe src="{$subsection.iframe.src}" width="{$subsection.iframe.width}"
+                    height="{$subsection.iframe.height}"></iframe>
+          {else}
+            <p {if $subsection.header}
+                 class="{e2e.ext.constants.CssClass.WELCOME_SUBSECTION_HEADER}"
+               {/if}>
+               {$subsection.text}
+            </p>
+          {/if}
+        {/foreach}
+      </div>
+    </fieldset>
+  </div>
+{/template}
+
+
+

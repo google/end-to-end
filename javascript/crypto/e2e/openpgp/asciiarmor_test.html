@@ -1,0 +1,216 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit test of e2e.openpgp.asciiArmor</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.testing.asserts');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.openpgp.asciiArmor');
+</script>
+<script>
+
+  /**
+   * Tests that RFC example of an ASCII Amror message parses.
+   */
+  function testParse() {
+    var a = '-----BEGIN PGP MESSAGE-----\n' +
+        'Version: OpenPrivacy 0.99\n' +
+        '\n' +
+        'yDgBO22WxBHv7O8X7O/jygAEzol56iUKiXmV+XmpCtmpqQUKiQrFqclFqUDBovzS\n' +
+        'vBSFjNSiVHsuAA==\n' +
+        '=njUN\n' +
+        '-----END PGP MESSAGE-----';
+    var data = e2e.openpgp.asciiArmor.parse(a).data;
+    assertEquals('Data length correct', 58, data.length);
+  }
+
+
+  function testParseBadNewLine() {
+    var rn = '-----BEGIN PGP MESSAGE-----\r\n' +
+        'Version: Something\r\n' +
+        '\r\n' +
+        'yDgBO22WxBHv7O8X7O/jygAEzol56iUKiXmV+XmpCtmpqQUKiQrFqclFqUDBovzS\r\n' +
+        'vBSFjNSiVHsuAA==\r\n' +
+        '=njUN\r\n' +
+        '-----END PGP MESSAGE-----';
+    var a0 = '-----BEGIN PGP MESSAGE-----\xa0\n' +
+        'Version: Something\n' +
+        '\xa0\n' +
+        'yDgBO22WxBHv7O8X7O/jygAEzol56iUKiXmV+XmpCtmpqQUKiQrFqclFqUDBovzS\xa0\n' +
+        'vBSFjNSiVHsuAA==\n' +
+        '=njUN\xa0\n' +
+        '-----END PGP MESSAGE-----\n';
+    var t = '-----BEGIN PGP MESSAGE-----\t\n' +
+        'Version: Something\n' +
+        '\t\n' +
+        'yDgBO22WxBHv7O8X7O/jygAEzol56iUKiXmV+XmpCtmpqQUKiQrFqclFqUDBovzS\t\n' +
+        'vBSFjNSiVHsuAA==\n' +
+        '=njUN\xa0\n' +
+        '-----END PGP MESSAGE-----\n';
+    var data1 = e2e.openpgp.asciiArmor.parse(rn).data;
+    var data2 = e2e.openpgp.asciiArmor.parse(a0).data;
+    var data3 = e2e.openpgp.asciiArmor.parse(t).data;
+    assertEquals('Data length correct', 58, data1.length);
+    assertEquals('Data length correct', 58, data2.length);
+    assertEquals('Data length correct', 58, data3.length);
+  }
+
+
+  /**
+   * Tests that an ASCII Armor message with an incorrect checksum throws.
+   */
+  function testParseBadChecksum() {
+    var a = '-----BEGIN PGP MESSAGE-----\n' +
+        'Version: OpenPrivacy 0.99\n' +
+        '\n' +
+        'yDgBO22WxBHv7O8X7O/jygAEzol56iUKiXmV+XmpCtmpqQUKiQrFqclFqUDBovzS\n' +
+        'vBSFjNSiVHsuAA==\n' +
+        '=XXXX\n' +
+        '-----END PGP MESSAGE-----';
+    assertThrows('Throws parse error on bad checksum.', function() {
+      e2e.openpgp.asciiArmor.parse(a);
+    });
+  }
+
+
+  function testEncodeDecode() {
+    var data = goog.array.repeat(1, 20);
+    var ascii = e2e.openpgp.asciiArmor.encode('MESSAGE', data);
+    var decodedData = e2e.openpgp.asciiArmor.parse(ascii).data;
+    assertArrayEquals(data, decodedData);
+  }
+
+
+  function testClearSign() {
+    // Signed by user: "test 4" 1024-bit RSA key, ID 092DA808
+    var clearSign =
+      '-----BEGIN PGP SIGNED MESSAGE-----\n' +
+      'Hash: SHA1\n' +
+      '\n' +
+      'hello world new\n' +
+      '-----BEGIN PGP SIGNATURE-----\n' +
+      'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
+      '\n' +
+      'iJwEAQECAAYFAlIny1sACgkQBv+crAktqAgPqgP/bG1lJAyVBa99rJTLn9RAJsC0\n' +
+      '2d7hJBdEiwmakEzbGfWG48RM7mq4X+W3j36D8qeCWpYkJk+zd4g25TJ7DIwoBfCv\n' +
+      'J8S0vVfQ6FYTNHLuAggXs7ooLfovq2fP6iuVjwNX57JDxllHmS8tPAbIgIs+VRag\n' +
+      'hOia0yJgN0DoFSylakY=\n' +
+      '=qRFP\n' +
+      '-----END PGP SIGNATURE-----';
+    var parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
+    assertEquals('hello world new', parsed.body);
+    assertEquals('SHA1', parsed.hash);
+    var invalid =
+      '-----BEGIN PGP SIGNED MESSAGE-----\n' +
+      'Hash: SHA1\n \ntampered message.\n' +
+      '\n' +
+      'hello world new\n' +
+      '-----BEGIN PGP SIGNATURE-----\n' +
+      'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
+      '\n' +
+      'iJwEAQECAAYFAlIny1sACgkQBv+crAktqAgPqgP/bG1lJAyVBa99rJTLn9RAJsC0\n' +
+      '2d7hJBdEiwmakEzbGfWG48RM7mq4X+W3j36D8qeCWpYkJk+zd4g25TJ7DIwoBfCv\n' +
+      'J8S0vVfQ6FYTNHLuAggXs7ooLfovq2fP6iuVjwNX57JDxllHmS8tPAbIgIs+VRag\n' +
+      'hOia0yJgN0DoFSylakY=\n' +
+      '=qRFP\n' +
+      '-----END PGP SIGNATURE-----';
+  assertThrows('invalid armor, should throw error', function() {
+      e2e.openpgp.asciiArmor.parseClearSign(invalid)
+  });
+
+  }
+
+  var PUBLIC_KEY_ASCII =
+      '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
+      'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
+      '\n' +
+      'mI0EUcy6DgEEAJb0T7gQlfKQWmR0dLUrueRMVy8UemcmxsdIH30/HqJvqO6xU0lK\n' +
+      'NaFtaVxBdenAMpEooi1EcTi/bOKfz36FY/FARTiXv1LXuLzFJdPyjTYjh7tw+uOP\n' +
+      'UlLJCTZikgrnM07txTUiVVEetOa+unyKn17EX0PlSpAbGZedyO0nGwXzABEBAAG0\n' +
+      'BnRlc3QgNIi4BBMBAgAiBQJRzLoOAhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIX\n' +
+      'gAAKCRAG/5ysCS2oCL2SA/9EV9j3T/TM3VRD0NvNySHodcxCP1BF0zm/M84I/WHQ\n' +
+      'sGKmHStfCqqEGruB8E6NHQMJwNp1TzcswuxE0wiTJiXKe3w3+GZhPHdW5zcgiMKK\n' +
+      'YLn80Tk6fUMx1zVZtXlSBYCN5Op/axjQRyb+fGnXOhmboqQodYaWS7qhJWQJilH6\n' +
+      'iriNBFHMug4BBADDTMshHtyYhLmWC7793FlOFl5tkcEfdFKJRm30k/9yky4cuz//\n' +
+      'Xe4uXM72SaTI1Dfi6UIz5ZuFTxw3bnAXav+SV4Q4dZo0hb4jU8YaQfDL4TsRp7uO\n' +
+      '6iqxd8nlsh9JnBKE6Fk/CW5FoMZZ3/yEm3pq924Uv2AZlO6dafgXecyqNQARAQAB\n' +
+      'iJ8EGAECAAkFAlHMug4CGwwACgkQBv+crAktqAhENwQAkMY/nds36KgzwfMPpxtB\n' +
+      'aq8GbrUqY1r8lBl6a/bi8qeOuEgQmIxM2OpVPtL04c1c1hLflPCi1SQUlCIh3DkE\n' +
+      'GQIcy0/wxUZdCvZK0mF5nZSq6tez3CwqbeOA4nBOLwbxho50VqxBpR4qypYrB2ip\n' +
+      'ykxlwiqudEe0sE2b1KwNtVw=\n' +
+      '=nHBL\n' +
+      '-----END PGP PUBLIC KEY BLOCK-----';
+
+  var PGP_MESSAGE =
+      '-----BEGIN PGP MESSAGE-----\n' +
+      'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
+      '\n' +
+      'hIwDXrdcIWJXR5IBA/92aAG/zps/vIGXdw5TEEpjjJsTzzb9q+YPtmrWMBn/dvf2\n' +
+      't3RzxFigHvOTZxQthlGYr5Ft8zxmG4l7T6QO+sYp+sQuHjiex1w6A6fuNVx8ieXD\n' +
+      'G/MGU16PhBa6wLe0OOEE5nmEKYo1A8imHUyvFF8VXpDeMgACHYBFKvA/4bIbANJQ\n' +
+      'ARBHsOBARkRDW7TibAaXijDaFBKGCylxi8dxQVCDkDJpzLDcs1JsiE6v4eKVztb8\n' +
+      'msKSPseUtmsJdu9oQyZdFU4igAWSRKvXQOXAbjBdgmw=\n' +
+      '=HSJn\n' +
+      '-----END PGP MESSAGE-----';
+
+
+  function testExtractPgpBlockNone() {
+    assertEquals('non-pgp content', e2e.openpgp.asciiArmor.extractPgpBlock('non-pgp content'));
+  }
+
+
+  function testExtractPgpBlockSingle() {
+    assertEquals(PUBLIC_KEY_ASCII, e2e.openpgp.asciiArmor.extractPgpBlock(
+        'non-pgp content' + PUBLIC_KEY_ASCII + 'more non-pgp content'));
+  }
+
+
+  function testExctractPgpBlockMultiple() {
+    var blocks = [PGP_MESSAGE, PUBLIC_KEY_ASCII, PUBLIC_KEY_ASCII];
+    assertEquals(PGP_MESSAGE, e2e.openpgp.asciiArmor.extractPgpBlock(
+        'non-pgp content' + blocks.join('\n') + 'more non-pgp content'));
+  }
+
+
+  function testMarkAsDraft() {
+    var expected =
+        '-----BEGIN PGP MESSAGE-----\n' +
+        'isDraft: true\n' +
+        'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
+        '\n' +
+        'hIwDXrdcIWJXR5IBA/92aAG/zps/vIGXdw5TEEpjjJsTzzb9q+YPtmrWMBn/dvf2\n' +
+        't3RzxFigHvOTZxQthlGYr5Ft8zxmG4l7T6QO+sYp+sQuHjiex1w6A6fuNVx8ieXD\n' +
+        'G/MGU16PhBa6wLe0OOEE5nmEKYo1A8imHUyvFF8VXpDeMgACHYBFKvA/4bIbANJQ\n' +
+        'ARBHsOBARkRDW7TibAaXijDaFBKGCylxi8dxQVCDkDJpzLDcs1JsiE6v4eKVztb8\n' +
+        'msKSPseUtmsJdu9oQyZdFU4igAWSRKvXQOXAbjBdgmw=\n' +
+        '=HSJn\n' +
+        '-----END PGP MESSAGE-----';
+    assertEquals(expected, e2e.openpgp.asciiArmor.markAsDraft(PGP_MESSAGE));
+
+    var data = e2e.openpgp.asciiArmor.parse(expected).data;
+    assertEquals('Data length should be correct', 224, data.length);
+
+    assertTrue(e2e.openpgp.asciiArmor.isDraft(expected));
+  }
+
+  function testWithHeaders() {
+    assertContains(
+      'Version: Omg 123',
+      e2e.openpgp.asciiArmor.encode('MESSAGE', [1, 2, 3], {'Version': 'Omg 123'}));
+  }
+</script>

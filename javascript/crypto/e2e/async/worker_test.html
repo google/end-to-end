@@ -1,0 +1,49 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.async.Worker</title>
+<script src="../../../closure/base.js"></script>
+<script src="../deps.js"></script>
+<script>
+  goog.require('goog.testing.jsunit');
+  goog.require('goog.testing');
+  goog.require('goog.testing.mockmatchers');
+  goog.require('goog.testing.StrictMock');
+  goog.require('e2e.async.Worker');
+</script>
+<script>
+  function testWorker() {
+    var PATH = "example://test.example/worker.js";
+    function FakeWorker(){};
+    FakeWorker.prototype.postMessage = function() {};
+    Worker = FakeWorker;
+
+    var mockObject = new goog.testing.StrictMock(Worker);
+    var mockConstructor = goog.testing.createConstructorMock(window, 'Worker');
+    mockConstructor(PATH).$returns(mockObject);
+    mockObject.postMessage(e2e.async.Peer.Message.INIT,
+      new goog.testing.mockmatchers.ArgumentMatcher(
+        function(obj){
+          return obj.length == 1 && obj[0] instanceof MessagePort;
+        }, "Array.<MessagePort>"));
+    mockConstructor.$replay();
+    mockObject.$replay();
+    var wp = new e2e.async.Worker(PATH);
+    wp.init();
+    mockConstructor.$verify();
+    mockObject.$verify();
+    mockConstructor.$tearDown();
+  }
+</script>

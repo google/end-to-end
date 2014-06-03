@@ -1,0 +1,101 @@
+/* Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+*/
+/**
+ * Defines the styles that are used by the settings page.
+ */
+
+#pgpBody {
+  padding: 0 15px;
+}
+
+#pgpBody h1 {
+  color: #222;
+  font-size: 16px;
+  margin-top: 25px;
+}
+
+#pgpBody input {
+  margin-right: 15px;
+}
+
+#pgpBody input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+#pgpBody input[type="text"] {
+  margin-top: 10px;
+}
+
+#pgpBody input[type="file"] {
+  margin-top: 8px;
+}
+
+#pgpBody .email {
+  width: 300px;
+}
+
+#pgpBody .preference-div {
+  padding: 5px;
+}
+
+#pgpBody .preference-div > div,
+#pgpBody .preference-div > input {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+#storedKeys table {
+  border-spacing: 0;
+}
+
+#storedKeys tr>td:first-child {
+  padding: 5px;
+  width: 530px;
+}
+
+#storedKeys tr>td {
+  vertical-align: top;
+}
+
+
+#storedKeys tr img {
+  cursor: auto;
+  opacity: .1;
+  padding: 5px 3px 1px 0;
+}
+
+#storedKeys tr:hover {
+  background-color: #f5f5f5;
+}
+
+#storedKeys tr:hover img {
+  cursor: pointer;
+  opacity: .6;
+}
+
+#storedKeys .key-meta {
+  opacity: .6;
+}
+
+#errorDiv {
+  color: #dd4b39;
+  font-size: 1em;
+  margin-bottom: 7px;
+  text-align: center;
+}
+
+.passphrase {
+  width: 300px;
+}

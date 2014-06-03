@@ -1,0 +1,363 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.Cipher.IDEA</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.cipher.IDEA');
+  goog.require('e2e');
+  goog.require('goog.array');
+  goog.require('goog.math.Long');
+  goog.require('goog.testing.jsunit');
+</script>
+<script>
+/*
+ * Test vectors for IDEA are generated using a reference
+ * implementation. This code will be checked in pending
+ * legal OK.
+ */
+function testLeastSignificantWordFromInteger() {
+  var aint = goog.math.Integer.fromString("FFFFFFFF", 16);
+
+  var mask2Int = e2e.cipher.IDEA.LSWfromInteger(aint);
+
+  assertEquals("ffff", mask2Int.toString(16));
+}
+
+function testMostSignificantWordFromInteger() {
+  var aint = goog.math.Integer.fromString("FFFFFFFF", 16);
+
+  var mask2Int = e2e.cipher.IDEA.MSWfromInteger(aint);
+
+  assertEquals("ffff0000", mask2Int.toString(16));
+}
+
+function testInverseMod() {
+  var testValues = []; // Each element contains an array [x, m, expectedValue]
+  testValues[0] = [28383, 23, 1];
+  testValues[1] = [34, 29439, 6061];
+  // TODO(user) test some boundary cases
+  // testValues[2] = [100, 100, ???]
+  // testValues[3] = [0, 100, ???]
+  // testValues[4] = [100, 0, ???]
+  var i;
+
+  for (i = 0; i < testValues.length; i++) {
+    var x = goog.math.Integer.fromInt(testValues[i][0]);
+    var m = goog.math.Integer.fromInt(testValues[i][1]);
+    var e = goog.math.Integer.fromInt(testValues[i][2]);
+
+    assertEquals(e.toString(16),
+                 e2e.cipher.IDEA.inverseMultModulo(x, m).toString(16));
+  }
+}
+
+function testMultiplyModulo16() {
+  var testValues = []; // Each element contains an array [x, y, expectedValue]
+  testValues[0] = [1000, 3000, 50835];
+
+  var i;
+  for (i = 0; i < testValues.length; i++) {
+    var x = goog.math.Integer.fromInt(testValues[i][0]);
+    var y = goog.math.Integer.fromInt(testValues[i][1]);
+    var e = goog.math.Integer.fromInt(testValues[i][2]);
+
+    assertEquals(e.toString(16), e2e.cipher.IDEA.multMod16(x, y).toString(16));
+  }
+}
+
+function testInvMultModulo16() {
+  var testValues = []; // Each element contains an array [x, expectedValue]
+  testValues[0] = [52012, 23007];
+
+  var i;
+
+  for (i = 0; i < testValues.length; i++) {
+    var x = goog.math.Integer.fromInt(testValues[i][0]);
+    var e = goog.math.Integer.fromInt(testValues[i][1]);
+
+    assertEquals(e.toString(16), e2e.cipher.IDEA.invMod16(x).toString(16));
+  }
+}
+
+function testPadByteArray() {
+  var key = goog.crypt.hexToByteArray("00010002000300040005000600070008");
+
+  var ba = e2e.stringToByteArray("0123456");
+  var idea = new e2e.cipher.IDEA(
+      e2e.cipher.Algorithm.IDEA,
+      {key : key});
+  ba = idea.padByteArray(ba);
+  assertEquals(idea.blockSize / 8 * 2, ba.length);
+  assertEquals(0, ba[7]);
+}
+
+function testStripByteArray() {
+  var key = goog.crypt.hexToByteArray("00010002000300040005000600070008");
+
+  var ba = e2e.stringToByteArray("0123456");
+  var idea = new e2e.cipher.IDEA(
+      e2e.cipher.Algorithm.IDEA,
+      {key : key});
+  baPad = idea.padByteArray(ba);
+  assertEquals(idea.blockSize / 8 * 2, baPad.length);
+  assertEquals(0, baPad[7]);
+  baStrip = idea.stripByteArray(baPad);
+  assertArrayEquals(ba, baStrip)
+}
+
+function testEncryptSubkeys1() {
+  var key = goog.crypt.hexToByteArray("00010002000300040005000600070008");
+  var expectedSubkeys = [];
+  expectedSubkeys[0] = goog.math.Integer.fromString("0001", 16);
+  expectedSubkeys[1] = goog.math.Integer.fromString("0002", 16);
+  expectedSubkeys[2] = goog.math.Integer.fromString("0003", 16);
+  expectedSubkeys[3] = goog.math.Integer.fromString("0004", 16);
+  expectedSubkeys[4] = goog.math.Integer.fromString("0005", 16);
+  expectedSubkeys[5] = goog.math.Integer.fromString("0006", 16);
+  expectedSubkeys[6] = goog.math.Integer.fromString("0007", 16);
+  expectedSubkeys[7] = goog.math.Integer.fromString("0008", 16);
+  expectedSubkeys[8] = goog.math.Integer.fromString("0400", 16);
+  expectedSubkeys[9] = goog.math.Integer.fromString("0600", 16);
+  expectedSubkeys[10] = goog.math.Integer.fromString("0800", 16);
+  expectedSubkeys[11] = goog.math.Integer.fromString("0a00", 16);
+  expectedSubkeys[12] = goog.math.Integer.fromString("0c00", 16);
+  expectedSubkeys[13] = goog.math.Integer.fromString("0e00", 16);
+  expectedSubkeys[14] = goog.math.Integer.fromString("1000", 16);
+  expectedSubkeys[15] = goog.math.Integer.fromString("0200", 16);
+  expectedSubkeys[16] = goog.math.Integer.fromString("0010", 16);
+  expectedSubkeys[17] = goog.math.Integer.fromString("0014", 16);
+  expectedSubkeys[18] = goog.math.Integer.fromString("0018", 16);
+  expectedSubkeys[19] = goog.math.Integer.fromString("001c", 16);
+  expectedSubkeys[20] = goog.math.Integer.fromString("0020", 16);
+  expectedSubkeys[21] = goog.math.Integer.fromString("0004", 16);
+  expectedSubkeys[22] = goog.math.Integer.fromString("0008", 16);
+  expectedSubkeys[23] = goog.math.Integer.fromString("000c", 16);
+  expectedSubkeys[24] = goog.math.Integer.fromString("2800", 16);
+  expectedSubkeys[25] = goog.math.Integer.fromString("3000", 16);
+  expectedSubkeys[26] = goog.math.Integer.fromString("3800", 16);
+  expectedSubkeys[27] = goog.math.Integer.fromString("4000", 16);
+  expectedSubkeys[28] = goog.math.Integer.fromString("0800", 16);
+  expectedSubkeys[29] = goog.math.Integer.fromString("1000", 16);
+  expectedSubkeys[30] = goog.math.Integer.fromString("1800", 16);
+  expectedSubkeys[31] = goog.math.Integer.fromString("2000", 16);
+  expectedSubkeys[32] = goog.math.Integer.fromString("0070", 16);
+  expectedSubkeys[33] = goog.math.Integer.fromString("0080", 16);
+  expectedSubkeys[34] = goog.math.Integer.fromString("0010", 16);
+  expectedSubkeys[35] = goog.math.Integer.fromString("0020", 16);
+  expectedSubkeys[36] = goog.math.Integer.fromString("0030", 16);
+  expectedSubkeys[37] = goog.math.Integer.fromString("0040", 16);
+  expectedSubkeys[38] = goog.math.Integer.fromString("0050", 16);
+  expectedSubkeys[39] = goog.math.Integer.fromString("0060", 16);
+  expectedSubkeys[40] = goog.math.Integer.fromString("0000", 16);
+  expectedSubkeys[41] = goog.math.Integer.fromString("2000", 16);
+  expectedSubkeys[42] = goog.math.Integer.fromString("4000", 16);
+  expectedSubkeys[43] = goog.math.Integer.fromString("6000", 16);
+  expectedSubkeys[44] = goog.math.Integer.fromString("8000", 16);
+  expectedSubkeys[45] = goog.math.Integer.fromString("a000", 16);
+  expectedSubkeys[46] = goog.math.Integer.fromString("c000", 16);
+  expectedSubkeys[47] = goog.math.Integer.fromString("e001", 16);
+  expectedSubkeys[48] = goog.math.Integer.fromString("0080", 16);
+  expectedSubkeys[49] = goog.math.Integer.fromString("00c0", 16);
+  expectedSubkeys[50] = goog.math.Integer.fromString("0100", 16);
+  expectedSubkeys[51] = goog.math.Integer.fromString("0140", 16);
+
+  var idea = new e2e.cipher.IDEA(
+    e2e.cipher.Algorithm.IDEA,
+    {key : key});
+  assertArrayEquals(expectedSubkeys, idea.encryptSubKeys_);
+}
+
+function testEncryptSubkeys2() {
+  var key = goog.crypt.hexToByteArray("1234567891bcdef0123456789abcdef0");
+
+  var expectedSubkeys = [];
+  expectedSubkeys[0] = goog.math.Integer.fromString("1234", 16);
+  expectedSubkeys[1] = goog.math.Integer.fromString("5678", 16);
+  expectedSubkeys[2] = goog.math.Integer.fromString("91bc", 16);
+  expectedSubkeys[3] = goog.math.Integer.fromString("def0", 16);
+  expectedSubkeys[4] = goog.math.Integer.fromString("1234", 16);
+  expectedSubkeys[5] = goog.math.Integer.fromString("5678", 16);
+  expectedSubkeys[6] = goog.math.Integer.fromString("9abc", 16);
+  expectedSubkeys[7] = goog.math.Integer.fromString("def0", 16);
+  expectedSubkeys[8] = goog.math.Integer.fromString("f123", 16);
+  expectedSubkeys[9] = goog.math.Integer.fromString("79bd", 16);
+  expectedSubkeys[10] = goog.math.Integer.fromString("e024", 16);
+  expectedSubkeys[11] = goog.math.Integer.fromString("68ac", 16);
+  expectedSubkeys[12] = goog.math.Integer.fromString("f135", 16);
+  expectedSubkeys[13] = goog.math.Integer.fromString("79bd", 16);
+  expectedSubkeys[14] = goog.math.Integer.fromString("e024", 16);
+  expectedSubkeys[15] = goog.math.Integer.fromString("68ac", 16);
+  expectedSubkeys[16] = goog.math.Integer.fromString("7bc0", 16);
+  expectedSubkeys[17] = goog.math.Integer.fromString("48d1", 16);
+  expectedSubkeys[18] = goog.math.Integer.fromString("59e2", 16);
+  expectedSubkeys[19] = goog.math.Integer.fromString("6af3", 16);
+  expectedSubkeys[20] = goog.math.Integer.fromString("7bc0", 16);
+  expectedSubkeys[21] = goog.math.Integer.fromString("48d1", 16);
+  expectedSubkeys[22] = goog.math.Integer.fromString("59e2", 16);
+  expectedSubkeys[23] = goog.math.Integer.fromString("46f3", 16);
+  expectedSubkeys[24] = goog.math.Integer.fromString("a2b3", 16);
+  expectedSubkeys[25] = goog.math.Integer.fromString("c4d5", 16);
+  expectedSubkeys[26] = goog.math.Integer.fromString("e6f7", 16);
+  expectedSubkeys[27] = goog.math.Integer.fromString("8091", 16);
+  expectedSubkeys[28] = goog.math.Integer.fromString("a2b3", 16);
+  expectedSubkeys[29] = goog.math.Integer.fromString("c48d", 16);
+  expectedSubkeys[30] = goog.math.Integer.fromString("e6f7", 16);
+  expectedSubkeys[31] = goog.math.Integer.fromString("8091", 16);
+  expectedSubkeys[32] = goog.math.Integer.fromString("abcd", 16);
+  expectedSubkeys[33] = goog.math.Integer.fromString("ef01", 16);
+  expectedSubkeys[34] = goog.math.Integer.fromString("2345", 16);
+  expectedSubkeys[35] = goog.math.Integer.fromString("6789", 16);
+  expectedSubkeys[36] = goog.math.Integer.fromString("1bcd", 16);
+  expectedSubkeys[37] = goog.math.Integer.fromString("ef01", 16);
+  expectedSubkeys[38] = goog.math.Integer.fromString("2345", 16);
+  expectedSubkeys[39] = goog.math.Integer.fromString("6789", 16);
+  expectedSubkeys[40] = goog.math.Integer.fromString("0246", 16);
+  expectedSubkeys[41] = goog.math.Integer.fromString("8acf", 16);
+  expectedSubkeys[42] = goog.math.Integer.fromString("1237", 16);
+  expectedSubkeys[43] = goog.math.Integer.fromString("9bde", 16);
+  expectedSubkeys[44] = goog.math.Integer.fromString("0246", 16);
+  expectedSubkeys[45] = goog.math.Integer.fromString("8acf", 16);
+  expectedSubkeys[46] = goog.math.Integer.fromString("1357", 16);
+  expectedSubkeys[47] = goog.math.Integer.fromString("9bde", 16);
+  expectedSubkeys[48] = goog.math.Integer.fromString("9e24", 16);
+  expectedSubkeys[49] = goog.math.Integer.fromString("6f37", 16);
+  expectedSubkeys[50] = goog.math.Integer.fromString("bc04", 16);
+  expectedSubkeys[51] = goog.math.Integer.fromString("8d15", 16);
+
+  var idea = new e2e.cipher.IDEA(
+    e2e.cipher.Algorithm.IDEA,
+    {key : key});
+  var subKeys = idea.initEncryptSubkeys_();
+  assertArrayEquals(expectedSubkeys, subKeys);
+}
+
+function testDecryptSubkeys2() {
+  var key = goog.crypt.hexToByteArray("1234567891bcdef0123456789abcdef0");
+
+  var expectedSubkeys = [];
+  expectedSubkeys[0] = goog.math.Integer.fromString("4bcd", 16);
+  expectedSubkeys[1] = goog.math.Integer.fromString("90c9", 16);
+  expectedSubkeys[2] = goog.math.Integer.fromString("43fc", 16);
+  expectedSubkeys[3] = goog.math.Integer.fromString("8461", 16);
+  expectedSubkeys[4] = goog.math.Integer.fromString("1357", 16);
+  expectedSubkeys[5] = goog.math.Integer.fromString("9bde", 16);
+  expectedSubkeys[6] = goog.math.Integer.fromString("0707", 16);
+  expectedSubkeys[7] = goog.math.Integer.fromString("fdba", 16);
+  expectedSubkeys[8] = goog.math.Integer.fromString("6422", 16);
+  expectedSubkeys[9] = goog.math.Integer.fromString("ebbd", 16);
+  expectedSubkeys[10] = goog.math.Integer.fromString("0246", 16);
+  expectedSubkeys[11] = goog.math.Integer.fromString("8acf", 16);
+  expectedSubkeys[12] = goog.math.Integer.fromString("b5a7", 16);
+  expectedSubkeys[13] = goog.math.Integer.fromString("dcbb", 16);
+  expectedSubkeys[14] = goog.math.Integer.fromString("10ff", 16);
+  expectedSubkeys[15] = goog.math.Integer.fromString("fab6", 16);
+  expectedSubkeys[16] = goog.math.Integer.fromString("2345", 16);
+  expectedSubkeys[17] = goog.math.Integer.fromString("6789", 16);
+  expectedSubkeys[18] = goog.math.Integer.fromString("f026", 16);
+  expectedSubkeys[19] = goog.math.Integer.fromString("5433", 16);
+  expectedSubkeys[20] = goog.math.Integer.fromString("7f6f", 16);
+  expectedSubkeys[21] = goog.math.Integer.fromString("7888", 16);
+  expectedSubkeys[22] = goog.math.Integer.fromString("a2b3", 16);
+  expectedSubkeys[23] = goog.math.Integer.fromString("c48d", 16);
+  expectedSubkeys[24] = goog.math.Integer.fromString("34a8", 16);
+  expectedSubkeys[25] = goog.math.Integer.fromString("1909", 16);
+  expectedSubkeys[26] = goog.math.Integer.fromString("3b2b", 16);
+  expectedSubkeys[27] = goog.math.Integer.fromString("e100", 16);
+  expectedSubkeys[28] = goog.math.Integer.fromString("59e2", 16);
+  expectedSubkeys[29] = goog.math.Integer.fromString("46f3", 16);
+  expectedSubkeys[30] = goog.math.Integer.fromString("74e6", 16);
+  expectedSubkeys[31] = goog.math.Integer.fromString("8440", 16);
+  expectedSubkeys[32] = goog.math.Integer.fromString("950d", 16);
+  expectedSubkeys[33] = goog.math.Integer.fromString("bbf8", 16);
+  expectedSubkeys[34] = goog.math.Integer.fromString("7bc0", 16);
+  expectedSubkeys[35] = goog.math.Integer.fromString("48d1", 16);
+  expectedSubkeys[36] = goog.math.Integer.fromString("ac8a", 16);
+  expectedSubkeys[37] = goog.math.Integer.fromString("1fdc", 16);
+  expectedSubkeys[38] = goog.math.Integer.fromString("8643", 16);
+  expectedSubkeys[39] = goog.math.Integer.fromString("8794", 16);
+  expectedSubkeys[40] = goog.math.Integer.fromString("e024", 16);
+  expectedSubkeys[41] = goog.math.Integer.fromString("68ac", 16);
+  expectedSubkeys[42] = goog.math.Integer.fromString("6378", 16);
+  expectedSubkeys[43] = goog.math.Integer.fromString("0edd", 16);
+  expectedSubkeys[44] = goog.math.Integer.fromString("2110", 16);
+  expectedSubkeys[45] = goog.math.Integer.fromString("b8b8", 16);
+  expectedSubkeys[46] = goog.math.Integer.fromString("1234", 16);
+  expectedSubkeys[47] = goog.math.Integer.fromString("5678", 16);
+  expectedSubkeys[48] = goog.math.Integer.fromString("9e9a", 16);
+  expectedSubkeys[49] = goog.math.Integer.fromString("a988", 16);
+  expectedSubkeys[50] = goog.math.Integer.fromString("6e44", 16);
+  expectedSubkeys[51] = goog.math.Integer.fromString("77da", 16);
+
+  var idea = new e2e.cipher.IDEA(
+      e2e.cipher.Algorithm.IDEA,
+      {key : key});
+  var subKeys = idea.initEncryptSubkeys_();
+  assertEquals(idea.num_subkeys, idea.encryptSubKeys_.length);
+  subKeys = idea.initDecryptSubkeys_();
+  assertEquals(idea.num_subkeys, idea.decryptSubKeys_.length);
+  assertArrayEquals(expectedSubkeys, subKeys);
+}
+
+function testIDEACipher() {
+  // Test for idea encryption
+  var key = goog.crypt.hexToByteArray("00010002000300040005000600070008");
+  // data to encrypt
+  var data = [];
+  data[0] = goog.math.Integer.fromString("0000", 16);
+  data[1] = goog.math.Integer.fromString("0001", 16);
+  data[2] = goog.math.Integer.fromString("0002", 16);
+  data[3] = goog.math.Integer.fromString("0003", 16);
+  // expected encrypted output
+  var expectedEncryption = []
+  expectedEncryption[0] = goog.math.Integer.fromString("11fb", 16);
+  expectedEncryption[1] = goog.math.Integer.fromString("ed2b", 16);
+  expectedEncryption[2] = goog.math.Integer.fromString("0198", 16);
+  expectedEncryption[3] = goog.math.Integer.fromString("6de5", 16);
+
+  var idea = new e2e.cipher.IDEA(
+      e2e.cipher.Algorithm.IDEA,
+      {key : key});
+
+  var encryptedData = idea.applyKey(data, idea.encryptSubKeys_);
+
+  assertArrayEquals(expectedEncryption, encryptedData);
+}
+
+function testIDEAEncryption() {
+  // Test for idea encryption
+  var key = goog.crypt.hexToByteArray("00010002000300040005000600070008");
+  var i;
+  var testMessages = ["Hi there the end",
+                      "Welcome to the end of the message",
+                      "A"
+                     ];
+
+  var idea = new e2e.cipher.IDEA(
+      e2e.cipher.Algorithm.IDEA,
+      {key : key});
+
+  for (i = 0; i < testMessages.length; i++) {
+    var message = e2e.stringToByteArray(testMessages[i]);
+    var encrypted = e2e.async.Result.getValue(idea.encrypt(message));
+    assertNotEquals(message, encrypted);
+    var decrypted = e2e.async.Result.getValue(idea.decrypt(encrypted));
+    // assertArrayEquals(message, decrypted);
+    var truncatedMsg = e2e.byteArrayToString(decrypted).substring(0, testMessages[i].length);
+    assertEquals(testMessages[i], truncatedMsg);
+ }
+}
+</script>

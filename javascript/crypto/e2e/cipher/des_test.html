@@ -1,0 +1,188 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.Cipher.DES</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.cipher.DES');
+  goog.require('e2e.cipher.TripleDES');
+  goog.require('goog.array');
+  goog.require('goog.math.Long');
+  goog.require('goog.testing.jsunit');
+</script>
+<script>
+function testBasic() {
+  // Test vectors from golang version by Chris Lennert.
+  var vectors = [  // [key, plainText, cipherText]
+    ["0000000000000000", "0000000000000000", "8ca64de9c1b123a7"],
+    ["0000000000000000", "ffffffffffffffff", "355550b2150e2451"],
+    ["ffffffffffffffff", "ffffffffffffffff", "7359b2163e4edc58"],
+    ["3132333435363738", "6162636465666768", "94d4436bc3b5b693"],
+    ["1f79905f8801c888", "c7461873af485fb3", "b0935088f992446a"]
+  ];
+  goog.array.forEach(vectors, function(vector) {
+    var key = goog.crypt.hexToByteArray(vector[0]);
+    var plainText = goog.crypt.hexToByteArray(vector[1]);
+    var cipherText = goog.crypt.hexToByteArray(vector[2]);
+    var cipher = new e2e.cipher.DES(
+        e2e.cipher.Algorithm.DES,
+        {key: key});
+    var result = cipher.encrypt(plainText);
+    assertArrayEquals(cipherText, e2e.async.Result.getValue(result));
+    result = cipher.decrypt(e2e.async.Result.getValue(result));
+    assertArrayEquals(plainText, e2e.async.Result.getValue(result));
+  });
+}
+
+function testPermuteBock() {
+  var key = goog.crypt.hexToByteArray("0000000000000000");
+  var cipher = new e2e.cipher.DES(
+      e2e.cipher.Algorithm.DES,
+      {key: key});
+  var result = cipher.permuteBlock_(goog.array.repeat(0, 31),
+                                    e2e.cipher.DES.permutedChoice1);
+  assertTrue(result.equals(goog.math.Long.fromInt(0)));
+
+  var result = cipher.permuteBlock_(goog.array.repeat(11, 31),
+                                    e2e.cipher.DES.permutedChoice1);
+  assertTrue(result.equals(goog.math.Long.fromInt(267390960)));
+
+  var block = goog.array.repeat(11, 31);
+  block[0] = 3;
+  var result = cipher.permuteBlock_(block,
+                                    e2e.cipher.DES.permutedChoice1);
+  assertTrue(result.equals(goog.math.Long.fromInt(267390944)));
+
+  var result = cipher.permuteBlock_(goog.array.repeat(200, 31),
+                                    e2e.cipher.DES.permutedChoice1);
+  // 72056494526304240 value expected
+  assertTrue(result.equals(goog.math.Long.fromBits(4080, 16776960)));
+}
+
+function testFeistel() {
+  var key = goog.crypt.hexToByteArray("0000000000000000");
+  var cipher = new e2e.cipher.DES(
+      e2e.cipher.Algorithm.DES,
+      {key: key});
+  var result = cipher.feistel_(0, goog.math.Long.fromInt(0));
+  assertEquals(3638090684, result);
+
+  result = cipher.feistel_(500, goog.math.Long.fromInt(900));
+  assertEquals(3639277501, result);
+}
+
+function testKeyRotate() {
+  var key = goog.crypt.hexToByteArray("0000000000000000");
+  var cipher = new e2e.cipher.DES(
+      e2e.cipher.Algorithm.DES,
+      {key: key});
+  var result = cipher.keyRotate_(0);
+  assertArrayEquals(goog.array.repeat(0, 16), result);
+
+  result = cipher.keyRotate_(10);
+  assertArrayEquals([20, 40, 160, 640, 2560, 10240, 40960, 163840, 327680,
+                     1310720, 5242880, 20971520, 83886080, 67108865, 5, 10],
+                    result);
+
+  result = cipher.keyRotate_(0xff00ff00);
+  assertArrayEquals([235011585, 201587715, 1044495, 4177980, 16711920, 66847680,
+                     267390720, 264256515, 260077575, 235003935, 134709375,
+                     1966590, 7866360, 31465440, 125861760, 251723520],
+                    result);
+}
+
+function testKeyExpansion() {
+  var key = goog.crypt.hexToByteArray("0000000000000000");
+  var cipher = new e2e.cipher.DES(
+      e2e.cipher.Algorithm.DES,
+      {key: key});
+  var expected = [];
+  for (var i = 0; i < 16; i++) {
+    expected.push(goog.math.Long.fromInt(0));
+  }
+  assertArrayEquals(expected, cipher.subkeys_);
+
+  key = goog.crypt.hexToByteArray("0900000000000000");
+  cipher = new e2e.cipher.DES(
+      e2e.cipher.Algorithm.DES,
+      {key: key});
+  expected = [
+    goog.math.Long.fromInt(32768),
+    goog.math.Long.fromInt(8),
+    goog.math.Long.fromInt(4096),
+    goog.math.Long.fromInt(32),
+    goog.math.Long.fromInt(2048),
+    goog.math.Long.fromInt(16),
+    goog.math.Long.fromInt(65536),
+    goog.math.Long.fromInt(0),
+    goog.math.Long.fromInt(1048576),
+    goog.math.Long.fromInt(0),
+    goog.math.Long.fromInt(8192),
+    goog.math.Long.fromInt(2097152),
+    goog.math.Long.fromInt(2),
+    goog.math.Long.fromInt(262144),
+    goog.math.Long.fromInt(64),
+    goog.math.Long.fromInt(4194304)
+    ];
+  assertArrayEquals(expected, cipher.subkeys_);
+
+  key = goog.crypt.hexToByteArray("ffff0000ffff0000");
+  cipher = new e2e.cipher.DES(
+      e2e.cipher.Algorithm.DES,
+      {key: key});
+  expected = [
+    goog.math.Long.fromString("179068346467000"),
+    goog.math.Long.fromString("224783615812858"),
+    goog.math.Long.fromString("56691360897797"),
+    goog.math.Long.fromString("224783615812858"),
+    goog.math.Long.fromString("56691360897797"),
+    goog.math.Long.fromString("224783615812858"),
+    goog.math.Long.fromString("56691360897797"),
+    goog.math.Long.fromString("224783615812858"),
+    goog.math.Long.fromString("102406630243655"),
+    goog.math.Long.fromString("179068346467000"),
+    goog.math.Long.fromString("102406630243655"),
+    goog.math.Long.fromString("179068346467000"),
+    goog.math.Long.fromString("102406630243655"),
+    goog.math.Long.fromString("179068346467000"),
+    goog.math.Long.fromString("102406630243655"),
+    goog.math.Long.fromString("56691360897797")
+    ];
+  assertArrayEquals(expected, cipher.subkeys_);
+}
+
+function testTripleDES() {
+  // Test vectors from golang version by Chris Lennert.
+  var vectors = [  // [key, plainText, cipherText]
+    ["0000000000000000ffffffffffffffff0000000000000000",
+     "0000000000000000", "9295b59bb384736e"],
+    ["0000000000000000ffffffffffffffff0000000000000000",
+     "ffffffffffffffff", "c197f558748a20e7"],
+    ["cb107dda7e96570ae8ebe8078e87d357b26112b82a90b72f",
+     "a3c260b10bb7286e", "56737dfbb5a1c3de"]
+  ];
+  goog.array.forEach(vectors, function(vector) {
+    var key = goog.crypt.hexToByteArray(vector[0]);
+    var plainText = goog.crypt.hexToByteArray(vector[1]);
+    var cipherText = goog.crypt.hexToByteArray(vector[2]);
+    var cipher = new e2e.cipher.TripleDES(
+        e2e.cipher.Algorithm.TripleDES,
+        {key: key});
+    assertArrayEquals(cipherText, e2e.async.Result.getValue(cipher.encrypt(plainText)));
+    assertArrayEquals(plainText, e2e.async.Result.getValue(cipher.decrypt(cipherText)));
+  });
+}
+</script>

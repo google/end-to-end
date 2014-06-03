@@ -1,0 +1,190 @@
+<!-- Copyright 2012 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit test of e2e.openpgp.parse</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.testing.asserts');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.openpgp.packet.Packet');
+  goog.require('e2e.openpgp.packet.factory');
+  goog.require('e2e.openpgp.parse');
+</script>
+<script>
+  /**
+   * Defines a Fake Packet with Tag 1.
+   * @param {number} size The size of the packet.
+   * @param {number} firstByte The first byte of the packet.
+   * @extends {e2e.openpgp.packet.Packet}
+   * @constructor
+   */
+  var FakePacket = function(size, firstByte) {
+      goog.base(this);
+      this.works = true;
+      this.size = size;
+      this.firstByte = firstByte;
+  }
+  goog.inherits(FakePacket, e2e.openpgp.packet.Packet);
+
+
+  /** @inheritDoc */
+  FakePacket.prototype.tag = 1;
+
+
+  /** @inheritDoc */
+  FakePacket.parse = function(data) {
+    return new FakePacket(data.length, data[0]);
+  };
+  e2e.openpgp.packet.factory.add(FakePacket);
+
+
+  /**
+   * Tests that a 4 bytes length new format FakePacket is parsed correctly.
+   */
+  function testPacketParser() {
+    var p = e2e.openpgp.parse.parseSerializedPacket(
+        [0xC1, 0xFF, 0x00, 0x00, 0x00, 0x01, 0x17]);
+    assertTrue('Packet constructed correctly.', p.works);
+    assertEquals('Packet has right size', 1, p.size);
+    assertEquals('Packet got the right first byte', 0x17, p.firstByte);
+  }
+
+
+  /**
+   * Tests that length of new format packets are parsed correctly.
+   */
+  function testPacketNewFormatLength() {
+    // Example packets from RFC 4880 Section 4.2.3.
+    var examplePackets = [
+        [100, [0x64]], // 1 octet body length
+        [1723, [0xC5, 0xFB]], // 2 octets body length
+        [100000, [0xFF, 0x00, 0x01, 0x86, 0xA0]]]; // 5 octets body length
+
+    goog.array.forEach(examplePackets, function(test, i) {
+      var size = test[0];
+
+      var exactBody = goog.array.repeat(0x17, size);
+      goog.array.insertArrayAt(exactBody, test[1], 0);
+      goog.array.insertAt(exactBody, 0xC1, 0);
+
+      var biggerBody = goog.array.clone(exactBody);
+      biggerBody.push(1, 3, 3, 7);
+
+      var packet1 = e2e.openpgp.parse.parseSerializedPacket(exactBody);
+      var packet2 = e2e.openpgp.parse.parseSerializedPacket(biggerBody);
+
+      assertTrue('Packet constructed correctly (exact): ' + i, packet1.works);
+      assertTrue('Packet constructed correctly (big): ' + i, packet2.works);
+
+      assertEquals('Packet has right size (exact): ' + i, size, packet1.size);
+      assertEquals('Packet has right size (big): ' + i, size, packet2.size);
+    });
+  }
+
+
+  /**
+   * Tests that the example packets from RFC 4880 Section 4.2.3 parse correctly.
+   */
+  function testPacketNewFormatPartialBodyLength() {
+    var partialBodyExample = goog.array.flatten(
+        [0xC1, 0xEF],
+        goog.array.repeat(0x11, 32768),
+
+        [0xE1],
+        [0x13, 0x33],
+
+        [0xE0],
+        [0x37],
+
+        [0xF0],
+        goog.array.repeat(0x77, 65536),
+
+        [0xC5, 0xDD],
+        goog.array.repeat(0x33, 1693));
+
+    var packet = e2e.openpgp.parse.parseSerializedPacket(
+        partialBodyExample);
+
+    assertTrue('Packet constructed correctly', packet.works);
+    assertEquals('Packet has right size', 100000, packet.size);
+  }
+
+
+  /**
+   * Tests that old format packets are parsed correctly.
+   */
+  function testPacketOldFormatLength() {
+    var ptag = parseInt('1' +  // Must be one.
+                        '0' +  // Old Packet.
+                        '0001' +  // Tag 1.
+                        '00', 2);
+    var ptag1byte = ptag | 0;
+    var ptag2bytes = ptag | 1;
+    var ptag4bytes = ptag | 2;
+    var ptagNbytes = ptag | 3;
+
+    var padding = 0x17;
+
+    var packetBody = goog.array.repeat(0x01, 0x01010101 + padding);
+
+    var packet1 = e2e.openpgp.parse.parseSerializedPacket(
+        goog.array.concat(ptag1byte, packetBody));
+    var packet2 = e2e.openpgp.parse.parseSerializedPacket(
+        goog.array.concat(ptag2bytes, packetBody));
+    var packet3 = e2e.openpgp.parse.parseSerializedPacket(
+        goog.array.concat(ptag4bytes, packetBody));
+    var packet4 = e2e.openpgp.parse.parseSerializedPacket(
+        goog.array.concat(ptagNbytes, packetBody));
+
+    assertEquals('Packet has 0x01 length', 0x01, packet1.size);
+    assertEquals('Packet has 0x0101 length', 0x0101, packet2.size);
+    assertEquals('Packet has 0x01010101 length', 0x01010101, packet3.size);
+    assertEquals('Packet has 0x01010118 length', 0x01010118, packet4.size);
+  }
+
+
+  /**
+   * Tests that invalid packets are rejected when missing the ptag bit.
+   */
+  function testPacketTagFirstBit() {
+    assertThrows('Throws invalid packet with first bit not set.', function() {
+      e2e.openpgp.parse.parseSerializedPacket(
+          [parseInt('00111100', 2), 0x01, 0xFF]);
+    });
+  }
+
+
+  /**
+   * Tests that all ways of representing a zero-length packet work correctly.
+   */
+  function testPacketZeroLength() {
+    var zeroLength = [
+        // New Format
+        [0xC1, 0x00],
+        [0xC1, 0xFF, 0x00, 0x00, 0x00, 0x00],
+        // Old Format
+        [0x84, 0x00],
+        [0x85, 0x00, 0x00],
+        [0x86, 0x00, 0x00, 0x00, 0x00],
+        [0x87]
+    ];
+    goog.array.forEach(zeroLength, function(packet, i) {
+        var p = e2e.openpgp.parse.parseSerializedPacket(packet);
+        assertEquals('Variation of zero length ' + i + '(' + packet + ')', 0, p.size);
+    });
+  }
+</script>

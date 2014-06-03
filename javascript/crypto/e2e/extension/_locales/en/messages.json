@@ -1,0 +1,351 @@
+{
+  "extName": {
+    "message": "End-To-End",
+    "description": "Name of the extension."
+  },
+  "extDescription": {
+    "message": "Helps you to encrypt, decrypt, and digitally sign email messages within Chrome using OpenPGP.",
+    "description": "Description of the extension."
+  },
+  "promptDismissActionLabel": {
+    "message": "Dismiss",
+    "description": "A verb prompting the user to dismiss the current action."
+  },
+  "promptOkActionLabel": {
+    "message": "OK",
+    "description": "A verb prompting the user to accept the current action."
+  },
+  "promptDecryptionSuccessMsg": {
+    "message": "Decryption successful!",
+    "description": "Message informing about a successful decryption of a message."
+  },
+  "promptVerificationSuccessMsg": {
+    "message": "Good signature(s) from %s.",
+    "description": "Message informing about a successful signature verification."
+  },
+  "promptVerificationFailureMsg": {
+    "message": "BAD signature(s) from %s!",
+    "description": "Message informing about failure in signature verification."
+  },
+  "promptEncryptSignTitle": {
+    "message": "Compose an End-To-End message",
+    "description": "A friendly title for the encrypt&sign action."
+  },
+  "promptEncryptSignActionLabel": {
+    "message": "Protect this message",
+    "description": "A verb prompting the user to encrypt and/or sign a message."
+  },
+  "promptEncryptSignInsertLabel": {
+    "message": "Insert into the page",
+    "description": "A sentence fragment prompting the user whether to insert the encrypted/decrypted text into the page.."
+  },
+  "promptEncryptSignSaveDraftLabel": {
+    "message": "Save encrypted draft",
+    "description": "A sentence fragment prompting the user to save the working draft into the visiting page."
+  },
+  "promptEncryptSignRestoreDraftMsg": {
+    "message": "You previously saved a draft. Would you liked to continue editing it?",
+    "description": "A sentence asking the user if the saved draft should be used."
+  },
+  "promptEncryptSignRestoreDraftLabel": {
+    "message": "Restore the draft",
+    "description": "A sentence fragment prompting the user to restore the saved draft."
+  },
+  "promptEncryptSignDiscardDraftLabel": {
+    "message": "Discard the draft",
+    "description": "A sentence fragment prompting the user to discard the saved draft."
+  },
+  "promptEncryptSignReplyHeader": {
+    "message": "Original message",
+    "description": "A sentence fragment indicating where the original message begins."
+  },
+  "promptDecryptVerifyTitle": {
+    "message": "Read a protected message",
+    "description": "A friendly title for the decrypt&verify action."
+  },
+  "promptDecryptVerifyPlaceholder": {
+    "message": "Paste here the protected message that you would like to read.",
+    "description": "A sentence prompting the user to paste an encrypted PGP message."
+  },
+  "promptDecryptVerifyActionLabel": {
+    "message": "Read",
+    "description": "A verb prompting the user to encrypt and/or sign a message."
+  },
+  "promptImportKeyTitle": {
+    "message": "Import an OpenPGP Key",
+    "description": "A friendly title for the key import action."
+  },
+  "promptImportKeyActionLabel": {
+    "message": "Import",
+    "description": "A verb prompting the user to import an OpenPGP key into End-To-End."
+  },
+  "promptImportKeyConfirmLabel": {
+    "message": "Do you want to import the following keys?\n\n%s",
+    "description": "A sentence asking the user to confirm the key import."
+  },
+  "promptImportKeyNotificationLabel": {
+    "message": "The key for %s has been imported successfully.",
+    "description": "A sentence confirming that the key import has completed successfully."
+  },
+  "promptImportKeyError": {
+    "message": "Error occurred during key import.",
+    "description": "A sentence notifying that there was an error during key import."
+  },
+  "promptNoEncryptionTarget": {
+    "message": "You need to use a passphrase or choose message recipients to encrypt.",
+    "description": "A sentence notifying that user needs to chose a passphrase or recipients in order to encrypt and sign a message."
+  },
+  "glassKeyringLockedError": {
+    "message": "Please unlock the KeyRing before reading messages inline. To do this, please click the End-To-End icon in the upper-right area of the screen.",
+    "description": "An error message indicating that the user must unlock their KeyRing before reading messages inline."
+  },
+  "glassCannotDecrypt": {
+    "message": "Unable to decrypt contents. Please try reloading the page and clicking the End-To-End icon in the upper right corner of the screen.",
+    "description": "A generic error message indicating that something went wrong while reading messages inline."
+  },
+  "actionUserSpecified": {
+    "message": "Select an End-To-End action...",
+    "description": "A phrase prompting the user to select a PGP action."
+  },
+  "actionUnlockKeyring": {
+    "message": "Unlock keyring",
+    "description": "A short phrase prompting the user to provide the passphrase to their keyring."
+  },
+  "actionEnterPassphrase": {
+    "message": "Enter passphrase",
+    "description": "A short phrase prompting the user to provide the passphrase for a given key."
+  },
+  "actionEnterPassphraseDescription": {
+    "message": "Enter the passphrase for your keyring.",
+    "description": "A longer phrase prompting the user to provide the passphrase to their keyring."
+  },
+  "actionConfigureExtension": {
+    "message": "Options",
+    "description": "A short phrase directing the user how to configure/manage the extension."
+  },
+  "actionCancelPgpAction": {
+    "message": "Cancel",
+    "description": "A verb prompting the user to cancel the current PGP operation."
+  },
+  "actionBackToMenu": {
+    "message": "Back to menu",
+    "description": "A sentence prompting the user to go back to the extension's menu."
+  },
+  "keyMgmtTitle": {
+    "message": "Keyring management",
+    "description": "A section title signaling that the displayed PGP keys are stored by the extension."
+  },
+  "keyMgmtExportLabel": {
+    "message": "Export public key",
+    "description": "A sentence prompting the user to export the selected PGP key."
+  },
+  "keyMgmtRemoveLabel": {
+    "message": "Remove key",
+    "description": "A sentence prompting the user to remove the selected PGP key."
+  },
+  "keyMgmtNoneLabel": {
+    "message": "None",
+    "description": "A noun indicating that there are no PGP keys to display."
+  },
+  "keyMgmtImportKeyringLabel": {
+    "message": "Import a keyring",
+    "description": "A sentence prompting the user to import an existing PGP keyring."
+  },
+  "keyMgmtImportKeyringActionLabel": {
+    "message": "Import",
+    "description": "A verb prompting the user to import a PGP keyring."
+  },
+  "keyMgmtExportKeyringLabel": {
+    "message": "Export local keyring",
+    "description": "A sentence prompting the user to export the existing PGP keyring."
+  },
+  "keyMgmtChangePassphraseLabel": {
+    "message": "Change the keyring's passphrase",
+    "description": "A sentence prompting the user to change the passphrase of the existing PGP keyring."
+  },
+  "keyMgmtAddPassphraseLabel": {
+    "message": "Encrypt local keyring with a passphrase",
+    "description": "A sentence prompting the user to change the passphrase of the existing PGP keyring."
+  },
+  "keyMgmtChangePassphrasePlaceholder": {
+    "message": "Enter a new passphrase for the existing keyring.",
+    "description": "A sentence prompting the user to enter a new passphrase for the existing PGP keyring."
+  },
+  "keyMgmtConfirmPassphrasePlaceholder": {
+    "message": "Confirm the new passphrase for the existing keyring.",
+    "description": "A sentence prompting the user to confirm the new passphrase for the existing PGP keyring."
+  },
+  "keyMgmtPassphraseMismatchLabel": {
+    "message": "The provided passphrases did not match!",
+    "description": "A sentence describing that the provided passphrases do not match."
+  },
+  "keyMgmtChangePassphraseActionLabel": {
+    "message": "Change",
+    "description": "A verb prompting the user to change the passphrase of the existing PGP keyring."
+  },
+  "keyMgmtConfirmPassphraseActionLabel": {
+    "message": "Confirm",
+    "description": "A verb prompting the user to confirm the new passphrase of the existing PGP keyring."
+  },
+  "keyMgmtChangePassphraseSuccessMsg": {
+    "message": "Successfully changed the passphrase for the existing keyring!",
+    "description": "A sentence confirming that the user has successfully changed the keyring's passphrase."
+  },
+  "genKeyTitle": {
+    "message": "Generate a new PGP key",
+    "description": "A section title indicating where the user can generate a new PGP key."
+  },
+  "genKeyEmailLabel": {
+    "message": "Please enter your email address so we can make your keys:\n(We won't do anything else with this email address.)",
+    "description": "A sentence fragment prompting the user to provide his/her email address."
+  },
+  "genKeyPassphraseLabel": {
+    "message": "Passphrase",
+    "description": "A noun indicating where the user needs to specify a passphrase for her new PGP key."
+  },
+  "genKeyGenerateButtonLabel": {
+    "message": "Make key",
+    "description": "A verb prompting the user to generate a new PGP key."
+  },
+  "settingsTitle": {
+    "message": "End-To-End Keys and Settings",
+    "description": "A page title indicating to the user that the current page will allow her to modify the extension's settings."
+  },
+  "settingsKeyringLockedError": {
+    "message": "Please unlock the KeyRing or set an initial KeyRing passphrase before using the Options page. To do this, please click the lock icon in the upper-right area of the screen.",
+    "description": "An error message indicating that the user must unlock their KeyRing and/or choose an initial passphrase for the KeyRing before using the Options page."
+  },
+  "promptRecipientsPlaceholder": {
+    "message": "To:",
+    "description": "A phrase to prompt the user to enter the intended recipients of the message."
+  },
+  "promptPassphraseEncrypt": {
+    "message": "Type the passphrase to your key to sign this message",
+    "description": "A sentence to prompt the user to type her passphrase during message signing."
+  },
+  "promptPassphraseDecrypt": {
+    "message": "Type the passphrase to your key to decrypt this message",
+    "description": "A sentence to prompt the user to type her passphrase during message decryption."
+  },
+  "promptPassphraseImportKey": {
+    "message": "Type the passphrase to your key to explicitly trust this key",
+    "description": "A sentence to prompt the user to type her passphrase when importing a PGP key."
+  },
+  "promptPassphraseCallbackMessage": {
+    "message": "Please provide the passphrase for %s.",
+    "description": "A sentence requesting the passphrase for a PGP key."
+  },
+  "promptNoEncryptionKeysFound": {
+    "message": "No encryption keys that could be used to complete this action were found.",
+    "description": "A sentence warning the user that the action cannot be completed due to missing encryption keys."
+  },
+  "promptSignMessageAs": {
+    "message": "Sign this message",
+    "description": "A sentence prompting the user to specify their PGP key to sign and encrypt."
+  },
+  "promptFromLabel": {
+    "message": "From:",
+    "description": "The label to describe who is the author of the message."
+  },
+  "promptNoPrivateKeysFound": {
+    "message": "Generate or import private key(s) to sign or decrypt messages",
+    "description": "The label to inform the user that he needs a private key to use signing/decryption functionality"
+  },
+  "promptEncryptionPassphraseMessage": {
+    "message": "Please enter a passphrase for this message.",
+    "description": "A sentence prompting the user to specify a passphrase for symmetric encryption."
+  },
+  "promptEncryptionPassphraseConfirmMessage": {
+    "message": "Please confirm the passphrase for this message.",
+    "description": "A sentence prompting the user to confirm the passphrase for symmetric encryption."
+  },
+  "promptEncryptionPassphraseLink": {
+    "message": "Protect with a passphrase",
+    "description": "A sentence notifying the user where to enter passphrases for symmetric encryption."
+  },
+  "promptPassphraseMask": {
+    "message": "(passphrase)",
+    "description": "The string that is displayed instead of a passphrase."
+  },
+  "publicKeyDescription": {
+    "message": "Public",
+    "description": "Modifier before a key algorithm type for a public key."
+  },
+  "secretKeyDescription": {
+    "message": "Private",
+    "description": "Modifier before a key algorithm type for a secret or private key."
+  },
+  "publicSubKeyDescription": {
+    "message": "Public (subkey)",
+    "description": "Modifier before a key algorithm type for a public subkey."
+  },
+  "secretSubKeyDescription": {
+    "message": "Private (subkey)",
+    "description": "Modifier before a key algorithm type for a secret or private subkey."
+  },
+  "welcomeHeader": {
+    "message": "Welcome to End-To-End",
+    "description": "A welcome message to new users."
+  },
+  "welcomeBasicsTitle": {
+    "message": "Tutorial",
+    "description": "A section title, can be a sentence fragment"
+  },
+  "welcomeBasicsLine1": {
+    "message": "This extension allows you to create encrypted messages and decrypt encrypted messages sent to you.",
+    "description": "A sentence describing instructions."
+  },
+  "welcomeBasicsLine2": {
+    "message": "Here's a short demonstration how you could use the extension in GMail:",
+    "description": "A sentence describing a link to an instruction video or screenshot."
+  },
+  "welcomeBasicsLine3": {
+    "message": "You can also use the extension in any other website where you can type text.",
+    "description": "A sentence describing instructions."
+  },
+  "welcomeIframeUrl": {
+    "message": "images/screenshot.png",
+    "description": "Link to a demonstration on how to use the extension."
+  },
+  "welcomeNoviceTitle": {
+    "message": "I'm new to OpenPGP",
+    "description": "A section title, can be a sentence fragment"
+  },
+  "welcomeGenKeyConfirm": {
+    "message": "You are all set. A new OpenPGP key has been created for you to use.",
+    "description": "The message to display when the user has created his/her OpenPGP key."
+  },
+  "welcomeAdvancedTitle": {
+    "message": "I want to import a keyring",
+    "description": "A section title, can be a sentence fragment"
+  },
+  "welcomeKeyImport": {
+    "message": "You are all set. Your OpenPGP keyring has been imported and is ready for you to use.",
+    "description": "The message to display when the user has imported his/her existing keyring."
+  },
+  "welcomeAcceptanceButton": {
+    "message": "Done",
+    "description": "A short sentence fragment prompting the user to confirm that he understood the welcome instructions."
+  },
+  "passphraseEmptyWarning": {
+    "message": "Unable to open keyring. Please enter your keyring's passphrase.",
+    "description": "A message describing keyring access problems and prompting the user to enter passphrase."
+  },
+  "preferencesSectionTitle": {
+    "message": "Extension preferences",
+    "description": "A section title, can be a sentence fragment"
+  },
+  "preferenceWelcomeScreen": {
+    "message": "Show the welcome window when the extension loads the next time.",
+    "description": "A sentence prompting the user to disable the extension's welcome window."
+  },
+  "preferenceActionSniffing": {
+    "message": "Always try to anticipate End-To-End action.",
+    "description": "A sentence prompting the user to prevent the extension from guessing the intended actions."
+  },
+  "throttleErrorMsg": {
+    "message": "The requested operation cannot be performed at this time. Please try again in 1 minute.",
+    "description": "A sentence to display when the requested operation cannot be executed due to throttling."
+  }
+
+}

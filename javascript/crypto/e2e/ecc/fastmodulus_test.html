@@ -1,0 +1,110 @@
+<!-- Copyright 2014 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.FastModulus</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.BigNum');
+  goog.require('e2e.BigPrimeNum');
+  goog.require('e2e.FastModulus');
+  goog.require('e2e.ecc.FastModulus.Curve25519');
+  goog.require('e2e.ecc.FastModulus.NIST.P_256');
+  goog.require('e2e.ecc.FastModulus.NIST.P_384');
+  goog.require('e2e.ecc.constant');
+</script>
+<script>
+
+var P256 = new e2e.BigPrimeNum(e2e.ecc.constant.P_256.Q);
+var modP256 = new e2e.ecc.FastModulus.NIST.P_256(P256);
+
+var P384 = new e2e.BigPrimeNum(e2e.ecc.constant.P_384.Q);
+var modP384 = new e2e.ecc.FastModulus.NIST.P_384(P384);
+
+var C25519 = new e2e.BigPrimeNum(e2e.ecc.constant.CURVE_25519.Q);
+var modC25519 = new e2e.ecc.FastModulus.Curve25519(C25519);
+
+var N = new e2e.BigPrimeNum(e2e.ecc.constant.P_256.N);
+var modN = new e2e.FastModulus.FFFFFF(N);
+
+var N2 = new e2e.BigPrimeNum(e2e.ecc.constant.CURVE_25519.N);
+var modN2 = new e2e.FastModulus.Ox1000000(N2);
+
+var N3 = new e2e.BigPrimeNum([1, 0, 0, 0, 0x88, 0x88, 0x88]);
+var modN3 = new e2e.FastModulus.Ox1000000(N3);
+
+
+function forEachModulus(func) {
+  func(P256, modP256, 'P256');
+  func(P384, modP384, 'P384');
+  func(C25519, modC25519, 'C25519');
+  func(N, modN, 'FFFFFF');
+  func(N2, modN2, '1000000');
+  func(N3, modN3, '1000000+');
+}
+
+
+/**
+ * Make sure that each single bit value goes to the right place.
+ */
+function testSimpleModulusOnBits() {
+  forEachModulus(function(prime, modulus, name) {
+    // The variable "a" tests a single bit sliding leftward
+    var a = e2e.BigNum.ONE;
+    // The variable "b" tests an interesting pattern of ones and zeroes
+    // sliding leftward.
+    var b = P256.add(e2e.BigNum.ONE);
+
+    var resultA = e2e.BigNum.ONE;
+    var resultB = b.mod(prime)
+
+    for (var i = 0; i < 257; i++) {
+      assertTrue(name, modulus.residue(a).isEqual(resultA));
+      assertTrue(name, modulus.residue(b).isEqual(resultB));
+      a = a.shiftLeft(1);
+      b = b.shiftLeft(1);
+      resultA = prime.modAdd(resultA, resultA);
+      resultB = prime.modAdd(resultB, resultB);
+      // Until modAdd is fixed to keep its results reasonably sized
+      resultA.dropLeadingZeros();
+      resultB.dropLeadingZeros();
+    }
+  });
+}
+
+/**
+ * Test that -1 * -2 = 2.  This is surprisingly a lot of work!
+ */
+function testMinusOne() {
+  forEachModulus(function(prime, modulus, name) {
+    var minusOne = prime.subtract(e2e.BigNum.ONE);
+    var minusTwo = prime.subtract(e2e.BigNum.TWO);
+    assertTrue(name, modulus.residue(minusOne.multiply(minusTwo))
+      .isEqual(e2e.BigNum.TWO));
+
+  });
+}
+
+/*
+ * Test that "this mod this == 0"
+ */
+function testMe() {
+  forEachModulus(function(prime, modulus, name) {
+    assertTrue(name, modulus.residue(prime).isEqual(e2e.BigNum.ZERO));
+  });
+}
+</script>

@@ -1,0 +1,141 @@
+<!-- Copyright 2012 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.Cipher.AES</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.async.Result');
+  goog.require('e2e.cipher.AES');
+  goog.require('goog.array');
+  goog.require('goog.testing.jsunit');
+</script>
+<script>
+  /**
+   * Tests that only valid key sizes are accepted.
+   */
+  function testKeySize() {
+    assertNotThrows("Valid key size (16, 24, 32)", function() {
+      new e2e.cipher.AES(e2e.cipher.Algorithm.AES128,
+                                 {key:goog.array.repeat(0, 16)});
+      new e2e.cipher.AES(e2e.cipher.Algorithm.AES192,
+                                 {key:goog.array.repeat(0, 24)});
+      new e2e.cipher.AES(e2e.cipher.Algorithm.AES256,
+                                 {key:goog.array.repeat(0, 32)});
+    });
+    assertThrows("Invalid key size (4).", function() {
+      new e2e.cipher.AES(e2e.cipher.Algorithm.AES128,
+                                 {key:[1, 2, 3, 4]});
+    });
+    assertThrows("Invalid key size (0).", function() {
+      new e2e.cipher.AES(e2e.cipher.Algorithm.AES128,
+                                 {key:[]});
+    });
+    assertThrows("Invalid key values (undefined).", function() {
+      var arr = new Array(16);
+      new e2e.cipher.AES(e2e.cipher.Algorithm.AES128,
+                                 {key:arr});
+    });
+    assertThrows("Invalid key size (1024).", function() {
+      new e2e.cipher.AES(e2e.cipher.Algorithm.AES128,
+                                 {key:goog.array.repeat(0, 1024)});
+    });
+  }
+
+  /**
+   * Tests that the decrypt(encrypt()) operation is consistent.
+   */
+  function testConsistency() {
+    var aes = new e2e.cipher.AES(e2e.cipher.Algorithm.AES128,
+                                         {key:goog.array.repeat(0xAA, 16)});
+    var ciphertext = e2e.async.Result.getValue(aes.encrypt(goog.array.repeat(0xFF, 16)));
+    var plaintext = e2e.async.Result.getValue(aes.decrypt(ciphertext));
+    assertArrayEquals("Consistency in encryption/decryption.",
+      goog.array.repeat(0xFF, 16), plaintext);
+  }
+
+  /**
+   * Tests that the encrypt and decrypt functions function correctly.
+   * These test cases are specified in Appendix C of FIPS 197.
+   * @see http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf
+   */
+  function testEncryptCorrectness() {
+    var aes128 = new e2e.cipher.AES(
+      e2e.cipher.Algorithm.AES128,
+      {key:[0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+            0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F]});
+    var aes192 = new e2e.cipher.AES(
+      e2e.cipher.Algorithm.AES192,
+      {key:[0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+            0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+            0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17]});
+    var aes256 = new e2e.cipher.AES(
+      e2e.cipher.Algorithm.AES256,
+      {key:[0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+            0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
+            0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+            0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F]});
+    var plaintext = [0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
+                     0x88, 0x99, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0xFF];
+    var cipher128 = e2e.async.Result.getValue(aes128.encrypt(plaintext));
+    var cipher192 = e2e.async.Result.getValue(aes192.encrypt(plaintext));
+    var cipher256 = e2e.async.Result.getValue(aes256.encrypt(plaintext));
+    var correct128 = [0x69, 0xc4, 0xe0, 0xd8, 0x6a, 0x7b, 0x04, 0x30,
+                      0xd8, 0xcd, 0xb7, 0x80, 0x70, 0xb4, 0xc5, 0x5a];
+    var correct192 = [0xdd, 0xa9, 0x7c, 0xa4, 0x86, 0x4c, 0xdf, 0xe0,
+                      0x6e, 0xaf, 0x70, 0xa0, 0xec, 0x0d, 0x71, 0x91];
+    var correct256 = [0x8e, 0xa2, 0xb7, 0xca, 0x51, 0x67, 0x45, 0xbf,
+                      0xea, 0xfc, 0x49, 0x90, 0x4b, 0x49, 0x60, 0x89];
+    var plain128 = e2e.async.Result.getValue(aes128.decrypt(correct128));
+    var plain192 = e2e.async.Result.getValue(aes192.decrypt(correct192));
+    var plain256 = e2e.async.Result.getValue(aes256.decrypt(correct256));
+    assertArrayEquals("Correctness encryption 128 bits key.",
+                      correct128, cipher128);
+    assertArrayEquals("Correctness encryption 192 bits key.",
+                      correct192, cipher192);
+    assertArrayEquals("Correctness encryption 256 bits key.",
+                      correct256, cipher256);
+    assertArrayEquals("Correctness decryption 128 bits key.",
+                      plaintext, plain128);
+    assertArrayEquals("Correctness decryption 192 bits key.",
+                      plaintext, plain192);
+    assertArrayEquals("Correctness decryption 256 bits key.",
+                      plaintext, plain256);
+  }
+
+  /**
+   * Encrypts the output of encrypting null bytes and then encrypting again the
+   * output CYCLE_SIZE times and verifies it's output is correct.
+   */
+  function testLongIteration() {
+    var CYCLE_SIZE = 100;
+    var current = goog.array.repeat(0, 16);
+    var end = [173, 98, 57, 194, 233, 96, 247, 192, 112, 153, 194, 141, 149, 0,
+        214, 148];
+    var aes256 = new e2e.cipher.AES(
+        e2e.cipher.Algorithm.AES256,
+        {key: goog.array.repeat(0xFF, 32)});
+    for(var i = 0; i < CYCLE_SIZE; i++) {
+      current = e2e.async.Result.getValue(aes256.encrypt(current));
+    }
+    assertArrayEquals("Correct encryption of cycled encryption.", end, current);
+    current = end;
+    for(var i=0; i < CYCLE_SIZE; i++) {
+      current = e2e.async.Result.getValue(aes256.decrypt(current));
+    }
+    assertArrayEquals("Correct decryption of cycled decryption.",
+                      current, goog.array.repeat(0, 16));
+  }
+</script>

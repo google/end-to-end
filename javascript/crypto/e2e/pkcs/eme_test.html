@@ -1,0 +1,273 @@
+<!-- Copyright 2012 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit test of e2e.pkcs.eme</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.testing.asserts');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.pkcs.eme.Oaep');
+  goog.require('e2e.pkcs.eme.Pkcs1');
+</script>
+<script>
+  function testOAEPOpenSSL() {
+    // Generated with OpenSSL.
+    var msg = goog.crypt.stringToByteArray('hello, world\n');
+    var encoded = [
+        0x00, 0xce, 0x29, 0xbc, 0x69, 0x83, 0x74, 0x70,
+        0xad, 0xec, 0xa0, 0xf6, 0x6f, 0x1d, 0x81, 0xb1,
+        0x36, 0xed, 0x96, 0xa9, 0x4a, 0x35, 0x9a, 0x52,
+        0x03, 0x08, 0xfa, 0xf4, 0x54, 0x53, 0x43, 0x5c,
+        0xe7, 0x71, 0xab, 0xb9, 0x7a, 0x7c, 0xc4, 0xd5,
+        0xdb, 0x50, 0xd2, 0x44, 0x1a, 0xd2, 0xb8, 0x43,
+        0x2d, 0x42, 0x9d, 0x4d, 0x03, 0xdd, 0xd9, 0x79,
+        0x69, 0xe9, 0x59, 0xd1, 0x1a, 0xd2, 0x07, 0x15,
+        0x61, 0xe5, 0x89, 0x58, 0x83, 0xb5, 0x47, 0x55,
+        0xed, 0xe3, 0x89, 0x4d, 0x95, 0xc9, 0x35, 0x2c,
+        0x2f, 0x50, 0xf1, 0x10, 0x97, 0x4b, 0xde, 0x71,
+        0xb7, 0x04, 0xad, 0x32, 0x8e, 0x0f, 0xbd, 0xed,
+        0x6f, 0xc3, 0x2a, 0x7e, 0xc4, 0x0f, 0x23, 0xf7,
+        0x83, 0xd1, 0xe0, 0x05, 0xc3, 0x4e, 0x7b, 0x78,
+        0x03, 0x5f, 0x07, 0x51, 0x01, 0x35, 0xc7, 0xa7,
+        0x49, 0xbf, 0x53, 0x46, 0xc5, 0x14, 0x3d, 0x46];
+    var decoded = new e2e.pkcs.eme.Oaep().decodeForTestingOnly(
+        128, encoded);
+    assertArrayEquals('Compatible with OpenSSL', msg, decoded);
+  }
+
+  function testOAEPConsistency() {
+    var data = [1, 3, 37, 88, 250];
+    var eme = new e2e.pkcs.eme.Oaep();
+    var encoded = eme.encode(128, data);
+    var decoded = eme.decodeForTestingOnly(128, encoded);
+    assertArrayEquals('Consistency on encoding/decoding.', data, decoded);
+  }
+
+  function testPKCS1Encode() {
+    var data = [0, 1];
+    var encoded = new e2e.pkcs.eme.Pkcs1().encode(1024, data);
+    assertNotContains('No 0s before separator.',
+                      0,
+                      encoded.slice(1, -(data.length + 1)));
+    assertEquals('Has 0 before payload.',
+                 0,
+                 encoded[encoded.length - (data.length + 1)]);
+    assertArrayEquals('Payload present.',
+                      data,
+                      encoded.slice(-(data.length)));
+    var i=0;
+    while(!encoded[i])i++;
+    assertEquals('First significant byte is 2.', 2, encoded[i]);
+    assert('At most one null byte before most significant byte.', i <= 1);
+    assert('Encoded data is bigger than data.', encoded.length > data.length);
+  }
+
+  function testPKCS1Consistency() {
+    var data = [1, 3, 37, 88, 250];
+    var eme = new e2e.pkcs.eme.Pkcs1();
+    var encoded = eme.encode(1024, data);
+    var decoded = eme.decode(encoded);
+    assertArrayEquals('Consistency on encoding/decoding.', data, decoded);
+  }
+
+  // TODO(adhintz) This unit test is flaky. Find and fix the underlying cause,
+  // then enable the test.
+  function disabledtestTimingDistribution() {
+    // We need several samples to be able to calculate if they are similar.
+    var SAMPLE_SIZE = 10e3;
+    // A 30k bits RSA key.
+    var DATA_SIZE = 4e3;
+    // X^2 value for a P value of 0.001 with 1 degree of freedom.
+    // This means the test will fail if there's a 99.9% probability of having
+    // a predictable distribution, with only one independent variable
+    // to be taken into consideration.
+    var X2_MAX = 10.83;
+    // Max difference to accept between two operations in same iteration.
+    var MAX_SINGLE_DIFF = 150;
+    // No more than 10% ignored samples.
+    var IGNORED_MAX = SAMPLE_SIZE / 10;
+
+    var NUMERIC_ORDER = function(a, b) {
+      return a - b;
+    };
+    var PROPORTIONAL = function(base) {
+      base = base || 0.1;
+      return function(num) {
+        return num / base;
+      };
+    };
+
+    function getSample() {
+      var baseline = goog.array.repeat(0xFF, DATA_SIZE + 13);
+      var acc;
+      var start = new Date().getTime();
+      goog.array.forEach(baseline, function(byte) {
+        acc ^= byte;
+      });
+      return new Date().getTime() - start;
+    }
+
+    var sum = 0;
+    var samples = [];
+    for (var i = 0; i < SAMPLE_SIZE; i++) {
+      var sam = getSample();
+      samples.push(sam);
+      sum += sam;
+    }
+    samples = samples.sort(NUMERIC_ORDER);
+    // Use half of the fastest sample as a base to compare against.
+    var baseSpeed = samples[0] / 2;
+
+    // First, test 0s.
+    var encodedZeros = goog.array.concat(
+      goog.array.repeat(0x00, DATA_SIZE),
+      0x02,
+      goog.array.repeat(0xFF, 10),
+      [0x00, 0x01]);
+    // Second, test random bytes.
+    var encodedRandom = goog.array.concat(
+        [0x00, 0x02],
+        goog.array.repeat(0xDE, DATA_SIZE),
+        [0],
+        goog.array.repeat(0xEE, 10));
+    // Last, test key.
+    var encodedKey = goog.array.concat(
+        [0x00, 0x02],
+        goog.array.repeat(0xDE, 10),
+        [0],
+        goog.array.repeat(0xAA, DATA_SIZE));
+    var zerosTime = [];
+    var randomTime = [];
+    var keyTime = [];
+    var decoded, startTime;
+    var ignored = 0;
+    for (var i = 0; i < SAMPLE_SIZE; i++) {
+      for (var j = 0; j < 3; j++) {
+        // Prevent order from being a variable.
+        switch ((j + i) % 3) {
+            case 0:
+              startTime = new Date().getTime();
+              decoded = new e2e.pkcs.eme.Pkcs1().decode(encodedZeros.slice());
+              zerosTime.unshift(new Date().getTime() - startTime);
+            break;
+            case 1:
+              startTime = new Date().getTime();
+              decoded = new e2e.pkcs.eme.Pkcs1().decode(encodedRandom.slice());
+              randomTime.unshift(new Date().getTime() - startTime);
+            break;
+            case 2:
+              startTime = new Date().getTime();
+              decoded = new e2e.pkcs.eme.Pkcs1().decode(encodedKey.slice());
+              keyTime.unshift(new Date().getTime() - startTime);
+            break;
+        }
+      }
+
+        // If there's one given sample that is too off, ignore the iteration.
+        if (Math.abs(keyTime[0] - randomTime[0]) > MAX_SINGLE_DIFF ||
+            Math.abs(randomTime[0] - zerosTime[0]) > MAX_SINGLE_DIFF ||
+            Math.abs(zerosTime[0] - keyTime[0]) > MAX_SINGLE_DIFF) {
+          keyTime.shift();
+          randomTime.shift();
+          zerosTime.shift();
+          i--;
+          ignored++;
+        }
+    }
+    zerosTime = zerosTime.sort(NUMERIC_ORDER).map(PROPORTIONAL(baseSpeed));
+    randomTime = randomTime.sort(NUMERIC_ORDER).map(PROPORTIONAL(baseSpeed));
+    keyTime = keyTime.sort(NUMERIC_ORDER).map(PROPORTIONAL(baseSpeed));
+
+    // Now, calculate the median, the moda, and the medium.
+    var median = [zerosTime[parseInt(SAMPLE_SIZE/2)],
+                  randomTime[parseInt(SAMPLE_SIZE/2)],
+                  keyTime[parseInt(SAMPLE_SIZE/2)]];
+    function getModa(arr) {
+      var moda = arr[0];
+      var modaSize = 0;
+      var modaDict = {};
+      goog.array.forEach(arr, function(num) {
+        modaDict[num] = modaDict[num] ? modaDict[num] + 1 : 1;
+        if (modaDict[num] > modaSize) {
+          modaSize = modaDict[num];
+          moda = num;
+        }
+      });
+      return moda;
+    }
+    var moda = [getModa(zerosTime), getModa(randomTime), getModa(keyTime)];
+    function getMedium(arr) {
+      var acc = 0;
+      goog.array.forEach(arr, function(num) {
+        acc += num;
+      });
+      return acc/arr.length;
+    }
+    var medium = [
+        getMedium(zerosTime), getMedium(randomTime), getMedium(keyTime)];
+
+    function getOrder(arr) {
+      var ordered = arr.slice().sort(NUMERIC_ORDER);
+      var positions = goog.array.map(arr, function(x){
+        return ordered.indexOf(x) + 1;
+      });
+      return positions;
+    }
+
+    // Notice extremely big differences.
+    var p = 0;
+    p += (String([1, 1, 1]) == String(getOrder(median))) * 1;
+    p += (String([1, 1, 1]) == String(getOrder(moda))) * 1;
+    p += (String([1, 1, 1]) == String(getOrder(medium))) * 2;
+
+    assert('Timing is significantly different. p=' + p, p >= 2);
+
+    // Pearson's Chi-Squared test to compare distributions.
+    function computeChiSquared(distribution, base) {
+      var chi = 0;
+      goog.object.forEach(base, function(value, key) {
+        var dist_value = ~~distribution[key];
+        chi += Math.pow(dist_value - value, 2) / value;
+      });
+      return chi;
+    }
+
+    var frequencies = {zeros: {}, key: {}, random: {}};
+    for (var i = 0; i < SAMPLE_SIZE; i++) {
+      frequencies.zeros[zerosTime[i]] = -~frequencies.zeros[zerosTime[i]];
+      frequencies.random[randomTime[i]] = -~frequencies.random[randomTime[i]];
+      frequencies.key[keyTime[i]] = -~frequencies.key[keyTime[i]];
+    }
+
+    frequencies.ignored = ignored;
+    assert('Ignored samples are higher than max.' +
+           'ignored=' + frequencies.ignored, frequencies.ignored < IGNORED_MAX);
+
+    frequencies.chi1 = computeChiSquared(frequencies.zeros, frequencies.random);
+    frequencies.chi2 = computeChiSquared(frequencies.random, frequencies.key);
+    frequencies.chi3 = computeChiSquared(frequencies.key, frequencies.zeros);
+
+    frequencies.base = baseSpeed;
+
+    assert('Distribution of zeros and random is different. ' + JSON.stringify(frequencies) +
+           ' chi1=' + frequencies.chi1, frequencies.chi1 < X2_MAX);
+    assert('Distribution of random and key is different. ' + JSON.stringify(frequencies) +
+           ' chi2=' + frequencies.chi2, frequencies.chi2 < X2_MAX);
+    assert('Distribution of key and zeros is different. ' + JSON.stringify(frequencies) +
+           ' chi3=' + frequencies.chi3, frequencies.chi3 < X2_MAX);
+  }
+</script>

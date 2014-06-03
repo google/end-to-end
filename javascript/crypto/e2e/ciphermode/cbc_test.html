@@ -1,0 +1,68 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.CipherMode.CBC</title>
+<script src="../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.cipher.AES');
+  goog.require('e2e.ciphermode.CBC');
+  goog.require('goog.array');
+  goog.require('goog.testing.jsunit');
+</script>
+<script>
+  function testConsistency() {
+    var aes = new e2e.cipher.AES(e2e.cipher.Algorithm.AES128,
+                                         { key:goog.array.repeat(0x77, 16) });
+    var aescbc = new e2e.ciphermode.CBC(aes);
+    var iv = goog.array.repeat(0x77, aes.blockSize);
+    var plaintext = goog.array.repeat(0x22, 75);
+    var ciphertext = e2e.async.Result.getValue(aescbc.encrypt(plaintext, iv));
+    var deciphered =
+        e2e.async.Result.getValue(aescbc.decrypt(ciphertext, iv));
+    assertArrayEquals("Consistency on encryption/decryption.",
+                      plaintext,
+                      deciphered);
+  }
+
+  function testTestVectors() {
+    var aes = new e2e.cipher.AES(
+        e2e.cipher.Algorithm.AES128,
+        {
+          key: [
+            0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
+            0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
+          ]
+        });
+    var aescbc = new e2e.ciphermode.CBC(aes);
+    var iv = [
+        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+        0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
+    ];
+    var testvector = [
+        0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
+        0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a
+    ];
+
+    var expectedCipherText = [
+        0x76, 0x49, 0xab, 0xac, 0x81, 0x19, 0xb2, 0x46,
+        0xce, 0xe9, 0x8e, 0x9b, 0x12, 0xe9, 0x19, 0x7d,
+        0x89, 0x64, 0xe0, 0xb1, 0x49, 0xc1, 0x0b, 0x7b,
+        0x68, 0x2e, 0x6e, 0x39, 0xaa, 0xeb, 0x73, 0x1c
+    ];
+    var cipherText = e2e.async.Result.getValue(aescbc.encrypt(testvector, iv))
+    assertArrayEquals(expectedCipherText, cipherText);
+  }
+</script>

@@ -1,0 +1,112 @@
+<!-- Copyright 2012 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.packet.LiteralData</title>
+<script src="../../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.crypt');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.openpgp.packet.LiteralData');
+  goog.require('e2e.openpgp.parse');
+</script>
+<script>
+      /**
+       * Tests that Literal Data Packets are parsed correctly.
+       */
+      function testLiteralDataParsing() {
+        // Represents a literal data packet with data "1337" and empty metadata.
+        var packetBody = [0x74, 0x00, 0x00, 0x00, 0x00, 0x00, 0x13, 0x37];
+        var parsed = e2e.openpgp.packet.LiteralData.parse(packetBody);
+
+        assertEquals('Right text format',
+                     e2e.openpgp.packet.LiteralData.Format.TEXT,
+                     parsed.format);
+        assertArrayEquals('Empty filename', [], parsed.filename);
+        assertEquals('Zero timestamp', 0, parsed.timestamp);
+        assertEquals('1337 data',
+                     '\x13\x37',
+                     e2e.byteArrayToString(parsed.data));
+      }
+
+
+      /**
+       * Tests that Literal Data Packets are serialized correctly.
+       */
+      function testLiteralDataSerialization() {
+        var expectedSerialization = [0xCB, 0xFF, 0x00, 0x00, 0x00, 0x08, 0x74,
+                                     0x00, 0x00, 0x00, 0x00, 0x00, 0x13, 0x37];
+
+        var packet = new e2e.openpgp.packet.LiteralData(
+            e2e.openpgp.packet.LiteralData.Format.TEXT,
+            [], 0, [0x13, 0x37]);
+
+        assertArrayEquals('Correct serialization',
+                          expectedSerialization,
+                          packet.serialize());
+      }
+
+
+      /**
+       * Tests that Literal Data Packets can be correctly parsed again after
+       * serialization.
+       */
+      function testLiteralDataSerializationParsing() {
+        var packetUtf8 = new e2e.openpgp.packet.LiteralData(
+            e2e.openpgp.packet.LiteralData.Format.UTF8,
+            [0xCE, 0xF1, 0xEE, 0xF6, 0xF1, 0xE5],
+            1328748292,
+            [0xFE, 0x00, 0x00]);
+        var tmpPacketUtf8 = e2e.openpgp.packet.LiteralData.parse(
+                                packetUtf8.serializePacketBody());
+
+        assertEquals('Right timestamp', tmpPacketUtf8.timestamp, 1328748292);
+        assertEquals('Correct UTF-8 Format',
+                     tmpPacketUtf8.format,
+                     e2e.openpgp.packet.LiteralData.Format.UTF8);
+        assertArrayEquals('Right UTF-8 Filename',
+                          tmpPacketUtf8.filename,
+                          [0xCE, 0xF1, 0xEE, 0xF6, 0xF1, 0xE5]);
+        assertArrayEquals('Right data',
+                          tmpPacketUtf8.data, [0xFE, 0x00, 0x00]);
+      }
+
+
+      /**
+       * Tests that we can parse a LiteralData with the headers included.
+       */
+      function testFullParseLiteralData() {
+        var oldPacket = new e2e.openpgp.packet.LiteralData(
+            e2e.openpgp.packet.LiteralData.Format.TEXT,
+            [0x01, 0x02, 0x00, 0x03], 1234, [0x0D, 0x0A]);
+        var newPacket = e2e.openpgp.parse.parseSerializedPacket(
+            oldPacket.serialize());
+
+        assertArrayEquals('Right serialized packet',
+                          newPacket.serialize(),
+                          oldPacket.serialize());
+      }
+
+      /**
+       * Tests that packets with a filename length longer than the packet size
+       * are rejected.
+       */
+      function testMalformedLiteralData() {
+        assertThrows('Malformed Literal Data Packet should throw.', function() {
+          var packetBody = [0x74, 0xFF, 0x00, 0x00, 0x00, 0x00, 0x13, 0x37];
+          e2e.openpgp.packet.LiteralData.parse(packetBody);
+        });
+      }
+</script>
