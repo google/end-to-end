@@ -36,7 +36,6 @@ e2e.BigNum = function(opt_value) {
    * The internal representation of this BigNum. It's an array of 24-bit numbers
    * in little endian.
    * @type {!Array.<number>}
-   * @visibility {//javascript/crypto/e2e:__subpackages__}
    */
   this.n = [];
   if (goog.isDef(opt_value)) {
@@ -160,7 +159,7 @@ e2e.BigNum.select = function(a, b, bit) {
 
 /**
  * Converts this to big endian byte array. Drop leading zeros.
- * @return {!e2e.ByteArray} The big endian representation.
+ * @return {e2e.ByteArray} The big endian representation.
  */
 e2e.BigNum.prototype.toByteArray = function() {
   var i = this.n.length;
@@ -629,6 +628,16 @@ e2e.BigNum.prototype.isEqual = function(that) {
 
 
 /**
+ * Returns true if this < that.
+ * @param {e2e.BigNum} that The number to compare.
+ * @return {boolean}
+ */
+e2e.BigNum.prototype.isLess = function(that) {
+  return this.compare(that) < 0;
+};
+
+
+/**
  * Returns true if this >= that.
  * @param {e2e.BigNum} that The number to compare.
  * @return {boolean}
@@ -661,6 +670,72 @@ e2e.BigNum.prototype.compare = function(that) {
     lesser |= (x < y) & !previousGreater;
   }
   return greater - lesser;
+};
+
+
+/**
+ * Performs a bitwise-AND of this and that.
+ * @param {e2e.BigNum} that The number to AND with.
+ * @return {!e2e.BigNum}
+ */
+e2e.BigNum.prototype.and = function(that) {
+  var maxLen = e2e.fixedtiming.max(this.n.length, that.n.length);
+  var result = e2e.BigNum.createBigNumOfSize(maxLen);
+  for (var i = maxLen; i >= 0; --i) {
+    var x = this.n[i] | 0;
+    var y = that.n[i] | 0;
+    result.n[i] = x & y;
+  }
+  return result;
+};
+
+
+/**
+ * Performs a bitwise-OR of this and that.
+ * @param {e2e.BigNum} that The number to XOR with.
+ * @return {!e2e.BigNum}
+ */
+e2e.BigNum.prototype.or = function(that) {
+  var maxLen = e2e.fixedtiming.max(this.n.length, that.n.length);
+  var result = e2e.BigNum.createBigNumOfSize(maxLen);
+  for (var i = maxLen; i >= 0; --i) {
+    var x = this.n[i] | 0;
+    var y = that.n[i] | 0;
+    result.n[i] = x | y;
+  }
+  return result;
+};
+
+
+/**
+ * Performs a bitwise-XOR of this and that.
+ * @param {e2e.BigNum} that The number to XOR with.
+ * @return {!e2e.BigNum}
+ */
+e2e.BigNum.prototype.xor = function(that) {
+  var maxLen = e2e.fixedtiming.max(this.n.length, that.n.length);
+  var result = e2e.BigNum.createBigNumOfSize(maxLen);
+  for (var i = maxLen; i >= 0; --i) {
+    var x = this.n[i] | 0;
+    var y = that.n[i] | 0;
+    result.n[i] = x ^ y;
+  }
+  return result;
+};
+
+
+/**
+ * Negates this value.
+ *
+ * @return {!e2e.BigNum}
+ */
+e2e.BigNum.prototype.negate = function() {
+  var length = this.n.length;
+  var result = e2e.BigNum.createBigNumOfSize(length);
+  for (var i = length - 1; i >= 0; i--) {
+    result.n[i] = (~ this.n[i]) & e2e.BigNum.BASE_MASK;
+  }
+  return result.add(e2e.BigNum.ONE);
 };
 
 

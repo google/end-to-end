@@ -20,11 +20,11 @@
     "description": "Message informing about a successful decryption of a message."
   },
   "promptVerificationSuccessMsg": {
-    "message": "Good signature(s) from %s.",
+    "message": "Good signature(s) from $1.",
     "description": "Message informing about a successful signature verification."
   },
   "promptVerificationFailureMsg": {
-    "message": "BAD signature(s) from %s!",
+    "message": "BAD signature(s) from $1!",
     "description": "Message informing about failure in signature verification."
   },
   "promptEncryptSignTitle": {
@@ -37,7 +37,11 @@
   },
   "promptEncryptSignInsertLabel": {
     "message": "Insert into the page",
-    "description": "A sentence fragment prompting the user whether to insert the encrypted/decrypted text into the page.."
+    "description": "A sentence fragment prompting the user whether to insert the encrypted/decrypted text into the page."
+  },
+  "promptEncryptSignInsertIntoGmailLabel": {
+    "message": "Insert into the compose window",
+    "description": "A sentence fragment prompting the user whether to insert the encrypted/decrypted text into Gmail."
   },
   "promptEncryptSignSaveDraftLabel": {
     "message": "Save encrypted draft",
@@ -80,11 +84,11 @@
     "description": "A verb prompting the user to import an OpenPGP key into End-To-End."
   },
   "promptImportKeyConfirmLabel": {
-    "message": "Do you want to import the following keys?\n\n%s",
+    "message": "Do you want to import the following keys?",
     "description": "A sentence asking the user to confirm the key import."
   },
   "promptImportKeyNotificationLabel": {
-    "message": "The key for %s has been imported successfully.",
+    "message": "The key for $1 has been imported successfully.",
     "description": "A sentence confirming that the key import has completed successfully."
   },
   "promptImportKeyError": {
@@ -150,10 +154,6 @@
   "keyMgmtImportKeyringLabel": {
     "message": "Import a keyring",
     "description": "A sentence prompting the user to import an existing PGP keyring."
-  },
-  "keyMgmtImportKeyringActionLabel": {
-    "message": "Import",
-    "description": "A verb prompting the user to import a PGP keyring."
   },
   "keyMgmtExportKeyringLabel": {
     "message": "Export local keyring",
@@ -232,7 +232,7 @@
     "description": "A sentence to prompt the user to type her passphrase when importing a PGP key."
   },
   "promptPassphraseCallbackMessage": {
-    "message": "Please provide the passphrase for %s.",
+    "message": "Please provide the passphrase for $1.",
     "description": "A sentence requesting the passphrase for a PGP key."
   },
   "promptNoEncryptionKeysFound": {
@@ -342,6 +342,10 @@
   "preferenceActionSniffing": {
     "message": "Always try to anticipate End-To-End action.",
     "description": "A sentence prompting the user to prevent the extension from guessing the intended actions."
+  },
+  "preferenceLookingGlass": {
+    "message": "Show the decrypted text inside Gmail when possible.",
+    "description": "A sentence prompting the user to enable the looking glass for Gmail."
   },
   "throttleErrorMsg": {
     "message": "The requested operation cannot be performed at this time. Please try again in 1 minute.",

@@ -96,25 +96,36 @@
   }
 
 
+  function testDashEscape() {
+    var original = '-Hello \t  \t\r\nFrom me \r\n';
+    var escaped = '- -Hello\r\n- From me\r\n';
+    var noTrailingWhitespace = '-Hello\r\nFrom me\r\n';
+    assertEquals(escaped, e2e.openpgp.asciiArmor.dashEscape(original));
+    assertEquals(noTrailingWhitespace, e2e.openpgp.asciiArmor.dashUnescape(
+        e2e.openpgp.asciiArmor.dashEscape(original)));
+  }
+
+
   function testClearSign() {
     // Signed by user: "test 4" 1024-bit RSA key, ID 092DA808
     var clearSign =
-      '-----BEGIN PGP SIGNED MESSAGE-----\n' +
-      'Hash: SHA1\n' +
-      '\n' +
-      'hello world new\n' +
-      '-----BEGIN PGP SIGNATURE-----\n' +
-      'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
-      '\n' +
-      'iJwEAQECAAYFAlIny1sACgkQBv+crAktqAgPqgP/bG1lJAyVBa99rJTLn9RAJsC0\n' +
-      '2d7hJBdEiwmakEzbGfWG48RM7mq4X+W3j36D8qeCWpYkJk+zd4g25TJ7DIwoBfCv\n' +
-      'J8S0vVfQ6FYTNHLuAggXs7ooLfovq2fP6iuVjwNX57JDxllHmS8tPAbIgIs+VRag\n' +
-      'hOia0yJgN0DoFSylakY=\n' +
-      '=qRFP\n' +
+      '-----BEGIN PGP SIGNED MESSAGE-----\r\n' +
+      'Hash: SHA1\r\n' +
+      '\r\n' +
+      'hello world new\r\n' +
+      '-----BEGIN PGP SIGNATURE-----\r\n' +
+      'Version: GnuPG v1.4.11 (GNU/Linux)\r\n' +
+      '\r\n' +
+      'iJwEAQECAAYFAlIny1sACgkQBv+crAktqAgPqgP/bG1lJAyVBa99rJTLn9RAJsC0\r\n' +
+      '2d7hJBdEiwmakEzbGfWG48RM7mq4X+W3j36D8qeCWpYkJk+zd4g25TJ7DIwoBfCv\r\n' +
+      'J8S0vVfQ6FYTNHLuAggXs7ooLfovq2fP6iuVjwNX57JDxllHmS8tPAbIgIs+VRag\r\n' +
+      'hOia0yJgN0DoFSylakY=\r\n' +
+      '=qRFP\r\n' +
       '-----END PGP SIGNATURE-----';
     var parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
-    assertEquals('hello world new', parsed.body);
-    assertEquals('SHA1', parsed.hash);
+    assertEquals('hello world new', parsed.getBody());
+    assertEquals('SHA1', parsed.getSignature().hashAlgorithm);
+    console.log(e2e.openpgp.asciiArmor.encodeClearSign(parsed));
     var invalid =
       '-----BEGIN PGP SIGNED MESSAGE-----\n' +
       'Hash: SHA1\n \ntampered message.\n' +
@@ -129,9 +140,9 @@
       'hOia0yJgN0DoFSylakY=\n' +
       '=qRFP\n' +
       '-----END PGP SIGNATURE-----';
-  assertThrows('invalid armor, should throw error', function() {
-      e2e.openpgp.asciiArmor.parseClearSign(invalid)
-  });
+    assertThrows('invalid armor, should throw error', function() {
+        e2e.openpgp.asciiArmor.parseClearSign(invalid)
+    });
 
   }
 
@@ -213,4 +224,14 @@
       'Version: Omg 123',
       e2e.openpgp.asciiArmor.encode('MESSAGE', [1, 2, 3], {'Version': 'Omg 123'}));
   }
+
+  function testConvertNewlines() {
+    var data = 'one   \ntwo\nthree\n';
+    assertEquals('one\r\ntwo\r\nthree\r\n',
+                 e2e.openpgp.asciiArmor.convertNewlines(data))
+    data = 'one\r\ntwo\r\n';
+    assertEquals('one\r\ntwo\r\n',
+                 e2e.openpgp.asciiArmor.convertNewlines(data))
+  }
+
 </script>

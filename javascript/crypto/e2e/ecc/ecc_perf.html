@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<!--
+Copyright 2014 The Closure Library Authors. All Rights Reserved.
+
+Use of this source code is governed by the Apache License, Version 2.0.
+See the COPYING file for details.
+
+Author:  fy@google.com (Frank Yellin)
+-->
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<title>ECC Performance Tests</title>
+<link rel="stylesheet" type="text/css" href="../../../closure/testing/performancetable.css"/>
+<script src="../../../closure/base.js"></script>
+<script src="../deps.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.ecc.PrimeCurve');
+  goog.require('e2e.ecc.eccTester');
+</script>
+
+</head>
+<body>
+<h1>ECC Performance tests</h1>
+<p>
+<strong>User-agent:</strong>
+<script>document.write(navigator.userAgent);</script>
+</p>
+
+<script>
+
+function testP256() {
+  e2e.ecc.eccTester.runBenchmarkForCurve(
+    e2e.ecc.PrimeCurve.P_256);
+}
+
+function testP834() {
+  e2e.ecc.eccTester.runBenchmarkForCurve(
+    e2e.ecc.PrimeCurve.P_384);
+}
+
+</script>
+</body>
+</html>

@@ -16,15 +16,15 @@
  * @author thaidn@google.com (Thai Duong).
  */
 
-goog.provide('e2e.openpgp.KeyRing.testData');
-goog.setTestOnly('e2e.openpgp.KeyRing.testData');
+goog.provide('e2e.openpgp.keyringTestData');
+goog.setTestOnly();
 
 
 
 /**
  * An ECC public key.
  */
-e2e.openpgp.KeyRing.testData.pubKeyAscii =
+e2e.openpgp.keyringTestData.pubKeyAscii =
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
     'Version: GnuPG v2.1.0-ecc (GNU/Linux)\n' +
     '\n' +
@@ -43,7 +43,7 @@ e2e.openpgp.KeyRing.testData.pubKeyAscii =
 /**
  * An ECC private key, generated and exported by End to End.
  */
-e2e.openpgp.KeyRing.testData.privKeyAscii =
+e2e.openpgp.keyringTestData.privKeyAscii =
     '-----BEGIN PGP PRIVATE KEY BLOCK-----\n' +
     '\n' +
     'xv8AAABSBF666PETCCqGSM49AwEHAgMELGfMoJnUCIQTFNMVYrInh2ux3nkSH8aB\n' +
@@ -65,7 +65,7 @@ e2e.openpgp.KeyRing.testData.privKeyAscii =
 /**
  * ECC private key, from b/11712004.
  */
-e2e.openpgp.KeyRing.testData.privKeyAscii2 =
+e2e.openpgp.keyringTestData.privKeyAscii2 =
     '-----BEGIN PGP PRIVATE KEY BLOCK-----\n' +
     '\n' +
     'xv8AAABSBF2XzQETCCqGSM49AwEHAgME1cUyHydObWMgA23//9nVaZWtUtTr2r7v\n' +
@@ -86,7 +86,7 @@ e2e.openpgp.KeyRing.testData.privKeyAscii2 =
 /**
  * Old style keyring with partially serialized key packets.
  */
-e2e.openpgp.KeyRing.testData.keyRingOldStyle = 'U{"pubKey":{' +
+e2e.openpgp.keyringTestData.keyRingOldStyle = 'U{"pubKey":{' +
     '"Drew Hintz <adhintz@google.com>":["BFir2cUTCCqGSM49AwEHAgM' +
     'ERh6l2ToYyzlvyRSEqkZSAxrXy6TGs6TRFmAHwW4wtkRtYFoe+DyUbU5qod' +
     'cyjAFFmVnNxTukBDOQOjPJiOFZ6A==",' +

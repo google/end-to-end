@@ -314,8 +314,8 @@ function testEncryptForSigner() {
       asyncTestCase.waitForAsync('Waiting for text to be decrypted.');
 
       var notificationMsg = '';
-      stubs.replace(chrome.i18n, 'getMessage', function(a) {
-        return '%s';
+      stubs.replace(chrome.i18n, 'getMessage', function(a, b) {
+        return b;
       });
       stubs.replace(
           e2e.ext.Launcher.prototype,
@@ -631,8 +631,8 @@ function testSetKeyringPassphraseError() {
 
 
 function testRenderPassphraseCallback() {
-  stubs.replace(chrome.i18n, 'getMessage', function() {
-    return '%s';
+  stubs.replace(chrome.i18n, 'getMessage', function(a, b) {
+    return b;
   });
   prompt.decorate(document.body);
   prompt.renderPassphraseCallback_('test_uid', function() {});
@@ -693,21 +693,20 @@ function testClose() {
 
 
 function testConfigureExtension() {
-  var openedSettings = false;
-  stubs.replace(window, 'open', function() {
-    openedSettings = true;
-  });
+  stubs.setPath('chrome.tabs.create', mockControl.createFunctionMock());
+  chrome.tabs.create(
+      new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+        assertEquals('settings.html', arg.url);
+        assertFalse(arg.active);
+        return true;
+      }),
+      goog.nullFunction);
 
-  var closedPrompt = false;
-  stubs.replace(window, 'close', function() {
-    closedPrompt = true;
-  });
-
+  mockControl.$replayAll();
   prompt.decorate(document.documentElement);
   prompt.processSelectedContent_(null, constants.Actions.CONFIGURE_EXTENSION);
 
-  assertTrue('Failed to open setting page', openedSettings);
-  assertTrue('Failed to close prompt UI', closedPrompt);
+  mockControl.$verifyAll();
 }
 
 

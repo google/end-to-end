@@ -26,7 +26,7 @@ goog.require('e2e.openpgp.error.InvalidArgumentsError');
 /**
  * BigPrimeNums are odd prime BigNumModuluses that could be use as the modulus
  * in modular arithmetic operations in crypto schemes such as ECDSA or ECDH.
- * @param {!e2e.ByteArray} modulus The modulus to use.
+ * @param {e2e.ByteArray} modulus The modulus to use.
  * @constructor
  * @extends {e2e.BigNumModulus}
  */
@@ -39,8 +39,8 @@ goog.inherits(e2e.BigPrimeNum, e2e.BigNumModulus);
 /**
  * Computes this - 1 - a, thus Vx,
  *     this.mul(this.pow(x, a), this.pow(x, this.negateExponent(a))) == 1.
- * @param {!e2e.ByteArray} input Number to negate.
- * @return {!e2e.ByteArray} Negated number.
+ * @param {e2e.ByteArray} input Number to negate.
+ * @return {e2e.ByteArray} Negated number.
  */
 e2e.BigNum.prototype.negateExponent = function(input) {
   return this.negateExponent_(input);
@@ -49,8 +49,8 @@ e2e.BigNum.prototype.negateExponent = function(input) {
 
 /**
  * Compute this - 1 - a, with 0 <= a < this.
- * @param {!e2e.ByteArray} a number to negate.
- * @return {!e2e.ByteArray} The negation of the input.
+ * @param {e2e.ByteArray} a number to negate.
+ * @return {e2e.ByteArray} The negation of the input.
  * @private
  */
 e2e.BigPrimeNum.prototype.negateExponent_ = function(a) {

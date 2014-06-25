@@ -235,8 +235,14 @@ api.Api.prototype.executeAction_ = function(callback, req) {
     case constants.Actions.GET_KEY_DESCRIPTION:
       outgoing.error = this.runWrappedProcessor_(
           /** @this api.Api */ function() {
-            outgoing.content = this.pgpCtx_.getKeyDescription(incoming.content);
-            callback(outgoing);
+            this.pgpCtx_.getKeyDescription(incoming.content).addCallback(
+                function(result) {
+                  outgoing.content = result;
+                  callback(outgoing);
+                }).addErrback(function(error) {
+                  outgoing.error = error.toString();
+                  callback(outgoing);
+                });
           });
       break;
     case constants.Actions.IMPORT_KEY:

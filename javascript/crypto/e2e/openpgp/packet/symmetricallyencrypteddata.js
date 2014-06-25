@@ -21,9 +21,10 @@ goog.provide('e2e.openpgp.packet.SymmetricallyEncryptedIntegrity');
 
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.factory');
-goog.require('e2e.ciphermode.CFB');
+goog.require('e2e.ciphermode.Cfb');
 goog.require('e2e.hash.Sha1');
-goog.require('e2e.openpgp.OCFB');
+goog.require('e2e.openpgp.Ocfb');
+goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.error.DecryptError');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.EncryptedData');
@@ -53,16 +54,18 @@ e2e.openpgp.packet.SymmetricallyEncrypted.prototype.tag = 9;
 /** @inheritDoc */
 e2e.openpgp.packet.SymmetricallyEncrypted.prototype.decrypt =
     function(algorithm, keyObj) {
-  var cipher = e2e.cipher.factory.require(algorithm, keyObj);
-  var ocfbCipher = new e2e.openpgp.OCFB(cipher, true);
+  var cipher = /** @type {e2e.cipher.SymmetricCipher} */ (
+      e2e.openpgp.constants.getInstance(
+          e2e.openpgp.constants.Type.SYMMETRIC_KEY, algorithm, keyObj));
+  var ocfbCipher = new e2e.openpgp.Ocfb(cipher, true);
   this.data = /** @type e2e.ByteArray */ (
       e2e.async.Result.getValue(ocfbCipher.decrypt(this.encryptedData, [])));
 };
 
 
 /** @inheritDoc */
-e2e.openpgp.packet.SymmetricallyEncrypted.prototype.
-serializePacketBody = function() {
+e2e.openpgp.packet.SymmetricallyEncrypted.prototype.serializePacketBody =
+    function() {
   return this.encryptedData;
 };
 
@@ -104,9 +107,10 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.prototype.tag = 18;
 /** @inheritDoc */
 e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.prototype.decrypt =
     function(algorithm, keyObj) {
-  var cipher = e2e.cipher.factory.require(algorithm, keyObj);
+  var cipher = /** @type {e2e.cipher.SymmetricCipher} */ (
+      e2e.cipher.factory.require(algorithm, keyObj));
   var iv = goog.array.repeat(0, cipher.blockSize);
-  var cfbCipher = new e2e.ciphermode.CFB(cipher);
+  var cfbCipher = new e2e.ciphermode.Cfb(cipher);
   var plaintext = /** @type e2e.ByteArray */ (
       e2e.async.Result.getValue(cfbCipher.decrypt(this.encryptedData, iv)));
   // MDC is at end of packet. It's 2 bytes of header and 20 bytes of hash.
@@ -119,11 +123,11 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.prototype.decrypt =
       (prefix[prefix.length - 2] != prefix[prefix.length - 4])) {
     throw new e2e.openpgp.error.DecryptError('Repeating bytes mismatch.');
   }
-  if (!goog.array.equals(mdcHeader, [0xD3, 0x14])) {
+  if (!e2e.compareByteArray(mdcHeader, [0xD3, 0x14])) {
     throw new e2e.openpgp.error.DecryptError(
         'Modification Detection Code not properly formatted.');
   }
-  if (!goog.array.equals(mdc, mdcCalculated)) {
+  if (!e2e.compareByteArray(mdc, mdcCalculated)) {
     throw new e2e.openpgp.error.DecryptError(
         'Modification Detection Code has incorrect value.');
   }
@@ -135,7 +139,7 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.prototype.decrypt =
  * Makes a Symmetrically Encrypted Integrity-protected packet containing the
  * specified plaintext packet. Does the encryption and creates the MDC.
  * @param {e2e.ByteArray} innerPacket The unencrypted inner packet.
- * @param {!e2e.cipher.Cipher} cipher The cipher to use for encryption.
+ * @param {!e2e.cipher.SymmetricCipher} cipher The cipher to use for encryption.
  * @return {e2e.openpgp.packet.SymmetricallyEncryptedIntegrity}
  */
 e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.construct = function(
@@ -150,7 +154,7 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.construct = function(
   var mdcCalculated = sha1.hash(plaintext);
   goog.array.extend(plaintext, mdcCalculated);
   var iv = goog.array.repeat(0, cipher.blockSize);
-  var cfbCipher = new e2e.ciphermode.CFB(cipher);
+  var cfbCipher = new e2e.ciphermode.Cfb(cipher);
   var ciphertext = /** @type e2e.ByteArray */ (
       e2e.async.Result.getValue(cfbCipher.encrypt(plaintext, iv)));
   var packet = new e2e.openpgp.packet.SymmetricallyEncryptedIntegrity(

@@ -33,13 +33,13 @@ e2e.scheme.CryptoPromise_;
  * @constructor
  */
 e2e.scheme.Scheme = function() {
-  this.useNative = this.useNative && e2e.scheme.Scheme.USE_WEBCRYPTO;
-  if (this.useNative && 'crypto' in goog.global) {
+  this.useWebCrypto = this.useWebCrypto && e2e.scheme.Scheme.USE_WEBCRYPTO;
+  if (this.useWebCrypto && 'crypto' in goog.global) {
     this.crypto = goog.global.crypto;
     if ('subtle' in this.crypto) {
       this.crypto = this.crypto.subtle;
     }
-    this.useNative = 'encrypt' in this.crypto;
+    this.useWebCrypto = 'encrypt' in this.crypto;
   }
 };
 
@@ -62,10 +62,10 @@ e2e.scheme.Scheme.prototype.crypto;
  * @return {!e2e.async.Result.<e2e.cipher.ciphertext.CipherText>}
  */
 e2e.scheme.Scheme.prototype.encrypt = function(plaintext) {
-  if (this.useNative) {
-    return this.encryptNative(plaintext);
+  if (this.useWebCrypto) {
+    return this.encryptWebCrypto(plaintext);
   } else {
-    return this.encryptCustom(plaintext);
+    return this.encryptJavaScript(plaintext);
   }
 };
 
@@ -75,41 +75,41 @@ e2e.scheme.Scheme.prototype.encrypt = function(plaintext) {
  * @return {!e2e.async.Result.<e2e.ByteArray>}
  */
 e2e.scheme.Scheme.prototype.decrypt = function(ciphertext) {
-  if (this.useNative) {
-    return this.decryptNative(ciphertext);
+  if (this.useWebCrypto) {
+    return this.decryptWebCrypto(ciphertext);
   } else {
-    return this.decryptCustom(ciphertext);
+    return this.decryptJavaScript(ciphertext);
   }
 };
 
 
 /**
- * Custom (JavaScript) implementation of the scheme.
+ * JavaScript implementation of the scheme.
  * @param {e2e.ByteArray} plaintext
  * @return {!e2e.async.Result.<e2e.cipher.ciphertext.CipherText>}
  */
-e2e.scheme.Scheme.prototype.encryptCustom;
+e2e.scheme.Scheme.prototype.encryptJavaScript;
 
 
 /**
- * Native (WebCrypto) implementation of the scheme.
+ * WebCrypto implementation of the scheme.
  * @param {e2e.ByteArray} plaintext
  * @return {!e2e.async.Result.<e2e.cipher.ciphertext.CipherText>}
  */
-e2e.scheme.Scheme.prototype.encryptNative;
+e2e.scheme.Scheme.prototype.encryptWebCrypto;
 
 
 /**
- * Custom (JavaScript) implementation of the scheme.
+ * JavaScript implementation of the scheme.
  * @param {e2e.cipher.ciphertext.CipherText} ciphertext
  * @return {!e2e.async.Result.<e2e.ByteArray>}
  */
-e2e.scheme.Scheme.prototype.decryptCustom;
+e2e.scheme.Scheme.prototype.decryptJavaScript;
 
 
 /**
- * Native (WebCrypto) implementation of the scheme.
+ * WebCrypto implementation of the scheme.
  * @param {e2e.cipher.ciphertext.CipherText} ciphertext
  * @return {!e2e.async.Result.<e2e.ByteArray>}
  */
-e2e.scheme.Scheme.prototype.decryptNative;
+e2e.scheme.Scheme.prototype.decryptWebCrypto;

@@ -21,7 +21,7 @@ goog.provide('e2e.openpgp.KeyClient');
 
 goog.require('e2e');
 goog.require('e2e.async.Result');
-goog.require('e2e.cipher.AES');
+goog.require('e2e.cipher.Aes');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.all');
 goog.require('e2e.hash.Sha1');
@@ -29,7 +29,7 @@ goog.require('e2e.openpgp.block.TransferableKey');
 goog.require('e2e.openpgp.block.TransferablePublicKey');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.signer.Algorithm');
-goog.require('e2e.signer.ECDSA');
+goog.require('e2e.signer.Ecdsa');
 goog.require('goog.Uri.QueryData');
 goog.require('goog.net.XhrIo');
 

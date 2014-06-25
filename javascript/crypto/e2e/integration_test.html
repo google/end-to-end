@@ -256,17 +256,12 @@ function testEncryption() {
     '=nHBL\n' +
     '-----END PGP PUBLIC KEY BLOCK-----';
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
-
-  var literal = new e2e.openpgp.packet.LiteralData(
-      e2e.openpgp.packet.LiteralData.Format.TEXT,
-      e2e.stringToByteArray(plaintextFilename),
-      1375136046,
-      e2e.stringToByteArray(plaintext)
-      );
+  var literal = e2e.openpgp.block.LiteralMessage.fromText(plaintext,
+      plaintextFilename);
   asyncTestCase.waitForAsync('Waiting for encryption.');
   e2e.openpgp.block.EncryptedMessage.construct(
       literal,
-      [publicKeyBlock.subKeys[0]]).addCallback(function(block) {
+      [publicKeyBlock]).addCallback(function(block) {
     var ascii = e2e.openpgp.asciiArmor.encode(block.header,
                                                   block.serialize());
 
@@ -412,21 +407,18 @@ function testSymmetricESKDecryption() {
  * This has an encrypted session key and an extra PK ESK.
  */
 function testSymmetricEncryption() {
-  var passphrase = e2e.stringToByteArray('test');
+  var passphraseString = 'test';
+  var passphrase = e2e.stringToByteArray(passphraseString);
   var plaintext = 'hello world from encrypted message';
   var plaintextFilename = 'file.txt';
 
-  var literal = new e2e.openpgp.packet.LiteralData(
-      e2e.openpgp.packet.LiteralData.Format.TEXT,
-      e2e.stringToByteArray(plaintextFilename),
-      1375136046,
-      e2e.stringToByteArray(plaintext)
-      );
+  var literal = e2e.openpgp.block.LiteralMessage.fromText(plaintext,
+      plaintextFilename);
   asyncTestCase.waitForAsync('Waiting for encryption.');
   e2e.openpgp.block.EncryptedMessage.construct(
       literal,
       [],  // No public keys to encrypt to.
-      [passphrase]// Passphrases for symmetric-key ESKs.
+      [passphraseString]// Passphrases for symmetric-key ESKs.
   ).addCallback(function(block){
     var message = e2e.openpgp.asciiArmor.encode(block.header,
                                                     block.serialize());
@@ -535,15 +527,12 @@ function testEncryptionECDH() {
     '-----END PGP PUBLIC KEY BLOCK-----';
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
 
-  var literal = new e2e.openpgp.packet.LiteralData(
-      e2e.openpgp.packet.LiteralData.Format.TEXT,
-      e2e.stringToByteArray(plaintextFilename),
-      1375136046,
-      e2e.stringToByteArray(plaintext));
+  var literal = e2e.openpgp.block.LiteralMessage.fromText(plaintext,
+      plaintextFilename);
   asyncTestCase.waitForAsync('Waiting for encryption.');
   e2e.openpgp.block.EncryptedMessage.construct(
       literal,
-      [publicKeyBlock.subKeys[0]]).addCallback(function(block) {
+      [publicKeyBlock]).addCallback(function(block) {
     var ascii = e2e.openpgp.asciiArmor.encode(block.header,
                                                   block.serialize());
 
@@ -680,8 +669,8 @@ function testClearSignRSA() {
     '=qRFP\n' +
     '-----END PGP SIGNATURE-----';
   var parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
-  var signaturePacket = e2e.openpgp.parse.parseSerializedPacket(parsed.signature);
-  assertTrue(signaturePacket.verify(e2e.stringToByteArray(parsed.body),
+  var signaturePacket = parsed.getSignature();
+  assertTrue(signaturePacket.verify(parsed.toLiteralMessage().getBytesToSign(),
                                     publicKeyBlock.keyPacket.cipher));
   assertFalse(signaturePacket.verify(e2e.stringToByteArray('bad world new'),
                                      publicKeyBlock.keyPacket.cipher));
@@ -725,12 +714,8 @@ function testClearSignInvalidHashAlgo() {
     'hOia0yJgN0DoFSylakY=\n' +
     '=qRFP\n' +
     '-----END PGP SIGNATURE-----';
-  var parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
-  var signaturePacket = e2e.openpgp.parse.parseSerializedPacket(parsed.signature);
-  assertFalse(signaturePacket.verify(e2e.stringToByteArray(parsed.body),
-    publicKeyBlock.keyPacket.cipher, parsed.hash));
-  assertTrue(signaturePacket.verify(e2e.stringToByteArray(parsed.body),
-    publicKeyBlock.keyPacket.cipher, 'SHA1'));
+  assertThrows("Should throw parse error on invalid hash", function() {
+      e2e.openpgp.asciiArmor.parseClearSign(clearSign)});
 }
 
 function testClearSignDSA() {
@@ -767,11 +752,11 @@ function testClearSignDSA() {
     '=ov4Z\n' +
     '-----END PGP SIGNATURE-----';
   var parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
-  var signaturePacket = e2e.openpgp.parse.parseSerializedPacket(parsed.signature);
-  assertTrue(signaturePacket.verify(e2e.stringToByteArray(parsed.body),
-                                    publicKeyBlock.keyPacket.cipher,
-                                    parsed.hash));
-  assertFalse(signaturePacket.verify(e2e.stringToByteArray(parsed.body),
+  var signaturePacket = parsed.getSignature();
+  var bodyBytes = parsed.toLiteralMessage().getBytesToSign();
+  assertTrue(signaturePacket.verify(bodyBytes,
+                                    publicKeyBlock.keyPacket.cipher));
+  assertFalse(signaturePacket.verify(bodyBytes,
                                      publicKeyBlock.keyPacket.cipher, 'OTHER'));
   assertFalse(signaturePacket.verify(e2e.stringToByteArray('bad world new'),
                                      publicKeyBlock.keyPacket.cipher));
@@ -816,10 +801,10 @@ function testClearSignDSA() {
     '=B1zR\n' +
     '-----END PGP SIGNATURE-----';
   parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
-  var signaturePacket = e2e.openpgp.parse.parseSerializedPacket(parsed.signature);
-  assertTrue(signaturePacket.verify(e2e.stringToByteArray(parsed.body),
-                                    publicKeyBlock.keyPacket.cipher,
-                                    parsed.hash));
+  var signaturePacket = parsed.getSignature();
+  var bodyBytes = parsed.toLiteralMessage().getBytesToSign();
+  assertTrue(signaturePacket.verify(bodyBytes,
+      publicKeyBlock.keyPacket.cipher));
   assertFalse(signaturePacket.verify(e2e.stringToByteArray('bad world new'),
                                      publicKeyBlock.keyPacket.cipher));
 
@@ -871,10 +856,10 @@ function testClearSignDSA() {
     '=0TM7\n' +
     '-----END PGP SIGNATURE-----';
   parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
-  var signaturePacket = e2e.openpgp.parse.parseSerializedPacket(parsed.signature);
-  assertTrue(signaturePacket.verify(e2e.stringToByteArray(parsed.body),
-                                    publicKeyBlock.keyPacket.cipher,
-                                    parsed.hash));
+  var signaturePacket = parsed.getSignature();
+  var bodyBytes = parsed.toLiteralMessage().getBytesToSign();
+  assertTrue(signaturePacket.verify(bodyBytes,
+                                    publicKeyBlock.keyPacket.cipher));
   assertFalse(signaturePacket.verify(e2e.stringToByteArray('bad world new'),
                                      publicKeyBlock.keyPacket.cipher));
 }
@@ -920,16 +905,12 @@ function testElGamal() {
       '-----END PGP PUBLIC KEY BLOCK-----';
   publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
 
-  var literal = new e2e.openpgp.packet.LiteralData(
-      e2e.openpgp.packet.LiteralData.Format.TEXT,
-      e2e.stringToByteArray(plaintextFilename),
-      1375136046,
-      e2e.stringToByteArray(plaintext)
-      );
+  var literal = e2e.openpgp.block.LiteralMessage.fromText(plaintext,
+      plaintextFilename);
   asyncTestCase.waitForAsync('Waiting for encryption.');
   e2e.openpgp.block.EncryptedMessage.construct(
       literal,
-      [publicKeyBlock.subKeys[0]])
+      [publicKeyBlock])
     .addCallback(function(block) {
       asyncTestCase.continueTesting();
     }).addErrback(function(e) {
@@ -1002,12 +983,7 @@ function testEncryptionWithSignatures() {
 
   var passphrase = e2e.stringToByteArray('test');
   privateKeyBlock.keyPacket.cipher.unlockKey(passphrase);
-  var literal = new e2e.openpgp.packet.LiteralData(
-      e2e.openpgp.packet.LiteralData.Format.TEXT,
-      e2e.stringToByteArray(''),  // file name
-      new Date().getTime() / 1000,  // time date in seconds since 1970
-      e2e.stringToByteArray(plaintext)
-      );
+  var literal = e2e.openpgp.block.LiteralMessage.fromText(plaintext);
 
   assertEquals(publicKeyBlock.subKeys[0], publicKeyBlock.getKeyToEncrypt());
   assertEquals(privateKeyBlock.keyPacket, privateKeyBlock.getKeyToSign());
@@ -1017,9 +993,9 @@ function testEncryptionWithSignatures() {
   e2e.openpgp.block.EncryptedMessage
     .construct(
       literal,
-      [publicKeyBlock.getKeyToEncrypt()],
+      [publicKeyBlock],
       [],
-      privateKeyBlock.getKeyToSign())
+      privateKeyBlock)
     .addCallback(function(block) {
       var ascii = e2e.openpgp.asciiArmor.encode(block.header,
                                                     block.serialize());
@@ -1052,8 +1028,7 @@ function testEncryptionWithSignatures() {
 
           // Message was decompressed correctly.
           assertEquals(
-            e2e.byteArrayToString(decompressed.getData().data),
-            plaintext);
+            plaintext, e2e.byteArrayToString(decompressed.getLiteralMessage().getData()));
           // And signature verifies correctly.
           var verifyResult = decompressed.verify([publicKeyBlock]);
           assertEquals(verifyResult.success.length, 1);

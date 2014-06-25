@@ -37,7 +37,7 @@ function setUp() {
   draft = {
     to: 'test@example.com',
     cc: 'foo@example.com',
-    body: 'some text',
+    body: 'some text<br>with new<br>lines',
     getTo: function() { return this.to; },
     setTo: function(value) { this.to = value; },
     getCc: function() { return this.cc; },
@@ -107,7 +107,7 @@ function testGetActiveDraft() {
     asyncTestCase.continueTesting();
     assertTrue(
         goog.array.equals(['test@example.com', 'foo@example.com'], recipients));
-    assertEquals(draft.body, body);
+    assertEquals(draft.body.replace(/\<br\>/g, '\n'), body);
   }, 500);
 }
 

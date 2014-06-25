@@ -17,53 +17,38 @@
 
 goog.provide('e2e.ext.utils');
 
-goog.require('goog.array');
-goog.require('goog.string');
-goog.require('goog.string.format');
-
 goog.scope(function() {
 var utils = e2e.ext.utils;
 
 
 /**
- * Writes provided content to a new file with the specified filename.
- * @param {string} filename The filename to use for the new file.
+ * Creates a blob URL to download a file.
  * @param {string} content The content to write to the new file.
  * @param {!function(string)} callback The callback to invoke with the URL of
  *     the created file.
  */
-utils.WriteToFile = function(filename, content, callback) {
-  utils.GetFileEntry_(
-      filename, {create: true, exclusive: true}, function(fileEntry) {
-    fileEntry.createWriter(function(fileWriter) {
-      fileWriter.onerror = utils.errorHandler;
-      fileWriter.onwriteend = function() {
-        callback(fileEntry.toURL());
-      };
-
-      var blob = new Blob(
+utils.writeToFile = function(content, callback) {
+  var blob = new Blob(
           [content], {type: 'application/pgp-keys; format=text;'});
-      fileWriter.write(blob);
-    }, utils.errorHandler);
-  });
+  var url = URL.createObjectURL(blob);
+  callback(url);
 };
 
 
 /**
  * Reads the contents of the provided file returns it via the provided callback.
  * Automatically handles both binary OpenPGP packets and text files.
- * @param {string|File} filename The filename of the file or the actual file to
- *     read.
+ * @param {!File} file The file to read.
  * @param {!function(string)} callback The callback to invoke with the file's
  *     contents.
  */
-utils.ReadFile = function(filename, callback) {
-  utils.ReadFile_(false, filename, function(contents) {
+utils.readFile = function(file, callback) {
+  utils.readFile_(false, file, function(contents) {
     // The 0x80 bit is always set for the Packet Tag for OpenPGP packets.
     if (contents.charCodeAt(0) >= 0x80) {
       callback(contents);
     } else {
-      utils.ReadFile_(true, filename, callback);
+      utils.readFile_(true, file, callback);
     }
   });
 };
@@ -73,56 +58,24 @@ utils.ReadFile = function(filename, callback) {
  * Reads the contents of the provided file as text and returns them via the
  * provided callback.
  * @param {boolean} asText If true, then read as text.
- * @param {string|File} filename The filename of the file or the actual file to
- *     read.
+ * @param {!File} file The file to read.
  * @param {!function(string)} callback The callback to invoke with the file's
  *     contents.
  * @private
  */
-utils.ReadFile_ = function(asText, filename, callback) {
-  var read = function(file) {
-    var reader = new FileReader();
-    reader.onload = function() {
-      if (reader.readyState != reader.LOADING) {
-        reader.onload = null;
-        callback(/** @type {string} */ (reader.result));
-      }
-    };
-    if (asText) {
-      reader.readAsText(file);
-    } else {
-      reader.readAsBinaryString(file);
+utils.readFile_ = function(asText, file, callback) {
+  var reader = new FileReader();
+  reader.onload = function() {
+    if (reader.readyState != reader.LOADING) {
+      reader.onload = null;
+      callback(/** @type {string} */ (reader.result));
     }
   };
-
-  if (filename instanceof File) {
-    read(filename);
+  if (asText) {
+    reader.readAsText(file);
   } else {
-    utils.GetFileEntry_(
-        /** @type {string} */ (filename), {}, function(fileEntry) {
-          fileEntry.file(function(file) {
-            read(file);
-          });
-        });
+    reader.readAsBinaryString(file);
   }
-};
-
-
-/**
- * Returns a handle on the requested file.
- * @param {string} filename The name of the file to open.
- * @param {Object} options Any specific options that are needed when opening the
- *     file. Example: {create: true}.
- * @param {!function(FileEntry)} callback The callback to invoke with the handle
- *     to the file.
- * @private
- */
-utils.GetFileEntry_ = function(filename, options, callback) {
-  window.webkitRequestFileSystem(
-      window.TEMPORARY, 1024 * 1024, function(filesystem) {
-        filesystem.root.getFile(
-            filename, options, callback, utils.errorHandler);
-      }, utils.errorHandler);
 };
 
 

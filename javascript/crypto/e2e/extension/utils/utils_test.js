@@ -29,7 +29,7 @@ function testWrite() {
   var content = 'some content';
   var createdFile = false;
 
-  utils.WriteToFile(filename, content, function(fileUrl) {
+  utils.writeToFile(content, function(fileUrl) {
     createdFile = true;
     var xhr = new XMLHttpRequest();
     xhr.open('GET', fileUrl, false);
@@ -39,27 +39,20 @@ function testWrite() {
 
   testCase.waitForAsync('waiting for file to be created');
   window.setTimeout(function() {
-    testCase.continueTesting();
     assertTrue('Failed to create file', createdFile);
+    testCase.continueTesting();
   }, 500);
 }
 
 
 function testRead() {
-  var filename = 'temp2.txt';
   var content = 'some content';
   var readFile = false;
-
-  utils.WriteToFile(filename, content, function(fileUrl) {
-    utils.ReadFile(filename, function(readContents) {
-      readFile = true;
-      assertEquals('Failed to read contents', content, readContents);
-    });
-  });
-
+  var file = new Blob([content], {type: 'text/plain'});
   testCase.waitForAsync('waiting for file to be read');
-  window.setTimeout(function() {
+  utils.readFile(file, function(readContents) {
+    readFile = true;
+    assertEquals('Failed to read contents', content, readContents);
     testCase.continueTesting();
-    assertTrue('Failed to read file', readFile);
-  }, 500);
+  });
 }

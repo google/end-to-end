@@ -17,7 +17,7 @@
  * @author thaidn@google.com (Thai Duong)
  */
 
-goog.provide('e2e.cipher.AESKeyWrap');
+goog.provide('e2e.cipher.AesKeyWrap');
 
 goog.require('e2e');
 goog.require('e2e.async.Result');
@@ -31,11 +31,11 @@ goog.require('goog.crypt');
 
 /**
  * AES key wrap, as described in RFC 3394.
- * @param {e2e.cipher.AES} primitive The AES primitive to used
+ * @param {e2e.cipher.Aes} primitive The AES primitive to used
  *     for key-wrapping. It must either AES128, AES192 or AES256.
  * @constructor
  */
-e2e.cipher.AESKeyWrap = function(primitive) {
+e2e.cipher.AesKeyWrap = function(primitive) {
   goog.asserts.assertObject(primitive, 'AES primitive should be defined.');
   if (primitive.algorithm != e2e.cipher.Algorithm.AES128 &&
       primitive.algorithm != e2e.cipher.Algorithm.AES192 &&
@@ -49,10 +49,10 @@ e2e.cipher.AESKeyWrap = function(primitive) {
 
 /**
  * The AES primitive used to wrap or unwrap key.
- * @type {e2e.cipher.AES}
+ * @type {e2e.cipher.Aes}
  * @private
  */
-e2e.cipher.AESKeyWrap.prototype.aes_;
+e2e.cipher.AesKeyWrap.prototype.aes_;
 
 
 /**
@@ -61,13 +61,13 @@ e2e.cipher.AESKeyWrap.prototype.aes_;
  * @const
  * @private
  */
-e2e.cipher.AESKeyWrap.prototype.IV_ = goog.array.repeat(0xA6, 8);
+e2e.cipher.AesKeyWrap.prototype.IV_ = goog.array.repeat(0xA6, 8);
 
 /**
  * Sets key-wrapping key.
  * @param {{key: e2e.ByteArray}} key The key-wrapping key.
  */
-e2e.cipher.AESKeyWrap.prototype.setKey = function(key) {
+e2e.cipher.AesKeyWrap.prototype.setKey = function(key) {
   goog.asserts.assertObject(this.aes_);
   goog.asserts.assert(key['key'].length >= this.aes_.keySize,
       'Invalid key-wrapping key.');
@@ -81,7 +81,7 @@ e2e.cipher.AESKeyWrap.prototype.setKey = function(key) {
  * @param {e2e.ByteArray} keyData The key data to be wrapped.
  * @return {e2e.ByteArray} The wrapped key data.
  */
-e2e.cipher.AESKeyWrap.prototype.wrap = function(keyData) {
+e2e.cipher.AesKeyWrap.prototype.wrap = function(keyData) {
   goog.asserts.assertArray(keyData,
        'Key data to be wrapped should be defined.');
   goog.asserts.assert(keyData.length >= 16,
@@ -127,7 +127,7 @@ e2e.cipher.AESKeyWrap.prototype.wrap = function(keyData) {
  * @param {e2e.ByteArray} wrappedKeyData The key data to be unwrapped.
  * @return {e2e.ByteArray} The unwrapped key data.
  */
-e2e.cipher.AESKeyWrap.prototype.unwrap = function(wrappedKeyData) {
+e2e.cipher.AesKeyWrap.prototype.unwrap = function(wrappedKeyData) {
   goog.asserts.assertArray(wrappedKeyData,
        'Key data to be unwrapped should be defined.');
   goog.asserts.assert(wrappedKeyData.length >= 16,

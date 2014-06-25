@@ -21,7 +21,7 @@ goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.factory');
 goog.require('e2e.openpgp');
-goog.require('e2e.openpgp.MPI');
+goog.require('e2e.openpgp.Mpi');
 goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.ParseError');
@@ -61,7 +61,7 @@ e2e.openpgp.packet.PKEncryptedSessionKey.prototype.decryptSessionKey =
   if (this.algorithm == e2e.cipher.Algorithm.RSA) {
     // Use WebCrypto for RSA.
     res = new e2e.scheme.Rsaes(
-        /** @type {e2e.cipher.RSA} */(cipher)).decrypt(
+        /** @type {e2e.cipher.Rsa} */(cipher)).decrypt(
         this.encryptedKey);
   } else if (this.algorithm == e2e.cipher.Algorithm.ECDH) {
     // TODO(thaidn): Use WebCrypto for ECDH.
@@ -178,7 +178,7 @@ e2e.openpgp.packet.PKEncryptedSessionKey.construct = function(publicKey,
       e2e.openpgp.calculateNumericChecksum(sessionKey));
   var encryptedResult;
   if (publicKey.cipher.algorithm == e2e.cipher.Algorithm.RSA) {
-    var cipher = /** @type {e2e.cipher.RSA} */(publicKey.cipher);
+    var cipher = /** @type {e2e.cipher.Rsa} */(publicKey.cipher);
     var rsaes = new e2e.scheme.Rsaes(cipher);
     encryptedResult = rsaes.encrypt(m);
   } else if (publicKey.cipher.algorithm == e2e.cipher.Algorithm.ECDH) {
@@ -214,18 +214,18 @@ e2e.openpgp.packet.PKEncryptedSessionKey.createPacketForKey_ =
   switch (publicKey.cipher.algorithm) {
     case e2e.cipher.Algorithm.RSA:
       encryptedKey = {
-        'c': (new e2e.openpgp.MPI(encrypted['c'])).serialize()};
+        'c': (new e2e.openpgp.Mpi(encrypted['c'])).serialize()};
       break;
     case e2e.cipher.Algorithm.ELGAMAL:
       encryptedKey = {
-        'u': (new e2e.openpgp.MPI(encrypted['u'])).serialize(),
-        'v': (new e2e.openpgp.MPI(encrypted['v'])).serialize()
+        'u': (new e2e.openpgp.Mpi(encrypted['u'])).serialize(),
+        'v': (new e2e.openpgp.Mpi(encrypted['v'])).serialize()
       };
       break;
     case e2e.cipher.Algorithm.ECDH:
       encryptedKey = {
         'u': encrypted['u'],  // Encrypted symmetric key.
-        'v': (new e2e.openpgp.MPI(encrypted['v'])).serialize()};
+        'v': (new e2e.openpgp.Mpi(encrypted['v'])).serialize()};
       break;
     default:
       throw new Error('Unknown algorithm.');
@@ -260,14 +260,14 @@ e2e.openpgp.packet.PKEncryptedSessionKey.parse = function(body) {
       {});
   switch (algorithm) {
       case e2e.cipher.Algorithm.RSA:
-        encryptedKey['c'] = goog.array.clone(e2e.openpgp.MPI.parse(body));
+        encryptedKey['c'] = goog.array.clone(e2e.openpgp.Mpi.parse(body));
         break;
       case e2e.cipher.Algorithm.ELGAMAL:
-        encryptedKey['u'] = goog.array.clone(e2e.openpgp.MPI.parse(body));
-        encryptedKey['v'] = goog.array.clone(e2e.openpgp.MPI.parse(body));
+        encryptedKey['u'] = goog.array.clone(e2e.openpgp.Mpi.parse(body));
+        encryptedKey['v'] = goog.array.clone(e2e.openpgp.Mpi.parse(body));
         break;
       case e2e.cipher.Algorithm.ECDH:
-        encryptedKey['v'] = goog.array.clone(e2e.openpgp.MPI.parse(body));
+        encryptedKey['v'] = goog.array.clone(e2e.openpgp.Mpi.parse(body));
         var length = body.shift();
         encryptedKey['u'] = body.splice(0, length);  // Encrypted symmetric key.
         break;

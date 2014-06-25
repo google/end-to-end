@@ -28,7 +28,7 @@ goog.require('goog.asserts');
 /**
  * Representation of an ECC protocol.
  * @param {e2e.ecc.PrimeCurve} curve The curve used for this protocol.
- * @param {{pubKey: e2e.ByteArray, privKey: e2e.ByteArray}=}
+ * @param {{pubKey: e2e.ByteArray, privKey: (e2e.ByteArray|undefined)}=}
  *     opt_key The public and/or private key used in this protocol.
  * @constructor
  */
@@ -51,7 +51,7 @@ e2e.ecc.Protocol.prototype.params;
 
 /**
  * The public key used in this protocol, as an array
- * @type {!e2e.ByteArray}
+ * @type {e2e.ByteArray}
  * @private
  */
 e2e.ecc.Protocol.prototype.pubKey_;
@@ -59,7 +59,7 @@ e2e.ecc.Protocol.prototype.pubKey_;
 
 /**
  * The public key used in this protocol, as a point
- * @type {!e2e.ecc.Point}
+ * @type {!e2e.ecc.point.Point}
  * @private
  */
 e2e.ecc.Protocol.prototype.pubKeyAsPoint_;
@@ -67,7 +67,7 @@ e2e.ecc.Protocol.prototype.pubKeyAsPoint_;
 
 /**
  * The private key used in this protocol.
- * @type {!e2e.ByteArray}
+ * @type {e2e.ByteArray}
  * @private
  */
 e2e.ecc.Protocol.prototype.privKey_;
@@ -75,7 +75,7 @@ e2e.ecc.Protocol.prototype.privKey_;
 
 /**
  * Sets the public and/or private key.
- * @param {{pubKey: e2e.ByteArray, privKey: e2e.ByteArray}}
+ * @param {{pubKey: e2e.ByteArray, privKey: (e2e.ByteArray|undefined)}}
  *     key The public and/or private key.
  */
 e2e.ecc.Protocol.prototype.setKey = function(key) {
@@ -96,7 +96,7 @@ e2e.ecc.Protocol.prototype.setKey = function(key) {
 
 /**
  * Returns the public key.
- * @return {!e2e.ByteArray}
+ * @return {e2e.ByteArray}
  */
 e2e.ecc.Protocol.prototype.getPublicKey = function() {
   return this.pubKey_;
@@ -105,7 +105,7 @@ e2e.ecc.Protocol.prototype.getPublicKey = function() {
 
 /**
  * Returns the public key as a point
- * @return {!e2e.ecc.Point}
+ * @return {!e2e.ecc.point.Point}
  */
 e2e.ecc.Protocol.prototype.getPublicKeyAsPoint = function() {
   return this.pubKeyAsPoint_;
@@ -125,50 +125,18 @@ e2e.ecc.Protocol.prototype.getPrivateKey = function() {
  * Generates a key pair used in ECC protocols.
  * @param {!e2e.ecc.PrimeCurve} curve The curve of the to-be-generated
  *     key pair.
- * @return {{privKey: e2e.ByteArray, pubKey: e2e.ByteArray}}
+ * @param {e2e.ByteArray=} opt_privateKey  An optional already known
+ *     private key. If not given, a random key will be created.
+ * @return {{curve: ?e2e.ecc.PrimeCurveOid,
+ *     privKey: e2e.ByteArray, pubKey: e2e.ByteArray}}
  */
-e2e.ecc.Protocol.generateKeyPair = function(curve) {
+e2e.ecc.Protocol.generateKeyPair = function(curve, opt_privateKey) {
   var params = e2e.ecc.DomainParam.fromCurve(curve);
-  var temp = params.generateKeyPair();
+  var temp = params.generateKeyPair(opt_privateKey);
   return {
     'privKey': temp['privateKey'],
-    'pubKey': temp['publicKey']
+    'pubKey': temp['publicKey'],
+    'curve': e2e.ecc.DomainParam.curveOidFromCurveName(curve)
   };
-};
-
-
-/**
- * Generates a random P256 key pair, and wraps the public and private key
- * as MPI.
- * @return {{pubKey: e2e.ByteArray, privKey: e2e.ByteArray}}
- */
-e2e.ecc.Protocol.generateRandomP256KeyPair = function() {
-  return e2e.ecc.Protocol.generateKeyPair(
-      e2e.ecc.PrimeCurve.P_256);
-};
-
-
-/**
- * Generates a random ECDSA key pair.
- * @return {e2e.signer.key.ECDSA}
- */
-e2e.ecc.Protocol.generateRandomP256ECDSAKeyPair = function() {
-  var key = e2e.ecc.Protocol.generateRandomP256KeyPair();
-  key['curve'] = e2e.ecc.PrimeCurveOid.P_256;
-  return /** @type e2e.signer.key.ECDSA */ (key);
-};
-
-
-/**
- * Generates a random ECDH key pair.
- * @return {e2e.cipher.key.ECDH}
- */
-e2e.ecc.Protocol.generateRandomP256ECDHKeyPair = function() {
-  var key = e2e.ecc.Protocol.generateRandomP256KeyPair();
-  key['curve'] = e2e.ecc.PrimeCurveOid.P_256;
-  // KDF info, as specified in RFC 6637 section 9.
-  key['kdfInfo'] = [
-      0x3, 0x1, 0x8 /* SHA256 Algo ID*/, 0x7 /* AES-128 Algo ID */];
-  return /** @type e2e.cipher.key.ECDH */ (key);
 };
 

@@ -16,6 +16,7 @@
  */
 
 goog.require('e2e.cipher.WorkerService');
+/** @suppress {extraRequire} using this to force loading of all ciphers */
 goog.require('e2e.cipher.all');
 
 e2e.cipher.WorkerService.init();

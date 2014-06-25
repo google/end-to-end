@@ -20,20 +20,20 @@
   goog.require('goog.array');
   goog.require('goog.crypt');
   goog.require('goog.testing.jsunit');
-  goog.require('e2e.cipher.AES');
-  goog.require('e2e.cipher.ECDH');
-  goog.require('e2e.cipher.RSA');
+  goog.require('e2e.cipher.Aes');
+  goog.require('e2e.cipher.Ecdh');
+  goog.require('e2e.cipher.Rsa');
   goog.require('e2e.openpgp.block.factory');
   goog.require('e2e.openpgp.packet.PublicKey');
   goog.require('e2e.openpgp.packet.PublicSubkey');
   goog.require('e2e.openpgp.parse');
-  goog.require('e2e.signer.ECDSA');
+  goog.require('e2e.signer.Ecdsa');
 </script>
 <script>
 function testConstructor() {
   var pubkey = new e2e.openpgp.packet.PublicKey(
       0x04, 0,
-      new e2e.cipher.AES(e2e.cipher.Algorithm.AES128,
+      new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128,
       {key: goog.array.repeat(0, 16)}));
 }
 

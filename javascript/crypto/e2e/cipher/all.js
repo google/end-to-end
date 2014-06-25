@@ -14,15 +14,24 @@
 /**
  * @fileoverview Requires all ciphers to load them all into the factory.
  */
-
+/** @suppress {extraProvide} this aggregation needs a namespace */
 goog.provide('e2e.cipher.all');
 
-goog.require('e2e.cipher.AES');
+/** @suppress {extraRequire} intentional import */
+goog.require('e2e.cipher.Aes');
+/** @suppress {extraRequire} intentional import */
 goog.require('e2e.cipher.Blowfish');
-goog.require('e2e.cipher.CAST5');
-goog.require('e2e.cipher.DES');
-goog.require('e2e.cipher.ECDH');
+/** @suppress {extraRequire} intentional import */
+goog.require('e2e.cipher.Cast5');
+/** @suppress {extraRequire} intentional import */
+goog.require('e2e.cipher.Des');
+/** @suppress {extraRequire} intentional import */
+goog.require('e2e.cipher.Ecdh');
+/** @suppress {extraRequire} intentional import */
 goog.require('e2e.cipher.ElGamal');
-goog.require('e2e.cipher.RSA');
-goog.require('e2e.cipher.TripleDES');
-// TODO(evn): Fix IDEA and add it back.
+/** @suppress {extraRequire} intentional import */
+goog.require('e2e.cipher.Idea');
+/** @suppress {extraRequire} intentional import */
+goog.require('e2e.cipher.Rsa');
+/** @suppress {extraRequire} intentional import */
+goog.require('e2e.cipher.TripleDes');

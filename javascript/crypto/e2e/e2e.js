@@ -127,7 +127,8 @@ e2e.USE_TEXT_DECODER = 'TextDecoder' in goog.global;
  */
 e2e.byteArrayToString = function(bytes, opt_charset) {
   if (e2e.USE_TEXT_DECODER) {
-    var td = new goog.global['TextDecoder'](opt_charset || 'utf-8');
+    var td = /** @type {{decode: function(Uint8Array):string}} */ (
+        new goog.global['TextDecoder'](opt_charset || 'utf-8'));
     return td.decode(new Uint8Array(bytes));
   } else {
     return goog.crypt.utf8ByteArrayToString(bytes);
@@ -167,7 +168,22 @@ e2e.byteArrayToStringAsync = function(bytes, opt_charset) {
  * @return {e2e.ByteArray} The UTF-8 byte representation of the string.
  */
 e2e.stringToByteArray = function(stringInput) {
-  return goog.crypt.stringToUtf8ByteArray(stringInput);
+  // We don't use the Closure implementation as it normalizes line ends to \n.
+  var out = [], p = 0;
+  for (var i = 0; i < stringInput.length; i++) {
+    var c = stringInput.charCodeAt(i);
+    if (c < 128) {
+      out[p++] = c;
+    } else if (c < 2048) {
+      out[p++] = (c >> 6) | 192;
+      out[p++] = (c & 63) | 128;
+    } else {
+      out[p++] = (c >> 12) | 224;
+      out[p++] = ((c >> 6) & 63) | 128;
+      out[p++] = (c & 63) | 128;
+    }
+  }
+  return out;
 };
 
 

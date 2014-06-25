@@ -19,16 +19,16 @@
 <script>
   goog.require('goog.testing.jsunit');
   goog.require('e2e.openpgp.EncryptedCipher');
-  goog.require('e2e.openpgp.MPI');
-  goog.require('e2e.openpgp.S2K');
+  goog.require('e2e.openpgp.Mpi');
+  goog.require('e2e.openpgp.S2k');
   goog.require('e2e.cipher.Algorithm');
-  goog.require('e2e.cipher.AES');
-  goog.require('e2e.cipher.RSA');
+  goog.require('e2e.cipher.Aes');
+  goog.require('e2e.cipher.Rsa');
   goog.require('e2e.hash.Sha1');
 </script>
 <script>
   function testEncryptedCipher() {
-    var fakeCipher = new e2e.cipher.AES(
+    var fakeCipher = new e2e.cipher.Aes(
         e2e.cipher.Algorithm.AES128,
         {key: goog.array.repeat(0x16, 16)});
     var ec = new e2e.openpgp.EncryptedCipher(
@@ -75,11 +75,11 @@
       0x3e, 0x3d, 0x5c, 0xc9, 0x3c, 0x47, 0x65, 0x70, 0x3d, 0x1d, 0xd7, 0x91, 0x64, 0x2f, 0x1f,
       0x11, 0x6a, 0x0d, 0xd8, 0x52, 0xbe, 0x24, 0x19, 0xb2, 0xaf, 0x72, 0xbf, 0xe9, 0xa0, 0x30,
       0xe8, 0x60, 0xb0, 0x28, 0x8b, 0x5d, 0x77, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x7F, 0x3E];
-    var fakeCipher = new e2e.cipher.RSA(
+    var fakeCipher = new e2e.cipher.Rsa(
       e2e.cipher.Algorithm.RSA,
       {
-        'n': goog.array.clone(e2e.openpgp.MPI.parse(serializedKey)),
-        'e': goog.array.clone(e2e.openpgp.MPI.parse(serializedKey))
+        'n': goog.array.clone(e2e.openpgp.Mpi.parse(serializedKey)),
+        'e': goog.array.clone(e2e.openpgp.Mpi.parse(serializedKey))
       });
     var ec = new e2e.openpgp.EncryptedCipher(
         serializedKey,
@@ -92,7 +92,7 @@
     assertArrayEquals(plaintext, e2e.async.Result.getValue(ec.decrypt(ciphertext)));
     ec.lockKey(passphrase);
     assertArrayEquals(plaintext, e2e.async.Result.getValue(ec.decrypt(ciphertext)));
-    var fakeCipher2 = new e2e.cipher.RSA(e2e.cipher.Algorithm.RSA, {
+    var fakeCipher2 = new e2e.cipher.Rsa(e2e.cipher.Algorithm.RSA, {
       e: fakeCipher.getKey().e,
       n: fakeCipher.getKey().n
     });

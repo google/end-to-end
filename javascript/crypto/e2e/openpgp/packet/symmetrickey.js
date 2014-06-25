@@ -21,7 +21,7 @@ goog.provide('e2e.openpgp.packet.SymmetricKey');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.factory');
-goog.require('e2e.ciphermode.CFB');
+goog.require('e2e.ciphermode.Cfb');
 goog.require('e2e.hash.Algorithm');
 goog.require('e2e.hash.factory');
 goog.require('e2e.openpgp.IteratedS2K');
@@ -41,7 +41,7 @@ goog.require('goog.array');
  * @param {number} version The Encrypted Session Key Packet version.
  * @param {e2e.cipher.Algorithm} algorithm The symmetric key algorithm.
  * @param {e2e.ByteArray} encryptedKey The encrypted key.
- * @param {e2e.openpgp.S2K} s2k The string-to-key object.
+ * @param {e2e.openpgp.S2k} s2k The string-to-key object.
  * @constructor
  * @extends {e2e.openpgp.packet.EncryptedSessionKey}
  */
@@ -50,7 +50,7 @@ e2e.openpgp.packet.SymmetricKey = function(
   goog.base(this, version, algorithm, encryptedKey);
   /**
    * String-to-key object to use with passphrase.
-   * @type {e2e.openpgp.S2K}
+   * @type {e2e.openpgp.S2k}
    * @private
    */
   this.s2k_ = s2k;
@@ -66,12 +66,15 @@ e2e.openpgp.packet.SymmetricKey.prototype.decryptSessionKey =
   // Note that the key argument here is actually the passphrase, before s2k.
   var passphrase = key['passphrase'];
   // Make a cipher just to see the key length that we want.
-  var cipher = e2e.cipher.factory.require(this.algorithm);
+  var cipher = /** @type {e2e.cipher.SymmetricCipher} */ (
+      e2e.openpgp.constants.getInstance(
+        e2e.openpgp.constants.Type.SYMMETRIC_KEY,
+        this.algorithm));
   key = {'key': this.s2k_.getKey(passphrase, cipher.keySize)};
   if (this.encryptedKey.length > 0) {
-    cipher = e2e.cipher.factory.require(this.algorithm, key);
+    cipher.setKey(key);
     var iv = goog.array.repeat(0, cipher.blockSize);
-    var cfbCipher = new e2e.ciphermode.CFB(cipher);
+    var cfbCipher = new e2e.ciphermode.Cfb(cipher);
     return cfbCipher.decrypt(
         /** @type e2e.ByteArray */(this.encryptedKey), iv).addCallback(
         function(decoded) {
@@ -128,10 +131,12 @@ e2e.openpgp.packet.SymmetricKey.construct =
   var s2k = new e2e.openpgp.IteratedS2K(hash,
       e2e.random.getRandomBytes(8),  // salt
       96);  // The default encodedCount for GnuPG is 96 (decodes to 65536).
-  var cipher = e2e.cipher.factory.require(
-      e2e.cipher.Algorithm.AES256);
+  var cipher = /** @type {e2e.cipher.SymmetricCipher} */ (
+      e2e.openpgp.constants.getInstance(
+        e2e.openpgp.constants.Type.SYMMETRIC_KEY,
+        e2e.cipher.Algorithm.AES256));
   cipher.setKey({'key': s2k.getKey(passphrase, cipher.keySize)});
-  var cfbCipher = new e2e.ciphermode.CFB(cipher);
+  var cfbCipher = new e2e.ciphermode.Cfb(cipher);
   var unencryptedKeyData = goog.array.concat(
       e2e.openpgp.constants.getId(e2e.cipher.Algorithm.AES256),
       sessionKey);
@@ -159,7 +164,7 @@ e2e.openpgp.packet.SymmetricKey.parse = function(body) {
   var algorithm = /** @type e2e.cipher.Algorithm.<string> */ (
       e2e.openpgp.constants.getAlgorithm(
           e2e.openpgp.constants.Type.SYMMETRIC_KEY, algorithmId));
-  var s2k = e2e.openpgp.S2K.parse(body);
+  var s2k = e2e.openpgp.S2k.parse(body);
   // Any bytes left in body are the encryptedKey. Possibly empty.
   return new e2e.openpgp.packet.SymmetricKey(
       version, algorithm, body, s2k);

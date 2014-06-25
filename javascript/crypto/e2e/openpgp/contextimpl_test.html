@@ -17,11 +17,13 @@
 <script src="../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
+  goog.require('goog.crypt');
   goog.require('goog.testing.AsyncTestCase');
   goog.require('goog.testing.MockControl');
   goog.require('goog.testing.jsunit');
   goog.require('e2e.openpgp.Context');
   goog.require('e2e.openpgp.ContextImpl');
+  goog.require('e2e.openpgp.error.Error');
 </script>
 <script>
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
@@ -170,7 +172,7 @@ function testMojibakeInternally() {
     [], // encrypt keys
     [floodResistantMirrorDrillingMachine, krakozyabry] // passphrases
   ).addCallback(function(enc) {
-      asyncTestCase.waitForAsync('waiting for veriDecrypt1.');
+      asyncTestCase.waitForAsync('waiting for verifyDecrypt1.');
       assertContains('Comment: маймуница', enc);
       return context.verifyDecrypt(
         function(uid, cb) {
@@ -194,11 +196,11 @@ function testMojibakeInternally() {
       return context.encryptSign(
         luanman, {}, [], [], res[0]);
     }).addCallback(function(res) {
-      asyncTestCase.waitForAsync('waiting for verifyClearSign1.');
+      asyncTestCase.waitForAsync('waiting for verifyClearSign.');
       assertContains(luanman, res);
-      return context.verifyClearSign(res);
+      return context.verifyDecrypt(goog.abstractMethod, res);
     }).addCallback(function(res) {
-      assert(res);
+      assert(res.verify.success.length > 0);
       // por fín!
       asyncTestCase.continueTesting();
     }).addErrback(function(err) {
@@ -299,13 +301,15 @@ function testClearSign() {
       [], // Passphrases for symmetric ESKs.
       privateKey  // Key to sign with.
     ).addCallback(function(clearSigned) {
-      asyncTestCase.continueTesting();
       asyncTestCase.waitForAsync('waiting for clear sign verification.');
-      context.verifyClearSign(clearSigned).addCallback(function(result) {
-        asyncTestCase.continueTesting();
-        assertTrue(result);
-      }).addErrback(function(error) {
-        throw error;
+      context.verifyDecrypt(goog.abstractMethod, clearSigned
+        ).addCallback(function(result) {
+          assertEquals(plaintext, e2e.byteArrayToString(result.decrypt.data));
+          assertEquals(0, result.verify.failure.length);
+          assertEquals(1, result.verify.success.length);
+          asyncTestCase.continueTesting();
+        }).addErrback(function(error) {
+        fail(error);
       });
     });
 }
@@ -390,23 +394,26 @@ function testVerifyClearSign() {
       [], // Passphrases for symmetric ESKs.
       privateKey  // Key to sign with.
     ).addCallback(function(clearSigned) {
-      asyncTestCase.continueTesting();
       asyncTestCase.waitForAsync('waiting for clear sign verification.');
-      context.verifyClearSign(clearSigned).addCallback(function(result) {
-        asyncTestCase.continueTesting();
-        assertTrue(result);
-      }).addErrback(function(error) {
+      context.verifyDecrypt(goog.abstractMethod, clearSigned
+        ).addCallback(function(result) {
+          assertEquals(plaintext, e2e.byteArrayToString(result.decrypt.data));
+          assertTrue(result.verify.success.length > 0);
+          assertTrue(result.verify.failure.length == 0);
+        }).addErrback(function(error) {
         throw error;
-      });
+        });
       // change the message
       clearSigned = clearSigned.replace('cleartext', 'modified');
       asyncTestCase.waitForAsync('waiting for clear sign verification.');
-      context.verifyClearSign(clearSigned).addCallback(function(result) {
-        asyncTestCase.continueTesting();
-        assertFalse(result);
-      }).addErrback(function(error) {
-        throw error;
-      });
+      context.verifyDecrypt(goog.abstractMethod, clearSigned
+        ).addCallback(function(result) {
+          asyncTestCase.continueTesting();
+          assertTrue(result.verify.failure.length > 0);
+          assertTrue(result.verify.success.length == 0);
+        }).addErrback(function(error) {
+          throw error;
+        });
     });
 }
 
@@ -662,9 +669,26 @@ function testGetKeyDescription() {
       'AAAAJkVkdWFyZG8nIFZlbGEiIDxOYXZhPiA8ZXZuQGdvb2dsZS5jb20+\n' +
       '=wKcN\n' +
       '-----END PGP PUBLIC KEY BLOCK-----';
-  var description = context.getKeyDescription(fourKeys);
-  assertContains('811709de7df57e37226db2c872de64e56577db56', description);
-  assertContains('49427c18d81a19438eb9fb7790f1d45dcb1b19a7', description);
+  var description = e2e.async.Result.getValue(context.getKeyDescription(
+      fourKeys));
+  assertEquals(4, description.length);
+  assertEquals('811709de7df57e37226db2c872de64e56577db56',
+      goog.crypt.byteArrayToHex(description[0].key.fingerprint));
+  assertEquals('8117 09DE 7DF5 7E37 226D  B2C8 72DE 64E5 6577 DB56',
+      description[0].key.fingerprintHex);
+  assertEquals('ECDSA', description[0].key.algorithm);
+  assertContains('Drew Hintz <adhintz@google.com>', description[0].uids);
+  assertEquals(false, description[0].key.secret);
+  assertEquals('ECDH', description[1].key.algorithm);
+  assertEquals('49427c18d81a19438eb9fb7790f1d45dcb1b19a7',
+      goog.crypt.byteArrayToHex(description[2].key.fingerprint));
+  asyncTestCase.waitForAsync('waiting for getKeyDescription');
+  context.getKeyDescription('invalid value').addCallback(function() {
+    fail('Should result in error.');
+  }).addErrback(function(e) {
+    assertTrue(e instanceof e2e.openpgp.error.Error);
+    asyncTestCase.continueTesting();
+  });
 }
 </script>
 

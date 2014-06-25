@@ -20,9 +20,11 @@
 goog.provide('e2e.openpgp.asciiArmor');
 
 goog.require('e2e');
+goog.require('e2e.openpgp.ArmoredMessage');
 goog.require('e2e.openpgp.ClearSignMessage');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('goog.array');
+goog.require('goog.crypt');
 goog.require('goog.crypt.base64');
 goog.require('goog.string');
 
@@ -95,7 +97,7 @@ e2e.openpgp.asciiArmor.NEW_LINE_ = '[\\t\\u00a0 ]?\\r?\\n';
 e2e.openpgp.asciiArmor.parse = function(text) {
   // The 0x80 bit is always set for the Packet Tag for OpenPGP packets.
   if (text.charCodeAt(0) >= 0x80) {  // Not ASCII Armored.
-    return {'data': e2e.stringToByteArray(text)};
+    return {'data': goog.crypt.stringToByteArray(text)};
   }
   var start = text.indexOf('-----BEGIN PGP ');
   var armor, newLine = e2e.openpgp.asciiArmor.NEW_LINE_;
@@ -135,7 +137,7 @@ e2e.openpgp.asciiArmor.parse = function(text) {
  * Specified in RFC 4880 Section 6.2.
  * Throws a {@code e2e.openpgp.error.ParseError} if the Armor is invalid.
  * @param {string} text The text to parse as ASCII Armor.
- * @return {e2e.openpgp.ClearSignMessage} Parsed message parameters
+ * @return {!e2e.openpgp.ClearSignMessage} Parsed message parameters
  *   and the signature ByteArray.
  */
 e2e.openpgp.asciiArmor.parseClearSign = function(text) {
@@ -143,8 +145,8 @@ e2e.openpgp.asciiArmor.parseClearSign = function(text) {
   var startSignature = text.indexOf('-----BEGIN PGP SIGNATURE-----');
   var armor = text.substr(startMessage, startSignature - startMessage).match(
     new RegExp('^-----BEGIN PGP SIGNED MESSAGE-----\\r?\\n' +
-               'Hash:[ ]([^\\n]+)\\r?\\n' + // Hash header
-               '(?:[A-Za-z]+:[ ][^\\n]+\\r?\\n)*' + // Other headers
+               'Hash:[ ]([^\\n\\r]+)\\r?\\n' + // Hash header
+               '(?:[A-Za-z]+:[ ][^\\n\\r]+\\r?\\n)*' + // Other headers
                '\\r?\\n')); // New line
   if (!armor) {
     throw new e2e.openpgp.error.ParseError('invalid clearsign format');
@@ -159,32 +161,81 @@ e2e.openpgp.asciiArmor.parseClearSign = function(text) {
   if (goog.string.endsWith(body, '\r')) {
     body = goog.string.removeAt(body, body.length - 1, 1);  // Remove ending \r
   }
+  body = e2e.openpgp.asciiArmor.dashUnescape(body);
+  body = e2e.openpgp.asciiArmor.convertNewlines(body);
   var signature = e2e.openpgp.asciiArmor.parse(text.substr(startSignature));
-  return /** @type {e2e.openpgp.ClearSignMessage} */(
-    {'body': body, 'signature': signature.data, 'hash': hashString});
+  return new e2e.openpgp.ClearSignMessage(body, signature.data, hashString);
 };
-// TODO(adhintz) Support 7.1. Dash-Escaped Text.
+
+
+/**
+ * Canonicalizes data by converting all line endings to <CR><LF> and removing
+ * trailing whitespace.
+ * @param {string} data The text to canonicalize.
+ * @return {string} The canonicalized text.
+ */
+e2e.openpgp.asciiArmor.convertNewlines = function(data) {
+  return data.replace(/[\x20\x09]*(\r\n|\r|\n)/g, '\r\n');
+};
+
+
+
+/**
+ * Checks if the message has a clearsign message format
+ * @param  {string} text
+ * @return {!boolean} true if the message has a clearsign message format.
+ */
+e2e.openpgp.asciiArmor.isClearSign = function(text) {
+  var startMessage = text.indexOf('-----BEGIN PGP SIGNED MESSAGE-----');
+  var startSignature = text.indexOf('-----BEGIN PGP SIGNATURE-----');
+  return Boolean(startMessage !== -1 &&
+      startSignature !== -1 &&
+      startSignature > startMessage);
+};
+
+
+/**
+ * Dash-Escapes Text as described in RFC4880 7.1.
+ * @param {string} plaintext The plaintext that has already been through
+ *     e2e.openpgp.asciiArmor.convertNewlines().
+ * @protected
+ * @return {string} The dash-escaped text.
+ */
+e2e.openpgp.asciiArmor.dashEscape = function(plaintext) {
+  return (plaintext.replace(/^\-/gm, '\- -')  // Dash-escape leading -
+      .replace(/^From /gm, '\- From ')  // Dash-escape leading "From "
+      .replace(/[\t ]*$/gm, ''));  // Remove trailing tabs and spaces.
+};
+
+
+/**
+ * Removes the Dash-Escaping as described in RFC4880 7.1.
+ * @param {string} plaintext Text with optional dash-escapes
+ * @protected
+ * @return {string} The text with removed dash-escapes.
+ */
+e2e.openpgp.asciiArmor.dashUnescape = function(plaintext) {
+  return (plaintext.replace(/^\- /gm, ''));
+};
 
 
 /**
  * Construct a cleartext signature ASCII Armor.
  * Specified in RFC 4880 Section 7.
- * @param {string} message The message body.
- * @param {e2e.ByteArray} signature The signature bytes.
- * @param {string} hash Algorithm used for the hash.
+ * @param {e2e.openpgp.ClearSignMessage} message The message.
  * @param {!Object.<string>=} opt_headers Extra headers to add to signature.
  * @return {string} The ASCII Armored text.
  */
-e2e.openpgp.asciiArmor.encodeClearSign = function(
-    message, signature, hash, opt_headers) {
+e2e.openpgp.asciiArmor.encodeClearSign = function(message, opt_headers) {
   return ['-----BEGIN PGP SIGNED MESSAGE-----',
-          'Hash: ' + hash,
+          'Hash: ' + message.getSignature().hashAlgorithm,
           '',
-          message,
-          e2e.openpgp.asciiArmor.encode('SIGNATURE', signature, opt_headers)
+          e2e.openpgp.asciiArmor.dashEscape(
+              e2e.openpgp.asciiArmor.convertNewlines(message.getBody())),
+          e2e.openpgp.asciiArmor.encode('SIGNATURE',
+              message.getSignature().serialize(), opt_headers)
   ].join('\r\n');
 };
-// TODO(adhintz) Support 7.1. Dash-Escaped Text.
 
 
 /**
@@ -200,7 +251,10 @@ e2e.openpgp.asciiArmor.encode = function(type, payload, opt_headers) {
     [e2e.openpgp.asciiArmor.crc24_(payload)]);
   var checksum = e2e.openpgp.asciiArmor.encodeRadix64_(
       byteChecksum.slice(-3));
-  var headers = ['Charset: UTF-8'];
+  var headers = [];
+  if (type !== 'SIGNATURE') {
+    headers = ['Charset: UTF-8'];
+  }
   if (opt_headers) {
     var headerNames = Object.getOwnPropertyNames(opt_headers);
     for (var i = 0; i < headerNames.length; i++) {

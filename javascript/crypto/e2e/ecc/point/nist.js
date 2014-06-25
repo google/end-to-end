@@ -21,11 +21,11 @@
  * @author fy@google.com (Frank Yellin).
  */
 
-goog.provide('e2e.ecc.Point.NIST');
+goog.provide('e2e.ecc.point.Nist');
 
 goog.require('e2e.BigNum');
 goog.require('e2e.ecc.Element');
-goog.require('e2e.ecc.Point');
+goog.require('e2e.ecc.point.Point');
 goog.require('e2e.fixedtiming');
 goog.require('goog.array');
 goog.require('goog.asserts');
@@ -35,15 +35,15 @@ goog.require('goog.asserts');
 /**
  * Constructs a point on the elliptic curve y^2 = x^3 - 3*x + B defined
  *     over a prime field.
- * @param {!e2e.ecc.Curve} curve The curve.
+ * @param {!e2e.ecc.curve.Curve} curve The curve.
  * @param {!e2e.ecc.Element} x The x Jacobian coordinate.
  * @param {!e2e.ecc.Element} y The y Jacobian coordinate.
  * @param {!e2e.ecc.Element=} opt_z The optional z Jacobian coordinate.
  * @constructor
- * @extends {e2e.ecc.Point}
+ * @extends {e2e.ecc.point.Point}
  */
-e2e.ecc.Point.NIST = function(curve, x, y, opt_z) {
-  e2e.ecc.Point.NIST.base(this, 'constructor', curve);
+e2e.ecc.point.Nist = function(curve, x, y, opt_z) {
+  e2e.ecc.point.Nist.base(this, 'constructor', curve);
 
   /**
    * The x Jacobian projective coordinate of this.
@@ -65,39 +65,39 @@ e2e.ecc.Point.NIST = function(curve, x, y, opt_z) {
 
   /**
    * The equivalent affine Point.
-   * @type {e2e.ecc.Point.NIST}
+   * @type {e2e.ecc.point.Nist}
    */
   this.affine = this.z.isEqual(this.curve.ONE) ? this : null;
 };
-goog.inherits(e2e.ecc.Point.NIST, e2e.ecc.Point);
+goog.inherits(e2e.ecc.point.Nist, e2e.ecc.point.Point);
 
 
 /**
- * @type {Array.<!Array.<!e2e.ecc.Point.NIST>>}
+ * @type {Array.<!Array.<!e2e.ecc.point.Nist>>}
  * @private
  */
-e2e.ecc.Point.NIST.prototype.fastMultiplyTable_;
+e2e.ecc.point.Nist.prototype.fastMultiplyTable_;
 
 
 /**
- * @type {Array.<!e2e.ecc.Point.NIST>}
+ * @type {Array.<!e2e.ecc.point.Nist>}
  * @private
  */
-e2e.ecc.Point.NIST.prototype.smallMultiplyTable_;
+e2e.ecc.point.Nist.prototype.smallMultiplyTable_;
 
 
 /**
  * Returns a copy of this point.
- * @return {!e2e.ecc.Point.NIST}
+ * @return {!e2e.ecc.point.Nist}
  */
-e2e.ecc.Point.NIST.prototype.clone = function() {
-  return new e2e.ecc.Point.NIST(
+e2e.ecc.point.Nist.prototype.clone = function() {
+  return new e2e.ecc.point.Nist(
       this.curve, this.x.clone(), this.y.clone(), this.z.clone());
 };
 
 
 /** @override */
-e2e.ecc.Point.NIST.prototype.getX = function() {
+e2e.ecc.point.Nist.prototype.getX = function() {
   // Converts the point to affine form, and then extracts the X coordinate
   goog.asserts.assert(!this.isInfinity(),
       'Cannot obtain the affine coordinate of the point at infinity.');
@@ -109,7 +109,7 @@ e2e.ecc.Point.NIST.prototype.getX = function() {
 
 
 /** @override */
-e2e.ecc.Point.NIST.prototype.getY = function() {
+e2e.ecc.point.Nist.prototype.getY = function() {
   // Converts the point to affine form, and then extracts the Y coordinate
   goog.asserts.assert(!this.isInfinity(),
       'Cannot obtain the affine coordinate of the point at infinity.');
@@ -122,17 +122,17 @@ e2e.ecc.Point.NIST.prototype.getY = function() {
 
 /**
  * Returns the equivalent affine point.
- * @return {!e2e.ecc.Point.NIST}
+ * @return {!e2e.ecc.point.Nist}
  * @private
  */
-e2e.ecc.Point.NIST.prototype.getAffine_ = function() {
+e2e.ecc.point.Nist.prototype.getAffine_ = function() {
   if (this.affine_ == null) {
     var zInv = this.z.inverse();
     var zInv2 = zInv.square();
     var x = this.x.multiply(zInv2);
     var y = this.y.multiply(zInv2.multiply(zInv));
     this.affine_ =
-        new e2e.ecc.Point.NIST(this.curve, x, y, this.curve.ONE);
+        new e2e.ecc.point.Nist(this.curve, x, y, this.curve.ONE);
   }
   return this.affine_;
 };
@@ -142,14 +142,14 @@ e2e.ecc.Point.NIST.prototype.getAffine_ = function() {
  * Returns true if this is the point at infinity.
  * @return {boolean}
  */
-e2e.ecc.Point.NIST.prototype.isInfinity = function() {
+e2e.ecc.point.Nist.prototype.isInfinity = function() {
   // Infinity is the only Point with z == 0.
   return this.z.isEqual(this.curve.ZERO);
 };
 
 
 /** @override */
-e2e.ecc.Point.NIST.prototype.isIdentity = function() {
+e2e.ecc.point.Nist.prototype.isIdentity = function() {
   // Infinity is identity point.
   return this.isInfinity();
 };
@@ -157,10 +157,10 @@ e2e.ecc.Point.NIST.prototype.isIdentity = function() {
 
 /**
  * Compares another point with this. Return true if they are the same.
- * @param {!e2e.ecc.Point.NIST} that The point to compare.
+ * @param {!e2e.ecc.point.Nist} that The point to compare.
  * @return {boolean}
  */
-e2e.ecc.Point.NIST.prototype.isEqual = function(that) {
+e2e.ecc.point.Nist.prototype.isEqual = function(that) {
   // x and y coordinates must be equal
   var z1z1 = this.z.square();
   var z2z2 = that.z.square();
@@ -172,16 +172,16 @@ e2e.ecc.Point.NIST.prototype.isEqual = function(that) {
 
 /**
  * Returns a new point which is a negative of this.
- * @return {!e2e.ecc.Point.NIST}
+ * @return {!e2e.ecc.point.Nist}
  */
-e2e.ecc.Point.NIST.prototype.negate = function() {
-  return new e2e.ecc.Point.NIST(this.curve, this.x, this.y.negate(),
+e2e.ecc.point.Nist.prototype.negate = function() {
+  return new e2e.ecc.point.Nist(this.curve, this.x, this.y.negate(),
       this.z);
 };
 
 
 /** @override */
-e2e.ecc.Point.NIST.prototype.toByteArray = function(opt_compressed) {
+e2e.ecc.point.Nist.prototype.toByteArray = function(opt_compressed) {
   var X = this.getX().toBigNum().toByteArray();
   var fieldSize = Math.ceil(this.curve.keySizeInBits() / 8);
   // Pads X if needed.
@@ -212,10 +212,10 @@ e2e.ecc.Point.NIST.prototype.toByteArray = function(opt_compressed) {
  * operation.
  * Note that this function leaks timing side-channel. We use it only to
  * calculate public points.
- * @param {!e2e.ecc.Point.NIST} that The point to add.
- * @return {!e2e.ecc.Point.NIST}
+ * @param {!e2e.ecc.point.Nist} that The point to add.
+ * @return {!e2e.ecc.point.Nist}
  */
-e2e.ecc.Point.NIST.prototype.add = function(that) {
+e2e.ecc.point.Nist.prototype.add = function(that) {
   goog.asserts.assertObject(that, 'Point should be defined.');
   goog.asserts.assert(that.curve.isEqual(this.curve),
       'Cannot add points from different curves.');
@@ -260,13 +260,13 @@ e2e.ecc.Point.NIST.prototype.add = function(that) {
 
 /**
  * Adds another point to this, and return the new point.
- * @param {!e2e.ecc.Point.NIST} that The point to add.
- * @return {!e2e.ecc.Point.NIST}
+ * @param {!e2e.ecc.point.Nist} that The point to add.
+ * @return {!e2e.ecc.point.Nist}
  * Note that this function does not handle P+P, infinity+P or P+infinity
  * correctly.
  * @private
  */
-e2e.ecc.Point.NIST.prototype.add_ = function(that) {
+e2e.ecc.point.Nist.prototype.add_ = function(that) {
   var Z1Z1 = this.z.square();
   var Z2Z2 = that.z.square();
 
@@ -283,16 +283,16 @@ e2e.ecc.Point.NIST.prototype.add_ = function(that) {
   var Y3 = r.multiply(V.subtract(X3)).subtract(S1.multiply(J).shiftLeft(1));
   var Z3 =
       this.z.add(that.z).square().subtract(Z1Z1).subtract(Z2Z2).multiply(H);
-  return new e2e.ecc.Point.NIST(this.curve, X3, Y3, Z3);
+  return new e2e.ecc.point.Nist(this.curve, X3, Y3, Z3);
 };
 
 
 /**
  * Doubles this, and return the new point.
- * @return {!e2e.ecc.Point.NIST}
+ * @return {!e2e.ecc.point.Nist}
  * @private
  */
-e2e.ecc.Point.NIST.prototype.twice_ = function() {
+e2e.ecc.point.Nist.prototype.twice_ = function() {
   if (this.affine_ != null) {
     // Either this affine (Z == 1) or we have already calculated the
     // this's affine equivalent.
@@ -309,14 +309,14 @@ e2e.ecc.Point.NIST.prototype.twice_ = function() {
   var Y3 = alpha.multiply(beta.shiftLeft(2).subtract(X3)).subtract(
       gamma.square().shiftLeft(3));
   var Z3 = this.y.add(this.z).square().subtract(gamma).subtract(delta);
-  return new e2e.ecc.Point.NIST(this.curve, X3, Y3, Z3);
+  return new e2e.ecc.point.Nist(this.curve, X3, Y3, Z3);
 };
 
 
 /**
  * @override
  */
-e2e.ecc.Point.NIST.prototype.multiply = function(k) {
+e2e.ecc.point.Nist.prototype.multiply = function(k) {
   if (this.fastMultiplyTable_) {
     return this.fastMultiply_(k);
   }
@@ -375,7 +375,7 @@ e2e.ecc.Point.NIST.prototype.multiply = function(k) {
  * Determines if this point is on this elliptic curve.
  * @return {boolean}
  */
-e2e.ecc.Point.NIST.prototype.isOnCurve = function() {
+e2e.ecc.point.Nist.prototype.isOnCurve = function() {
   if (this.isInfinity()) {
     return true;
   }
@@ -392,9 +392,9 @@ e2e.ecc.Point.NIST.prototype.isOnCurve = function() {
 
 /**
  * Create a table
- * @return {!Array.<!Array.<!e2e.ecc.Point.NIST>>}
+ * @return {!Array.<!Array.<!e2e.ecc.point.Nist>>}
  */
-e2e.ecc.Point.NIST.prototype.createFastMultiplyTable = function() {
+e2e.ecc.point.Nist.prototype.createFastMultiplyTable = function() {
   var bits = this.curve.keySizeInBits();
   var nybbleCount = Math.ceil((bits + 1) / 4);  // sign can add one more bit
   var unsignedNybbleCount = Math.ceil(bits / 4);
@@ -427,7 +427,7 @@ e2e.ecc.Point.NIST.prototype.createFastMultiplyTable = function() {
 /**
  * @override
  */
-e2e.ecc.Point.NIST.prototype.initializeForFastMultiply = function() {
+e2e.ecc.point.Nist.prototype.initializeForFastMultiply = function() {
   var table = this.createFastMultiplyTable();
   goog.asserts.assert(this.isEqual(table[0][1]),
       'Fast Multiply table is being attached to the wrong point');
@@ -439,9 +439,9 @@ e2e.ecc.Point.NIST.prototype.initializeForFastMultiply = function() {
  * Take a pre-constructed fast multiply table and convert it into a form so
  * that it can be attached to this point.
  * @param {!Array.<!Array.<
- *           (Array.<Array.<number>> | e2e.ecc.Point.NIST )>>} table
+ *           (Array.<Array.<number>> | e2e.ecc.point.Nist)>>} table
  */
-e2e.ecc.Point.NIST.prototype.setFastMultiplyTable = function(table) {
+e2e.ecc.point.Nist.prototype.setFastMultiplyTable = function(table) {
   if (!table.isConverted) {
     var curve = this.curve;
     var newTable = goog.array.map(table, function(row) {
@@ -451,7 +451,7 @@ e2e.ecc.Point.NIST.prototype.setFastMultiplyTable = function(table) {
         }
         var x = e2e.BigNum.fromInternalArray(encodedPoint[0]);
         var y = e2e.BigNum.fromInternalArray(encodedPoint[1]);
-        return new e2e.ecc.Point.NIST(curve,
+        return new e2e.ecc.point.Nist(curve,
             new e2e.ecc.Element(curve.q, x),
             new e2e.ecc.Element(curve.q, y));
       });
@@ -463,7 +463,7 @@ e2e.ecc.Point.NIST.prototype.setFastMultiplyTable = function(table) {
     table.isAffine = true;  // Maybe we can use this fact in the future.
   }
   goog.asserts.assert(this.isEqual(
-      /** @type {!e2e.ecc.Point.NIST} */ (table[0][1])),
+      /** @type {!e2e.ecc.point.Nist} */ (table[0][1])),
       'Fast Multiply table is being attached to wrong point');
   this.fastMultiplyTable_ = table;
 };
@@ -473,10 +473,10 @@ e2e.ecc.Point.NIST.prototype.setFastMultiplyTable = function(table) {
  * Calculate k * this, when this has a fast multiply table attached to it.
  *
  * @param {!e2e.BigNum} k
- * @return {!e2e.ecc.Point.NIST} k * this
+ * @return {!e2e.ecc.point.Nist} k * this
  * @private
  */
-e2e.ecc.Point.NIST.prototype.fastMultiply_ = function(k) {
+e2e.ecc.point.Nist.prototype.fastMultiply_ = function(k) {
   var table = this.fastMultiplyTable_;
   var nybbles = k.toSignedNybbleArray();
   // The definition of nybbles[] is:
@@ -531,13 +531,13 @@ e2e.ecc.Point.NIST.prototype.fastMultiply_ = function(k) {
  * This code is careful to touch every entry in the row in the exact same
  * order, independent of the value of we are fetching.
  *
- * @param {!Array.<e2e.ecc.Point.NIST>} row
+ * @param {!Array.<e2e.ecc.point.Nist>} row
  *     A row of the fast multiply table
  * @param {number} index The index of the entry to fetch.
- * @return {!e2e.ecc.Point.NIST} corresponding point.
+ * @return {!e2e.ecc.point.Nist} corresponding point.
  * @private
  */
-e2e.ecc.Point.NIST.prototype.selectFromFastMultiplyTable_ = function(
+e2e.ecc.point.Nist.prototype.selectFromFastMultiplyTable_ = function(
     row, index) {
   var absIndex = e2e.fixedtiming.select(index, -index, (index > 0) | 0);
   goog.asserts.assert(
@@ -557,7 +557,7 @@ e2e.ecc.Point.NIST.prototype.selectFromFastMultiplyTable_ = function(
     }
   }
   var minusY = this.curve.q.modSubtract(e2e.BigNum.ZERO, y);
-  var point = new e2e.ecc.Point.NIST(this.curve,
+  var point = new e2e.ecc.point.Nist(this.curve,
       new e2e.ecc.Element(this.curve.q, x),
       new e2e.ecc.Element(this.curve.q,
           e2e.BigNum.select(y, minusY, (index > 0) | 0)),
@@ -569,10 +569,10 @@ e2e.ecc.Point.NIST.prototype.selectFromFastMultiplyTable_ = function(
 /**
  * Doubles this, which has affine coordinates (e.g., Z = 1), and return the new
  *     point. This should cost 1M + 5S.
- * @return {!e2e.ecc.Point.NIST}
+ * @return {!e2e.ecc.point.Nist}
  * @private
  */
-e2e.ecc.Point.NIST.prototype.doubleAffine_ = function() {
+e2e.ecc.point.Nist.prototype.doubleAffine_ = function() {
   goog.asserts.assert(this.z.isEqual(this.curve.ONE),
       'Point should have affine coordinates.');
   var XX = this.x.square();
@@ -586,18 +586,18 @@ e2e.ecc.Point.NIST.prototype.doubleAffine_ = function() {
   var X3 = T;
   var Y3 = M.multiply(S.subtract(T)).subtract(YYYY.shiftLeft(3));
   var Z3 = this.y.shiftLeft(1);
-  return new e2e.ecc.Point.NIST(this.curve, X3, Y3, Z3);
+  return new e2e.ecc.point.Nist(this.curve, X3, Y3, Z3);
 };
 
 
 /**
  * Adds another point to this, and return the new point. Both should have
  *     affine coordinates, i.e., Z = 1.
- * @param {!e2e.ecc.Point.NIST} that The point to add.
- * @return {!e2e.ecc.Point.NIST}
+ * @param {!e2e.ecc.point.Nist} that The point to add.
+ * @return {!e2e.ecc.point.Nist}
  * @private
  */
-e2e.ecc.Point.NIST.prototype.addAffine_ = function(that) {
+e2e.ecc.point.Nist.prototype.addAffine_ = function(that) {
   goog.asserts.assert(this.z.isEqual(this.curve.ONE),
       'Point should have affine coordinate.');
   goog.asserts.assert(that.z.isEqual(this.curve.ONE),
@@ -617,18 +617,18 @@ e2e.ecc.Point.NIST.prototype.addAffine_ = function(that) {
   var Y3 = r.multiply(V.subtract(X3)).subtract(
       this.y.multiply(J).shiftLeft(1));
   var Z3 = H.shiftLeft(1);
-  return new e2e.ecc.Point.NIST(this.curve, X3, Y3, Z3);
+  return new e2e.ecc.point.Nist(this.curve, X3, Y3, Z3);
 };
 
 
 /**
  * Adds another point to this, and return the new point. Both should have
  *     the same Z coordinate.
- * @param {!e2e.ecc.Point.NIST} that The point to add.
- * @return {!e2e.ecc.Point.NIST}
+ * @param {!e2e.ecc.point.Nist} that The point to add.
+ * @return {!e2e.ecc.point.Nist}
  * @private
  */
-e2e.ecc.Point.NIST.prototype.addSameZ_ = function(that) {
+e2e.ecc.point.Nist.prototype.addSameZ_ = function(that) {
   goog.asserts.assert(this.z.isEqual(that.z),
       'Both points should have the same z.');
   goog.asserts.assert(goog.isDefAndNotNull(this.x),
@@ -644,7 +644,7 @@ e2e.ecc.Point.NIST.prototype.addSameZ_ = function(that) {
   var Y3 = that.y.subtract(this.y).multiply(B.subtract(X3)).subtract(
       this.y.multiply(C.subtract(B)));
   var Z3 = this.z.multiply(that.x.subtract(this.x));
-  return new e2e.ecc.Point.NIST(this.curve, X3, Y3, Z3);
+  return new e2e.ecc.point.Nist(this.curve, X3, Y3, Z3);
 };
 
 
@@ -652,11 +652,11 @@ e2e.ecc.Point.NIST.prototype.addSameZ_ = function(that) {
  * Adds an affine point to this, and return the new point.
  * Note that this function does not handle P+P, infinity+P or P+infinity
  * correctly.
- * @param {!e2e.ecc.Point.NIST} that The point to add.
- * @return {!e2e.ecc.Point.NIST}
+ * @param {!e2e.ecc.point.Nist} that The point to add.
+ * @return {!e2e.ecc.point.Nist}
  * @private
  */
-e2e.ecc.Point.NIST.prototype.addMixed_ = function(that) {
+e2e.ecc.point.Nist.prototype.addMixed_ = function(that) {
   goog.asserts.assert(goog.isDefAndNotNull(this.x),
       'Element X should not be null.');
   goog.asserts.assert(goog.isDefAndNotNull(this.y),
@@ -678,5 +678,5 @@ e2e.ecc.Point.NIST.prototype.addMixed_ = function(that) {
       this.y.multiply(J).shiftLeft(1));
   var Z3 = this.z.add(H).square().subtract(Z1Z1).subtract(HH);
 
-  return new e2e.ecc.Point.NIST(this.curve, X3, Y3, Z3);
+  return new e2e.ecc.point.Nist(this.curve, X3, Y3, Z3);
 };

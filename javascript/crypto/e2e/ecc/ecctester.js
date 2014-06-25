@@ -20,7 +20,7 @@
 goog.provide('e2e.ecc.eccTester');
 
 goog.require('e2e.ecc.DomainParam');
-goog.require('e2e.ecc.ECDSA');
+goog.require('e2e.ecc.Ecdsa');
 goog.require('e2e.ecc.Protocol');
 goog.require('goog.array');
 goog.require('goog.dom');
@@ -60,7 +60,7 @@ e2e.ecc.eccTester.runBenchmarkForCurve = function(curve) {
   var message = 'Whisky bueno: ¡excitad mi frágil pequeña vejez!';
   var params = e2e.ecc.DomainParam.fromCurve(curve);
   var keypair = e2e.ecc.Protocol.generateKeyPair(curve);
-  var ecdsa = new e2e.ecc.ECDSA(curve, keypair);
+  var ecdsa = new e2e.ecc.Ecdsa(curve, keypair);
   var signature = ecdsa.sign(message);
   var tests = [
     {

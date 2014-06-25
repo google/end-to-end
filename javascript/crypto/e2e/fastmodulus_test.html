@@ -19,13 +19,13 @@
 <script>
   goog.require('goog.testing.jsunit');
   goog.require('e2e.BigNum');
-  goog.require('e2e.BigNum.testData');
+  goog.require('e2e.bigNumTestData');
   goog.require('e2e.BigPrimeNum');
   goog.require('e2e.FastModulus');
 </script>
 <script>
 
-var P256 = new e2e.BigNum(e2e.BigNum.testData.P_256);
+var P256 = new e2e.BigNum(e2e.bigNumTestData.P_256);
 var P512 = P256.multiply(P256);
 
 
@@ -38,7 +38,7 @@ var P512 = P256.multiply(P256);
  * 24 bits are 1, no matter what the alignment.
  */
 function testModulusFFFFFF() {
-  var value = new e2e.BigPrimeNum(e2e.BigNum.testData.N);
+  var value = new e2e.BigPrimeNum(e2e.bigNumTestData.N);
   for (var i = 0; i < 24; i++) {
     var modulus = value.shiftLeft(i);
     var value1 = new e2e.FastModulus.FFFFFF(modulus).residue(P512);

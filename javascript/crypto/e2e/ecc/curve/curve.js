@@ -19,7 +19,7 @@
  * @author fy@google.com (Frank Yellin).
  */
 
-goog.provide('e2e.ecc.Curve');
+goog.provide('e2e.ecc.curve.Curve');
 
 goog.require('e2e.BigNum');
 goog.require('e2e.ecc.Element');
@@ -32,7 +32,7 @@ goog.require('e2e.ecc.Element');
  * @param {!e2e.BigPrimeNum} q The modulus of the prime field.
  * @constructor
  */
-e2e.ecc.Curve = function(q) {
+e2e.ecc.curve.Curve = function(q) {
   /**
    * The modulus of the prime field. It should be a prime.
    * @type {!e2e.BigPrimeNum}
@@ -67,26 +67,26 @@ e2e.ecc.Curve = function(q) {
 
 /**
  * Converts a byte array to a point on the curve.
- * @param {!e2e.ByteArray} p A byte representation of a point.
- * @return {!e2e.ecc.Point}
+ * @param {e2e.ByteArray} p A byte representation of a point.
+ * @return {!e2e.ecc.point.Point}
  */
-e2e.ecc.Curve.prototype.pointFromByteArray = goog.abstractMethod;
+e2e.ecc.curve.Curve.prototype.pointFromByteArray = goog.abstractMethod;
 
 
 /**
  * Returns the key size for this curve
  * @return {number}
  */
-e2e.ecc.Curve.prototype.keySizeInBits = goog.abstractMethod;
+e2e.ecc.curve.Curve.prototype.keySizeInBits = goog.abstractMethod;
 
 
 /**
  * Constructs a new element from a byte array.
- * @param {!e2e.ByteArray} bytes The value of the new element,
+ * @param {e2e.ByteArray} bytes The value of the new element,
  *     represented in big-endian format.
  * @return {!e2e.ecc.Element}
  */
-e2e.ecc.Curve.prototype.elementFromByteArray = function(bytes) {
+e2e.ecc.curve.Curve.prototype.elementFromByteArray = function(bytes) {
   return new e2e.ecc.Element(this.q, new e2e.BigNum(bytes));
 };
 
@@ -97,7 +97,7 @@ e2e.ecc.Curve.prototype.elementFromByteArray = function(bytes) {
  * @param {number} value
  * @return {!e2e.ecc.Element}
  */
-e2e.ecc.Curve.prototype.elementFromInteger = function(value) {
+e2e.ecc.curve.Curve.prototype.elementFromInteger = function(value) {
   var bignum = e2e.BigNum.fromInteger(value);
   return new e2e.ecc.Element(this.q, bignum);
 };

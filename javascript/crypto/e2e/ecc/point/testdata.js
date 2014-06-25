@@ -16,14 +16,14 @@
  * @author thaidn@google.com (Thai Duong)
  */
 
-goog.provide('e2e.ecc.Point.testData');
-goog.setTestOnly('e2e.ecc.Point.testData');
+goog.provide('e2e.ecc.point.testData');
+goog.setTestOnly();
 
 
 /**
  * G2 is the double of the P-256 base point.
  */
-e2e.ecc.Point.testData.G2 = [0x04,
+e2e.ecc.point.testData.G2 = [0x04,
     // x
     0x7c, 0xf2, 0x7b, 0x18, 0x8d, 0x03, 0x4f, 0x7e,
     0x8a, 0x52, 0x38, 0x03, 0x04, 0xb5, 0x1a, 0xc3,
@@ -42,7 +42,7 @@ e2e.ecc.Point.testData.G2 = [0x04,
  *     - P = dG, where G is the base point;
  *     - Z is the shared secret, which is the X coordinate of dQ.
  */
-e2e.ecc.Point.testData.P_256Vectors = [
+e2e.ecc.point.testData.P_256Vectors = [
   {
     'Qx': '700c48f77f56584c5cc632ca65640db91b6bacce3a4df6b42ce7cc838833d287',
     'Qy': 'db71e509e3fd9b060ddb20ba5c51dcc5948d46fbf640dfe0441782cab85fa4ac',

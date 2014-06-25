@@ -13,15 +13,15 @@
 // limitations under the License.
 // -->
 <!DOCTYPE html>
-<title>Unit Test of e2e.ecc.ECDSA</title>
+<title>Unit Test of e2e.ecc.Ecdsa</title>
 <script src="../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
   goog.require('goog.array');
   goog.require('goog.testing.jsunit');
   goog.require('e2e.BigNum');
-  goog.require('e2e.ecc.ECDSA');
-  goog.require('e2e.ecc.ECDSA.testData');
+  goog.require('e2e.ecc.Ecdsa');
+  goog.require('e2e.ecc.ecdsaTestData');
   goog.require('e2e.ecc.PrimeCurve');
   goog.require('e2e.ecc.Protocol');
   goog.require('e2e.hash.Hash');
@@ -34,7 +34,7 @@ function testConsistency_P256() {
   for (var i = 0; i < 5; i++) {
     var key = e2e.ecc.Protocol.generateKeyPair(
           e2e.ecc.PrimeCurve.P_256);
-    var ecdsa = new e2e.ecc.ECDSA(
+    var ecdsa = new e2e.ecc.Ecdsa(
         e2e.ecc.PrimeCurve.P_256, key);
     var N = ecdsa.params.n;
     var m = goog.array.repeat(i, 20);
@@ -71,7 +71,7 @@ function testConsistency_P256() {
 function testUnlikelyHashValues() {
   var key = e2e.ecc.Protocol.generateKeyPair(
     e2e.ecc.PrimeCurve.P_256);
-  var ecdsa = new e2e.ecc.ECDSA(
+  var ecdsa = new e2e.ecc.Ecdsa(
     e2e.ecc.PrimeCurve.P_256, key);
   // cripple ecdsa with a hash function that is the identity function.
   ecdsa.hash_ = new e2e.hash.Hash();
@@ -98,14 +98,14 @@ function testUnlikelyHashValues() {
  * Tests ECDSA with public test vectors.
  */
 function testNISTWithPublicTestVectors() {
-  goog.array.forEach(e2e.ecc.ECDSA.testData.testVectors,
+  goog.array.forEach(e2e.ecc.ecdsaTestData.testVectors,
       function(data) {
         var curve = data['curve'];
         var key = {
           'pubKey': data['pubKey'],
           'privKey': data['privKey']
         };
-        var ecdsa = new e2e.ecc.ECDSA(curve, key);
+        var ecdsa = new e2e.ecc.Ecdsa(curve, key);
         var nonce = new e2e.BigNum(data['k']);
         var sig = ecdsa.signForTestingOnly(data['message'], nonce);
         assertArrayEquals(data['r'], sig['r']);
@@ -120,9 +120,9 @@ function testNISTWithPublicTestVectors() {
  */
 function testInvalidSignature() {
   var key = {
-    'privKey': e2e.ecc.ECDSA.testData.testVectors[0]['privKey']
+    'privKey': e2e.ecc.ecdsaTestData.testVectors[0]['privKey']
   };
-  var ecdsa = new e2e.ecc.ECDSA(
+  var ecdsa = new e2e.ecc.Ecdsa(
       e2e.ecc.PrimeCurve.P_256, key);
   var m = [0x00];
   var sig = {
@@ -136,7 +136,7 @@ function testInvalidSignature() {
   // Tests that invalid signatures are rejected.
   key = e2e.ecc.Protocol.generateKeyPair(
       e2e.ecc.PrimeCurve.P_256);
-  ecdsa = new e2e.ecc.ECDSA(
+  ecdsa = new e2e.ecc.Ecdsa(
       e2e.ecc.PrimeCurve.P_256, key);
   var N = ecdsa.params.n;
   sig = {
@@ -169,7 +169,7 @@ function DISABLEDtestBenchmark() {
   var key = e2e.ecc.Protocol.generateKeyPair(
     e2e.ecc.PrimeCurve.P_256);
   for (var i = 0; i < 1000; i++) {
-    var ecdsa = new e2e.ecc.ECDSA(
+    var ecdsa = new e2e.ecc.Ecdsa(
         e2e.ecc.PrimeCurve.P_256, key);
     var m = goog.array.repeat(i % 256, 20);
     var sig = ecdsa.sign(m);
@@ -181,7 +181,7 @@ function DISABLEDtestBenchmark() {
 /**
  * Benchmark ECDSA sign.
  */
-var testVector = e2e.ecc.ECDSA.testData.testVectors[0];
+var testVector = e2e.ecc.ecdsaTestData.testVectors[0];
 var KEY = {
   'pubKey': testVector['pubKey'],
   'privKey': testVector['privKey']
@@ -189,7 +189,7 @@ var KEY = {
 var M = 'The quick brown fox jumps over the lazy dog';
 function DISABLEDtestBenchmarkSign() {
   for (var i = 0; i < 1000; i++) {
-    var ecdsa = new e2e.ecc.ECDSA(testVector['curve'], KEY);
+    var ecdsa = new e2e.ecc.Ecdsa(testVector['curve'], KEY);
     ecdsa.sign(M);
   }
 }
@@ -198,12 +198,12 @@ function DISABLEDtestBenchmarkSign() {
 /**
  * Benchmark ECDSA verify.
  */
-var SIG = new e2e.ecc.ECDSA(
+var SIG = new e2e.ecc.Ecdsa(
     e2e.ecc.PrimeCurve.P_256, KEY).sign(M);
 function DISABLEDtestBenchmarkVerify() {
   // Loop 200 times only; any larger test will halt Chrome.
   for (var i = 0; i < 200; i++) {
-    var ecdsa = new e2e.ecc.ECDSA(testVector['curve'], KEY);
+    var ecdsa = new e2e.ecc.Ecdsa(testVector['curve'], KEY);
     ecdsa.verify(M, SIG);
   }
 }

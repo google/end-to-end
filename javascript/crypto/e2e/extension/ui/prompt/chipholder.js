@@ -19,7 +19,7 @@ goog.provide('e2e.ext.ChipHolder');
 
 goog.require('e2e.ext.Chip');
 goog.require('e2e.ext.constants');
-goog.require('e2e.ext.templates.prompt');
+goog.require('e2e.ext.ui.templates.prompt');
 goog.require('goog.dom.classes');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
@@ -35,7 +35,7 @@ goog.require('soy');
 goog.scope(function() {
 var ext = e2e.ext;
 var constants = e2e.ext.constants;
-var templates = e2e.ext.templates.prompt;
+var templates = e2e.ext.ui.templates.prompt;
 
 
 

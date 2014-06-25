@@ -19,12 +19,12 @@
  * @author fy@google.com (Frank Yellin).
  */
 
-goog.provide('e2e.ecc.Point.Ed25519');
-goog.provide('e2e.ecc.Point.Ed25519X');
+goog.provide('e2e.ecc.point.Ed25519');
+goog.provide('e2e.ecc.point.Ed25519X');
 
 goog.require('e2e.BigNum');
 goog.require('e2e.ecc.Element');
-goog.require('e2e.ecc.Point');
+goog.require('e2e.ecc.point.Point');
 goog.require('goog.array');
 goog.require('goog.asserts');
 
@@ -33,16 +33,16 @@ goog.require('goog.asserts');
 /**
  * Constructs a point on the elliptic curve y^2 = x^3 - 3*x + B defined
  *     over a prime field.
- * @param {!e2e.ecc.Curve} curve The curve.
+ * @param {!e2e.ecc.curve.Curve} curve The curve.
  * @param {!e2e.ecc.Element} x The x Jacobian coordinate.
  * @param {!e2e.ecc.Element} y The y Jacobian coordinate.
  * @param {!e2e.ecc.Element=} opt_t The optional t Jacobian coordinate.
  * @param {!e2e.ecc.Element=} opt_z The optional z Jacobian coordinate.
  * @constructor
- * @extends {e2e.ecc.Point}
+ * @extends {e2e.ecc.point.Point}
  */
-e2e.ecc.Point.Ed25519 = function(curve, x, y, opt_t, opt_z) {
-  e2e.ecc.Point.Ed25519.base(this, 'constructor', curve);
+e2e.ecc.point.Ed25519 = function(curve, x, y, opt_t, opt_z) {
+  e2e.ecc.point.Ed25519.base(this, 'constructor', curve);
 
   var z = opt_z || this.curve.ONE;
   var t;
@@ -87,51 +87,51 @@ e2e.ecc.Point.Ed25519 = function(curve, x, y, opt_t, opt_z) {
 
   /**
    * The equivalent affine Point.
-   * @type {e2e.ecc.Point.Ed25519}
+   * @type {e2e.ecc.point.Ed25519}
    */
   this.affine = this.z.isEqual(this.curve.ONE) ? this : null;
 };
-goog.inherits(e2e.ecc.Point.Ed25519, e2e.ecc.Point);
+goog.inherits(e2e.ecc.point.Ed25519, e2e.ecc.point.Point);
 
 /**
- * @type {Array.<!Array.<!e2e.ecc.Point.Ed25519|
- *                        e2e.ecc.Point.Ed25519X>>}
+ * @type {Array.<!Array.<!e2e.ecc.point.Ed25519|
+ *                        e2e.ecc.point.Ed25519X>>}
  * @private
  */
-e2e.ecc.Point.Ed25519.prototype.fastMultiplyTable_;
+e2e.ecc.point.Ed25519.prototype.fastMultiplyTable_;
 
 
 /**
- * @type {Array.<!e2e.ecc.Point.Ed25519>}
+ * @type {Array.<!e2e.ecc.point.Ed25519>}
  * @private
  */
-e2e.ecc.Point.Ed25519.prototype.smallMultiplyTable_;
+e2e.ecc.point.Ed25519.prototype.smallMultiplyTable_;
 
 
 /** @override */
-e2e.ecc.Point.Ed25519.prototype.getX = function() {
+e2e.ecc.point.Ed25519.prototype.getX = function() {
   // Converts the point to affine form, and then extracts the X coordinate
   return this.getAffine_().x;
 };
 
 
 /** @override */
-e2e.ecc.Point.Ed25519.prototype.getY = function() {
+e2e.ecc.point.Ed25519.prototype.getY = function() {
   return this.getAffine_().y;
 };
 
 
 /**
  * Returns the equivalent affine point.
- * @return {!e2e.ecc.Point.Ed25519}
+ * @return {!e2e.ecc.point.Ed25519}
  * @private
  */
-e2e.ecc.Point.Ed25519.prototype.getAffine_ = function() {
+e2e.ecc.point.Ed25519.prototype.getAffine_ = function() {
   if (this.affine_ == null) {
     var zInv = this.z.inverse();
     var x = this.x.multiply(zInv);
     var y = this.y.multiply(zInv);
-    this.affine_ = new e2e.ecc.Point.Ed25519(this.curve, x, y);
+    this.affine_ = new e2e.ecc.point.Ed25519(this.curve, x, y);
   }
   return this.affine_;
 };
@@ -139,10 +139,10 @@ e2e.ecc.Point.Ed25519.prototype.getAffine_ = function() {
 
 /**
  * Compares another point with this. Return true if they are the same.
- * @param {!e2e.ecc.Point.Ed25519} that The point to compare.
+ * @param {!e2e.ecc.point.Ed25519} that The point to compare.
  * @return {boolean}
  */
-e2e.ecc.Point.Ed25519.prototype.isEqual = function(that) {
+e2e.ecc.point.Ed25519.prototype.isEqual = function(that) {
   if (this.isInfinity()) {
     return that.isInfinity();
   }
@@ -159,29 +159,29 @@ e2e.ecc.Point.Ed25519.prototype.isEqual = function(that) {
  * Compares another point with this. Return true if this is infinity;
  * @return {boolean}
  */
-e2e.ecc.Point.Ed25519.prototype.isInfinity = function() {
+e2e.ecc.point.Ed25519.prototype.isInfinity = function() {
   return this.z.isEqual(this.curve.ZERO);
 };
 
 
 /** @override */
-e2e.ecc.Point.Ed25519.prototype.isIdentity = function() {
+e2e.ecc.point.Ed25519.prototype.isIdentity = function() {
   return this.isEqual(this.curve.IDENTITY);
 };
 
 
 /**
  * Returns a new point which is a negative of this.
- * @return {!e2e.ecc.Point.Ed25519}
+ * @return {!e2e.ecc.point.Ed25519}
  */
-e2e.ecc.Point.Ed25519.prototype.negate = function() {
-  return new e2e.ecc.Point.Ed25519(this.curve, this.x.negate(), this.y,
+e2e.ecc.point.Ed25519.prototype.negate = function() {
+  return new e2e.ecc.point.Ed25519(this.curve, this.x.negate(), this.y,
       this.t.negate(), this.z);
 };
 
 
 /** @override */
-e2e.ecc.Point.Ed25519.prototype.toByteArray = function(opt_compressed) {
+e2e.ecc.point.Ed25519.prototype.toByteArray = function(opt_compressed) {
   var X = this.getX().toBigNum();
   var Y = this.getY().toBigNum();
   var result = this.curve.littleEndianByteArray32FromBigNum(Y);
@@ -195,10 +195,10 @@ e2e.ecc.Point.Ed25519.prototype.toByteArray = function(opt_compressed) {
 /**
  * Adds another point to this, and return the new point. This is the group
  *     operation.
- * @param {!e2e.ecc.Point.Ed25519} that The point to add.
- * @return {!e2e.ecc.Point.Ed25519}
+ * @param {!e2e.ecc.point.Ed25519} that The point to add.
+ * @return {!e2e.ecc.point.Ed25519}
  */
-e2e.ecc.Point.Ed25519.prototype.add = function(that) {
+e2e.ecc.point.Ed25519.prototype.add = function(that) {
   // http://hyperelliptic.org/EFD/g1p/auto-twisted-extended-1.html
   goog.asserts.assert(!this.isInfinity());
   goog.asserts.assert(!that.isInfinity());
@@ -210,17 +210,17 @@ e2e.ecc.Point.Ed25519.prototype.add = function(that) {
   var F = D.subtract(C);
   var G = D.add(C);
   var H = B.add(A);
-  return new e2e.ecc.Point.Ed25519(this.curve, E.multiply(F),
+  return new e2e.ecc.point.Ed25519(this.curve, E.multiply(F),
       G.multiply(H), E.multiply(H), F.multiply(G));
 };
 
 
 /**
  * Doubles this point.
- * @return {!e2e.ecc.Point.Ed25519}
+ * @return {!e2e.ecc.point.Ed25519}
  * @private
  */
-e2e.ecc.Point.Ed25519.prototype.twice_ = function() {
+e2e.ecc.point.Ed25519.prototype.twice_ = function() {
   return this.add(this);
 };
 
@@ -228,7 +228,7 @@ e2e.ecc.Point.Ed25519.prototype.twice_ = function() {
 /**
  * @override
  */
-e2e.ecc.Point.Ed25519.prototype.multiply = function(k) {
+e2e.ecc.point.Ed25519.prototype.multiply = function(k) {
   if (this.fastMultiplyTable_) {
     return this.fastMultiply_(k);
   }
@@ -280,7 +280,7 @@ e2e.ecc.Point.Ed25519.prototype.multiply = function(k) {
  * Determines if this point is on this elliptic curve.
  * @return {boolean}
  */
-e2e.ecc.Point.Ed25519.prototype.isOnCurve = function() {
+e2e.ecc.point.Ed25519.prototype.isOnCurve = function() {
   if (this.isInfinity()) {
     return true;
   }
@@ -296,9 +296,9 @@ e2e.ecc.Point.Ed25519.prototype.isOnCurve = function() {
 
 /**
  * Create a table
- * @return {!Array.<!Array.<!e2e.ecc.Point.Ed25519>>}
+ * @return {!Array.<!Array.<!e2e.ecc.point.Ed25519>>}
  */
-e2e.ecc.Point.Ed25519.prototype.createFastMultiplyTable = function() {
+e2e.ecc.point.Ed25519.prototype.createFastMultiplyTable = function() {
   var bits = 256;
   var nybbleCount = Math.ceil((bits + 1) / 4);  // sign can add one more bit
   var unsignedNybbleCount = Math.ceil(bits / 4);
@@ -331,7 +331,7 @@ e2e.ecc.Point.Ed25519.prototype.createFastMultiplyTable = function() {
 /**
  * @override
  */
-e2e.ecc.Point.Ed25519.prototype.initializeForFastMultiply = function() {
+e2e.ecc.point.Ed25519.prototype.initializeForFastMultiply = function() {
   var table = this.createFastMultiplyTable();
   goog.asserts.assert(this.isEqual(table[0][1].toPoint()),
       'Fast Multiply table is being attached to the wrong point');
@@ -343,9 +343,9 @@ e2e.ecc.Point.Ed25519.prototype.initializeForFastMultiply = function() {
  * Take a pre-constructed fast multiply table and convert it into a form so
  * that it can be attached to this point.
  * @param {!Array.<!Array.<
- *           (Array.<Array.<number>> | e2e.ecc.Point.Ed25519 )>>} table
+ *           (Array.<Array.<number>> | e2e.ecc.point.Ed25519)>>} table
  */
-e2e.ecc.Point.Ed25519.prototype.setFastMultiplyTable = function(table) {
+e2e.ecc.point.Ed25519.prototype.setFastMultiplyTable = function(table) {
   var identityX = this.curve.IDENTITY.toPointX();
   if (!table.isConverted) {
     var curve = this.curve;
@@ -357,7 +357,7 @@ e2e.ecc.Point.Ed25519.prototype.setFastMultiplyTable = function(table) {
         var delta = e2e.BigNum.fromInternalArray(encodedPoint[0]);
         var sum = e2e.BigNum.fromInternalArray(encodedPoint[1]);
         var d2xy = e2e.BigNum.fromInternalArray(encodedPoint[2]);
-        return new e2e.ecc.Point.Ed25519X(curve,
+        return new e2e.ecc.point.Ed25519X(curve,
             new e2e.ecc.Element(curve.q, delta),
             new e2e.ecc.Element(curve.q, sum),
             new e2e.ecc.Element(curve.q, d2xy));
@@ -371,7 +371,7 @@ e2e.ecc.Point.Ed25519.prototype.setFastMultiplyTable = function(table) {
   goog.asserts.assert(this.isEqual(table[0][1].toPoint()),
       'Fast Multiply table is being attached to the wrong point');
   this.fastMultiplyTable_ =
-      /** @type {Array.<!Array.<!e2e.ecc.Point.Ed25519X>>} */ (table);
+      /** @type {Array.<!Array.<!e2e.ecc.point.Ed25519X>>} */ (table);
 };
 
 
@@ -379,10 +379,10 @@ e2e.ecc.Point.Ed25519.prototype.setFastMultiplyTable = function(table) {
  * Calculate k * this, when this has a fast multiply table attached to it.
  *
  * @param {!e2e.BigNum} k
- * @return {!e2e.ecc.Point.Ed25519} k * this
+ * @return {!e2e.ecc.point.Ed25519} k * this
  * @private
  */
-e2e.ecc.Point.Ed25519.prototype.fastMultiply_ = function(k) {
+e2e.ecc.point.Ed25519.prototype.fastMultiply_ = function(k) {
   var table = this.fastMultiplyTable_;
   var base = table[0][1];
   var nybbles = k.toSignedNybbleArray();
@@ -427,13 +427,13 @@ e2e.ecc.Point.Ed25519.prototype.fastMultiply_ = function(k) {
  * This code is careful to touch every entry in the row in the exact same
  * order, independent of the value of we are fetching.
  *
- * @param {!Array.<e2e.ecc.Point.Ed25519>} row
+ * @param {!Array.<e2e.ecc.point.Ed25519>} row
  *     A row of the fast multiply table
  * @param {number} index The index of the entry to fetch.
- * @return {!e2e.ecc.Point.Ed25519} corresponding point.
+ * @return {!e2e.ecc.point.Ed25519} corresponding point.
  * @private
  */
-e2e.ecc.Point.Ed25519.prototype.selectFromFastMultiplyTable_ = function(
+e2e.ecc.point.Ed25519.prototype.selectFromFastMultiplyTable_ = function(
     row, index) {
   goog.asserts.assert(index >= 1 && index < row.length, 'Argument sanity');
   var length = this.curve.q.n.length;
@@ -451,7 +451,7 @@ e2e.ecc.Point.Ed25519.prototype.selectFromFastMultiplyTable_ = function(
       z.n[word] |= element.z.toBigNum().n[word] & mask;
     }
   }
-  var point = new e2e.ecc.Point.Ed25519(this.curve,
+  var point = new e2e.ecc.point.Ed25519(this.curve,
       new e2e.ecc.Element(this.curve.q, x),
       new e2e.ecc.Element(this.curve.q, y),
       new e2e.ecc.Element(this.curve.q, t),
@@ -463,20 +463,20 @@ e2e.ecc.Point.Ed25519.prototype.selectFromFastMultiplyTable_ = function(
 
 /**
  * Converts to an extended point.
- * @return {!e2e.ecc.Point.Ed25519X}
+ * @return {!e2e.ecc.point.Ed25519X}
  */
-e2e.ecc.Point.Ed25519.prototype.toPointX = function() {
+e2e.ecc.point.Ed25519.prototype.toPointX = function() {
   var x = this.getX();
   var y = this.getY();
-  return new e2e.ecc.Point.Ed25519X(this.curve, y.subtract(x), y.add(x),
+  return new e2e.ecc.point.Ed25519X(this.curve, y.subtract(x), y.add(x),
       x.multiply(y).multiply(this.curve.D2));
 };
 
 /**
  * Converts to a point.
- * @return {!e2e.ecc.Point.Ed25519}
+ * @return {!e2e.ecc.point.Ed25519}
  */
-e2e.ecc.Point.Ed25519.prototype.toPoint = function() {
+e2e.ecc.point.Ed25519.prototype.toPoint = function() {
   return this;
 };
 
@@ -492,15 +492,15 @@ e2e.ecc.Point.Ed25519.prototype.toPoint = function() {
  * always "this" rather than the argument, and only permit multiply() and
  * negate()
  *
- * @param {!e2e.ecc.Curve} curve
+ * @param {!e2e.ecc.curve.Curve} curve
  * @param {!e2e.ecc.Element} delta  y - x
  * @param {!e2e.ecc.Element} sum   y + x
  * @param {!e2e.ecc.Element} d2xy   d * x * y
  * @constructor
- * @extends {e2e.ecc.Point}
+ * @extends {e2e.ecc.point.Point}
  */
-e2e.ecc.Point.Ed25519X = function(curve, delta, sum, d2xy) {
-  e2e.ecc.Point.Ed25519X.base(this, 'constructor', curve);
+e2e.ecc.point.Ed25519X = function(curve, delta, sum, d2xy) {
+  e2e.ecc.point.Ed25519X.base(this, 'constructor', curve);
 
   /** @type {!e2e.ecc.Element} */
   this.delta = delta;
@@ -511,46 +511,46 @@ e2e.ecc.Point.Ed25519X = function(curve, delta, sum, d2xy) {
   /** @type {!e2e.ecc.Element} */
   this.d2xy = d2xy;
 };
-goog.inherits(e2e.ecc.Point.Ed25519X, e2e.ecc.Point);
+goog.inherits(e2e.ecc.point.Ed25519X, e2e.ecc.point.Point);
 
 
 /**
  * Converts to a point.
- * @return {!e2e.ecc.Point.Ed25519}
+ * @return {!e2e.ecc.point.Ed25519}
  */
-e2e.ecc.Point.Ed25519X.prototype.toPoint = function() {
+e2e.ecc.point.Ed25519X.prototype.toPoint = function() {
   var x = this.sum.subtract(this.delta).shiftRight(1);
   var y = this.sum.add(this.delta).shiftRight(1);
-  return new e2e.ecc.Point.Ed25519(this.curve, x, y);
+  return new e2e.ecc.point.Ed25519(this.curve, x, y);
 };
 
 
 /**
  * Converts to an extended point
- * @return {!e2e.ecc.Point.Ed25519X}
+ * @return {!e2e.ecc.point.Ed25519X}
  */
-e2e.ecc.Point.Ed25519X.prototype.toPointX = function() {
+e2e.ecc.point.Ed25519X.prototype.toPointX = function() {
   return this;
 };
 
 
 /**
  * Negates an extended point.
- * @return {!e2e.ecc.Point.Ed25519X}
+ * @return {!e2e.ecc.point.Ed25519X}
  */
-e2e.ecc.Point.Ed25519X.prototype.negate = function() {
+e2e.ecc.point.Ed25519X.prototype.negate = function() {
   // Negation swaps sum and delta, and negates dyx;
-  return new e2e.ecc.Point.Ed25519X(this.curve,
+  return new e2e.ecc.point.Ed25519X(this.curve,
       this.sum, this.delta, this.d2xy.negate());
 };
 
 /**
  * Adds another point to this, and return the new point. This is the group
  *     operation.
- * @param {!e2e.ecc.Point.Ed25519} that The point to add.
- * @return {!e2e.ecc.Point.Ed25519}
+ * @param {!e2e.ecc.point.Ed25519} that The point to add.
+ * @return {!e2e.ecc.point.Ed25519}
  */
-e2e.ecc.Point.Ed25519X.prototype.add = function(that) {
+e2e.ecc.point.Ed25519X.prototype.add = function(that) {
   // A rewrite of Ed25519.prototype.add, using the values available here
   // "Z" is implicitly 1.  T * D2 has already been pre-calculated.
   goog.asserts.assert(!that.isInfinity());
@@ -562,7 +562,7 @@ e2e.ecc.Point.Ed25519X.prototype.add = function(that) {
   var F = D.subtract(C);
   var G = D.add(C);
   var H = B.add(A);
-  return new e2e.ecc.Point.Ed25519(this.curve, E.multiply(F),
+  return new e2e.ecc.point.Ed25519(this.curve, E.multiply(F),
       G.multiply(H), E.multiply(H), F.multiply(G));
 };
 
@@ -572,13 +572,13 @@ e2e.ecc.Point.Ed25519X.prototype.add = function(that) {
  * This code is careful to touch every entry in the row in the exact same
  * order, independent of the value of we are fetching.
  *
- * @param {!Array.<e2e.ecc.Point.Ed25519X>} row
+ * @param {!Array.<e2e.ecc.point.Ed25519X>} row
  *     A row of the fast multiply table
  * @param {number} index The index of the entry to fetch.
- * @return {!e2e.ecc.Point.Ed25519X} corresponding point.
+ * @return {!e2e.ecc.point.Ed25519X} corresponding point.
  * @private
  */
-e2e.ecc.Point.Ed25519X.prototype.selectFromFastMultiplyTable_ =
+e2e.ecc.point.Ed25519X.prototype.selectFromFastMultiplyTable_ =
 function(row, index) {
   goog.asserts.assert(index >= 1 && index < row.length, 'Argument sanity');
   var length = this.curve.q.n.length;
@@ -594,10 +594,9 @@ function(row, index) {
       d2xy.n[word] |= element.d2xy.toBigNum().n[word] & mask;
     }
   }
-  var point = new e2e.ecc.Point.Ed25519X(this.curve,
+  var point = new e2e.ecc.point.Ed25519X(this.curve,
       new e2e.ecc.Element(this.curve.q, delta),
       new e2e.ecc.Element(this.curve.q, sum),
       new e2e.ecc.Element(this.curve.q, d2xy));
   return point;
 };
-

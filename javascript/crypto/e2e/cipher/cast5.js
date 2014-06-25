@@ -19,7 +19,7 @@
  * @author adhintz@google.com (Drew Hintz)
  */
 
-goog.provide('e2e.cipher.CAST5');
+goog.provide('e2e.cipher.Cast5');
 
 goog.require('e2e');
 goog.require('e2e.Algorithm');
@@ -41,15 +41,15 @@ goog.require('goog.asserts');
  * @extends {e2e.AlgorithmImpl}
  * @constructor
  */
-e2e.cipher.CAST5 = function(algorithm, opt_keyObj) {
+e2e.cipher.Cast5 = function(algorithm, opt_keyObj) {
   this.keySize = 16;
   goog.base(this, algorithm, opt_keyObj);
 };
-goog.inherits(e2e.cipher.CAST5, e2e.AlgorithmImpl);
+goog.inherits(e2e.cipher.Cast5, e2e.AlgorithmImpl);
 
 
 /** @inheritDoc */
-e2e.cipher.CAST5.prototype.setKey = function(keyObj) {
+e2e.cipher.Cast5.prototype.setKey = function(keyObj) {
   // TODO(adhintz) Implement other key sizes if needed.
   if (keyObj.key.length != 16) {
     throw new e2e.cipher.Error('Wrong key size for Cipher.');
@@ -69,11 +69,11 @@ e2e.cipher.CAST5.prototype.setKey = function(keyObj) {
 
 
 /** @inheritDoc */
-e2e.cipher.CAST5.prototype.blockSize = 8; // 64 bits.
+e2e.cipher.Cast5.prototype.blockSize = 8; // 64 bits.
 
 
 /** @inheritDoc */
-e2e.cipher.CAST5.prototype.encrypt = function(data) {
+e2e.cipher.Cast5.prototype.encrypt = function(data) {
   var dst = new Array(data.length);
   for (var i = 0; i < data.length; i += 8) {
     var l = data[i + 0] << 24 | data[i + 1] << 16 | data[i + 2] << 8 |
@@ -164,7 +164,7 @@ e2e.cipher.CAST5.prototype.encrypt = function(data) {
 
 
 /** @inheritDoc */
-e2e.cipher.CAST5.prototype.decrypt = function(data) {
+e2e.cipher.Cast5.prototype.decrypt = function(data) {
   var dst = new Array(data.length);
   for (var i = 0; i < data.length; i += 8) {
     var l = data[i + 0] << 24 | data[i + 1] << 16 | data[i + 2] << 8 | data[i + 3];
@@ -258,7 +258,7 @@ e2e.cipher.CAST5.prototype.decrypt = function(data) {
  * @type {Array.<Array.<Array.<number>>>}
  * @const
  */
-e2e.cipher.CAST5.keyScheduleA = [
+e2e.cipher.Cast5.keyScheduleA = [
   [
     [4, 0, 0xd, 0xf, 0xc, 0xe, 0x8],
     [5, 2, 16 + 0, 16 + 2, 16 + 1, 16 + 3, 0xa],
@@ -291,7 +291,7 @@ e2e.cipher.CAST5.keyScheduleA = [
  * @type {Array.<Array.<Array.<number>>>}
  * @const
  */
-e2e.cipher.CAST5.keyScheduleB = [
+e2e.cipher.Cast5.keyScheduleB = [
   [
     [16 + 8, 16 + 9, 16 + 7, 16 + 6, 16 + 2],
     [16 + 0xa, 16 + 0xb, 16 + 5, 16 + 4, 16 + 6],
@@ -325,7 +325,7 @@ e2e.cipher.CAST5.keyScheduleB = [
  * @return {Object.<e2e.ByteArray>} Rotate and masking subkeys.
  * @private
  */
-e2e.cipher.CAST5.prototype.keySchedule_ = function(inputKey) {
+e2e.cipher.Cast5.prototype.keySchedule_ = function(inputKey) {
   var t = new Array(8);
   var outputKey = new Array(32);
 
@@ -341,31 +341,31 @@ e2e.cipher.CAST5.prototype.keySchedule_ = function(inputKey) {
   for (var half = 0; half < 2; half++) {
     for (var round = 0; round < 4; round++) {
       for (var j = 0; j < 4; j++) {
-        var a = e2e.cipher.CAST5.keyScheduleA[round][j];
+        var a = e2e.cipher.Cast5.keyScheduleA[round][j];
         var w = t[a[1]];
-        w ^= e2e.cipher.CAST5.SBOX[4][
+        w ^= e2e.cipher.Cast5.SBOX[4][
           (t[a[2] >>> 2] >>> (24 - 8 * (a[2] & 3))) & 0xff];
-        w ^= e2e.cipher.CAST5.SBOX[5][
+        w ^= e2e.cipher.Cast5.SBOX[5][
           (t[a[3] >>> 2] >>> (24 - 8 * (a[3] & 3))) & 0xff];
-        w ^= e2e.cipher.CAST5.SBOX[6][
+        w ^= e2e.cipher.Cast5.SBOX[6][
           (t[a[4] >>> 2] >>> (24 - 8 * (a[4] & 3))) & 0xff];
-        w ^= e2e.cipher.CAST5.SBOX[7][
+        w ^= e2e.cipher.Cast5.SBOX[7][
           (t[a[5] >>> 2] >>> (24 - 8 * (a[5] & 3))) & 0xff];
-        w ^= e2e.cipher.CAST5.SBOX[x[j]][
+        w ^= e2e.cipher.Cast5.SBOX[x[j]][
           (t[a[6] >>> 2] >>> (24 - 8 * (a[6] & 3))) & 0xff];
         t[a[0]] = w;
       }
       for (var j = 0; j < 4; j++) {
-        var b = e2e.cipher.CAST5.keyScheduleB[round][j];
-        var w = e2e.cipher.CAST5.SBOX[4][
+        var b = e2e.cipher.Cast5.keyScheduleB[round][j];
+        var w = e2e.cipher.Cast5.SBOX[4][
             (t[b[0] >>> 2] >>> (24 - 8 * (b[0] & 3))) & 0xff];
-        w ^= e2e.cipher.CAST5.SBOX[5][
+        w ^= e2e.cipher.Cast5.SBOX[5][
           (t[b[1] >>> 2] >>> (24 - 8 * (b[1] & 3))) & 0xff];
-        w ^= e2e.cipher.CAST5.SBOX[6][
+        w ^= e2e.cipher.Cast5.SBOX[6][
           (t[b[2] >>> 2] >>> (24 - 8 * (b[2] & 3))) & 0xff];
-        w ^= e2e.cipher.CAST5.SBOX[7][
+        w ^= e2e.cipher.Cast5.SBOX[7][
           (t[b[3] >>> 2] >>> (24 - 8 * (b[3] & 3))) & 0xff];
-        w ^= e2e.cipher.CAST5.SBOX[4 + j][
+        w ^= e2e.cipher.Cast5.SBOX[4 + j][
           (t[b[4] >>> 2] >>> (24 - 8 * (b[4] & 3))) & 0xff];
         outputKey[ki] = w;
         ki++;
@@ -392,14 +392,14 @@ e2e.cipher.CAST5.prototype.keySchedule_ = function(inputKey) {
  * @return {number}
  * @private
  */
-e2e.cipher.CAST5.prototype.f1_ = function(d, m, r) {
+e2e.cipher.Cast5.prototype.f1_ = function(d, m, r) {
   var t = m + d;
   var I = (t << r) | (t >>> (32 - r));
   return (
-      (e2e.cipher.CAST5.SBOX[0][I >>> 24] ^
-          e2e.cipher.CAST5.SBOX[1][(I >>> 16) & 0xff]) -
-      e2e.cipher.CAST5.SBOX[2][(I >>> 8) & 0xff]) +
-      e2e.cipher.CAST5.SBOX[3][I & 0xff];
+      (e2e.cipher.Cast5.SBOX[0][I >>> 24] ^
+          e2e.cipher.Cast5.SBOX[1][(I >>> 16) & 0xff]) -
+      e2e.cipher.Cast5.SBOX[2][(I >>> 8) & 0xff]) +
+      e2e.cipher.Cast5.SBOX[3][I & 0xff];
 };
 
 
@@ -411,13 +411,13 @@ e2e.cipher.CAST5.prototype.f1_ = function(d, m, r) {
  * @return {number}
  * @private
  */
-e2e.cipher.CAST5.prototype.f2_ = function(d, m, r) {
+e2e.cipher.Cast5.prototype.f2_ = function(d, m, r) {
   var t = m ^ d;
   var I = (t << r) | (t >>> (32 - r));
-  return ((e2e.cipher.CAST5.SBOX[0][I >>> 24] -
-      e2e.cipher.CAST5.SBOX[1][(I >>> 16) & 0xff]) +
-      e2e.cipher.CAST5.SBOX[2][(I >>> 8) & 0xff]) ^
-      e2e.cipher.CAST5.SBOX[3][I & 0xff];
+  return ((e2e.cipher.Cast5.SBOX[0][I >>> 24] -
+      e2e.cipher.Cast5.SBOX[1][(I >>> 16) & 0xff]) +
+      e2e.cipher.Cast5.SBOX[2][(I >>> 8) & 0xff]) ^
+      e2e.cipher.Cast5.SBOX[3][I & 0xff];
 };
 
 
@@ -429,13 +429,13 @@ e2e.cipher.CAST5.prototype.f2_ = function(d, m, r) {
  * @return {number}
  * @private
  */
-e2e.cipher.CAST5.prototype.f3_ = function(d, m, r) {
+e2e.cipher.Cast5.prototype.f3_ = function(d, m, r) {
   var t = m - d;
   var I = (t << r) | (t >>> (32 - r));
-  return ((e2e.cipher.CAST5.SBOX[0][I >>> 24] +
-      e2e.cipher.CAST5.SBOX[1][(I >>> 16) & 0xff]) ^
-      e2e.cipher.CAST5.SBOX[2][(I >>> 8) & 0xff]) -
-      e2e.cipher.CAST5.SBOX[3][I & 0xff];
+  return ((e2e.cipher.Cast5.SBOX[0][I >>> 24] +
+      e2e.cipher.Cast5.SBOX[1][(I >>> 16) & 0xff]) ^
+      e2e.cipher.Cast5.SBOX[2][(I >>> 8) & 0xff]) -
+      e2e.cipher.Cast5.SBOX[3][I & 0xff];
 };
 
 
@@ -444,7 +444,7 @@ e2e.cipher.CAST5.prototype.f3_ = function(d, m, r) {
  * @type {Array.<Array.<number>>}
  * @const
  */
-e2e.cipher.CAST5.SBOX = [
+e2e.cipher.Cast5.SBOX = [
 [
   0x30fb40d4, 0x9fa0ff0b, 0x6beccd2f, 0x3f258c7a, 0x1e213f2f, 0x9c004dd3, 0x6003e540, 0xcf9fc949,
   0xbfd4af27, 0x88bbbdb5, 0xe2034090, 0x98d09675, 0x6e63a0e0, 0x15c361d2, 0xc2e7661d, 0x22d4ff8e,
@@ -720,5 +720,5 @@ e2e.cipher.CAST5.SBOX = [
 ];
 
 
-e2e.cipher.factory.add(e2e.cipher.CAST5,
+e2e.cipher.factory.add(e2e.cipher.Cast5,
                                e2e.cipher.Algorithm.CAST5);

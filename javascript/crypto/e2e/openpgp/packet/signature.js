@@ -21,7 +21,7 @@ goog.provide('e2e.openpgp.packet.Signature.SignatureType');
 goog.require('e2e');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
-goog.require('e2e.openpgp.MPI');
+goog.require('e2e.openpgp.Mpi');
 goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
@@ -179,13 +179,13 @@ e2e.openpgp.packet.Signature.prototype.serializePacketBody =
   switch (this.pubKeyAlgorithm) {
     case e2e.cipher.Algorithm.RSA:
       goog.array.extend(serialized,
-          (new e2e.openpgp.MPI(sig['s'])).serialize());
+          (new e2e.openpgp.Mpi(sig['s'])).serialize());
       break;
     case e2e.signer.Algorithm.ECDSA:
     case e2e.signer.Algorithm.DSA:
       goog.array.extend(serialized,
-          (new e2e.openpgp.MPI(sig['r'])).serialize(),
-          (new e2e.openpgp.MPI(sig['s'])).serialize());
+          (new e2e.openpgp.Mpi(sig['r'])).serialize(),
+          (new e2e.openpgp.Mpi(sig['s'])).serialize());
       break;
     default:
       throw new e2e.openpgp.error.UnsupportedError(
@@ -271,16 +271,15 @@ e2e.openpgp.packet.Signature.parse = function(data) {
   };
   switch (pubKeyAlgorithm) {
       case e2e.signer.Algorithm.RSA:
-        signature['s'] = e2e.openpgp.MPI.parse(data);
+        signature['s'] = e2e.openpgp.Mpi.parse(data);
         break;
       case e2e.signer.Algorithm.DSA:
       case e2e.signer.Algorithm.ECDSA:
-        signature['r'] = e2e.openpgp.MPI.parse(data);
-        signature['s'] = e2e.openpgp.MPI.parse(data);
+        signature['r'] = e2e.openpgp.Mpi.parse(data);
+        signature['s'] = e2e.openpgp.Mpi.parse(data);
         break;
-      default:
-        throw new e2e.openpgp.error.UnsupportedError(
-            'Unsupported algorithm for signature verification.');
+      default:  // Unsupported signature algorithm.
+        return null;
   }
   return new e2e.openpgp.packet.Signature(
       version, signatureType,
@@ -399,16 +398,6 @@ e2e.openpgp.packet.Signature.construct = function(
       signature['hashValue'].slice(0, 2),
       hashedSubpackets,
       unhashedSubpackets);
-};
-
-
-/**
- * Canonicalizes data by converting all line endings to <CR><LF>.
- * @param {string} data The text to canonicalize.
- * @return {string} The canonicalized text.
- */
-e2e.openpgp.packet.Signature.convertNewlines = function(data) {
-  return data.replace(/(\r\n|\r|\n)/g, '\r\n');
 };
 
 

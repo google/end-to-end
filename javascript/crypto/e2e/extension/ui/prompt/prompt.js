@@ -25,10 +25,11 @@ goog.require('e2e.ext.ChipHolder');
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.messages');
-goog.require('e2e.ext.templates.prompt');
 goog.require('e2e.ext.ui.Dialog');
 goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.ui.preferences');
+goog.require('e2e.ext.ui.templates');
+goog.require('e2e.ext.ui.templates.prompt');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.Key');
@@ -53,7 +54,7 @@ var drafts = e2e.ext.ui.draftmanager;
 var ext = e2e.ext;
 var messages = e2e.ext.messages;
 var preferences = e2e.ext.ui.preferences;
-var templates = e2e.ext.templates.prompt;
+var templates = e2e.ext.ui.templates.prompt;
 var ui = e2e.ext.ui;
 var utils = e2e.ext.utils;
 
@@ -167,7 +168,7 @@ ui.Prompt.prototype.processSelectedContent_ =
 
   var elem = goog.dom.getElement(constants.ElementId.BODY);
   var title = goog.dom.getElement(constants.ElementId.TITLE);
-  title.textContent = this.getTitle_(action);
+  title.textContent = this.getTitle_(action) || title.textContent;
   switch (action) {
     case constants.Actions.ENCRYPT_SIGN:
       this.renderEncrypt_(elem, recipients, canInject, origin);
@@ -228,8 +229,12 @@ ui.Prompt.prototype.processSelectedContent_ =
       this.renderMenu_(elem, contentBlob);
       return;
     case constants.Actions.CONFIGURE_EXTENSION:
-      window.open('settings.html');
-      this.close();
+      chrome.tabs.create(
+          {
+            url: 'settings.html',
+            active: false
+          },
+          goog.nullFunction);
       return;
     case constants.Actions.NO_OP:
       this.close();
@@ -342,6 +347,12 @@ ui.Prompt.prototype.renderEncrypt_ =
                 availableSigningKeys = privateKeyResult.getKeys();
               }
 
+              var signInsertLabel =
+                  /^https:\/\/mail\.google\.com$/.test(origin) ?
+                  chrome.i18n.getMessage(
+                      'promptEncryptSignInsertIntoGmailLabel') :
+                  chrome.i18n.getMessage('promptEncryptSignInsertLabel');
+
               soy.renderElement(elem, templates.RenderEncrypt, {
                 insertCheckboxEnabled: canInject,
                 signerCheckboxTitle: chrome.i18n.getMessage(
@@ -361,8 +372,7 @@ ui.Prompt.prototype.renderEncrypt_ =
                 backButtonTitle: chrome.i18n.getMessage('actionBackToMenu'),
                 saveDraftButtonTitle: chrome.i18n.getMessage(
                     'promptEncryptSignSaveDraftLabel'),
-                insertButtonTitle: chrome.i18n.getMessage(
-                    'promptEncryptSignInsertLabel')
+                insertButtonTitle: signInsertLabel
               });
 
               var textArea = elem.querySelector('textarea');
@@ -520,9 +530,8 @@ ui.Prompt.prototype.renderKeyringPassphrase_ = function(elem, contentBlob) {
  */
 ui.Prompt.prototype.renderPassphraseCallback_ = function(uid, callback) {
   var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
-  var dialog = new ui.Dialog(
-      goog.string.format(
-          chrome.i18n.getMessage('promptPassphraseCallbackMessage'), uid),
+  var dialog = new ui.Dialog(chrome.i18n.getMessage(
+          'promptPassphraseCallbackMessage', uid),
       function(passphrase) {
         goog.dispose(dialog);
         callback(/** @type {string} */ (passphrase));
@@ -791,18 +800,17 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
                     if (goog.isDef(res.verify) &&
                         res.verify.failure.length > 0) {
                       this.displayFailure_(
-                          new Error(goog.string.format(
-                          chrome.i18n.getMessage(
-                              'promptVerificationFailureMsg'),
-                          this.extractUserIds_(res.verify.failure)
+                          new Error(chrome.i18n.getMessage(
+                              'promptVerificationFailureMsg',
+                              this.extractUserIds_(res.verify.failure)
                       )));
                     }
                     if (goog.isDef(res.verify) &&
                         res.verify.success.length > 0) {
-                      successMessage += '\n\n' + goog.string.format(
+                      successMessage += '\n\n' +
                           chrome.i18n.getMessage(
-                              'promptVerificationSuccessMsg'),
-                          this.extractUserIds_(res.verify.success)
+                              'promptVerificationSuccessMsg',
+                              this.extractUserIds_(res.verify.success)
                       );
                     }
                     this.displaySuccess_(successMessage, goog.nullFunction);
@@ -813,44 +821,55 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
       break;
     case ext.constants.Actions.IMPORT_KEY:
       this.runWrappedProcessor_(function() {
-        var keyDescription = this.pgpLauncher_.getContext().getKeyDescription(
-            textArea.value);
-        var dialog = new ui.Dialog(
-            goog.string.format(
-                chrome.i18n.getMessage('promptImportKeyConfirmLabel'),
-                keyDescription),
-            goog.bind(function(returnValue) {
-              goog.dispose(dialog);
+        this.pgpLauncher_.getContext().getKeyDescription(textArea.value)
+          .addCallback(function(keyDescription) {
+            var dialog = new ui.Dialog(
+                e2e.ext.ui.templates.ImportKeyConfirm({
+                  promptImportKeyConfirmLabel: chrome.i18n.getMessage(
+                      'promptImportKeyConfirmLabel'),
+                  keys: keyDescription,
+                  secretKeyDescription: chrome.i18n.getMessage(
+                      'secretKeyDescription'),
+                  publicKeyDescription: chrome.i18n.getMessage(
+                      'publicKeyDescription'),
+                  secretSubKeyDescription: chrome.i18n.getMessage(
+                      'secretSubKeyDescription'),
+                  publicSubKeyDescription: chrome.i18n.getMessage(
+                      'publicSubKeyDescription')
+                }),
+                goog.bind(function(returnValue) {
+                  goog.dispose(dialog);
 
-              if (goog.isDef(returnValue)) {
-                this.pgpLauncher_.getContext().importKey(
-                    goog.bind(this.renderPassphraseCallback_, this),
-                    textArea.value).addCallback(goog.bind(function(res) {
-                      if (res.length > 0) {
-                        // Key import successful for at least one UID.
-                        this.displaySuccess_(
-                            goog.string.format(
+                  if (goog.isDef(returnValue)) {
+                    this.pgpLauncher_.getContext().importKey(
+                        goog.bind(this.renderPassphraseCallback_, this),
+                        textArea.value).addCallback(goog.bind(function(res) {
+                          if (res.length > 0) {
+                            // Key import successful for at least one UID.
+                            this.displaySuccess_(
                                 chrome.i18n.getMessage(
-                                    'promptImportKeyNotificationLabel'),
-                                res.toString()),
-                            goog.bind(this.close, this));
-                      } else {
-                        this.displayFailure_(
-                            new utils.Error(
-                                'Import key error',
-                                'promptImportKeyError'));
-                      }
-                      this.surfaceDismissButton_();
-                    }, this));
-              }
-            }, this),
-            ui.Dialog.InputType.NONE,
-            '',
-            chrome.i18n.getMessage('promptOkActionLabel'),
-            chrome.i18n.getMessage('actionCancelPgpAction'));
+                                    'promptImportKeyNotificationLabel',
+                                    res.toString()),
+                                goog.bind(this.close, this));
+                          } else {
+                            this.displayFailure_(
+                                new utils.Error(
+                                    'Import key error',
+                                    'promptImportKeyError'));
+                          }
+                          this.surfaceDismissButton_();
+                        }, this));
+                  }
+                }, this),
+                ui.Dialog.InputType.NONE,
+                '',
+                chrome.i18n.getMessage('promptOkActionLabel'),
+                chrome.i18n.getMessage('actionCancelPgpAction'));
+            this.addChild(dialog, false);
+            dialog.render(goog.dom.getElement(
+                constants.ElementId.CALLBACK_DIALOG));
+          }, this).addErrback(this.displayFailure_, this);
 
-        this.addChild(dialog, false);
-        dialog.render(goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG));
       });
       break;
   }

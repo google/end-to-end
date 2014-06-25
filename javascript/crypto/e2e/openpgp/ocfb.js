@@ -16,11 +16,10 @@
  * @fileoverview Implements OpenPGP's variation of CFB mode.
  * @author evn@google.com (Eduardo Vela)
  */
-// TODO(adhintz) Move this to the ciphermode/ directory?
 
-goog.provide('e2e.openpgp.OCFB');
+goog.provide('e2e.openpgp.Ocfb');
 
-goog.require('e2e.ciphermode.CFB');
+goog.require('e2e.ciphermode.Cfb');
 goog.require('e2e.ciphermode.CipherMode');
 goog.require('e2e.random');
 
@@ -28,12 +27,12 @@ goog.require('e2e.random');
 
 /**
  * Implements OpenPGP's variation of CFB mode. Defined in RFC 4880 Section 13.9.
- * @param {e2e.cipher.Cipher} cipher The cipher to use.
+ * @param {e2e.cipher.SymmetricCipher} cipher The cipher to use.
  * @param {boolean} resync Specifies if we should do the resyncronization step.
  * @extends {e2e.ciphermode.CipherMode}
  * @constructor
  */
-e2e.openpgp.OCFB = function(cipher, resync) {
+e2e.openpgp.Ocfb = function(cipher, resync) {
   goog.base(this, cipher);
   /**
    * Specifies if we should do the resynchronization step.
@@ -42,17 +41,17 @@ e2e.openpgp.OCFB = function(cipher, resync) {
   this.resync = resync;
   /**
    * Classic Cipher Feedback implementation used internally.
-   * @type {e2e.ciphermode.CFB}
+   * @type {e2e.ciphermode.Cfb}
    */
-  this.cfb = new e2e.ciphermode.CFB(cipher);
+  this.cfb = new e2e.ciphermode.Cfb(cipher);
 };
-goog.inherits(e2e.openpgp.OCFB, e2e.ciphermode.CipherMode);
+goog.inherits(e2e.openpgp.Ocfb, e2e.ciphermode.CipherMode);
 
 
 // TODO(adhintz) Is there a way to actually make these IV arguments optional
 // so that there are no compiler warnings?
 /** @inheritDoc */
-e2e.openpgp.OCFB.prototype.encrypt = function(data, opt_unused_iv) {
+e2e.openpgp.Ocfb.prototype.encrypt = function(data, opt_unused_iv) {
   var rnd = e2e.random.getRandomBytes(this.cipher.blockSize);
   return this.cipher.encrypt(rnd).addCallback(function(ciphertext) {
     ciphertext.push(ciphertext[0], ciphertext[1]);
@@ -70,7 +69,7 @@ e2e.openpgp.OCFB.prototype.encrypt = function(data, opt_unused_iv) {
 
 
 /** @inheritDoc */
-e2e.openpgp.OCFB.prototype.decrypt = function(data, opt_unused_iv) {
+e2e.openpgp.Ocfb.prototype.decrypt = function(data, opt_unused_iv) {
   var iv;
   if (this.resync) {
     iv = data.slice(2, this.cipher.blockSize + 2);

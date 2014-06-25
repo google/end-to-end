@@ -20,12 +20,12 @@ goog.provide('e2e.ext.ui.Settings');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.constants');
-goog.require('e2e.ext.templates');
 goog.require('e2e.ext.ui.Dialog');
 goog.require('e2e.ext.ui.panels.GenerateKey');
 goog.require('e2e.ext.ui.panels.KeyringMgmtFull');
 goog.require('e2e.ext.ui.panels.PreferencesPanel');
 goog.require('e2e.ext.ui.preferences');
+goog.require('e2e.ext.ui.templates');
 goog.require('e2e.ext.utils');
 goog.require('e2e.openpgp.Context');
 goog.require('e2e.signer.Algorithm');
@@ -33,7 +33,6 @@ goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.events.Event');
 goog.require('goog.events.EventType');
-goog.require('goog.string.format');
 goog.require('goog.ui.Component');
 goog.require('soy');
 
@@ -42,7 +41,7 @@ var ext = e2e.ext;
 var constants = e2e.ext.constants;
 var panels = e2e.ext.ui.panels;
 var preferences = e2e.ext.ui.preferences;
-var templates = e2e.ext.templates;
+var templates = e2e.ext.ui.templates;
 var ui = e2e.ext.ui;
 var utils = e2e.ext.utils;
 
@@ -121,7 +120,6 @@ ui.Settings.prototype.renderTemplate_ = function(pgpKeys) {
   var elem = this.getElement();
 
   soy.renderElement(elem, templates.Settings, {
-    extName: chrome.i18n.getMessage('extName'),
     pageTitle: chrome.i18n.getMessage('settingsTitle')
   });
 
@@ -216,12 +214,13 @@ ui.Settings.prototype.exportKey_ = function(keyUid) {
         })));
     var filename = keyUid.replace(/[\/\\]/g, '.') + '-public.asc';
 
-    utils.WriteToFile(filename, armoredKey, function(fileUrl) {
-      var anchor = document.createElement('a');
-      anchor.download = filename;
-      anchor.href = fileUrl;
-      anchor.click();
-    });
+    utils.writeToFile(
+        armoredKey, function(fileUrl) {
+          var anchor = document.createElement('a');
+          anchor.download = filename;
+          anchor.href = fileUrl;
+          anchor.click();
+        });
   }, this).addErrback(this.displayFailure_, this);
 };
 
@@ -243,38 +242,61 @@ ui.Settings.prototype.renderNewKey_ = function(keyUid) {
 
 /**
  * Imports a keyring from a file and appends it to the current keyring.
- * @param {File} file The file to import.
+ * @param {!File} file The file to import.
  * @private
  */
 ui.Settings.prototype.importKeyring_ = function(file) {
-  utils.ReadFile(file, goog.bind(function(contents) {
-    // TODO(adhintz) try/catch here to alert on failed key import?
-    var keyDescription =
-        this.pgpLauncher_.getContext().getKeyDescription(contents);
-    // TODO(evn): All these messages should be localized.
-    if (window.confirm('Do you want to import the following keys?\n\n' +
-        keyDescription)) {
-      // TODO(radi): Add a proper callback to request a passphrase if needed.
-      this.pgpContext_
-          .importKey(goog.bind(this.renderPassphraseCallback_, this), contents)
-          .addCallback(function(res) {
-            if (res.length > 0) {
-              this.pgpLauncher_.showNotification(
-                  'Key import success for ' + res.toString(),
-                  goog.bind(function() {
-                    goog.array.forEach(res, function(keyUid) {
-                      this.renderNewKey_(keyUid);
-                    }, this);
-                    this.keyringMgmtPanel_.resetControls();
-                  }, this));
-            } else {
-              this.displayFailure_(
-                  new utils.Error('Import key error', 'promptImportKeyError'));
-
-            }
-          }, this)
-          .addErrback(this.displayFailure_, this);
-    }
+  utils.readFile(file, goog.bind(function(contents) {
+    this.pgpLauncher_.getContext().getKeyDescription(contents)
+        .addCallback(function(keyDescription) {
+          var dialog = new ui.Dialog(
+              templates.ImportKeyConfirm({
+                promptImportKeyConfirmLabel: chrome.i18n.getMessage(
+                    'promptImportKeyConfirmLabel'),
+                keys: keyDescription,
+                secretKeyDescription: chrome.i18n.getMessage(
+                    'secretKeyDescription'),
+                publicKeyDescription: chrome.i18n.getMessage(
+                    'publicKeyDescription'),
+                secretSubKeyDescription: chrome.i18n.getMessage(
+                    'secretSubKeyDescription'),
+                publicSubKeyDescription: chrome.i18n.getMessage(
+                    'publicSubKeyDescription')
+              }),
+              goog.bind(function(returnValue) {
+                goog.dispose(dialog);
+                if (goog.isDef(returnValue)) {
+                  this.pgpLauncher_.getContext()
+                      .importKey(goog.bind(this.renderPassphraseCallback_,
+                          this), contents)
+                      .addCallback(function(res) {
+                        if (res.length > 0) {
+                          this.pgpLauncher_.showNotification(
+                              chrome.i18n.getMessage(
+                                  'promptImportKeyNotificationLabel',
+                                  res.toString()),
+                              goog.bind(function() {
+                                goog.array.forEach(res, function(keyUid) {
+                                  this.renderNewKey_(keyUid);
+                                }, this);
+                                this.keyringMgmtPanel_.resetControls();
+                              }, this));
+                        } else {
+                          this.displayFailure_(
+                              new utils.Error('Import key error',
+                                  'promptImportKeyError'));
+                        }
+                      }, this).addErrback(this.displayFailure_, this);
+                }
+              }, this),
+              ui.Dialog.InputType.NONE,
+              '',
+              chrome.i18n.getMessage('promptOkActionLabel'),
+              chrome.i18n.getMessage('actionCancelPgpAction'));
+          this.addChild(dialog, false);
+          dialog.render(goog.dom.getElement(
+              constants.ElementId.CALLBACK_DIALOG));
+        }, this).addErrback(this.displayFailure_, this);
   }, this));
 };
 
@@ -289,9 +311,8 @@ ui.Settings.prototype.importKeyring_ = function(file) {
  */
 ui.Settings.prototype.renderPassphraseCallback_ = function(uid, callback) {
   var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
-  var dialog = new ui.Dialog(
-      goog.string.format(
-          chrome.i18n.getMessage('promptPassphraseCallbackMessage'), uid),
+  var dialog = new ui.Dialog(chrome.i18n.getMessage(
+          'promptPassphraseCallbackMessage', uid),
       function(passphrase) {
         goog.dispose(dialog);
         callback(/** @type {string} */ (passphrase));
@@ -312,13 +333,14 @@ ui.Settings.prototype.renderPassphraseCallback_ = function(uid, callback) {
  * @private
  */
 ui.Settings.prototype.exportKeyring_ = function() {
-  var filename = (
-      this.pgpContext_.isKeyRingEncrypted() ?
-      'keyring-private' : 'UNENCRYPTED-keyring-private');
-  filename += '-' + new Date().getTime() + '.asc';
+  var filename = (!this.pgpContext_.isKeyRingEncrypted() && 'UNENCRYPTED-') +
+      'keyring-private.asc';
   this.pgpContext_.exportKeyring(true).addCallback(function(armoredKey) {
-    utils.WriteToFile(
-        filename, armoredKey, function(fileUrl) {
+    if (typeof armoredKey != 'string') {
+      armoredKey = goog.crypt.byteArrayToString(armoredKey);
+    }
+    utils.writeToFile(
+        armoredKey, function(fileUrl) {
       var anchor = document.createElement('a');
       anchor.download = filename;
       anchor.href = fileUrl;

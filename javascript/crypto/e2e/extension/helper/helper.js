@@ -30,7 +30,6 @@ goog.require('goog.asserts');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
 goog.require('goog.events.Key');
-goog.require('goog.html.utils');
 goog.require('goog.string');
 goog.require('goog.string.format');
 goog.require('goog.structs.Map');
@@ -240,11 +239,6 @@ ext.Helper.prototype.getSelectedContent_ = function(req, sender, callback) {
         gmonkey.getActiveDraft(goog.bind(function(recipients, msgBody) {
           var selectionBody =
               e2e.openpgp.asciiArmor.extractPgpBlock(msgBody);
-          if (utils.text.getPgpAction(selectionBody, true) ==
-              constants.Actions.ENCRYPT_SIGN) {
-            selectionBody = goog.html.utils.stripHtmlTags(selectionBody);
-          }
-
           callback({
             action: constants.Actions.ENCRYPT_SIGN,
             selection: selectionBody,
@@ -266,7 +260,9 @@ ext.Helper.prototype.getSelectedContent_ = function(req, sender, callback) {
           }
 
           var action = utils.text.getPgpAction(selectionBody, true);
-          if (messageElem && !goog.isDef(messageElem.lookingGlass) &&
+          if (selectionRequest.enableLookingGlass &&
+              messageElem &&
+              !goog.isDef(messageElem.lookingGlass) &&
               action == constants.Actions.DECRYPT_VERIFY) {
             var glass = new ui.GlassWrapper(messageElem);
             this.registerDisposable(glass);
@@ -299,7 +295,7 @@ ext.Helper.prototype.getSelectedContent_ = function(req, sender, callback) {
     }
 
     callback({
-      selection: selection,
+      selection: e2e.openpgp.asciiArmor.extractPgpBlock(selection),
       recipients: recipients,
       request: true,
       origin: this.getOrigin_(),

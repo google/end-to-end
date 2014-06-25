@@ -17,13 +17,13 @@
  *
  * @author fy@google.com (Frank Yellin).
  */
-goog.provide('e2e.ecc.Curve.Curve25519');
+goog.provide('e2e.ecc.curve.Curve25519');
 
 goog.require('e2e');
 goog.require('e2e.BigNum');
-goog.require('e2e.ecc.Curve');
-goog.require('e2e.ecc.Point');
-goog.require('e2e.ecc.Point.Curve25519');
+goog.require('e2e.ecc.curve.Curve');
+goog.require('e2e.ecc.point.Curve25519');
+goog.require('e2e.ecc.point.Point');
 goog.require('goog.array');
 goog.require('goog.asserts');
 
@@ -33,11 +33,11 @@ goog.require('goog.asserts');
  * Constructs a DJB elliptic curve defined over a prime field.
  *
  * @constructor
- * @extends {e2e.ecc.Curve}
+ * @extends {e2e.ecc.curve.Curve}
  * @param {!e2e.BigPrimeNum} q The modulus of the prime field.
  */
-e2e.ecc.Curve.Curve25519 = function(q) {
-  e2e.ecc.Curve.Curve25519.base(this, 'constructor', q);
+e2e.ecc.curve.Curve25519 = function(q) {
+  e2e.ecc.curve.Curve25519.base(this, 'constructor', q);
 
   // The A constant for Curve25519
   var a = 486662;
@@ -59,25 +59,25 @@ e2e.ecc.Curve.Curve25519 = function(q) {
   /**
    * The Point with X coordinate 9.
    * Used as a base point in some calculations.
-   * @type {!e2e.ecc.Point.Curve25519}
+   * @type {!e2e.ecc.point.Curve25519}
    * @const
    */
-  this.POINT_AT_NINE = new e2e.ecc.Point.Curve25519(this,
+  this.POINT_AT_NINE = new e2e.ecc.point.Curve25519(this,
       this.elementFromInteger(9));
 
   /**
    * The INFINITY point on the curve
-   * @type {!e2e.ecc.Point.Curve25519}
+   * @type {!e2e.ecc.point.Curve25519}
    * @const
    */
-  this.INFINITY = new e2e.ecc.Point.Curve25519(
+  this.INFINITY = new e2e.ecc.point.Curve25519(
       this, this.ONE, this.ZERO);
 };
-goog.inherits(e2e.ecc.Curve.Curve25519, e2e.ecc.Curve);
+goog.inherits(e2e.ecc.curve.Curve25519, e2e.ecc.curve.Curve);
 
 
 /** @override */
-e2e.ecc.Curve.Curve25519.prototype.pointFromByteArray = function(p) {
+e2e.ecc.curve.Curve25519.prototype.pointFromByteArray = function(p) {
   // TODO(fy): Apparently DJB's reference implementation accepted
   // any 256-bit representation of an integer, and just used its value mod q.
   // The following code will give an error if value >= q, and in particular if
@@ -85,22 +85,22 @@ e2e.ecc.Curve.Curve25519.prototype.pointFromByteArray = function(p) {
   goog.asserts.assert(p.length == 32, 'Point length must be 32 bytes');
   p = goog.array.slice(p, 0).reverse();
   var x = this.elementFromByteArray(p);
-  return new e2e.ecc.Point.Curve25519(this, x);
+  return new e2e.ecc.point.Curve25519(this, x);
 };
 
 
 /** @override */
-e2e.ecc.Curve.Curve25519.prototype.keySizeInBits = function() {
+e2e.ecc.curve.Curve25519.prototype.keySizeInBits = function() {
   return 256;
 };
 
 
 /**
  * Returns true if this curve is equal to another curve.
- * @param {!e2e.ecc.Curve.Curve25519} that The curve to compare.
+ * @param {!e2e.ecc.curve.Curve25519} that The curve to compare.
  * @return {boolean}
  */
-e2e.ecc.Curve.Curve25519.prototype.isEqual = function(that) {
+e2e.ecc.curve.Curve25519.prototype.isEqual = function(that) {
   if (this === that) {
     return true;
   }

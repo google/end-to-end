@@ -76,6 +76,12 @@ e2e.cipher.SymmetricCipher.prototype.encrypt = goog.abstractMethod;
 
 
 /**
+ * @type {number} The cipher block size.
+ */
+e2e.cipher.SymmetricCipher.prototype.blockSize;
+
+
+/**
  * Decrypts the given data using the current cipher and key.
  * @param {e2e.cipher.ciphertext.Symmetric} data The encrypted data.
  * @return {!e2e.async.Result.<e2e.ByteArray>} The result of

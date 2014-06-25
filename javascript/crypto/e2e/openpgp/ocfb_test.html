@@ -13,22 +13,22 @@
 // limitations under the License.
 // -->
 <!DOCTYPE html>
-<title>Unit Test of e2e.openpgp.OCFB</title>
+<title>Unit Test of e2e.openpgp.Ocfb</title>
 <script src="../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
-  goog.require('e2e.cipher.AES');
-  goog.require('e2e.openpgp.OCFB');
+  goog.require('e2e.cipher.Aes');
+  goog.require('e2e.openpgp.Ocfb');
   goog.require('e2e.random');
   goog.require('goog.array');
   goog.require('goog.testing.jsunit');
 </script>
 <script>
   function testConsistencyResync() {
-    e2e.random.seedRandomBytesNative(256);
-    var aes = new e2e.cipher.AES(e2e.cipher.Algorithm.AES128,
+    e2e.random.seedRandomBytesWebCrypto(256);
+    var aes = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128,
                                          {key:goog.array.repeat(0x77, 16)});
-    var aesocfb = new e2e.openpgp.OCFB(aes, true);
+    var aesocfb = new e2e.openpgp.Ocfb(aes, true);
     var plaintext = goog.array.repeat(0x66, 51);
     var ciphertext = e2e.async.Result.getValue(aesocfb.encrypt(plaintext));
     var deciphered = e2e.async.Result.getValue(aesocfb.decrypt(ciphertext));
@@ -37,10 +37,10 @@
                       deciphered);
   }
   function testConsistencyNoResync() {
-    e2e.random.seedRandomBytesNative(256);
-    var aes = new e2e.cipher.AES(e2e.cipher.Algorithm.AES128,
+    e2e.random.seedRandomBytesWebCrypto(256);
+    var aes = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128,
                                          {key:goog.array.repeat(0x77, 16)});
-    var aesocfb = new e2e.openpgp.OCFB(aes, false);
+    var aesocfb = new e2e.openpgp.Ocfb(aes, false);
     var plaintext = goog.array.repeat(0x66, 51);
     var ciphertext = e2e.async.Result.getValue(aesocfb.encrypt(plaintext));
     var deciphered = e2e.async.Result.getValue(aesocfb.decrypt(ciphertext));

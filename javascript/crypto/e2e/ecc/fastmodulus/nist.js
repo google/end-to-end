@@ -20,9 +20,9 @@
  * @author fy@google.com (Frank Yellin)
  */
 
-goog.provide('e2e.ecc.FastModulus.NIST');
-goog.provide('e2e.ecc.FastModulus.NIST.P_256');
-goog.provide('e2e.ecc.FastModulus.NIST.P_384');
+goog.provide('e2e.ecc.fastModulus.Nist');
+goog.provide('e2e.ecc.fastModulus.Nist.P_256');
+goog.provide('e2e.ecc.fastModulus.Nist.P_384');
 
 goog.require('e2e.BigNum');
 goog.require('e2e.FastModulus');
@@ -39,7 +39,7 @@ goog.require('goog.asserts');
  * @param {!e2e.BigPrimeNum} modulus The large prime number for which
  *     we are building a fast modulus function.
  */
-e2e.ecc.FastModulus.NIST = function(modulus) {
+e2e.ecc.fastModulus.Nist = function(modulus) {
   /**
    * The modulus.
    * @private {!e2e.BigPrimeNum }
@@ -49,14 +49,14 @@ e2e.ecc.FastModulus.NIST = function(modulus) {
 
 
 /** @override */
-e2e.ecc.FastModulus.NIST.prototype.useForMultiplication = true;
+e2e.ecc.fastModulus.Nist.prototype.useForMultiplication = true;
 
 
 /**
  * Number of words in the 2^32 representation of this.modulus_
  * @private {number}
  */
-e2e.ecc.FastModulus.NIST.prototype.modulusLength_;
+e2e.ecc.fastModulus.Nist.prototype.modulusLength_;
 
 
 /**
@@ -66,11 +66,11 @@ e2e.ecc.FastModulus.NIST.prototype.modulusLength_;
  * small integer.
  * @private {Int8Array}
  */
-e2e.ecc.FastModulus.NIST.prototype.smallResidue_;
+e2e.ecc.fastModulus.Nist.prototype.smallResidue_;
 
 
 /** @override */
-e2e.ecc.FastModulus.NIST.prototype.residue = function(value) {
+e2e.ecc.fastModulus.Nist.prototype.residue = function(value) {
   var modLength = this.modulusLength_;
   var doubleModLength = 2 * modLength;
   var temp = value.toByteArray();
@@ -123,7 +123,7 @@ e2e.ecc.FastModulus.NIST.prototype.residue = function(value) {
  *     equivalent (mod this.modulus) to the input value.
  * @protected
  */
-e2e.ecc.FastModulus.NIST.prototype.fastModulusSmall =
+e2e.ecc.fastModulus.Nist.prototype.fastModulusSmall =
     goog.abstractMethod;
 
 
@@ -137,7 +137,7 @@ e2e.ecc.FastModulus.NIST.prototype.fastModulusSmall =
  *        32-bit words of  a BigNum
  * @private
  */
-e2e.ecc.FastModulus.NIST.prototype.normalize_ = function(outs) {
+e2e.ecc.fastModulus.Nist.prototype.normalize_ = function(outs) {
   var modLength = this.modulusLength_;
   for (;;) {
     var U = 0;
@@ -195,21 +195,21 @@ e2e.ecc.FastModulus.NIST.prototype.normalize_ = function(outs) {
  * of the prime modulus P_256.
  *
  * @constructor
- * @extends {e2e.ecc.FastModulus.NIST}
+ * @extends {e2e.ecc.fastModulus.Nist}
  * @param {!e2e.BigPrimeNum} modulus The large prime number for which
  *     we are building a fast modulus function.  It must be P_256.
  */
-e2e.ecc.FastModulus.NIST.P_256 = function(modulus) {
-  e2e.ecc.FastModulus.NIST.P_256.base(this, 'constructor', modulus);
+e2e.ecc.fastModulus.Nist.P_256 = function(modulus) {
+  e2e.ecc.fastModulus.Nist.P_256.base(this, 'constructor', modulus);
   this.modulusLength_ = 8;
   this.smallResidue_ = new Int8Array([1, 0, 0, -1, 0, 0, -1, 1]);
 };
-goog.inherits(e2e.ecc.FastModulus.NIST.P_256,
-    e2e.ecc.FastModulus.NIST);
+goog.inherits(e2e.ecc.fastModulus.Nist.P_256,
+    e2e.ecc.fastModulus.Nist);
 
 
 /** @override */
-e2e.ecc.FastModulus.NIST.P_256.prototype.fastModulusSmall = function(
+e2e.ecc.fastModulus.Nist.P_256.prototype.fastModulusSmall = function(
     words) {
   var outs = new Array(8);
   outs[7] = words[7] + 3 * words[15] + words[8] -
@@ -238,22 +238,22 @@ e2e.ecc.FastModulus.NIST.P_256.prototype.fastModulusSmall = function(
  * of the prime modulus P_384.
  *
  * @constructor
- * @extends {e2e.ecc.FastModulus.NIST}
+ * @extends {e2e.ecc.fastModulus.Nist}
  * @param {!e2e.BigPrimeNum} modulus The large prime number for which
  *     we are building a fast modulus function.  It must be P_384.
  */
-e2e.ecc.FastModulus.NIST.P_384 = function(modulus) {
-  e2e.ecc.FastModulus.NIST.P_384.base(this, 'constructor', modulus);
+e2e.ecc.fastModulus.Nist.P_384 = function(modulus) {
+  e2e.ecc.fastModulus.Nist.P_384.base(this, 'constructor', modulus);
   this.modulusLength_ = 12;
   // this.residue(2^384)
   this.smallResidue_ = new Int8Array([1, -1, 0, 1, 1]);
 };
-goog.inherits(e2e.ecc.FastModulus.NIST.P_384,
-    e2e.ecc.FastModulus.NIST);
+goog.inherits(e2e.ecc.fastModulus.Nist.P_384,
+    e2e.ecc.fastModulus.Nist);
 
 
 /** @override */
-e2e.ecc.FastModulus.NIST.P_384.prototype.fastModulusSmall = function(
+e2e.ecc.fastModulus.Nist.P_384.prototype.fastModulusSmall = function(
     words) {
   // http://www.nsa.gov/ia/_files/nist-routines.pdf,
   var outs = new Array(12);

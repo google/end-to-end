@@ -19,13 +19,13 @@
 <script>
   goog.require('goog.testing.jsunit');
   goog.require('e2e.BigNum');
-  goog.require('e2e.BigNum.testData');
+  goog.require('e2e.bigNumTestData');
   goog.require('e2e.random');
 
 </script>
 <script>
 var P_256 = new e2e.BigNum(
-    e2e.BigNum.testData.P_256);
+    e2e.bigNumTestData.P_256);
 
 /**
  * Basic tests for the mod operation.
@@ -58,17 +58,17 @@ function testModSmallNumbers() {
 
   // P_256 + 1.
   var P_257 = new e2e.BigNum(
-      e2e.BigNum.testData.P_257);
+      e2e.bigNumTestData.P_257);
   modDivTester(P_257, P_256, e2e.BigNum.ONE);
 
   // P_256 - 1.
   var P_255 = new e2e.BigNum(
-      e2e.BigNum.testData.P_255);
+      e2e.bigNumTestData.P_255);
   modDivTester(P_255, P_256, P_255);
 
   // P_256 * 2
   var P_512 = new e2e.BigNum(
-      e2e.BigNum.testData.P_512);
+      e2e.bigNumTestData.P_512);
   modDivTester(P_512, P_256, e2e.BigNum.ZERO);
 }
 
@@ -78,18 +78,18 @@ function testModSmallNumbers() {
  */
 function testModDivLargeNumbers() {
   var AB = new e2e.BigNum(
-      e2e.BigNum.testData.AB);
-  var B = new e2e.BigNum(e2e.BigNum.testData.B);
+      e2e.bigNumTestData.AB);
+  var B = new e2e.BigNum(e2e.bigNumTestData.B);
   modDivTester(AB, B, e2e.BigNum.ZERO);
 
   var ABmodP_256 = new e2e.BigNum(
-      e2e.BigNum.testData.ABmodP_256);
+      e2e.bigNumTestData.ABmodP_256);
   modDivTester(AB, P_256, ABmodP_256);
 
   var ABmodN = new e2e.BigNum(
-      e2e.BigNum.testData.ABmodN);
+      e2e.bigNumTestData.ABmodN);
   var N = new e2e.BigNum(
-      e2e.BigNum.testData.N);
+      e2e.bigNumTestData.N);
   modDivTester(AB, N, ABmodN);
 }
 
@@ -99,9 +99,9 @@ function testModDivLargeNumbers() {
  */
 function testModDivWeirdNumbers() {
   var RR = new e2e.BigNum(
-      e2e.BigNum.testData.RR);
+      e2e.bigNumTestData.RR);
   var RRmodP_256 = new e2e.BigNum(
-      e2e.BigNum.testData.RRmodP_256);
+      e2e.bigNumTestData.RRmodP_256);
   modDivTester(RR, P_256, RRmodP_256);
 
   // Just for jollies, throw in some 320 bit / 160 bit divisions
@@ -197,7 +197,7 @@ function testConstructor() {
  */
 function testConversion() {
   assertEquals(256, P_256.getBitLength());
-  assertArrayEquals(e2e.BigNum.testData.P_256,
+  assertArrayEquals(e2e.bigNumTestData.P_256,
       P_256.toByteArray());
 
   assertEquals(1, e2e.BigNum.ZERO.getBitLength());
@@ -267,6 +267,17 @@ function testCompare() {
 
 
 /**
+ * Test bitwise operators.
+ */
+function testBitOperators() {
+  assertTrue(e2e.BigNum.ZERO.or(e2e.BigNum.ONE).isEqual(e2e.BigNum.ONE));
+  assertTrue(e2e.BigNum.ZERO.and(e2e.BigNum.ONE).isEqual(e2e.BigNum.ZERO));
+  assertTrue(e2e.BigNum.ZERO.xor(e2e.BigNum.ONE).isEqual(e2e.BigNum.ONE));
+  assertTrue(e2e.BigNum.ONE.xor(e2e.BigNum.ONE).isEqual(e2e.BigNum.ZERO));
+}
+
+
+/**
  * Test addition.
  */
 function testAdd() {
@@ -275,14 +286,14 @@ function testAdd() {
 
   // P_256 + 1.
   var P_257 = new e2e.BigNum(
-      e2e.BigNum.testData.P_257);
+      e2e.bigNumTestData.P_257);
 
   assertTrue(e2e.BigNum.ONE.add(
       P_256).isEqual(P_257));
 
   // P_256 * 2
   var P_512 = new e2e.BigNum(
-      e2e.BigNum.testData.P_512);
+      e2e.bigNumTestData.P_512);
 
   assertTrue(P_256.add(
       P_256).isEqual(P_512));
@@ -302,7 +313,7 @@ function testSubtract() {
 
   // P_256 + 1.
   var P_257 = new e2e.BigNum(
-      e2e.BigNum.testData.P_257);
+      e2e.bigNumTestData.P_257);
   assertTrue(P_257.subtract(
       P_256).isEqual(e2e.BigNum.ONE));
   assertTrue(P_257.subtract(
@@ -310,7 +321,7 @@ function testSubtract() {
 
   // P_256 * 2
   var P_512 = new e2e.BigNum(
-      e2e.BigNum.testData.P_512);
+      e2e.bigNumTestData.P_512);
   assertTrue(P_512.subtract(
       P_256).isEqual(P_256));
 
@@ -339,7 +350,7 @@ function testSubtractIfGreaterOrEqual() {
       e2e.BigNum.ONE));
 
   var p257 = new e2e.BigNum(
-      e2e.BigNum.testData.P_257);
+      e2e.bigNumTestData.P_257);
   assertTrue(p257.subtractIfGreaterOrEqual(e2e.BigNum.ONE).isEqual(P_256));
 }
 
@@ -360,15 +371,15 @@ function testMultiply() {
 
   // P_256 * 2
   var P_512 = new e2e.BigNum(
-      e2e.BigNum.testData.P_512);
+      e2e.bigNumTestData.P_512);
   var TWO = new e2e.BigNum([2]);
   assertTrue(P_256.multiply(TWO).isEqual(P_512));
 
-  // e2e.BigNum.testData.A * e2e.BigNum.testData.B.
+  // e2e.bigNumTestData.A * e2e.bigNumTestData.B.
   var AB = new e2e.BigNum(
-      e2e.BigNum.testData.AB);
-  var A = new e2e.BigNum(e2e.BigNum.testData.A);
-  var B = new e2e.BigNum(e2e.BigNum.testData.B);
+      e2e.bigNumTestData.AB);
+  var A = new e2e.BigNum(e2e.bigNumTestData.A);
+  var B = new e2e.BigNum(e2e.bigNumTestData.B);
   var X = A.multiply(B);
   var Y = B.multiply(A);
   assertTrue(X.isEqual(Y));
@@ -376,7 +387,7 @@ function testMultiply() {
 
   // P_256 ^ 2
   var P_256_SQUARE = new e2e.BigNum(
-      e2e.BigNum.testData.P_256_SQUARE);
+      e2e.bigNumTestData.P_256_SQUARE);
   assertTrue(P_256.multiply(
       P_256).isEqual(P_256_SQUARE));
 }

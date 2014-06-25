@@ -24,7 +24,7 @@ goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.factory');
 goog.require('e2e.hash.Md5');
 goog.require('e2e.hash.Sha1');
-goog.require('e2e.openpgp.MPI');
+goog.require('e2e.openpgp.Mpi');
 goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.SerializationError');
@@ -79,32 +79,32 @@ e2e.openpgp.packet.PublicKey.prototype.serializePacketBody =
   switch (this.cipher.algorithm) {
     case e2e.cipher.Algorithm.RSA:
       keyData = goog.array.flatten(
-          new e2e.openpgp.MPI(keyObj['n']).serialize(),
-          new e2e.openpgp.MPI(keyObj['e']).serialize());
+          new e2e.openpgp.Mpi(keyObj['n']).serialize(),
+          new e2e.openpgp.Mpi(keyObj['e']).serialize());
       break;
     case e2e.signer.Algorithm.DSA:
       keyData = goog.array.flatten(
-          new e2e.openpgp.MPI(keyObj['p']).serialize(),
-          new e2e.openpgp.MPI(keyObj['q']).serialize(),
-          new e2e.openpgp.MPI(keyObj['g']).serialize(),
-          new e2e.openpgp.MPI(keyObj['y']).serialize());
+          new e2e.openpgp.Mpi(keyObj['p']).serialize(),
+          new e2e.openpgp.Mpi(keyObj['q']).serialize(),
+          new e2e.openpgp.Mpi(keyObj['g']).serialize(),
+          new e2e.openpgp.Mpi(keyObj['y']).serialize());
       break;
     case e2e.cipher.Algorithm.ELGAMAL:
       keyData = goog.array.flatten(
-          new e2e.openpgp.MPI(keyObj['p']).serialize(),
-          new e2e.openpgp.MPI(keyObj['g']).serialize(),
-          new e2e.openpgp.MPI(keyObj['y']).serialize());
+          new e2e.openpgp.Mpi(keyObj['p']).serialize(),
+          new e2e.openpgp.Mpi(keyObj['g']).serialize(),
+          new e2e.openpgp.Mpi(keyObj['y']).serialize());
       break;
     case e2e.signer.Algorithm.ECDSA:
       keyData = goog.array.flatten(
           keyObj['curve'],
-          new e2e.openpgp.MPI(keyObj['pubKey']).serialize());
+          new e2e.openpgp.Mpi(keyObj['pubKey']).serialize());
       break;
     case e2e.cipher.Algorithm.ECDH:
       keyData = goog.array.flatten(
           // Curve is in serialized MPI format. Its first byte is its length.
           keyObj['curve'],
-          new e2e.openpgp.MPI(keyObj['pubKey']).serialize(),
+          new e2e.openpgp.Mpi(keyObj['pubKey']).serialize(),
           // kdfInfo is in serialized MPI format. Its first byte is its length.
           keyObj['kdfInfo']);
       break;
@@ -170,17 +170,17 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
   var keyData;
   switch (cipherAlgorithm) {
     case e2e.cipher.Algorithm.RSA:
-      var n = e2e.openpgp.MPI.parse(body);
-      var e = e2e.openpgp.MPI.parse(body);
-      keyData = /** @type e2e.cipher.key.RSA */({
+      var n = e2e.openpgp.Mpi.parse(body);
+      var e = e2e.openpgp.Mpi.parse(body);
+      keyData = /** @type e2e.cipher.key.Rsa */({
         'n': goog.array.clone(n),
         'e': goog.array.clone(e)});
       cipher = e2e.cipher.factory.require(cipherAlgorithm, keyData);
       break;
     case e2e.cipher.Algorithm.ELGAMAL:
-      var p = e2e.openpgp.MPI.parse(body);
-      var g = e2e.openpgp.MPI.parse(body);
-      var y = e2e.openpgp.MPI.parse(body);
+      var p = e2e.openpgp.Mpi.parse(body);
+      var g = e2e.openpgp.Mpi.parse(body);
+      var y = e2e.openpgp.Mpi.parse(body);
       keyData = /** @type e2e.cipher.key.ElGamal */(
           {'p': goog.array.clone(p),
            'g': goog.array.clone(g),
@@ -188,11 +188,11 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
       cipher = e2e.cipher.factory.require(cipherAlgorithm, keyData);
       break;
     case e2e.signer.Algorithm.DSA:
-      var p = e2e.openpgp.MPI.parse(body);
-      var q = e2e.openpgp.MPI.parse(body);
-      var g = e2e.openpgp.MPI.parse(body);
-      var y = e2e.openpgp.MPI.parse(body);
-      keyData = /** @type e2e.signer.key.DSA */(
+      var p = e2e.openpgp.Mpi.parse(body);
+      var q = e2e.openpgp.Mpi.parse(body);
+      var g = e2e.openpgp.Mpi.parse(body);
+      var y = e2e.openpgp.Mpi.parse(body);
+      keyData = /** @type e2e.signer.key.Dsa */(
           {'p': goog.array.clone(p),
            'q': goog.array.clone(q),
            'g': goog.array.clone(g),
@@ -202,8 +202,8 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
     case e2e.signer.Algorithm.ECDSA:
       var curveSize = body.shift();
       var curve = body.splice(0, curveSize);
-      var pubKey = e2e.openpgp.MPI.parse(body);
-      keyData = /** @type e2e.signer.key.ECDSA */(
+      var pubKey = e2e.openpgp.Mpi.parse(body);
+      keyData = /** @type e2e.signer.key.Ecdsa */(
             {'curve': goog.array.concat(curveSize, curve),
              'pubKey': goog.array.clone(pubKey)});
       cipher = e2e.signer.factory.require(cipherAlgorithm, keyData);
@@ -211,9 +211,9 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
     case e2e.cipher.Algorithm.ECDH:
       var curveSize = body.shift();
       var curve = body.splice(0, curveSize);
-      var pubKey = e2e.openpgp.MPI.parse(body);
+      var pubKey = e2e.openpgp.Mpi.parse(body);
       var kdfInfo = body.splice(0, 4);
-      keyData = /** @type e2e.cipher.key.ECDH */(
+      keyData = /** @type e2e.cipher.key.Ecdh */(
             {'curve': goog.array.concat(curveSize, curve),
              'kdfInfo': goog.array.clone(kdfInfo),
              'pubKey': goog.array.clone(pubKey)});

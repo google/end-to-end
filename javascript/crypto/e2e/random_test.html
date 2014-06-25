@@ -20,7 +20,7 @@
   goog.require('e2e.random');
   goog.require('goog.array');
   goog.require('goog.crypt.Hmac');
-  goog.require('goog.crypt.Sha1');
+  goog.require('goog.crypt.Sha256');
   goog.require('goog.testing.jsunit');
 </script>
 <script>
@@ -47,15 +47,18 @@
   }
   // Verify that the hmac library works as we expect.
   function testHmacer() {
-    var hasher = new goog.crypt.Sha1();
+    var hasher = new goog.crypt.Sha256();
     var hmacer_empty = new goog.crypt.Hmac(hasher, []);
     var hmacer_empty_bytes = new goog.crypt.Hmac(hasher, [], 64)
     var hash_empty = hmacer_empty.getHmac([]);
     var hash_empty_bytes = hmacer_empty_bytes.getHmac([]);
     // Hashes taken from http://en.wikipedia.org/wiki/Hash-based_message_authentication_code#Examples_of_HMAC_.28MD5.2C_SHA1.2C_SHA256.29
-    assertArrayEquals([0xfb, 0xdb, 0x1d, 0x1b, 0x18, 0xaa, 0x6c, 0x08, 0x32,
-        0x4b, 0x7d, 0x64, 0xb7, 0x1f, 0xb7, 0x63, 0x70, 0x69, 0x0e, 0x1d],
-        hash_empty);
+    var EMPTY = [
+        0xb6, 0x13, 0x67, 0x9a, 0x08, 0x14, 0xd9, 0xec,
+        0x77, 0x2f, 0x95, 0xd7, 0x78, 0xc3, 0x5f, 0xc5,
+        0xff, 0x16, 0x97, 0xc4, 0x93, 0x71, 0x56, 0x53,
+        0xc6, 0xc7, 0x12, 0x14, 0x42, 0x92, 0xc5, 0xad];
+    assertArrayEquals(EMPTY, hash_empty);
     assertArrayEquals(hash_empty, hash_empty_bytes);
     // Ascii code for "key"
     var key = [107, 101, 121];
@@ -64,9 +67,12 @@
     var quick_str = "The quick brown fox jumps over the lazy dog";
     var hash_key = hmacer_key.getHmac(quick_str);
     var hash_key_bytes = hmacer_key_bytes.getHmac(quick_str);
-    assertArrayEquals([0xde, 0x7c, 0x9b, 0x85, 0xb8, 0xb7, 0x8a, 0xa6, 0xbc,
-        0x8a, 0x7a, 0x36, 0xf7, 0x0a, 0x90, 0x70, 0x1c, 0x9d, 0xb4, 0xd9],
-        hash_key);
+    var KEY = [
+        0xf7, 0xbc, 0x83, 0xf4, 0x30, 0x53, 0x84, 0x24,
+        0xb1, 0x32, 0x98, 0xe6, 0xaa, 0x6f, 0xb1, 0x43,
+        0xef, 0x4d, 0x59, 0xa1, 0x49, 0x46, 0x17, 0x59,
+        0x97, 0x47, 0x9d, 0xbc, 0x2d, 0x1a, 0x3c, 0xd8];
+    assertArrayEquals(KEY, hash_key);
     assertArrayEquals(hash_key, hash_key_bytes);
   }
 </script>

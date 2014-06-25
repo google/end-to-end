@@ -23,7 +23,7 @@ goog.require('e2e.openpgp.packet.Compressed');
 
 /**
  * Representation of a compressed message block.
- * @param {Array.<e2e.openpgp.packet.Signature>=} opt_signatures
+ * @param {Array.<!e2e.openpgp.packet.Signature>=} opt_signatures
  * @constructor
  * @extends {e2e.openpgp.block.Message}
  */
@@ -34,10 +34,11 @@ goog.inherits(e2e.openpgp.block.Compressed,
     e2e.openpgp.block.Message);
 
 
-/** @inheritDoc */
-e2e.openpgp.block.Compressed.prototype.getData = function() {
-  return this.compressedPacket_;
-};
+/**
+ * Maximum nesting level of compressed blocks - see CVE-2013-4402
+ * @const {number}
+ */
+e2e.openpgp.block.Compressed.prototype.MAX_COMPRESSION_NESTING_LEVEL = 20;
 
 
 /** @override */
@@ -58,6 +59,21 @@ e2e.openpgp.block.Compressed.prototype.getBlock = function() {
     throw new e2e.openpgp.error.ParseError('Invalid compressed block.');
   }
   return decryptedBlock[0];
+};
+
+
+/** @override */
+e2e.openpgp.block.Compressed.prototype.getLiteralMessage = function() {
+  var msgBlock = this, currentLevel = 0;
+  while (msgBlock instanceof e2e.openpgp.block.Compressed) {
+    if (currentLevel >= this.MAX_COMPRESSION_NESTING_LEVEL) {
+      throw new e2e.openpgp.error.ParseError(
+                  'input data with too deeply nested packets');
+    }
+    msgBlock = msgBlock.getBlock();
+    currentLevel++;
+  }
+  return msgBlock.getLiteralMessage();
 };
 
 

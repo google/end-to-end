@@ -86,6 +86,18 @@ e2e.async.Result.toResult = function(value) {
 
 
 /**
+ * Converts a value to a (failed) result.
+ * @param {T} value The value to wrap as a result.
+ * @return {!e2e.async.Result.<T>} The value as a result.
+ * @template T
+ */
+e2e.async.Result.toError = function(value) {
+  return /** @type {!e2e.async.Result} */(
+      goog.async.Deferred.fail(value));
+};
+
+
+/**
  * Converts a value to a result that is resolved asynchronously.
  * @param {T} value The value to wrap as a result.
  * @return {!e2e.async.Result.<T>} The value as a result.

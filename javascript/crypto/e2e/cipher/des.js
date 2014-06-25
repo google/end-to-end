@@ -19,8 +19,8 @@
  * @author adhintz@google.com (Drew Hintz)
  */
 
-goog.provide('e2e.cipher.DES');
-goog.provide('e2e.cipher.TripleDES');
+goog.provide('e2e.cipher.Des');
+goog.provide('e2e.cipher.TripleDes');
 
 goog.require('e2e');
 goog.require('e2e.Algorithm');
@@ -40,29 +40,29 @@ goog.require('goog.math.Long');
  * @extends {e2e.AlgorithmImpl}
  * @constructor
  */
-e2e.cipher.TripleDES = function(algorithm, opt_keyObj) {
+e2e.cipher.TripleDes = function(algorithm, opt_keyObj) {
   /**
    * Three instances of DES, populated by setKey().
-   * @type {Array.<e2e.cipher.DES>}
+   * @type {Array.<e2e.cipher.Des>}
    * @private
    */
   this.des_ = [];
   this.keySize = 24;
   goog.base(this, algorithm, opt_keyObj);
 };
-goog.inherits(e2e.cipher.TripleDES, e2e.AlgorithmImpl);
+goog.inherits(e2e.cipher.TripleDes, e2e.AlgorithmImpl);
 
 
 /** @inheritDoc */
-e2e.cipher.TripleDES.prototype.blockSize = 8; // 64 bits.
+e2e.cipher.TripleDes.prototype.blockSize = 8; // 64 bits.
 
 
 /** @inheritDoc */
-e2e.cipher.TripleDES.prototype.setKey = function(keyObj) {
+e2e.cipher.TripleDes.prototype.setKey = function(keyObj) {
   goog.base(this, 'setKey', keyObj, keyObj.key.length);
 
   for (var i = 0; i < 3; i++) {
-    this.des_[i] = new e2e.cipher.DES(
+    this.des_[i] = new e2e.cipher.Des(
         e2e.cipher.Algorithm.TRIPLE_DES,  // Not actually used.
         {key: keyObj.key.slice(i * 8, i * 8 + 8)});
   }
@@ -70,7 +70,7 @@ e2e.cipher.TripleDES.prototype.setKey = function(keyObj) {
 
 
 /** @inheritDoc */
-e2e.cipher.TripleDES.prototype.encrypt = function(data) {
+e2e.cipher.TripleDes.prototype.encrypt = function(data) {
   return this.des_[0].encrypt(data).addCallback(
       this.des_[1].decrypt, this.des_[1]).addCallback(
       this.des_[2].encrypt, this.des_[2]);
@@ -78,7 +78,7 @@ e2e.cipher.TripleDES.prototype.encrypt = function(data) {
 
 
 /** @inheritDoc */
-e2e.cipher.TripleDES.prototype.decrypt = function(data) {
+e2e.cipher.TripleDes.prototype.decrypt = function(data) {
   return this.des_[2].decrypt(data).addCallback(
       this.des_[1].encrypt, this.des_[1]).addCallback(
       this.des_[0].decrypt, this.des_[0]);
@@ -94,7 +94,7 @@ e2e.cipher.TripleDES.prototype.decrypt = function(data) {
  * @extends {e2e.AlgorithmImpl}
  * @constructor
  */
-e2e.cipher.DES = function(algorithm, opt_keyObj) {
+e2e.cipher.Des = function(algorithm, opt_keyObj) {
   /**
    * 16 subkeys, each 56 bits, but stored as 64-bit values.
    * @type {Array.<goog.math.Long>}
@@ -103,15 +103,15 @@ e2e.cipher.DES = function(algorithm, opt_keyObj) {
   this.subkeys_ = [];
   goog.base(this, algorithm, opt_keyObj);
 };
-goog.inherits(e2e.cipher.DES, e2e.AlgorithmImpl);
+goog.inherits(e2e.cipher.Des, e2e.AlgorithmImpl);
 
 
 /** @inheritDoc */
-e2e.cipher.DES.prototype.blockSize = 8; // 64 bits.
+e2e.cipher.Des.prototype.blockSize = 8; // 64 bits.
 
 
 /** @inheritDoc */
-e2e.cipher.DES.prototype.setKey = function(keyObj) {
+e2e.cipher.Des.prototype.setKey = function(keyObj) {
   goog.base(this, 'setKey', keyObj, keyObj.key.length);
   this.keyExpansion_();
 };
@@ -121,9 +121,9 @@ e2e.cipher.DES.prototype.setKey = function(keyObj) {
  * Generates subkeys from this.key, stores in this.subkeys_.
  * @private
  */
-e2e.cipher.DES.prototype.keyExpansion_ = function() {
+e2e.cipher.Des.prototype.keyExpansion_ = function() {
   var permutedKey = this.permuteBlock_(this.key.key,
-      e2e.cipher.DES.permutedChoice1);
+      e2e.cipher.Des.permutedChoice1);
   var leftKeys = this.keyRotate_(permutedKey.shiftRightUnsigned(28).toInt());
   var rightKeys = this.keyRotate_(permutedKey.toInt() & 0x0fffffff);
   for (var i = 0; i < 16; i++) {
@@ -132,7 +132,7 @@ e2e.cipher.DES.prototype.keyExpansion_ = function() {
     var block = e2e.longToByteArray(blockInt);
     block.shift();  // remove first byte, so it's 56bits instead of 64bits
     this.subkeys_[i] = this.permuteBlock_(block,
-        e2e.cipher.DES.permutedChoice2);
+        e2e.cipher.Des.permutedChoice2);
   }
 };
 
@@ -142,13 +142,13 @@ e2e.cipher.DES.prototype.keyExpansion_ = function() {
  * @return {e2e.ByteArray} 16 keys, each 28 bits.
  * @private
  */
-e2e.cipher.DES.prototype.keyRotate_ = function(key) {
+e2e.cipher.Des.prototype.keyRotate_ = function(key) {
   var keys = [];
   var previous = key;
   for (var i = 0; i < 16; i++) {
     previous = keys[i] = (
-        ((previous << e2e.cipher.DES.leftShifts[i]) & 0x0fffffff) |
-        ((previous << 4) >>> (32 - e2e.cipher.DES.leftShifts[i])));
+        ((previous << e2e.cipher.Des.leftShifts[i]) & 0x0fffffff) |
+        ((previous << 4) >>> (32 - e2e.cipher.Des.leftShifts[i])));
   }
   return keys;
 };
@@ -160,7 +160,7 @@ e2e.cipher.DES.prototype.keyRotate_ = function(key) {
  * @return {goog.math.Long}
  * @private
  */
-e2e.cipher.DES.prototype.permuteBlock_ = function(key, permutedChoice) {
+e2e.cipher.Des.prototype.permuteBlock_ = function(key, permutedChoice) {
   var result = goog.math.Long.fromNumber(0);
   for (var i = 0; i < permutedChoice.length; i++) {
     var keyByte = key[((permutedChoice[i] - 1) >>> 3)];
@@ -173,13 +173,13 @@ e2e.cipher.DES.prototype.permuteBlock_ = function(key, permutedChoice) {
 
 
 /** @inheritDoc */
-e2e.cipher.DES.prototype.encrypt = function(data) {
+e2e.cipher.Des.prototype.encrypt = function(data) {
   return this.crypt_(data, true);
 };
 
 
 /** @inheritDoc */
-e2e.cipher.DES.prototype.decrypt = function(data) {
+e2e.cipher.Des.prototype.decrypt = function(data) {
   return this.crypt_(data, false);
 };
 
@@ -191,9 +191,9 @@ e2e.cipher.DES.prototype.decrypt = function(data) {
  * @return {!e2e.async.Result} The result of encryption.
  * @private
  */
-e2e.cipher.DES.prototype.crypt_ = function(data, encrypt) {
+e2e.cipher.Des.prototype.crypt_ = function(data, encrypt) {
   var block = this.permuteBlock_(data,
-      e2e.cipher.DES.initialPermutation);
+      e2e.cipher.Des.initialPermutation);
   var left = block.getHighBits();
   var right = block.getLowBitsUnsigned();
   for (var i = 0; i < 16; i++) {
@@ -208,7 +208,7 @@ e2e.cipher.DES.prototype.crypt_ = function(data, encrypt) {
   var combined = e2e.longToByteArray(
       goog.math.Long.fromBits(left, right));  // Left and right are swapped.
   var result = this.permuteBlock_(combined,
-      e2e.cipher.DES.initialPermutationInverse);
+      e2e.cipher.Des.initialPermutationInverse);
   return e2e.async.Result.toResult(
       e2e.longToByteArray(result));
 };
@@ -220,10 +220,10 @@ e2e.cipher.DES.prototype.crypt_ = function(data, encrypt) {
  * @return {number} 32-bit value.
  * @private
  */
-e2e.cipher.DES.prototype.feistel_ = function(right, key) {
+e2e.cipher.Des.prototype.feistel_ = function(right, key) {
   var rightExpanded = this.permuteBlock_(
       e2e.dwordArrayToByteArray([right]),
-      e2e.cipher.DES.eBitSelection);
+      e2e.cipher.Des.eBitSelection);
   var xorResult = key.xor(rightExpanded);
   var sBoxResult = 0;
   for (var i = 0; i < 8; i++) {
@@ -231,11 +231,11 @@ e2e.cipher.DES.prototype.feistel_ = function(right, key) {
                   .shiftRightUnsigned(58).toInt()) & 0xff;
     var row = (rowCol & 0x1) | ((rowCol & 0x20) >>> 4);
     var col = ((rowCol << 3) & 0xff) >>> 4;
-    sBoxResult |= (e2e.cipher.DES.sBoxes[i][row][col] <<
+    sBoxResult |= (e2e.cipher.Des.sBoxes[i][row][col] <<
                    (4 * (7 - i))) & 0xffffffff;
   }
   return this.permuteBlock_(e2e.dwordArrayToByteArray([sBoxResult]),
-      e2e.cipher.DES.permutationFunction).getLowBitsUnsigned();
+      e2e.cipher.Des.permutationFunction).getLowBitsUnsigned();
 };
 
 
@@ -244,7 +244,7 @@ e2e.cipher.DES.prototype.feistel_ = function(right, key) {
  * @type {e2e.ByteArray}
  * @const
  */
-e2e.cipher.DES.initialPermutation = [
+e2e.cipher.Des.initialPermutation = [
   58, 50, 42, 34, 26, 18, 10, 2,
   60, 52, 44, 36, 28, 20, 12, 4,
   62, 54, 46, 38, 30, 22, 14, 6,
@@ -261,7 +261,7 @@ e2e.cipher.DES.initialPermutation = [
  * @type {e2e.ByteArray}
  * @const
  */
-e2e.cipher.DES.initialPermutationInverse = [
+e2e.cipher.Des.initialPermutationInverse = [
   40, 8, 48, 16, 56, 24, 64, 32,
   39, 7, 47, 15, 55, 23, 63, 31,
   38, 6, 46, 14, 54, 22, 62, 30,
@@ -278,7 +278,7 @@ e2e.cipher.DES.initialPermutationInverse = [
  * @type {e2e.ByteArray}
  * @const
  */
-e2e.cipher.DES.eBitSelection = [
+e2e.cipher.Des.eBitSelection = [
   32, 1, 2, 3, 4, 5,
   4, 5, 6, 7, 8, 9,
   8, 9, 10, 11, 12, 13,
@@ -295,7 +295,7 @@ e2e.cipher.DES.eBitSelection = [
  * @type {e2e.ByteArray}
  * @const
  */
-e2e.cipher.DES.permutationFunction = [
+e2e.cipher.Des.permutationFunction = [
   16, 7, 20, 21,
   29, 12, 28, 17,
   1, 15, 23, 26,
@@ -312,7 +312,7 @@ e2e.cipher.DES.permutationFunction = [
  * @type {Array.<Array.<e2e.ByteArray>>}
  * @const
  */
-e2e.cipher.DES.sBoxes = [
+e2e.cipher.Des.sBoxes = [
   [
     [14, 4, 13, 1, 2, 15, 11, 8, 3, 10, 6, 12, 5, 9, 0, 7],
     [0, 15, 7, 4, 14, 2, 13, 1, 10, 6, 12, 11, 9, 5, 3, 8],
@@ -369,7 +369,7 @@ e2e.cipher.DES.sBoxes = [
  * @type {e2e.ByteArray}
  * @const
  */
-e2e.cipher.DES.permutedChoice1 = [
+e2e.cipher.Des.permutedChoice1 = [
   57, 49, 41, 33, 25, 17, 9,
   1, 58, 50, 42, 34, 26, 18,
   10, 2, 59, 51, 43, 35, 27,
@@ -386,7 +386,7 @@ e2e.cipher.DES.permutedChoice1 = [
  * @type {e2e.ByteArray}
  * @const
  */
-e2e.cipher.DES.leftShifts =
+e2e.cipher.Des.leftShifts =
     [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1];
 
 
@@ -395,7 +395,7 @@ e2e.cipher.DES.leftShifts =
  * @type {e2e.ByteArray}
  * @const
  */
-e2e.cipher.DES.permutedChoice2 = [
+e2e.cipher.Des.permutedChoice2 = [
   14, 17, 11, 24, 1, 5,
   3, 28, 15, 6, 21, 10,
   23, 19, 12, 4, 26, 8,
@@ -407,5 +407,5 @@ e2e.cipher.DES.permutedChoice2 = [
 ];
 
 
-e2e.cipher.factory.add(e2e.cipher.TripleDES,
+e2e.cipher.factory.add(e2e.cipher.TripleDes,
                                e2e.cipher.Algorithm.TRIPLE_DES);

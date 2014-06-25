@@ -16,8 +16,8 @@
  */
 
 goog.provide('e2e.signer.key');
-goog.provide('e2e.signer.key.DSA');
-goog.provide('e2e.signer.key.ECDSA');
+goog.provide('e2e.signer.key.Dsa');
+goog.provide('e2e.signer.key.Ecdsa');
 goog.provide('e2e.signer.key.Key');
 
 goog.require('e2e.ecc.PrimeCurveOid');
@@ -28,15 +28,15 @@ goog.require('e2e.ecc.PrimeCurveOid');
  *     g: e2e.ByteArray, x: e2e.ByteArray,
  *     y: e2e.ByteArray}}
  */
-e2e.signer.key.DSA;
+e2e.signer.key.Dsa;
 
 
 /**
- * @typedef {{curve: e2e.ecc.PrimeCurveOid,
+ * @typedef {{curve: ?e2e.ecc.PrimeCurveOid,
  *     pubKey: e2e.ByteArray,
  *     privKey: e2e.ByteArray}}
  */
-e2e.signer.key.ECDSA;
+e2e.signer.key.Ecdsa;
 
 
 /**
@@ -48,7 +48,7 @@ e2e.signer.key.RSA;
 
 
 /**
- * @typedef {e2e.signer.key.DSA|e2e.signer.key.ECDSA|
+ * @typedef {e2e.signer.key.Dsa|e2e.signer.key.Ecdsa|
  *     e2e.signer.key.RSA}
  */
 e2e.signer.key.Key;

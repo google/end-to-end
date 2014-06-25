@@ -27,7 +27,7 @@
   <h1>{$sectionTitle}</h1>
   <table>
     {foreach $keyMeta in $storedKeys}
-      <tr>
+      <tr data-user-id="{$keyMeta.userId}">
         {call .KeyEntry}
           {param keyMeta: $keyMeta /}
           {param exportLabel: $exportLabel /}
@@ -35,9 +35,18 @@
         {/call}
       </tr>
     {ifempty}
-      <tr><td><i>{$noneLabel}</i></td></tr>
+      {call .NoneEntry data="all"}{/call}
     {/foreach}
   </table>
+{/template}
+
+
+/**
+ * Displays "None" for when no PGP keys are present
+ * @param noneLabel The label to display when there are no keys.
+ */
+{template .NoneEntry}
+  <tr><td><i>{$noneLabel}</i></td></tr>
 {/template}
 
 
@@ -71,7 +80,6 @@
  * @param exportKeyringLabel The label to use when asking the user to export the existing keyring.
  * @param changePassphraseLabel The label to use when asking the user to change the passphrase to
  *     the keyring.
- * @param importActionButtonTitle The title for the import submit button.
  * @param importCancelButtonTitle The title for the import cancel button.
  * @param changePassphrasePlaceholder The placeholder for the passphrase change input field.
  * @param confirmPassphrasePlaceholder The placeholder for the passphrase confirm input field.
@@ -82,8 +90,7 @@
 {template .ManageKeyring}
   <div id="{e2e.ext.constants.ElementId.KEYRING_IMPORT_DIV}"
        class="{e2e.ext.constants.CssClass.HIDDEN}">
-    <input type="file"/>
-    <button class="{e2e.ext.constants.CssClass.ACTION}">{$importActionButtonTitle}</button>
+    <input type="file" class="{e2e.ext.constants.CssClass.ACTION}"/>
     <button class="{e2e.ext.constants.CssClass.CANCEL}">{$importCancelButtonTitle}</button>
   </div>
   <div id="{e2e.ext.constants.ElementId.KEYRING_PASSPHRASE_CHANGE_DIV}"

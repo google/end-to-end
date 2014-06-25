@@ -28,7 +28,6 @@ goog.require('e2e.openpgp.FileOptions');
 goog.require('e2e.openpgp.GenerateKeyResult');
 goog.require('e2e.openpgp.ImportKeyResult');
 goog.require('e2e.openpgp.Key');
-goog.require('e2e.openpgp.KeyInfo');
 goog.require('e2e.openpgp.KeyResult');
 goog.require('e2e.openpgp.VerifyDecryptResult');
 goog.require('e2e.openpgp.VerifyResult');
@@ -100,9 +99,9 @@ e2e.openpgp.Context.prototype.isKeyRingEncrypted;
 
 
 /**
- * Parses key block and returns a text description of the keys.
- * @param {e2e.ByteArray|string} key To get a description of.
- * @return {string} Description of the keys.
+ * Parses key blocks and returns a structured description of the keys.
+ * @param {e2e.ByteArray|string} key Key(s) to get the description of.
+ * @return {e2e.openpgp.KeyResult} Description of the keys.
  * @expose
  */
 e2e.openpgp.Context.prototype.getKeyDescription;
@@ -137,25 +136,12 @@ e2e.openpgp.Context.prototype.generateKey;
 
 
 /**
- * Verifies a signature for a clearsign message.
- * Verification can fail if cleartext signature has no signer key ID
- * information, keyring has no such key or the message was tampered with.
- * @param {e2e.openpgp.ClearSignMessage|string} clearSignMessage The
- *     clearsign message to verify.
- * @return {e2e.openpgp.VerifyClearSignResult} Result of signature
- *     verification.
- * @expose
- */
-e2e.openpgp.Context.prototype.verifyClearSign;
-
-
-/**
  * Encrypts and signs a given plaintext with a set of keys.
  * @param {string} plaintext The plaintext.
  * @param {e2e.openpgp.EncryptOptions} options Metadata to add.
- * @param {Array.<e2e.openpgp.Key>} encryptionKeys The keys to
+ * @param {!Array.<e2e.openpgp.Key>} encryptionKeys The keys to
  *     encrypt the message with.
- * @param {Array.<string>} passphrases Passphrases to use for symmetric
+ * @param {!Array.<string>} passphrases Passphrases to use for symmetric
  *     key encryption of the message.
  * @param {e2e.openpgp.Key=} opt_signatureKey The key to sign
  *     the message with.
@@ -167,10 +153,11 @@ e2e.openpgp.Context.prototype.encryptSign;
 
 
 /**
- * Verifies and decrypts signatures.
+ * Verifies and decrypts signatures. It will also verify a cleartext message
  * @param {function(string, function(string))} passphraseCallback This callback
  *     is used for requesting an action-specific passphrase from the user.
- * @param {e2e.ByteArray|string} encryptedMessage The encrypted data.
+ * @param {e2e.ByteArray|string} encryptedMessage The encrypted data (or
+ *     a cleartext message).
  * @return {e2e.openpgp.VerifyDecryptResult} The result of the
  *     verify/decrypt operation.
  * @expose

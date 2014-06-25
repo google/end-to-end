@@ -156,6 +156,13 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       attributes.SIGNATURE_EXPIRATION_TIME =
           e2e.byteArrayToDwordArray(subpacket.body)[0];
       break;
+    case e2e.openpgp.packet.SignatureSub.Type.REGULAR_EXPRESSION:
+      attributes.REGULAR_EXPRESSION = e2e.byteArrayToString(subpacket.body);
+      break;
+    case e2e.openpgp.packet.SignatureSub.Type.KEY_EXPIRATION_TIME:
+      attributes.KEY_EXPIRATION_TIME =
+          e2e.byteArrayToDwordArray(subpacket.body)[0];
+      break;
     case e2e.openpgp.packet.SignatureSub.Type.
         PREFERRED_SYMMETRIC_ALGORITHMS:
       attributes.PREFERRED_SYMMETRIC_ALGORITHMS = subpacket.body;
@@ -174,8 +181,7 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       attributes.KEY_SERVER_PREFERENCES = subpacket.body[0];
       break;
     case e2e.openpgp.packet.SignatureSub.Type.PRIMARY_USER_ID:
-      attributes.PRIMARY_USER_ID = e2e.byteArrayToString(
-          subpacket.body);
+      attributes.PRIMARY_USER_ID = e2e.byteArrayToString(subpacket.body);
       break;
     case e2e.openpgp.packet.SignatureSub.Type.KEY_FLAGS:
       if (subpacket.body.length == 0) {
@@ -195,8 +201,9 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       break;
     default:
       if (subpacket.critical) {
-        // TODO(adhintz) In this case, treat signature as invalid.
-        throw new Error('Critical signature subpacket not recognized.');
+        // TODO(adhintz): Treat the signature as invalid instead of throwing.
+        throw new Error(
+            'Critical signature subpacket not recognized: ' + subpacket.type);
       }
   }
 };
@@ -208,6 +215,8 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
 e2e.openpgp.packet.SignatureSub.Type = {
   'SIGNATURE_CREATION_TIME': 2,
   'SIGNATURE_EXPIRATION_TIME': 3,
+  'REGULAR_EXPRESSION': 6,
+  'KEY_EXPIRATION_TIME': 9,
   'PREFERRED_SYMMETRIC_ALGORITHMS': 11,
   'ISSUER': 16,
   'PREFERRED_HASH_ALGORITHMS': 21,

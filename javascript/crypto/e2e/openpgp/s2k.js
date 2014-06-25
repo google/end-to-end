@@ -18,7 +18,7 @@
  */
 
 goog.provide('e2e.openpgp.IteratedS2K');
-goog.provide('e2e.openpgp.S2K');
+goog.provide('e2e.openpgp.S2k');
 goog.provide('e2e.openpgp.SaltedS2K');
 goog.provide('e2e.openpgp.SimpleS2K');
 
@@ -36,7 +36,7 @@ goog.require('e2e.openpgp.error.ParseError');
  * @param {e2e.hash.Hash} hash An instance of the hash algorithm to use.
  * @constructor
  */
-e2e.openpgp.S2K = function(hash) {
+e2e.openpgp.S2k = function(hash) {
   /**
    * An instance of the hash algorithm to use.
    * @type {e2e.hash.Hash}
@@ -51,14 +51,14 @@ e2e.openpgp.S2K = function(hash) {
  * @type {number}
  * @const
  */
-e2e.openpgp.S2K.MAX_SALT_SIZE = 8;
+e2e.openpgp.S2k.MAX_SALT_SIZE = 8;
 
 
 /**
  * The different types of S2K algorithms.
  * @enum {number}
  */
-e2e.openpgp.S2K.Type = {
+e2e.openpgp.S2k.Type = {
   'SIMPLE': 0,
   'SALTED': 1,
   'ITERATED': 3
@@ -67,9 +67,9 @@ e2e.openpgp.S2K.Type = {
 
 /**
  * The type of s2k algorithm to use.
- * @type {e2e.openpgp.S2K.Type}
+ * @type {e2e.openpgp.S2k.Type}
  */
-e2e.openpgp.S2K.prototype.type;
+e2e.openpgp.S2k.prototype.type;
 
 
 /**
@@ -80,14 +80,14 @@ e2e.openpgp.S2K.prototype.type;
  * @return {e2e.ByteArray} The key generated from that passphrase using
  *     the S2K algorithm.
  */
-e2e.openpgp.S2K.prototype.getKey = goog.abstractMethod;
+e2e.openpgp.S2k.prototype.getKey = goog.abstractMethod;
 
 
 /**
  * Serializes the S2K object to a string.
  * @return {e2e.ByteArray} The serialized S2K.
  */
-e2e.openpgp.S2K.prototype.serialize = function() {
+e2e.openpgp.S2k.prototype.serialize = function() {
   return goog.array.concat(
       this.type,
       e2e.openpgp.constants.getId(this.hash.algorithm));
@@ -98,32 +98,32 @@ e2e.openpgp.S2K.prototype.serialize = function() {
  * Parses (and extracts) an S2K object from the given ByteArray.
  * Throws e2e.openpgp.error.Error if it fails.
  * @param {e2e.ByteArray} bytes The ByteArray to extract the S2K from.
- * @return {e2e.openpgp.S2K} The generated S2K instance.
+ * @return {e2e.openpgp.S2k} The generated S2K instance.
  */
-e2e.openpgp.S2K.parse = function(bytes) {
+e2e.openpgp.S2k.parse = function(bytes) {
   var type = bytes.shift();
-  if (!goog.object.containsValue(e2e.openpgp.S2K.Type, type)) {
+  if (!goog.object.containsValue(e2e.openpgp.S2k.Type, type)) {
     throw new e2e.openpgp.error.ParseError('Invalid S2K type.');
   }
-  type = /** @type {e2e.openpgp.S2K.Type} */ (type);
+  type = /** @type {e2e.openpgp.S2k.Type} */ (type);
   var hid = bytes.shift();
   var hash = e2e.openpgp.constants.getInstance(
       e2e.openpgp.constants.Type.HASH, hid);
   hash = /** @type {e2e.hash.Hash} */ (hash);
   var salt, encodedCount;
-  if (type === e2e.openpgp.S2K.Type.SALTED ||
-      type === e2e.openpgp.S2K.Type.ITERATED) {
+  if (type === e2e.openpgp.S2k.Type.SALTED ||
+      type === e2e.openpgp.S2k.Type.ITERATED) {
     salt = bytes.splice(0, 8);
     if (salt.length != 8) {
       throw new e2e.openpgp.error.ParseError('Invalid S2K packet.');
     }
-    if (type === e2e.openpgp.S2K.Type.ITERATED) {
+    if (type === e2e.openpgp.S2k.Type.ITERATED) {
       encodedCount = bytes.shift();
       return new e2e.openpgp.IteratedS2K(hash, salt, encodedCount);
     } else {
       return new e2e.openpgp.SaltedS2K(hash, salt);
     }
-  } else if (type === e2e.openpgp.S2K.Type.SIMPLE) {
+  } else if (type === e2e.openpgp.S2k.Type.SIMPLE) {
     return new e2e.openpgp.SimpleS2K(hash);
   }
   // TODO(evn): Implement a scrypt KDF as a new S2K type.
@@ -136,16 +136,16 @@ e2e.openpgp.S2K.parse = function(bytes) {
  * Implements the Simple S2K algorithm.
  * @param {e2e.hash.Hash} hash An instance of the hash algorithm to use.
  * @constructor
- * @extends {e2e.openpgp.S2K}
+ * @extends {e2e.openpgp.S2k}
  */
 e2e.openpgp.SimpleS2K = function(hash) {
   goog.base(this, hash);
 };
-goog.inherits(e2e.openpgp.SimpleS2K, e2e.openpgp.S2K);
+goog.inherits(e2e.openpgp.SimpleS2K, e2e.openpgp.S2k);
 
 
 /** @inheritDoc */
-e2e.openpgp.SimpleS2K.prototype.type = e2e.openpgp.S2K.Type.SIMPLE;
+e2e.openpgp.SimpleS2K.prototype.type = e2e.openpgp.S2k.Type.SIMPLE;
 
 
 /** @inheritDoc */
@@ -187,7 +187,7 @@ goog.inherits(e2e.openpgp.SaltedS2K, e2e.openpgp.SimpleS2K);
 
 
 /** @inheritDoc */
-e2e.openpgp.SaltedS2K.prototype.type = e2e.openpgp.S2K.Type.SALTED;
+e2e.openpgp.SaltedS2K.prototype.type = e2e.openpgp.S2k.Type.SALTED;
 
 
 /** @inheritDoc */
@@ -249,7 +249,7 @@ goog.inherits(e2e.openpgp.IteratedS2K, e2e.openpgp.SimpleS2K);
 
 
 /** @inheritDoc */
-e2e.openpgp.IteratedS2K.prototype.type = e2e.openpgp.S2K.Type.ITERATED;
+e2e.openpgp.IteratedS2K.prototype.type = e2e.openpgp.S2k.Type.ITERATED;
 
 
 /** @inheritDoc */

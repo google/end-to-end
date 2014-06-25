@@ -17,10 +17,9 @@
 <script src="../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
-  goog.require('e2e.cipher.IDEA');
+  goog.require('e2e.cipher.Idea');
   goog.require('e2e');
   goog.require('goog.array');
-  goog.require('goog.math.Long');
   goog.require('goog.testing.jsunit');
 </script>
 <script>
@@ -30,286 +29,258 @@
  * legal OK.
  */
 function testLeastSignificantWordFromInteger() {
-  var aint = goog.math.Integer.fromString("FFFFFFFF", 16);
+  var aint = e2e.BigNum.fromInteger(0xFFFFFFFF);
 
-  var mask2Int = e2e.cipher.IDEA.LSWfromInteger(aint);
+  var mask2Int = e2e.cipher.Idea.LSWfromInteger(aint);
 
-  assertEquals("ffff", mask2Int.toString(16));
+  assertEquals("65535", mask2Int.toString());
 }
 
 function testMostSignificantWordFromInteger() {
-  var aint = goog.math.Integer.fromString("FFFFFFFF", 16);
+  var aint = e2e.BigNum.fromInteger(0xFFFFFFFF);
 
-  var mask2Int = e2e.cipher.IDEA.MSWfromInteger(aint);
+  var mask2Int = e2e.cipher.Idea.MSWfromInteger(aint);
 
-  assertEquals("ffff0000", mask2Int.toString(16));
-}
-
-function testInverseMod() {
-  var testValues = []; // Each element contains an array [x, m, expectedValue]
-  testValues[0] = [28383, 23, 1];
-  testValues[1] = [34, 29439, 6061];
-  // TODO(user) test some boundary cases
-  // testValues[2] = [100, 100, ???]
-  // testValues[3] = [0, 100, ???]
-  // testValues[4] = [100, 0, ???]
-  var i;
-
-  for (i = 0; i < testValues.length; i++) {
-    var x = goog.math.Integer.fromInt(testValues[i][0]);
-    var m = goog.math.Integer.fromInt(testValues[i][1]);
-    var e = goog.math.Integer.fromInt(testValues[i][2]);
-
-    assertEquals(e.toString(16),
-                 e2e.cipher.IDEA.inverseMultModulo(x, m).toString(16));
-  }
+  assertEquals("4294901760", mask2Int.toString());
 }
 
 function testMultiplyModulo16() {
   var testValues = []; // Each element contains an array [x, y, expectedValue]
   testValues[0] = [1000, 3000, 50835];
+  testValues[1] = [1, 2, 2];
+  testValues[1] = [0xff, 0xee, 0xed12];
+  testValues[2] = [0x00, 0xee, 0xff13];
+  testValues[3] = [0xff, 0x00, 0xff02];
 
   var i;
   for (i = 0; i < testValues.length; i++) {
-    var x = goog.math.Integer.fromInt(testValues[i][0]);
-    var y = goog.math.Integer.fromInt(testValues[i][1]);
-    var e = goog.math.Integer.fromInt(testValues[i][2]);
+    var x = e2e.BigNum.fromInteger(testValues[i][0]);
+    var y = e2e.BigNum.fromInteger(testValues[i][1]);
+    var e = e2e.BigNum.fromInteger(testValues[i][2]);
 
-    assertEquals(e.toString(16), e2e.cipher.IDEA.multMod16(x, y).toString(16));
+    assertEquals(e.toString(), e2e.cipher.Idea.multMod16(x, y).toString());
   }
 }
 
 function testInvMultModulo16() {
   var testValues = []; // Each element contains an array [x, expectedValue]
   testValues[0] = [52012, 23007];
+  testValues[1] = [0, 0];
+  testValues[2] = [1, 1];
+  testValues[3] = [0xffff, 0x8000];
+  testValues[4] = [0xff00, 0x8080];
+  testValues[5] = [0x8000, 0xffff];
 
   var i;
 
   for (i = 0; i < testValues.length; i++) {
-    var x = goog.math.Integer.fromInt(testValues[i][0]);
-    var e = goog.math.Integer.fromInt(testValues[i][1]);
+    var x = e2e.BigNum.fromInteger(testValues[i][0]);
+    var e = e2e.BigNum.fromInteger(testValues[i][1]);
 
-    assertEquals(e.toString(16), e2e.cipher.IDEA.invMod16(x).toString(16));
+    assertEquals(e.toString(), e2e.cipher.Idea.invMod16(x).toString());
   }
-}
-
-function testPadByteArray() {
-  var key = goog.crypt.hexToByteArray("00010002000300040005000600070008");
-
-  var ba = e2e.stringToByteArray("0123456");
-  var idea = new e2e.cipher.IDEA(
-      e2e.cipher.Algorithm.IDEA,
-      {key : key});
-  ba = idea.padByteArray(ba);
-  assertEquals(idea.blockSize / 8 * 2, ba.length);
-  assertEquals(0, ba[7]);
-}
-
-function testStripByteArray() {
-  var key = goog.crypt.hexToByteArray("00010002000300040005000600070008");
-
-  var ba = e2e.stringToByteArray("0123456");
-  var idea = new e2e.cipher.IDEA(
-      e2e.cipher.Algorithm.IDEA,
-      {key : key});
-  baPad = idea.padByteArray(ba);
-  assertEquals(idea.blockSize / 8 * 2, baPad.length);
-  assertEquals(0, baPad[7]);
-  baStrip = idea.stripByteArray(baPad);
-  assertArrayEquals(ba, baStrip)
 }
 
 function testEncryptSubkeys1() {
   var key = goog.crypt.hexToByteArray("00010002000300040005000600070008");
   var expectedSubkeys = [];
-  expectedSubkeys[0] = goog.math.Integer.fromString("0001", 16);
-  expectedSubkeys[1] = goog.math.Integer.fromString("0002", 16);
-  expectedSubkeys[2] = goog.math.Integer.fromString("0003", 16);
-  expectedSubkeys[3] = goog.math.Integer.fromString("0004", 16);
-  expectedSubkeys[4] = goog.math.Integer.fromString("0005", 16);
-  expectedSubkeys[5] = goog.math.Integer.fromString("0006", 16);
-  expectedSubkeys[6] = goog.math.Integer.fromString("0007", 16);
-  expectedSubkeys[7] = goog.math.Integer.fromString("0008", 16);
-  expectedSubkeys[8] = goog.math.Integer.fromString("0400", 16);
-  expectedSubkeys[9] = goog.math.Integer.fromString("0600", 16);
-  expectedSubkeys[10] = goog.math.Integer.fromString("0800", 16);
-  expectedSubkeys[11] = goog.math.Integer.fromString("0a00", 16);
-  expectedSubkeys[12] = goog.math.Integer.fromString("0c00", 16);
-  expectedSubkeys[13] = goog.math.Integer.fromString("0e00", 16);
-  expectedSubkeys[14] = goog.math.Integer.fromString("1000", 16);
-  expectedSubkeys[15] = goog.math.Integer.fromString("0200", 16);
-  expectedSubkeys[16] = goog.math.Integer.fromString("0010", 16);
-  expectedSubkeys[17] = goog.math.Integer.fromString("0014", 16);
-  expectedSubkeys[18] = goog.math.Integer.fromString("0018", 16);
-  expectedSubkeys[19] = goog.math.Integer.fromString("001c", 16);
-  expectedSubkeys[20] = goog.math.Integer.fromString("0020", 16);
-  expectedSubkeys[21] = goog.math.Integer.fromString("0004", 16);
-  expectedSubkeys[22] = goog.math.Integer.fromString("0008", 16);
-  expectedSubkeys[23] = goog.math.Integer.fromString("000c", 16);
-  expectedSubkeys[24] = goog.math.Integer.fromString("2800", 16);
-  expectedSubkeys[25] = goog.math.Integer.fromString("3000", 16);
-  expectedSubkeys[26] = goog.math.Integer.fromString("3800", 16);
-  expectedSubkeys[27] = goog.math.Integer.fromString("4000", 16);
-  expectedSubkeys[28] = goog.math.Integer.fromString("0800", 16);
-  expectedSubkeys[29] = goog.math.Integer.fromString("1000", 16);
-  expectedSubkeys[30] = goog.math.Integer.fromString("1800", 16);
-  expectedSubkeys[31] = goog.math.Integer.fromString("2000", 16);
-  expectedSubkeys[32] = goog.math.Integer.fromString("0070", 16);
-  expectedSubkeys[33] = goog.math.Integer.fromString("0080", 16);
-  expectedSubkeys[34] = goog.math.Integer.fromString("0010", 16);
-  expectedSubkeys[35] = goog.math.Integer.fromString("0020", 16);
-  expectedSubkeys[36] = goog.math.Integer.fromString("0030", 16);
-  expectedSubkeys[37] = goog.math.Integer.fromString("0040", 16);
-  expectedSubkeys[38] = goog.math.Integer.fromString("0050", 16);
-  expectedSubkeys[39] = goog.math.Integer.fromString("0060", 16);
-  expectedSubkeys[40] = goog.math.Integer.fromString("0000", 16);
-  expectedSubkeys[41] = goog.math.Integer.fromString("2000", 16);
-  expectedSubkeys[42] = goog.math.Integer.fromString("4000", 16);
-  expectedSubkeys[43] = goog.math.Integer.fromString("6000", 16);
-  expectedSubkeys[44] = goog.math.Integer.fromString("8000", 16);
-  expectedSubkeys[45] = goog.math.Integer.fromString("a000", 16);
-  expectedSubkeys[46] = goog.math.Integer.fromString("c000", 16);
-  expectedSubkeys[47] = goog.math.Integer.fromString("e001", 16);
-  expectedSubkeys[48] = goog.math.Integer.fromString("0080", 16);
-  expectedSubkeys[49] = goog.math.Integer.fromString("00c0", 16);
-  expectedSubkeys[50] = goog.math.Integer.fromString("0100", 16);
-  expectedSubkeys[51] = goog.math.Integer.fromString("0140", 16);
+  expectedSubkeys[0] = e2e.BigNum.fromInteger(0x0001);
+  expectedSubkeys[1] = e2e.BigNum.fromInteger(0x0002);
+  expectedSubkeys[2] = e2e.BigNum.fromInteger(0x0003);
+  expectedSubkeys[3] = e2e.BigNum.fromInteger(0x0004);
+  expectedSubkeys[4] = e2e.BigNum.fromInteger(0x0005);
+  expectedSubkeys[5] = e2e.BigNum.fromInteger(0x0006);
+  expectedSubkeys[6] = e2e.BigNum.fromInteger(0x0007);
+  expectedSubkeys[7] = e2e.BigNum.fromInteger(0x0008);
+  expectedSubkeys[8] = e2e.BigNum.fromInteger(0x0400);
+  expectedSubkeys[9] = e2e.BigNum.fromInteger(0x0600);
+  expectedSubkeys[10] = e2e.BigNum.fromInteger(0x0800);
+  expectedSubkeys[11] = e2e.BigNum.fromInteger(0x0a00);
+  expectedSubkeys[12] = e2e.BigNum.fromInteger(0x0c00);
+  expectedSubkeys[13] = e2e.BigNum.fromInteger(0x0e00);
+  expectedSubkeys[14] = e2e.BigNum.fromInteger(0x1000);
+  expectedSubkeys[15] = e2e.BigNum.fromInteger(0x0200);
+  expectedSubkeys[16] = e2e.BigNum.fromInteger(0x0010);
+  expectedSubkeys[17] = e2e.BigNum.fromInteger(0x0014);
+  expectedSubkeys[18] = e2e.BigNum.fromInteger(0x0018);
+  expectedSubkeys[19] = e2e.BigNum.fromInteger(0x001c);
+  expectedSubkeys[20] = e2e.BigNum.fromInteger(0x0020);
+  expectedSubkeys[21] = e2e.BigNum.fromInteger(0x0004);
+  expectedSubkeys[22] = e2e.BigNum.fromInteger(0x0008);
+  expectedSubkeys[23] = e2e.BigNum.fromInteger(0x000c);
+  expectedSubkeys[24] = e2e.BigNum.fromInteger(0x2800);
+  expectedSubkeys[25] = e2e.BigNum.fromInteger(0x3000);
+  expectedSubkeys[26] = e2e.BigNum.fromInteger(0x3800);
+  expectedSubkeys[27] = e2e.BigNum.fromInteger(0x4000);
+  expectedSubkeys[28] = e2e.BigNum.fromInteger(0x0800);
+  expectedSubkeys[29] = e2e.BigNum.fromInteger(0x1000);
+  expectedSubkeys[30] = e2e.BigNum.fromInteger(0x1800);
+  expectedSubkeys[31] = e2e.BigNum.fromInteger(0x2000);
+  expectedSubkeys[32] = e2e.BigNum.fromInteger(0x0070);
+  expectedSubkeys[33] = e2e.BigNum.fromInteger(0x0080);
+  expectedSubkeys[34] = e2e.BigNum.fromInteger(0x0010);
+  expectedSubkeys[35] = e2e.BigNum.fromInteger(0x0020);
+  expectedSubkeys[36] = e2e.BigNum.fromInteger(0x0030);
+  expectedSubkeys[37] = e2e.BigNum.fromInteger(0x0040);
+  expectedSubkeys[38] = e2e.BigNum.fromInteger(0x0050);
+  expectedSubkeys[39] = e2e.BigNum.fromInteger(0x0060);
+  expectedSubkeys[40] = e2e.BigNum.fromInteger(0x0000);
+  expectedSubkeys[41] = e2e.BigNum.fromInteger(0x2000);
+  expectedSubkeys[42] = e2e.BigNum.fromInteger(0x4000);
+  expectedSubkeys[43] = e2e.BigNum.fromInteger(0x6000);
+  expectedSubkeys[44] = e2e.BigNum.fromInteger(0x8000);
+  expectedSubkeys[45] = e2e.BigNum.fromInteger(0xa000);
+  expectedSubkeys[46] = e2e.BigNum.fromInteger(0xc000);
+  expectedSubkeys[47] = e2e.BigNum.fromInteger(0xe001);
+  expectedSubkeys[48] = e2e.BigNum.fromInteger(0x0080);
+  expectedSubkeys[49] = e2e.BigNum.fromInteger(0x00c0);
+  expectedSubkeys[50] = e2e.BigNum.fromInteger(0x0100);
+  expectedSubkeys[51] = e2e.BigNum.fromInteger(0x0140);
 
-  var idea = new e2e.cipher.IDEA(
+  var idea = new e2e.cipher.Idea(
     e2e.cipher.Algorithm.IDEA,
     {key : key});
-  assertArrayEquals(expectedSubkeys, idea.encryptSubKeys_);
+  for (var i = 0; i < expectedSubkeys.length; i++) {
+    assertEquals(expectedSubkeys[i].toString(), idea.encryptSubKeys_[i].toString());
+    assertTrue(expectedSubkeys[i].isEqual(idea.encryptSubKeys_[i]));
+  }
 }
 
 function testEncryptSubkeys2() {
   var key = goog.crypt.hexToByteArray("1234567891bcdef0123456789abcdef0");
 
   var expectedSubkeys = [];
-  expectedSubkeys[0] = goog.math.Integer.fromString("1234", 16);
-  expectedSubkeys[1] = goog.math.Integer.fromString("5678", 16);
-  expectedSubkeys[2] = goog.math.Integer.fromString("91bc", 16);
-  expectedSubkeys[3] = goog.math.Integer.fromString("def0", 16);
-  expectedSubkeys[4] = goog.math.Integer.fromString("1234", 16);
-  expectedSubkeys[5] = goog.math.Integer.fromString("5678", 16);
-  expectedSubkeys[6] = goog.math.Integer.fromString("9abc", 16);
-  expectedSubkeys[7] = goog.math.Integer.fromString("def0", 16);
-  expectedSubkeys[8] = goog.math.Integer.fromString("f123", 16);
-  expectedSubkeys[9] = goog.math.Integer.fromString("79bd", 16);
-  expectedSubkeys[10] = goog.math.Integer.fromString("e024", 16);
-  expectedSubkeys[11] = goog.math.Integer.fromString("68ac", 16);
-  expectedSubkeys[12] = goog.math.Integer.fromString("f135", 16);
-  expectedSubkeys[13] = goog.math.Integer.fromString("79bd", 16);
-  expectedSubkeys[14] = goog.math.Integer.fromString("e024", 16);
-  expectedSubkeys[15] = goog.math.Integer.fromString("68ac", 16);
-  expectedSubkeys[16] = goog.math.Integer.fromString("7bc0", 16);
-  expectedSubkeys[17] = goog.math.Integer.fromString("48d1", 16);
-  expectedSubkeys[18] = goog.math.Integer.fromString("59e2", 16);
-  expectedSubkeys[19] = goog.math.Integer.fromString("6af3", 16);
-  expectedSubkeys[20] = goog.math.Integer.fromString("7bc0", 16);
-  expectedSubkeys[21] = goog.math.Integer.fromString("48d1", 16);
-  expectedSubkeys[22] = goog.math.Integer.fromString("59e2", 16);
-  expectedSubkeys[23] = goog.math.Integer.fromString("46f3", 16);
-  expectedSubkeys[24] = goog.math.Integer.fromString("a2b3", 16);
-  expectedSubkeys[25] = goog.math.Integer.fromString("c4d5", 16);
-  expectedSubkeys[26] = goog.math.Integer.fromString("e6f7", 16);
-  expectedSubkeys[27] = goog.math.Integer.fromString("8091", 16);
-  expectedSubkeys[28] = goog.math.Integer.fromString("a2b3", 16);
-  expectedSubkeys[29] = goog.math.Integer.fromString("c48d", 16);
-  expectedSubkeys[30] = goog.math.Integer.fromString("e6f7", 16);
-  expectedSubkeys[31] = goog.math.Integer.fromString("8091", 16);
-  expectedSubkeys[32] = goog.math.Integer.fromString("abcd", 16);
-  expectedSubkeys[33] = goog.math.Integer.fromString("ef01", 16);
-  expectedSubkeys[34] = goog.math.Integer.fromString("2345", 16);
-  expectedSubkeys[35] = goog.math.Integer.fromString("6789", 16);
-  expectedSubkeys[36] = goog.math.Integer.fromString("1bcd", 16);
-  expectedSubkeys[37] = goog.math.Integer.fromString("ef01", 16);
-  expectedSubkeys[38] = goog.math.Integer.fromString("2345", 16);
-  expectedSubkeys[39] = goog.math.Integer.fromString("6789", 16);
-  expectedSubkeys[40] = goog.math.Integer.fromString("0246", 16);
-  expectedSubkeys[41] = goog.math.Integer.fromString("8acf", 16);
-  expectedSubkeys[42] = goog.math.Integer.fromString("1237", 16);
-  expectedSubkeys[43] = goog.math.Integer.fromString("9bde", 16);
-  expectedSubkeys[44] = goog.math.Integer.fromString("0246", 16);
-  expectedSubkeys[45] = goog.math.Integer.fromString("8acf", 16);
-  expectedSubkeys[46] = goog.math.Integer.fromString("1357", 16);
-  expectedSubkeys[47] = goog.math.Integer.fromString("9bde", 16);
-  expectedSubkeys[48] = goog.math.Integer.fromString("9e24", 16);
-  expectedSubkeys[49] = goog.math.Integer.fromString("6f37", 16);
-  expectedSubkeys[50] = goog.math.Integer.fromString("bc04", 16);
-  expectedSubkeys[51] = goog.math.Integer.fromString("8d15", 16);
+  expectedSubkeys[0] = e2e.BigNum.fromInteger(0x1234);
+  expectedSubkeys[1] = e2e.BigNum.fromInteger(0x5678);
+  expectedSubkeys[2] = e2e.BigNum.fromInteger(0x91bc);
+  expectedSubkeys[3] = e2e.BigNum.fromInteger(0xdef0);
+  expectedSubkeys[4] = e2e.BigNum.fromInteger(0x1234);
+  expectedSubkeys[5] = e2e.BigNum.fromInteger(0x5678);
+  expectedSubkeys[6] = e2e.BigNum.fromInteger(0x9abc);
+  expectedSubkeys[7] = e2e.BigNum.fromInteger(0xdef0);
+  expectedSubkeys[8] = e2e.BigNum.fromInteger(0xf123);
+  expectedSubkeys[9] = e2e.BigNum.fromInteger(0x79bd);
+  expectedSubkeys[10] = e2e.BigNum.fromInteger(0xe024);
+  expectedSubkeys[11] = e2e.BigNum.fromInteger(0x68ac);
+  expectedSubkeys[12] = e2e.BigNum.fromInteger(0xf135);
+  expectedSubkeys[13] = e2e.BigNum.fromInteger(0x79bd);
+  expectedSubkeys[14] = e2e.BigNum.fromInteger(0xe024);
+  expectedSubkeys[15] = e2e.BigNum.fromInteger(0x68ac);
+  expectedSubkeys[16] = e2e.BigNum.fromInteger(0x7bc0);
+  expectedSubkeys[17] = e2e.BigNum.fromInteger(0x48d1);
+  expectedSubkeys[18] = e2e.BigNum.fromInteger(0x59e2);
+  expectedSubkeys[19] = e2e.BigNum.fromInteger(0x6af3);
+  expectedSubkeys[20] = e2e.BigNum.fromInteger(0x7bc0);
+  expectedSubkeys[21] = e2e.BigNum.fromInteger(0x48d1);
+  expectedSubkeys[22] = e2e.BigNum.fromInteger(0x59e2);
+  expectedSubkeys[23] = e2e.BigNum.fromInteger(0x46f3);
+  expectedSubkeys[24] = e2e.BigNum.fromInteger(0xa2b3);
+  expectedSubkeys[25] = e2e.BigNum.fromInteger(0xc4d5);
+  expectedSubkeys[26] = e2e.BigNum.fromInteger(0xe6f7);
+  expectedSubkeys[27] = e2e.BigNum.fromInteger(0x8091);
+  expectedSubkeys[28] = e2e.BigNum.fromInteger(0xa2b3);
+  expectedSubkeys[29] = e2e.BigNum.fromInteger(0xc48d);
+  expectedSubkeys[30] = e2e.BigNum.fromInteger(0xe6f7);
+  expectedSubkeys[31] = e2e.BigNum.fromInteger(0x8091);
+  expectedSubkeys[32] = e2e.BigNum.fromInteger(0xabcd);
+  expectedSubkeys[33] = e2e.BigNum.fromInteger(0xef01);
+  expectedSubkeys[34] = e2e.BigNum.fromInteger(0x2345);
+  expectedSubkeys[35] = e2e.BigNum.fromInteger(0x6789);
+  expectedSubkeys[36] = e2e.BigNum.fromInteger(0x1bcd);
+  expectedSubkeys[37] = e2e.BigNum.fromInteger(0xef01);
+  expectedSubkeys[38] = e2e.BigNum.fromInteger(0x2345);
+  expectedSubkeys[39] = e2e.BigNum.fromInteger(0x6789);
+  expectedSubkeys[40] = e2e.BigNum.fromInteger(0x0246);
+  expectedSubkeys[41] = e2e.BigNum.fromInteger(0x8acf);
+  expectedSubkeys[42] = e2e.BigNum.fromInteger(0x1237);
+  expectedSubkeys[43] = e2e.BigNum.fromInteger(0x9bde);
+  expectedSubkeys[44] = e2e.BigNum.fromInteger(0x0246);
+  expectedSubkeys[45] = e2e.BigNum.fromInteger(0x8acf);
+  expectedSubkeys[46] = e2e.BigNum.fromInteger(0x1357);
+  expectedSubkeys[47] = e2e.BigNum.fromInteger(0x9bde);
+  expectedSubkeys[48] = e2e.BigNum.fromInteger(0x9e24);
+  expectedSubkeys[49] = e2e.BigNum.fromInteger(0x6f37);
+  expectedSubkeys[50] = e2e.BigNum.fromInteger(0xbc04);
+  expectedSubkeys[51] = e2e.BigNum.fromInteger(0x8d15);
 
-  var idea = new e2e.cipher.IDEA(
+  var idea = new e2e.cipher.Idea(
     e2e.cipher.Algorithm.IDEA,
     {key : key});
   var subKeys = idea.initEncryptSubkeys_();
-  assertArrayEquals(expectedSubkeys, subKeys);
+  for (var i = 0; i < expectedSubkeys.length; i++) {
+    assertEquals(expectedSubkeys[i].toString(), subKeys[i].toString());
+    assertTrue(expectedSubkeys[i].isEqual(subKeys[i]));
+  }
 }
 
 function testDecryptSubkeys2() {
   var key = goog.crypt.hexToByteArray("1234567891bcdef0123456789abcdef0");
 
   var expectedSubkeys = [];
-  expectedSubkeys[0] = goog.math.Integer.fromString("4bcd", 16);
-  expectedSubkeys[1] = goog.math.Integer.fromString("90c9", 16);
-  expectedSubkeys[2] = goog.math.Integer.fromString("43fc", 16);
-  expectedSubkeys[3] = goog.math.Integer.fromString("8461", 16);
-  expectedSubkeys[4] = goog.math.Integer.fromString("1357", 16);
-  expectedSubkeys[5] = goog.math.Integer.fromString("9bde", 16);
-  expectedSubkeys[6] = goog.math.Integer.fromString("0707", 16);
-  expectedSubkeys[7] = goog.math.Integer.fromString("fdba", 16);
-  expectedSubkeys[8] = goog.math.Integer.fromString("6422", 16);
-  expectedSubkeys[9] = goog.math.Integer.fromString("ebbd", 16);
-  expectedSubkeys[10] = goog.math.Integer.fromString("0246", 16);
-  expectedSubkeys[11] = goog.math.Integer.fromString("8acf", 16);
-  expectedSubkeys[12] = goog.math.Integer.fromString("b5a7", 16);
-  expectedSubkeys[13] = goog.math.Integer.fromString("dcbb", 16);
-  expectedSubkeys[14] = goog.math.Integer.fromString("10ff", 16);
-  expectedSubkeys[15] = goog.math.Integer.fromString("fab6", 16);
-  expectedSubkeys[16] = goog.math.Integer.fromString("2345", 16);
-  expectedSubkeys[17] = goog.math.Integer.fromString("6789", 16);
-  expectedSubkeys[18] = goog.math.Integer.fromString("f026", 16);
-  expectedSubkeys[19] = goog.math.Integer.fromString("5433", 16);
-  expectedSubkeys[20] = goog.math.Integer.fromString("7f6f", 16);
-  expectedSubkeys[21] = goog.math.Integer.fromString("7888", 16);
-  expectedSubkeys[22] = goog.math.Integer.fromString("a2b3", 16);
-  expectedSubkeys[23] = goog.math.Integer.fromString("c48d", 16);
-  expectedSubkeys[24] = goog.math.Integer.fromString("34a8", 16);
-  expectedSubkeys[25] = goog.math.Integer.fromString("1909", 16);
-  expectedSubkeys[26] = goog.math.Integer.fromString("3b2b", 16);
-  expectedSubkeys[27] = goog.math.Integer.fromString("e100", 16);
-  expectedSubkeys[28] = goog.math.Integer.fromString("59e2", 16);
-  expectedSubkeys[29] = goog.math.Integer.fromString("46f3", 16);
-  expectedSubkeys[30] = goog.math.Integer.fromString("74e6", 16);
-  expectedSubkeys[31] = goog.math.Integer.fromString("8440", 16);
-  expectedSubkeys[32] = goog.math.Integer.fromString("950d", 16);
-  expectedSubkeys[33] = goog.math.Integer.fromString("bbf8", 16);
-  expectedSubkeys[34] = goog.math.Integer.fromString("7bc0", 16);
-  expectedSubkeys[35] = goog.math.Integer.fromString("48d1", 16);
-  expectedSubkeys[36] = goog.math.Integer.fromString("ac8a", 16);
-  expectedSubkeys[37] = goog.math.Integer.fromString("1fdc", 16);
-  expectedSubkeys[38] = goog.math.Integer.fromString("8643", 16);
-  expectedSubkeys[39] = goog.math.Integer.fromString("8794", 16);
-  expectedSubkeys[40] = goog.math.Integer.fromString("e024", 16);
-  expectedSubkeys[41] = goog.math.Integer.fromString("68ac", 16);
-  expectedSubkeys[42] = goog.math.Integer.fromString("6378", 16);
-  expectedSubkeys[43] = goog.math.Integer.fromString("0edd", 16);
-  expectedSubkeys[44] = goog.math.Integer.fromString("2110", 16);
-  expectedSubkeys[45] = goog.math.Integer.fromString("b8b8", 16);
-  expectedSubkeys[46] = goog.math.Integer.fromString("1234", 16);
-  expectedSubkeys[47] = goog.math.Integer.fromString("5678", 16);
-  expectedSubkeys[48] = goog.math.Integer.fromString("9e9a", 16);
-  expectedSubkeys[49] = goog.math.Integer.fromString("a988", 16);
-  expectedSubkeys[50] = goog.math.Integer.fromString("6e44", 16);
-  expectedSubkeys[51] = goog.math.Integer.fromString("77da", 16);
+  expectedSubkeys[0] = e2e.BigNum.fromInteger(0x4bcd);
+  expectedSubkeys[1] = e2e.BigNum.fromInteger(0x90c9);
+  expectedSubkeys[2] = e2e.BigNum.fromInteger(0x43fc);
+  expectedSubkeys[3] = e2e.BigNum.fromInteger(0x8461);
+  expectedSubkeys[4] = e2e.BigNum.fromInteger(0x1357);
+  expectedSubkeys[5] = e2e.BigNum.fromInteger(0x9bde);
+  expectedSubkeys[6] = e2e.BigNum.fromInteger(0x0707);
+  expectedSubkeys[7] = e2e.BigNum.fromInteger(0xfdba);
+  expectedSubkeys[8] = e2e.BigNum.fromInteger(0x6422);
+  expectedSubkeys[9] = e2e.BigNum.fromInteger(0xebbd);
+  expectedSubkeys[10] = e2e.BigNum.fromInteger(0x0246);
+  expectedSubkeys[11] = e2e.BigNum.fromInteger(0x8acf);
+  expectedSubkeys[12] = e2e.BigNum.fromInteger(0xb5a7);
+  expectedSubkeys[13] = e2e.BigNum.fromInteger(0xdcbb);
+  expectedSubkeys[14] = e2e.BigNum.fromInteger(0x10ff);
+  expectedSubkeys[15] = e2e.BigNum.fromInteger(0xfab6);
+  expectedSubkeys[16] = e2e.BigNum.fromInteger(0x2345);
+  expectedSubkeys[17] = e2e.BigNum.fromInteger(0x6789);
+  expectedSubkeys[18] = e2e.BigNum.fromInteger(0xf026);
+  expectedSubkeys[19] = e2e.BigNum.fromInteger(0x5433);
+  expectedSubkeys[20] = e2e.BigNum.fromInteger(0x7f6f);
+  expectedSubkeys[21] = e2e.BigNum.fromInteger(0x7888);
+  expectedSubkeys[22] = e2e.BigNum.fromInteger(0xa2b3);
+  expectedSubkeys[23] = e2e.BigNum.fromInteger(0xc48d);
+  expectedSubkeys[24] = e2e.BigNum.fromInteger(0x34a8);
+  expectedSubkeys[25] = e2e.BigNum.fromInteger(0x1909);
+  expectedSubkeys[26] = e2e.BigNum.fromInteger(0x3b2b);
+  expectedSubkeys[27] = e2e.BigNum.fromInteger(0xe100);
+  expectedSubkeys[28] = e2e.BigNum.fromInteger(0x59e2);
+  expectedSubkeys[29] = e2e.BigNum.fromInteger(0x46f3);
+  expectedSubkeys[30] = e2e.BigNum.fromInteger(0x74e6);
+  expectedSubkeys[31] = e2e.BigNum.fromInteger(0x8440);
+  expectedSubkeys[32] = e2e.BigNum.fromInteger(0x950d);
+  expectedSubkeys[33] = e2e.BigNum.fromInteger(0xbbf8);
+  expectedSubkeys[34] = e2e.BigNum.fromInteger(0x7bc0);
+  expectedSubkeys[35] = e2e.BigNum.fromInteger(0x48d1);
+  expectedSubkeys[36] = e2e.BigNum.fromInteger(0xac8a);
+  expectedSubkeys[37] = e2e.BigNum.fromInteger(0x1fdc);
+  expectedSubkeys[38] = e2e.BigNum.fromInteger(0x8643);
+  expectedSubkeys[39] = e2e.BigNum.fromInteger(0x8794);
+  expectedSubkeys[40] = e2e.BigNum.fromInteger(0xe024);
+  expectedSubkeys[41] = e2e.BigNum.fromInteger(0x68ac);
+  expectedSubkeys[42] = e2e.BigNum.fromInteger(0x6378);
+  expectedSubkeys[43] = e2e.BigNum.fromInteger(0x0edd);
+  expectedSubkeys[44] = e2e.BigNum.fromInteger(0x2110);
+  expectedSubkeys[45] = e2e.BigNum.fromInteger(0xb8b8);
+  expectedSubkeys[46] = e2e.BigNum.fromInteger(0x1234);
+  expectedSubkeys[47] = e2e.BigNum.fromInteger(0x5678);
+  expectedSubkeys[48] = e2e.BigNum.fromInteger(0x9e9a);
+  expectedSubkeys[49] = e2e.BigNum.fromInteger(0xa988);
+  expectedSubkeys[50] = e2e.BigNum.fromInteger(0x6e44);
+  expectedSubkeys[51] = e2e.BigNum.fromInteger(0x77da);
 
-  var idea = new e2e.cipher.IDEA(
+  var idea = new e2e.cipher.Idea(
       e2e.cipher.Algorithm.IDEA,
       {key : key});
   var subKeys = idea.initEncryptSubkeys_();
   assertEquals(idea.num_subkeys, idea.encryptSubKeys_.length);
   subKeys = idea.initDecryptSubkeys_();
   assertEquals(idea.num_subkeys, idea.decryptSubKeys_.length);
-  assertArrayEquals(expectedSubkeys, subKeys);
+  for (var i = 0; i < idea.num_subkeys; i++) {
+    assertEquals(expectedSubkeys[i].toString(), subKeys[i].toString());
+    assertTrue(expectedSubkeys[i].isEqual(subKeys[i]));
+  }
 }
 
 function testIDEACipher() {
@@ -317,24 +288,28 @@ function testIDEACipher() {
   var key = goog.crypt.hexToByteArray("00010002000300040005000600070008");
   // data to encrypt
   var data = [];
-  data[0] = goog.math.Integer.fromString("0000", 16);
-  data[1] = goog.math.Integer.fromString("0001", 16);
-  data[2] = goog.math.Integer.fromString("0002", 16);
-  data[3] = goog.math.Integer.fromString("0003", 16);
+  data[0] = e2e.BigNum.fromInteger(0x0000);
+  data[1] = e2e.BigNum.fromInteger(0x0001);
+  data[2] = e2e.BigNum.fromInteger(0x0002);
+  data[3] = e2e.BigNum.fromInteger(0x0003);
   // expected encrypted output
   var expectedEncryption = []
-  expectedEncryption[0] = goog.math.Integer.fromString("11fb", 16);
-  expectedEncryption[1] = goog.math.Integer.fromString("ed2b", 16);
-  expectedEncryption[2] = goog.math.Integer.fromString("0198", 16);
-  expectedEncryption[3] = goog.math.Integer.fromString("6de5", 16);
+  expectedEncryption[0] = e2e.BigNum.fromInteger(0x11fb);
+  expectedEncryption[1] = e2e.BigNum.fromInteger(0xed2b);
+  expectedEncryption[2] = e2e.BigNum.fromInteger(0x0198);
+  expectedEncryption[3] = e2e.BigNum.fromInteger(0x6de5);
 
-  var idea = new e2e.cipher.IDEA(
+  var idea = new e2e.cipher.Idea(
       e2e.cipher.Algorithm.IDEA,
       {key : key});
 
   var encryptedData = idea.applyKey(data, idea.encryptSubKeys_);
 
-  assertArrayEquals(expectedEncryption, encryptedData);
+  assertEquals(expectedEncryption.length, encryptedData.length);
+  for (var i = 0; i < expectedEncryption.length; i++) {
+    assertEquals(expectedEncryption[i].toString(), encryptedData[i].toString());
+    assertTrue(expectedEncryption[i].isEqual(encryptedData[i]));
+  }
 }
 
 function testIDEAEncryption() {
@@ -346,7 +321,7 @@ function testIDEAEncryption() {
                       "A"
                      ];
 
-  var idea = new e2e.cipher.IDEA(
+  var idea = new e2e.cipher.Idea(
       e2e.cipher.Algorithm.IDEA,
       {key : key});
 
@@ -359,5 +334,28 @@ function testIDEAEncryption() {
     var truncatedMsg = e2e.byteArrayToString(decrypted).substring(0, testMessages[i].length);
     assertEquals(testMessages[i], truncatedMsg);
  }
+}
+
+function testExternalValues() {
+  // Test values from http://seit.unsw.adfa.edu.au/staff/sites/lpb/src/IDEAcalc/
+  // and public domain https://github.com/mmoss/cryptopp/blob/master/src/TestData/ideaval.dat
+  var vectors = [  // [key, plainText, cipherText]
+    ["006400c8012c019001f4025802bc0320", "05320a6414c819fa", "65be87e7a2538aed"],
+    ["00010002000300040005000600070008", "0000000100020003", "11FBED2B01986DE5"],
+    ["00010002000300040005000600070008", "FAE6D2BEAA96826E", "85DF52005608193D"],
+    ["9D4075C103BC322AFB03E7BE6AB30006", "0808080808080808", "F5DB1AC45E5EF9F9"]
+  ];
+  goog.array.forEach(vectors, function(vector) {
+    var key = goog.crypt.hexToByteArray(vector[0]);
+    var plainText = goog.crypt.hexToByteArray(vector[1]);
+    var cipherText = goog.crypt.hexToByteArray(vector[2]);
+    var cipher = new e2e.cipher.Idea(
+        e2e.cipher.Algorithm.IDEA,
+        {key: key});
+    var result = cipher.encrypt(plainText);
+    assertArrayEquals(cipherText, e2e.async.Result.getValue(result));
+    result = cipher.decrypt(e2e.async.Result.getValue(result));
+    assertArrayEquals(plainText, e2e.async.Result.getValue(result));
+  });
 }
 </script>

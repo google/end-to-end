@@ -143,6 +143,7 @@ e2e.ext.constants.StorageKey = {
   ENABLE_WELCOME_SCREEN: 'enable-welcome',
   ENABLE_ACTION_SNIFFING: 'enable-action-sniff',
   ENABLE_AUTO_SAVE: 'enable-auto-save',
+  ENABLE_LOOKING_GLASS: 'enable-looking-glass',
   LAST_SAVED_DRAFT: 'last-saved-draft'
 };
 

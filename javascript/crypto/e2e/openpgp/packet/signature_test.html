@@ -33,15 +33,6 @@
 </script>
 <script>
 
-function testConvertNewlines() {
-  var data = 'one\ntwo\nthree\n';
-  assertEquals('one\r\ntwo\r\nthree\r\n',
-               e2e.openpgp.packet.Signature.convertNewlines(data))
-  data = 'one\r\ntwo\r\n';
-  assertEquals('one\r\ntwo\r\n',
-               e2e.openpgp.packet.Signature.convertNewlines(data))
-}
-
 function testSignDSA() {
   var publicKeyAscii =  // 1024bit DSA key
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +

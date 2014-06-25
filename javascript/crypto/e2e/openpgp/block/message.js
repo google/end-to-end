@@ -20,8 +20,10 @@ goog.provide('e2e.openpgp.block.Message');
 goog.require('e2e.hash.factory');
 goog.require('e2e.openpgp');
 goog.require('e2e.openpgp.block.Block');
+goog.require('e2e.openpgp.block.TransferableKey');
 goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.openpgp.packet.Key');
+goog.require('e2e.openpgp.packet.SecretKey');
 goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.signer.Signer');
 
@@ -51,7 +53,8 @@ goog.require('e2e.signer.Signer');
  *
  *  Signed Message :- Signature Packet, OpenPGP Message |
  *              One-Pass Signed Message.
- * @param {Array.<e2e.openpgp.packet.Signature>=} opt_signatures
+ * @param {Array.<!e2e.openpgp.packet.Signature|
+ *     !e2e.openpgp.packet.OnePassSignature>=} opt_signatures
  * @extends {e2e.openpgp.block.Block}
  * @constructor
  */
@@ -59,19 +62,13 @@ e2e.openpgp.block.Message = function(opt_signatures) {
   goog.base(this);
 
   /**
-   * @type {Array.<e2e.openpgp.packet.Signature>}
+   * @type {Array.<!e2e.openpgp.packet.Signature|
+   *     !e2e.openpgp.packet.OnePassSignature>}
    */
   this.signatures = opt_signatures || [];
 };
 goog.inherits(e2e.openpgp.block.Message,
     e2e.openpgp.block.Block);
-
-
-/**
- * Extracts the data from the block. Might throw if can't extract the data.
- * @return {e2e.openpgp.packet.Data} Packet with the information.
- */
-e2e.openpgp.block.Message.prototype.getData = goog.abstractMethod;
 
 
 /** @override */
@@ -94,6 +91,12 @@ e2e.openpgp.block.Message.prototype.serializeMessage = goog.abstractMethod;
 
 
 /**
+ * @return {e2e.openpgp.block.LiteralMessage}
+ */
+e2e.openpgp.block.Message.prototype.getLiteralMessage = goog.abstractMethod;
+
+
+/**
  * Consumes all one pass signatures.
  * @param {!Array.<!e2e.openpgp.packet.OnePassSignature>} onepass
  * @param {!Array.<!e2e.openpgp.packet.Packet>} packets
@@ -112,9 +115,11 @@ e2e.openpgp.block.Message.prototype.consumeOnePassSignatures = function(
 /**
  * Signs the message with the key and adds the signature packet to the message.
  * @param {e2e.openpgp.packet.SecretKey} key
+ * @param {e2e.openpgp.packet.Signature.SignatureType=} opt_signatureType Type
+ *    of signature to generate (defaults to BINARY)
  */
-e2e.openpgp.block.Message.prototype.sign = function(key) {
-  this.signatures.unshift(this.constructSignature(key));
+e2e.openpgp.block.Message.prototype.sign = function(key, opt_signatureType) {
+  this.addSignature(this.constructSignature(key, opt_signatureType));
 };
 
 
@@ -122,9 +127,12 @@ e2e.openpgp.block.Message.prototype.sign = function(key) {
  * Signs the message with the key, and adds OnePassSignature packet to the
  * message.
  * @param {e2e.openpgp.packet.SecretKey} key
+ * @param {e2e.openpgp.packet.Signature.SignatureType=} opt_signatureType Type
+ *    of signature to generate (defaults to BINARY)
  */
-e2e.openpgp.block.Message.prototype.signWithOnePass = function(key) {
-  var realSignature = this.constructSignature(key);
+e2e.openpgp.block.Message.prototype.signWithOnePass = function(key,
+    opt_signatureType) {
+  var realSignature = this.constructSignature(key, opt_signatureType);
   var onePass = realSignature.constructOnePassSignaturePacket(
     this.signatures.length > 0);
   onePass.signature = realSignature;
@@ -133,15 +141,28 @@ e2e.openpgp.block.Message.prototype.signWithOnePass = function(key) {
 
 
 /**
+ * Adds a signature packet to the message.
+ * @param {e2e.openpgp.packet.Signature} signature
+ */
+e2e.openpgp.block.Message.prototype.addSignature = function(signature) {
+  this.signatures.unshift(signature);
+};
+
+
+/**
  * Construct a signature over the message and return it without modifying the
  * message.
  * @param  {e2e.openpgp.packet.SecretKey} key
+ * @param  {e2e.openpgp.packet.Signature.SignatureType=} opt_signatureType Type
+ *     of signature to generate (defaults to BINARY)
  * @return {e2e.openpgp.packet.Signature} signature
  */
-e2e.openpgp.block.Message.prototype.constructSignature = function(key) {
+e2e.openpgp.block.Message.prototype.constructSignature = function(key,
+    opt_signatureType) {
   return e2e.openpgp.packet.Signature.construct(
     key, this.getBytesToSign(),
-    e2e.openpgp.packet.Signature.SignatureType.BINARY,
+    goog.isDef(opt_signatureType) ? opt_signatureType :
+        e2e.openpgp.packet.Signature.SignatureType.BINARY,
     {
       'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
         [Math.floor(new Date().getTime() / 1e3)]),
@@ -162,7 +183,7 @@ e2e.openpgp.block.Message.prototype.getBytesToSign = function() {
 
 /**
  * Returns key IDs for all the signatures in this message.
- * @return {!Array.<!e2e.ByteArray>} Key IDs extracted from signatures.
+ * @return {!Array.<e2e.ByteArray>} Key IDs extracted from signatures.
  */
 e2e.openpgp.block.Message.prototype.getSignatureKeyIds = function() {
   var keyIds = goog.array.map(this.signatures, function(signature) {
@@ -190,6 +211,8 @@ e2e.openpgp.block.Message.prototype.verify = function(keys) {
   goog.array.forEach(this.signatures, function(signature) {
     var keyId = signature.getSignerKeyId();
     var verifyingKey = goog.array.find(keys, function(key) {
+      /** @type {!e2e.openpgp.block.TransferableKey} */
+      var transferableKey = key;
       return key.hasKeyById(keyId);
     });
     if (!verifyingKey) { // Key not found, ignore signature.

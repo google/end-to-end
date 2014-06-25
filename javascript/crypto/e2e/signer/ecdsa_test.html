@@ -13,13 +13,16 @@
 // limitations under the License.
 // -->
 <!DOCTYPE html>
-<title>Unit Test of e2e.signer.ECDSA</title>
+<title>Unit Test of e2e.signer.Ecdsa</title>
 <script src="../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
   goog.require('e2e.BigNum');
-  goog.require('e2e.signer.ECDSA');
+  goog.require('e2e.ecc.PrimeCurve');
+  goog.require('e2e.ecc.Protocol')
   goog.require('e2e.random');
+  goog.require('e2e.signer.Algorithm');
+  goog.require('e2e.signer.Ecdsa');
   goog.require('goog.testing.jsunit');
 </script>
 <script>
@@ -28,7 +31,9 @@
  */
 function testConsistency() {
   for (var i = 0; i < 5; i++) {
-    var ecdsa = e2e.signer.ECDSA.newECDSAWithP256();
+    var ecdsa = new e2e.signer.Ecdsa(
+        e2e.signer.Algorithm.ECDSA,
+        e2e.ecc.Protocol.generateKeyPair(e2e.ecc.PrimeCurve.P_256));
     var m = e2e.random.getRandomBytes(20);
     var sig = e2e.async.Result.getValue(ecdsa.sign(m));
 

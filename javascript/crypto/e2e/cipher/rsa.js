@@ -17,7 +17,7 @@
  * TODO(adhintz) Limit the visibility of this package.
  */
 
-goog.provide('e2e.cipher.RSA');
+goog.provide('e2e.cipher.Rsa');
 
 goog.require('e2e');
 goog.require('e2e.Algorithm');
@@ -52,16 +52,16 @@ goog.require('goog.asserts');
  * @implements {e2e.signer.Signer}
  * @extends {e2e.AlgorithmImpl}
  */
-e2e.cipher.RSA = function(algorithm, opt_key) {
+e2e.cipher.Rsa = function(algorithm, opt_key) {
   goog.base(this, e2e.cipher.Algorithm.RSA, opt_key);
   goog.asserts.assert(algorithm == e2e.cipher.Algorithm.RSA,
       'Algorithm should be RSA.');
 };
-goog.inherits(e2e.cipher.RSA, e2e.AlgorithmImpl);
+goog.inherits(e2e.cipher.Rsa, e2e.AlgorithmImpl);
 
 
 /** @type {e2e.BigNumModulus} */
-e2e.cipher.RSA.prototype.modulus;
+e2e.cipher.Rsa.prototype.modulus;
 
 
 /**
@@ -69,7 +69,7 @@ e2e.cipher.RSA.prototype.modulus;
  *     length.
  * @private {e2e.hash.Hash}
  */
-e2e.cipher.RSA.prototype.hash_;
+e2e.cipher.Rsa.prototype.hash_;
 
 
 /**
@@ -77,7 +77,7 @@ e2e.cipher.RSA.prototype.hash_;
  * @type {!e2e.BigNum}
  * @private
  */
-e2e.cipher.RSA.prototype.blinder_ = e2e.BigNum.ZERO;
+e2e.cipher.Rsa.prototype.blinder_ = e2e.BigNum.ZERO;
 
 
 /**
@@ -85,29 +85,29 @@ e2e.cipher.RSA.prototype.blinder_ = e2e.BigNum.ZERO;
  * @type {!e2e.BigNum}
  * @private
  */
-e2e.cipher.RSA.prototype.unblinder_ = e2e.BigNum.ZERO;
+e2e.cipher.Rsa.prototype.unblinder_ = e2e.BigNum.ZERO;
 
 
 /**
  * @type {boolean}
  */
-e2e.cipher.RSA.prototype.use_blinding = false;
+e2e.cipher.Rsa.prototype.use_blinding = false;
 
 
 /** @override */
-e2e.cipher.RSA.prototype.getHash = function() {
+e2e.cipher.Rsa.prototype.getHash = function() {
   return this.hash_;
 };
 
 
 /** @override */
-e2e.cipher.RSA.prototype.setHash = function(hash) {
+e2e.cipher.Rsa.prototype.setHash = function(hash) {
   this.hash_ = hash;
 };
 
 
 /** @inheritDoc */
-e2e.cipher.RSA.prototype.setKey = function(key) {
+e2e.cipher.Rsa.prototype.setKey = function(key) {
   goog.asserts.assertArray(key['n'], 'Modulus should be defined.');
   goog.asserts.assertArray(key['e'], 'Public exponent should be defined.');
   this.modulus = new e2e.BigNumModulus(key['n']);
@@ -144,7 +144,7 @@ e2e.cipher.RSA.prototype.setKey = function(key) {
 
 
 /** @inheritDoc */
-e2e.cipher.RSA.prototype.encrypt = function(plaintext) {
+e2e.cipher.Rsa.prototype.encrypt = function(plaintext) {
   goog.asserts.assertArray(this.key['e'],
       'Public exponent should be defined.');
   return /** @type {e2e.cipher.ciphertext.AsymmetricAsync} */ (
@@ -159,7 +159,7 @@ e2e.cipher.RSA.prototype.encrypt = function(plaintext) {
  * @return {!e2e.BigNum}
  * @private
  */
-e2e.cipher.RSA.prototype.getRandomBigNum_ = function(limit) {
+e2e.cipher.Rsa.prototype.getRandomBigNum_ = function(limit) {
   var byteSize = Math.ceil(limit.getBitLength() / 8);
   var candidate;
   do {
@@ -177,7 +177,7 @@ e2e.cipher.RSA.prototype.getRandomBigNum_ = function(limit) {
  * subsequent nonces are squared from previous ones for optimization.
  * @private
  */
-e2e.cipher.RSA.prototype.calculateBlindingNonces_ = function() {
+e2e.cipher.Rsa.prototype.calculateBlindingNonces_ = function() {
     if (this.blinder_.isEqual(e2e.BigNum.ZERO)) {
       var r = this.getRandomBigNum_(this.modulus);
       // r should be relatively prime to this.modulus (i.e. != p &  != q)
@@ -198,7 +198,7 @@ e2e.cipher.RSA.prototype.calculateBlindingNonces_ = function() {
 
 
 /** @inheritDoc */
-e2e.cipher.RSA.prototype.decrypt = function(ciphertext) {
+e2e.cipher.Rsa.prototype.decrypt = function(ciphertext) {
   goog.asserts.assertArray(this.key['d'],
       'Private exponent should be defined.');
   goog.asserts.assertArray(ciphertext['c'],
@@ -223,7 +223,7 @@ e2e.cipher.RSA.prototype.decrypt = function(ciphertext) {
 
 
 /** @override */
-e2e.cipher.RSA.prototype.sign = function(data) {
+e2e.cipher.Rsa.prototype.sign = function(data) {
   var signature = {};
   var paddedHash = e2e.pkcs.EMSA_PKCS1_v1_5(
       this.getHash(),
@@ -239,7 +239,7 @@ e2e.cipher.RSA.prototype.sign = function(data) {
 
 
 /** @override */
-e2e.cipher.RSA.prototype.verify = function(data, sig) {
+e2e.cipher.Rsa.prototype.verify = function(data, sig) {
   var encodedActualHash = e2e.pkcs.EMSA_PKCS1_v1_5(
     this.getHash(),
     data,
@@ -252,7 +252,7 @@ e2e.cipher.RSA.prototype.verify = function(data, sig) {
 };
 
 
-e2e.cipher.factory.add(e2e.cipher.RSA,
+e2e.cipher.factory.add(e2e.cipher.Rsa,
                                e2e.cipher.Algorithm.RSA);
-e2e.signer.factory.add(e2e.cipher.RSA,
+e2e.signer.factory.add(e2e.cipher.Rsa,
                                e2e.signer.Algorithm.RSA);

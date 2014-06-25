@@ -68,6 +68,10 @@ button.save:hover {
   border-color: #c6c6c6;
 }
 
+button.keyring-export:disabled {
+  color: graytext;
+}
+
 button.back {
   min-width: inherit;
   padding: 0;
@@ -112,7 +116,7 @@ button.back > img {
   padding: 10px;
   position: absolute;
   top: 60px;
-  width: 450px;
+  width: 550px;
   max-height: 75%;
   overflow-y: auto;
 }
@@ -121,7 +125,7 @@ button.back > img {
 #callbackDialog input[type="text"] {
   border: 1px solid #acacac;
   margin: 5px 0;
-  width: 440px;
+  width: 540px;
 }
 
 input {
@@ -147,4 +151,15 @@ input:focus {
 
 .invisible {
   visibility: hidden;
+}
+
+.keyTypeDescription {
+  min-width: 130px;
+  display: inline-block;
+}
+
+.keyFingerprint {
+  white-space: pre;
+  font-family: monospace;
+
 }

@@ -20,13 +20,13 @@
   goog.require('goog.array');
   goog.require('goog.crypt');
   goog.require('goog.testing.jsunit');
-  goog.require('e2e.cipher.AES');
+  goog.require('e2e.cipher.Aes');
   goog.require('e2e.cipher.Algorithm');
-  goog.require('e2e.cipher.RSA');
+  goog.require('e2e.cipher.Rsa');
   goog.require('e2e.cipher.factory');
   goog.require('e2e.compression.all');
   goog.require('e2e.openpgp.EncryptedCipher');
-  goog.require('e2e.openpgp.S2K');
+  goog.require('e2e.openpgp.S2k');
   goog.require('e2e.openpgp.block.all');
   goog.require('e2e.openpgp.block.factory');
   goog.require('e2e.hash.Sha1');
@@ -60,7 +60,7 @@ function testPublicKeyExtraPackets() {
 }
 
 function testParseSecretKey() {
-  var fakeCipher = new e2e.cipher.AES(
+  var fakeCipher = new e2e.cipher.Aes(
     e2e.cipher.Algorithm.AES128,
     {key: goog.array.repeat(0x16, 16)});
   var encryptedFakeCipher = new e2e.openpgp.EncryptedCipher(
@@ -116,7 +116,7 @@ function testParseCompressedMessage() {
 
   var block = e2e.openpgp.block.factory.parseBlock(packets);
   assertTrue(block instanceof e2e.openpgp.block.Compressed);
-  assertArrayEquals(block.getBlock().getData().data, msg);
+  assertArrayEquals(block.getBlock().getLiteralMessage().getData(), msg);
 }
 
 

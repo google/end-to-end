@@ -22,9 +22,9 @@ goog.provide('e2e.openpgp.KeyRing');
 
 goog.require('e2e');
 goog.require('e2e.async.Result');
-goog.require('e2e.cipher.AES');
+goog.require('e2e.cipher.Aes');
 goog.require('e2e.cipher.Algorithm');
-goog.require('e2e.ciphermode.CFB');
+goog.require('e2e.ciphermode.Cfb');
 goog.require('e2e.error.UnsupportedError');
 goog.require('e2e.hash.Sha1');
 goog.require('e2e.openpgp');
@@ -35,6 +35,7 @@ goog.require('e2e.openpgp.block.TransferablePublicKey');
 goog.require('e2e.openpgp.block.TransferableSecretKey');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.SerializationError');
+goog.require('e2e.openpgp.keygenerator');
 goog.require('e2e.openpgp.packet.PublicKey');
 goog.require('e2e.openpgp.packet.PublicSubkey');
 goog.require('e2e.openpgp.packet.SecretKey');
@@ -43,7 +44,6 @@ goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.openpgp.packet.UserId');
 goog.require('e2e.random');
 goog.require('e2e.signer.Algorithm');
-goog.require('e2e.signer.ECDSA');
 goog.require('goog.array');
 goog.require('goog.crypt.Hmac');
 goog.require('goog.crypt.Sha256');
@@ -255,22 +255,22 @@ e2e.openpgp.KeyRing.prototype.generateECKey = function(email) {
  *     public key and secret key in an array.
  */
 e2e.openpgp.KeyRing.prototype.generateKey = function(email,
-                                                         keyAlgo,
-                                                         keyLength,
-                                                         subkeyAlgo,
-                                                         subkeyLength) {
+                                                     keyAlgo,
+                                                     keyLength,
+                                                     subkeyAlgo,
+                                                     subkeyLength) {
   var keyData = {
     'pubKey': new Array(),
     'privKey': new Array()
   };
   if (keyAlgo == e2e.signer.Algorithm.ECDSA &&
       keyLength == 256) {
-    var ecdsa = e2e.signer.ECDSA.newECDSAWithP256();
+    var ecdsa = e2e.openpgp.keygenerator.newEcdsaWithP256();
     e2e.openpgp.KeyRing.extractKeyData_(keyData, ecdsa);
   }
   if (subkeyAlgo == e2e.cipher.Algorithm.ECDH &&
       subkeyLength == 256) {
-    var ecdh = e2e.cipher.ECDH.newECDHWithP256();
+    var ecdh = e2e.openpgp.keygenerator.newEcdhWithP256();
     e2e.openpgp.KeyRing.extractKeyData_(keyData, ecdh, true);
   }
 
@@ -311,13 +311,35 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(email,
 
 
 /**
+ * Obtains the key with a given keyId.
+ * @param {e2e.ByteArray} keyId The key id to search for.
+ * @return {e2e.openpgp.packet.PublicKey} The key packet with that key id.
+ */
+e2e.openpgp.KeyRing.prototype.getPublicKey = function(keyId) {
+  return /** @type {e2e.openpgp.packet.PublicKey} */ (this.getKey_(keyId));
+};
+
+
+/**
+ * Obtains a secret key with a given keyId.
+ * @param {e2e.ByteArray} keyId The key id to search for.
+ * @return {e2e.openpgp.packet.SecretKey} The secret key with that key id.
+ */
+e2e.openpgp.KeyRing.prototype.getSecretKey = function(keyId) {
+  return /** @type {e2e.openpgp.packet.SecretKey} */ (this.getKey_(
+      keyId, true));
+};
+
+
+/**
  * Obtains the key with a given keyId. If opt_secret is set, it only returns
  * secret keys.
  * @param {e2e.ByteArray} keyId The key id to search for.
  * @param {boolean=} opt_secret Whether to search the private key ring.
  * @return {e2e.openpgp.packet.Key} The key packet with that key id.
+ * @private
  */
-e2e.openpgp.KeyRing.prototype.getKey = function(keyId, opt_secret) {
+e2e.openpgp.KeyRing.prototype.getKey_ = function(keyId, opt_secret) {
   var keyRing = opt_secret ? this.privKeyRing_ : this.pubKeyRing_;
   var results = [];
   goog.array.forEach(
@@ -390,7 +412,7 @@ e2e.openpgp.KeyRing.prototype.lockSecretKey_ = function(key) {
 
 /**
  * Obtains a key block having a key with the given key ID or null.
- * @param {!e2e.ByteArray} keyId
+ * @param {e2e.ByteArray} keyId
  * @param {boolean=} opt_secret Whether to search the private key ring.
  * @return {e2e.openpgp.block.TransferableKey}
  */
@@ -657,7 +679,7 @@ e2e.openpgp.KeyRing.prototype.encrypt_ = function(plaintext) {
   var salt = this.getOrCreateSalt_();
   var s2k = new e2e.openpgp.IteratedS2K(
       new e2e.hash.Sha1, salt, 96);  // 96 is 65536 iterations.
-  var aes = new e2e.cipher.AES(e2e.cipher.Algorithm.AES128);
+  var aes = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128);
   var doubleKey = s2k.getKey(
       e2e.stringToByteArray(this.passphrase_),
       (aes.keySize + e2e.openpgp.KeyRing.HMAC_KEY_SIZE_));
@@ -665,7 +687,7 @@ e2e.openpgp.KeyRing.prototype.encrypt_ = function(plaintext) {
   key.key = doubleKey.splice(0, aes.keySize);
   var hmacKey = doubleKey;  // Remaining bytes in doubleKey are the hmacKey.
   aes.setKey(key);
-  var aescfb = new e2e.ciphermode.CFB(aes);
+  var aescfb = new e2e.ciphermode.Cfb(aes);
   var iv = e2e.random.getRandomBytes(aes.blockSize);
   var ciphertext = e2e.async.Result.getValue(aescfb.encrypt(
       e2e.stringToByteArray(plaintext), iv));
@@ -779,7 +801,7 @@ e2e.openpgp.KeyRing.prototype.decrypt_ = function(ciphertext) {
   var salt = this.getOrCreateSalt_();
   var s2k = new e2e.openpgp.IteratedS2K(
       new e2e.hash.Sha1, salt, 96);
-  var aes = new e2e.cipher.AES(e2e.cipher.Algorithm.AES128);
+  var aes = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128);
   var doubleKey = s2k.getKey(
       e2e.stringToByteArray(this.passphrase_),
       (aes.keySize + e2e.openpgp.KeyRing.HMAC_KEY_SIZE_));
@@ -787,7 +809,7 @@ e2e.openpgp.KeyRing.prototype.decrypt_ = function(ciphertext) {
   key.key = doubleKey.splice(0, aes.keySize);
   var hmacKey = doubleKey;
   aes.setKey(key);
-  var aescfb = new e2e.ciphermode.CFB(aes);
+  var aescfb = new e2e.ciphermode.Cfb(aes);
   var hmac = new goog.crypt.Hmac(
       new goog.crypt.Sha256(),
       hmacKey,
@@ -898,7 +920,7 @@ e2e.openpgp.KeyRing.extractKeyData_ = function(
   var serializedPubKey = pubKey.serializePacketBody();
 
   // privKey is MPI, needs to serialize to get the right byte array.
-  var privKey = new e2e.openpgp.MPI(
+  var privKey = new e2e.openpgp.Mpi(
       cryptor.getKey()['privKey']).serialize();
   var serializedPrivKey = goog.array.flatten(
       serializedPubKey,

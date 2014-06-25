@@ -18,7 +18,7 @@
  * @author evn@google.com (Eduardo Vela)
  */
 
-goog.provide('e2e.openpgp.MPI');
+goog.provide('e2e.openpgp.Mpi');
 
 goog.require('e2e');
 goog.require('e2e.openpgp.error.ParseError');
@@ -32,19 +32,19 @@ goog.require('goog.array');
  * @extends {Array}
  * @constructor
  */
-e2e.openpgp.MPI = function(number) {
+e2e.openpgp.Mpi = function(number) {
   goog.base(this);
   goog.array.extend(this, number);
 
 };
-goog.inherits(e2e.openpgp.MPI, Array);
+goog.inherits(e2e.openpgp.Mpi, Array);
 
 
 /**
  * Serialize the MPI into a ByteArray.
  * @return {e2e.ByteArray} The serialized MPI.
  */
-e2e.openpgp.MPI.prototype.serialize = function() {
+e2e.openpgp.Mpi.prototype.serialize = function() {
   var number = goog.array.clone(this);
   while (!number[0])number.shift();
   // This is the length in bits.
@@ -58,9 +58,9 @@ e2e.openpgp.MPI.prototype.serialize = function() {
 /**
  * Extracts an MPI from the body, and returns the MPI.
  * @param {e2e.ByteArray} body The body from where to extract the data.
- * @return {!e2e.openpgp.MPI} The generated packet.
+ * @return {!e2e.openpgp.Mpi} The generated packet.
  */
-e2e.openpgp.MPI.parse = function(body) {
+e2e.openpgp.Mpi.parse = function(body) {
   if (body.length > 1) {
   } else {
     throw new e2e.openpgp.error.ParseError('MPI is too small');
@@ -74,5 +74,5 @@ e2e.openpgp.MPI.parse = function(body) {
   if (number.length != consume || !e2e.isByteArray(number)) {
     throw new e2e.openpgp.error.ParseError('Invalid MPI.');
   }
-  return new e2e.openpgp.MPI(number);
+  return new e2e.openpgp.Mpi(number);
 };

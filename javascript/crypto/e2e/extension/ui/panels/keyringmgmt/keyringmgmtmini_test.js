@@ -15,10 +15,12 @@
  * @fileoverview Tests for the minimized keyring management UI.
  */
 
+goog.require('e2e.async.Result');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
 goog.require('goog.dom');
 goog.require('goog.dom.classes');
+goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.Mock');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
@@ -29,6 +31,8 @@ goog.require('goog.testing.mockmatchers');
 var constants = e2e.ext.constants;
 var panel = null;
 var stubs = new goog.testing.PropertyReplacer();
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall();
+var keys = {};
 
 
 function setUp() {
@@ -36,6 +40,20 @@ function setUp() {
 
   stubs.setPath('chrome.i18n.getMessage', function(msg) {
     return msg;
+  });
+
+  stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
+    callback({
+      launcher: {
+        getContext: function() {
+          return {
+            getAllKeys: function() {
+              return e2e.async.Result.toResult(keys);
+            }
+          };
+        }
+      }
+    });
   });
 }
 
@@ -66,6 +84,39 @@ function testRenderWithoutExport() {
   assertTrue(goog.dom.classes.has(
       panel.getElementByClass(constants.CssClass.KEYRING_EXPORT),
       constants.CssClass.HIDDEN));
+}
+
+
+function testEmptyExport() {
+  panel = new e2e.ext.ui.panels.KeyringMgmtMini(
+      goog.abstractMethod, goog.abstractMethod, goog.abstractMethod);
+  panel.render(document.body);
+
+  asyncTestCase.waitForAsync('Waiting for button to be disabled');
+  window.setTimeout(function() {
+    assertTrue('Export button should be disabled when there are no keys',
+        panel.getElementByClass(constants.CssClass.KEYRING_EXPORT)
+        .hasAttribute('disabled'));
+
+    asyncTestCase.continueTesting();
+  }, 500);
+}
+
+
+function testNonEmptyExport() {
+  keys = {'test@example.com': []};
+  panel = new e2e.ext.ui.panels.KeyringMgmtMini(
+      goog.abstractMethod, goog.abstractMethod, goog.abstractMethod);
+  panel.render(document.body);
+
+  asyncTestCase.waitForAsync('Waiting for button to stay enabled');
+  window.setTimeout(function() {
+    assertFalse('Export button should not be disabled when there are keys',
+        panel.getElementByClass(constants.CssClass.KEYRING_EXPORT)
+        .hasAttribute('disabled'));
+
+    asyncTestCase.continueTesting();
+  }, 500);
 }
 
 
@@ -169,4 +220,20 @@ function testShowKeyringMgmtForm() {
   assertTrue(goog.dom.classes.has(optionsDiv, constants.CssClass.HIDDEN));
   panel.showKeyringMgmtForm_(constants.ElementId.KEYRING_OPTIONS_DIV);
   assertTrue(goog.dom.classes.has(importDiv, constants.CssClass.HIDDEN));
+}
+
+
+function testKeyringAutoImport() {
+  var run = false;
+
+  panel = new e2e.ext.ui.panels.KeyringMgmtMini(goog.abstractMethod,
+      goog.abstractMethod, goog.abstractMethod);
+  stubs.setPath('panel.__proto__.importKeyring_', function() { run = true; });
+  panel.render(document.body);
+
+  var importDiv = goog.dom.getElement(constants.ElementId.KEYRING_IMPORT_DIV);
+  var input = goog.dom.getElementByClass(constants.CssClass.ACTION, importDiv);
+  input.dispatchEvent(new Event(goog.events.EventType.CHANGE));
+
+  assertTrue(run);
 }

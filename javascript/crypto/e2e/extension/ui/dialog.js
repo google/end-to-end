@@ -19,7 +19,7 @@
 goog.provide('e2e.ext.ui.Dialog');
 
 goog.require('e2e.ext.constants');
-goog.require('e2e.ext.templates');
+goog.require('e2e.ext.ui.templates');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classes');
@@ -33,13 +33,14 @@ goog.require('soy');
 goog.scope(function() {
 var ui = e2e.ext.ui;
 var constants = e2e.ext.constants;
-var templates = e2e.ext.templates;
+var templates = e2e.ext.ui.templates;
 
 
 
 /**
  * Constructor for the dialog.
- * @param {string} message The message to display to the user.
+ * @param {string|soydata.SanitizedHtml} message The message to display to
+ *     the user.
  * @param {!function(string=)} callback The callback where the user's
  *     input must be passed.
  * @param {ui.Dialog.InputType} inputType The type of input the dialog should
@@ -60,7 +61,7 @@ ui.Dialog = function(message, callback, inputType, opt_placeholder,
 
   /**
    * The message to display to the user.
-   * @type {string}
+   * @type {string|soydata.SanitizedHtml}
    * @private
    */
   this.message_ = message;

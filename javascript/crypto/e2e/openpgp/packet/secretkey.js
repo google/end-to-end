@@ -21,7 +21,7 @@ goog.provide('e2e.openpgp.packet.SecretKey');
 
 goog.require('e2e.cipher.factory');
 goog.require('e2e.openpgp.EncryptedCipher');
-goog.require('e2e.openpgp.S2K');
+goog.require('e2e.openpgp.S2k');
 goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.SerializationError');
@@ -132,7 +132,7 @@ e2e.openpgp.packet.SecretKey.parse = function(body) {
       kd = /** @type {e2e.openpgp.EncryptedCipher.KeyDerivationType} */ (
           kd);
       algId = body.shift();
-      s2k = e2e.openpgp.S2K.parse(body);
+      s2k = e2e.openpgp.S2k.parse(body);
       break;
     case e2e.openpgp.EncryptedCipher.KeyDerivationType.PLAINTEXT:
       kd = /** @type {e2e.openpgp.EncryptedCipher.KeyDerivationType} */ (

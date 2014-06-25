@@ -56,7 +56,8 @@ messages.BridgeMessageResponse;
  * The message type passed to the helper when a request for the current
  * selection is made.
  * @typedef {{
- *   editableElem: boolean
+ *   editableElem: boolean,
+ *   enableLookingGlass: boolean
  * }}
  */
 messages.GetSelectionRequest;

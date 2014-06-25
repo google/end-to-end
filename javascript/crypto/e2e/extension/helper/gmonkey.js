@@ -20,7 +20,6 @@ goog.provide('e2e.ext.gmonkey');
 goog.require('goog.array');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
-goog.require('goog.string.format');
 
 goog.scope(function() {
 var gmonkey = e2e.ext.gmonkey;
@@ -102,6 +101,7 @@ gmonkey.getCurrentMessage = function(callback) {
  * @param {!function(!Array.<string>,string)} callback The callback where the
  *     active draft information should be passed.
  * @expose
+ * @suppress {missingProperties}
  */
 gmonkey.getActiveDraft = function(callback) {
   gmonkey.callGmonkey_('getActiveDraft', function(result) {
@@ -113,7 +113,14 @@ gmonkey.getActiveDraft = function(callback) {
           goog.array.map(result['to'].split(', '), gmonkey.getEmailAddress_));
       goog.array.extend(recipients,
           goog.array.map(result['cc'].split(', '), gmonkey.getEmailAddress_));
-      body = result['body'].replace(/(<br>)|(<wbr>)/g, '\n');
+      // Document.implementation.createHTMLDocument creates a new document
+      // in which the scripts are not executing and network requests are not
+      // made (in Chrome), so we don't create a XSS risk here.
+      var newDoc = document.implementation.createHTMLDocument();
+      newDoc.body.innerHTML = result['body'];
+      // However, always return innerText from the new document, because the
+      // XSS payloads can still be there.
+      body = newDoc.body.innerText;
     }
 
     callback(recipients, body);

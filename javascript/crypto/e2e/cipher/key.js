@@ -16,10 +16,10 @@
  */
 
 goog.provide('e2e.cipher.key.AsymmetricKey');
-goog.provide('e2e.cipher.key.ECDH');
+goog.provide('e2e.cipher.key.Ecdh');
 goog.provide('e2e.cipher.key.ElGamal');
 goog.provide('e2e.cipher.key.Key');
-goog.provide('e2e.cipher.key.RSA');
+goog.provide('e2e.cipher.key.Rsa');
 goog.provide('e2e.cipher.key.SymmetricKey');
 goog.require('e2e.ecc.PrimeCurveOid');
 
@@ -30,16 +30,16 @@ goog.require('e2e.ecc.PrimeCurveOid');
  *     n: e2e.ByteArray, p: e2e.ByteArray,
  *     q: e2e.ByteArray}}
  */
-e2e.cipher.key.RSA;
+e2e.cipher.key.Rsa;
 
 
 /**
- * @typedef {{curve: e2e.ecc.PrimeCurveOid,
+ * @typedef {{curve: ?e2e.ecc.PrimeCurveOid,
  *     kdfInfo: e2e.ByteArray,
  *     pubKey: e2e.ByteArray, fingerprint: e2e.ByteArray,
  *     privKey: e2e.ByteArray}}
  */
-e2e.cipher.key.ECDH;
+e2e.cipher.key.Ecdh;
 
 
 /**
@@ -50,8 +50,8 @@ e2e.cipher.key.ElGamal;
 
 
 /**
- * @typedef {e2e.cipher.key.ElGamal|e2e.cipher.key.ECDH|
- *     e2e.cipher.key.RSA|e2e.signer.key.Key}
+ * @typedef {e2e.cipher.key.ElGamal|e2e.cipher.key.Ecdh|
+ *     e2e.cipher.key.Rsa|e2e.signer.key.Key}
  */
 e2e.cipher.key.AsymmetricKey;
 

@@ -13,7 +13,7 @@
 // limitations under the License.
 /**
  *
- * @fileoverview Description of this file.
+ * @fileoverview TransferablePublicKey block.
  *
  */
 
@@ -32,6 +32,11 @@ e2e.openpgp.block.TransferablePublicKey = function() {
 };
 goog.inherits(e2e.openpgp.block.TransferablePublicKey,
     e2e.openpgp.block.TransferableKey);
+
+
+/** @override */
+e2e.openpgp.block.TransferablePublicKey.prototype.SERIALIZE_IN_KEY_OBJECT =
+    true;
 
 
 /** @override */

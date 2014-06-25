@@ -19,6 +19,7 @@
 
 goog.provide('e2e.openpgp.block.factory');
 
+goog.require('e2e.openpgp.Keys');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.Compressed');
 goog.require('e2e.openpgp.block.EncryptedMessage');
@@ -34,9 +35,10 @@ goog.require('e2e.openpgp.packet.Marker');
 goog.require('e2e.openpgp.packet.OnePassSignature');
 goog.require('e2e.openpgp.packet.PublicKey');
 goog.require('e2e.openpgp.packet.SecretKey');
+goog.require('e2e.openpgp.packet.SecretSubkey');
 goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.openpgp.parse');
-
+goog.require('goog.crypt');
 
 /**
  * Parses a single block out of an array of packets. Consumes packets parsed.
@@ -104,21 +106,22 @@ e2e.openpgp.block.factory.parseBlock = function(packets) {
  * @return {e2e.openpgp.block.Block} The block extracted.
  */
 e2e.openpgp.block.factory.parseAscii = function(ascii) {
-  var data = e2e.openpgp.asciiArmor.parse(ascii).data;
-  return e2e.openpgp.block.factory.parseByteArray(data);
+  var data = e2e.openpgp.asciiArmor.parse(ascii);
+  return e2e.openpgp.block.factory.parseByteArray(
+      data.data, data.charset);
 };
 
 /**
  * Parses a single block out of a ByteArray.
  * @param {e2e.ByteArray} data ByteArray to parse into a block.
+ * @param {string=} opt_charset The charset used to encode strings.
  * @return {e2e.openpgp.block.Block} The block extracted.
  */
-e2e.openpgp.block.factory.parseByteArray = function(data) {
-  var packets = [];
-  while (data.length) {
-    packets.push(e2e.openpgp.parse.parseSerializedPacket(data));
-  }
-  return e2e.openpgp.block.factory.parseBlock(packets);
+e2e.openpgp.block.factory.parseByteArray = function(data, opt_charset) {
+  var packets = e2e.openpgp.block.factory.byteArrayToPackets(data);
+  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  block.setCharset(opt_charset);
+  return block;
 };
 
 /**
@@ -127,25 +130,60 @@ e2e.openpgp.block.factory.parseByteArray = function(data) {
  * @return {Array.<e2e.openpgp.block.Block>} The blocks extracted.
  */
 e2e.openpgp.block.factory.parseAsciiMulti = function(ascii) {
-  var data = e2e.openpgp.asciiArmor.parse(ascii).data;
-  return e2e.openpgp.block.factory.parseByteArrayMulti(data);
+  var data = e2e.openpgp.asciiArmor.parse(ascii);
+  return e2e.openpgp.block.factory.parseByteArrayMulti(
+      data.data, data.charset);
 };
 
 /**
  * Parses a multiple blocks out of a ByteArray.
  * @param {e2e.ByteArray} data ByteArray to parse into a block.
+ * @param {string=} opt_charset The charset used to encode strings.
  * @return {Array.<e2e.openpgp.block.Block>} The blocks extracted.
  */
-e2e.openpgp.block.factory.parseByteArrayMulti = function(data) {
-  var packets = [];
-  while (data.length) {
-    packets.push(e2e.openpgp.parse.parseSerializedPacket(data));
-  }
+e2e.openpgp.block.factory.parseByteArrayMulti = function(data, opt_charset) {
+  var packets = e2e.openpgp.block.factory.byteArrayToPackets(data);
   var blocks = [];
   while (packets.length) {
-    goog.array.extend(blocks,
-        e2e.openpgp.block.factory.parseBlock(packets));
+    var block = e2e.openpgp.block.factory.parseBlock(packets);
+    block.setCharset(opt_charset);
+    blocks.push(block);
   }
   return blocks;
 };
 
+
+/**
+ * Parses packets out of a ByteArray.
+ * @param {e2e.ByteArray} data ByteArray to parse into packets.
+ * @return {!Array.<e2e.openpgp.packet.Packet>} The packets extracted.
+ */
+e2e.openpgp.block.factory.byteArrayToPackets = function(data) {
+  var packets = [];
+  while (data.length) {
+    var packet = e2e.openpgp.parse.parseSerializedPacket(data);
+    if (packet) {
+      packets.push(packet);
+    }
+  }
+  return packets;
+};
+
+
+/**
+ * Extract key blocks from passed blocks array and returns Keys object. Keys
+ *     serialization will not be included in the results, as this function
+ *     should be called to display the results in the UI, where serialization
+ *     is not needed.
+ * @param  {Array.<e2e.openpgp.block.Block>} blocks Blocks to extract keys from.
+ * @return {e2e.openpgp.Keys} Extracted Keys.
+ */
+e2e.openpgp.block.factory.extractKeys = function(blocks) {
+  var keys = [];
+  for (var b = 0; b < blocks.length; b++) {
+    if (blocks[b] instanceof e2e.openpgp.block.TransferableKey) {
+      keys.push(blocks[b].toKeyObject(true));
+    }
+  }
+  return /** @type {e2e.openpgp.Keys} */ (keys);
+};

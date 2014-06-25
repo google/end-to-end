@@ -16,7 +16,7 @@
  */
 
 
-goog.provide('e2e.openpgp.ClearSignMessage');
+goog.provide('e2e.openpgp.ArmoredMessage');
 goog.provide('e2e.openpgp.DecryptResult');
 goog.provide('e2e.openpgp.EncryptOptions');
 goog.provide('e2e.openpgp.EncryptSignResult');
@@ -24,9 +24,9 @@ goog.provide('e2e.openpgp.FileOptions');
 goog.provide('e2e.openpgp.GenerateKeyResult');
 goog.provide('e2e.openpgp.ImportKeyResult');
 goog.provide('e2e.openpgp.Key');
-goog.provide('e2e.openpgp.KeyInfo');
+goog.provide('e2e.openpgp.KeyPacketInfo');
 goog.provide('e2e.openpgp.KeyResult');
-goog.provide('e2e.openpgp.VerifyClearSignResult');
+goog.provide('e2e.openpgp.Keys');
 goog.provide('e2e.openpgp.VerifyDecryptResult');
 goog.provide('e2e.openpgp.VerifyResult');
 
@@ -71,15 +71,6 @@ e2e.openpgp.ImportKeyResult;
 
 
 /**
- * Result of a clearsign verification operation. Verification can fail if
- *   cleartext signature has no signer key ID information, keyring has no such
- *   key or the message was tampered with.
- * @typedef {!e2e.async.Result.<boolean>}
- */
-e2e.openpgp.VerifyClearSignResult;
-
-
-/**
  * Result of a verification operation. Includes keys that successfully verified
  * a signature, keys for which signature verification failed (indicating
  * message tampering). Signatures for which keys could not be found are not
@@ -111,24 +102,32 @@ e2e.openpgp.EncryptSignResult;
 
 /**
  * The result of a key search operation.
- * @typedef {!e2e.async.Result.<!Array.<e2e.openpgp.Key>>}
+ * @typedef {!e2e.async.Result.<!e2e.openpgp.Keys>}
  */
 e2e.openpgp.KeyResult;
 
 /**
- * Key information.
+ * Single key packet information.
  * @typedef {{fingerprint: e2e.ByteArray, secret: boolean,
- *     algorithm: string}}
+ *     algorithm: string, fingerprintHex: string}}
  */
-e2e.openpgp.KeyInfo;
+e2e.openpgp.KeyPacketInfo;
 
 
 /**
  * Key object.
- * @typedef {{subKeys: !Array.<e2e.openpgp.KeyInfo>, uids: !Array.<string>,
- *     key: e2e.openpgp.KeyInfo, serialized: e2e.ByteArray}}
+ * @typedef {{subKeys: !Array.<e2e.openpgp.KeyPacketInfo>, uids:
+ *     !Array.<string>, key: e2e.openpgp.KeyPacketInfo, serialized:
+ *     e2e.ByteArray}}
  */
 e2e.openpgp.Key;
+
+
+/**
+ * Array of Keys.
+ * @typedef {!Array.<!e2e.openpgp.Key>}
+ */
+e2e.openpgp.Keys;
 
 
 /**
@@ -136,10 +135,3 @@ e2e.openpgp.Key;
  * @typedef {{data: e2e.ByteArray, charset: (string|undefined)}}
  */
 e2e.openpgp.ArmoredMessage;
-
-
-/**
- * Clear sign message.
- * @typedef {{body: string, signature: e2e.ByteArray, hash: string}}
- */
-e2e.openpgp.ClearSignMessage;

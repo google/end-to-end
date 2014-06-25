@@ -17,7 +17,7 @@
  * @author aa@google.com (Aaron Boodman)
  */
 
-goog.provide('e2e.cipher.AES');
+goog.provide('e2e.cipher.Aes');
 
 goog.require('e2e');
 goog.require('e2e.Algorithm');
@@ -41,7 +41,7 @@ goog.require('goog.asserts');
  * @extends {e2e.AlgorithmImpl}
  * @constructor
  */
-e2e.cipher.AES = function(algorithm, opt_keyObj) {
+e2e.cipher.Aes = function(algorithm, opt_keyObj) {
   switch (algorithm) {
     case e2e.cipher.Algorithm.AES128:
       this.keySize = 16;
@@ -57,11 +57,11 @@ e2e.cipher.AES = function(algorithm, opt_keyObj) {
   }
   goog.base(this, algorithm, opt_keyObj);
 };
-goog.inherits(e2e.cipher.AES, e2e.AlgorithmImpl);
+goog.inherits(e2e.cipher.Aes, e2e.AlgorithmImpl);
 
 
 /** @inheritDoc */
-e2e.cipher.AES.prototype.setKey = function(keyObj) {
+e2e.cipher.Aes.prototype.setKey = function(keyObj) {
   if (!e2e.isByteArray(keyObj.key)) {
     throw new e2e.cipher.Error('Invalid values for key.');
   }
@@ -115,24 +115,24 @@ e2e.cipher.AES.prototype.setKey = function(keyObj) {
 
 
 /** @inheritDoc */
-e2e.cipher.AES.prototype.blockSize = 16; // 128 bits.
+e2e.cipher.Aes.prototype.blockSize = 16; // 128 bits.
 
 
 /** @inheritDoc */
-e2e.cipher.AES.prototype.encrypt = function(data) {
+e2e.cipher.Aes.prototype.encrypt = function(data) {
   var output = [];
 
   this.copyInput_(data, 0);
   this.addRoundKey_(0);
 
   for (var round = 1; round < this.Nr_; ++round) {
-    this.subBytes_(e2e.cipher.AES.SBOX);
+    this.subBytes_(e2e.cipher.Aes.SBOX);
     this.shiftRows_();
     this.mixColumns_();
     this.addRoundKey_(round);
   }
 
-  this.subBytes_(e2e.cipher.AES.SBOX);
+  this.subBytes_(e2e.cipher.Aes.SBOX);
   this.shiftRows_();
   this.addRoundKey_(this.Nr_);
   this.copyOutput_(output, 0);
@@ -142,7 +142,7 @@ e2e.cipher.AES.prototype.encrypt = function(data) {
 
 
 /** @inheritDoc */
-e2e.cipher.AES.prototype.decrypt = function(data) {
+e2e.cipher.Aes.prototype.decrypt = function(data) {
   var output = [];
 
   this.copyInput_(data, 0);
@@ -150,13 +150,13 @@ e2e.cipher.AES.prototype.decrypt = function(data) {
 
   for (var round = 1; round < this.Nr_; ++round) {
     this.invShiftRows_();
-    this.subBytes_(e2e.cipher.AES.INV_SBOX);
+    this.subBytes_(e2e.cipher.Aes.INV_SBOX);
     this.addRoundKey_(this.Nr_ - round);
     this.invMixColumns_();
   }
 
   this.invShiftRows_();
-  this.subBytes_(e2e.cipher.AES.INV_SBOX);
+  this.subBytes_(e2e.cipher.Aes.INV_SBOX);
   this.addRoundKey_(0);
   this.copyOutput_(output, 0);
   return e2e.async.Result.toResult(output);
@@ -169,7 +169,7 @@ e2e.cipher.AES.prototype.decrypt = function(data) {
  * @param {number} startAt Offset relative to the input.
  * @private
  */
-e2e.cipher.AES.prototype.copyInput_ = function(input, startAt) {
+e2e.cipher.Aes.prototype.copyInput_ = function(input, startAt) {
   var v, p;
 
   for (var r = 0; r < this.Nb_; r++) {
@@ -189,7 +189,7 @@ e2e.cipher.AES.prototype.copyInput_ = function(input, startAt) {
  * @param {number} startAt The offset where to start writing to output.
  * @private
  */
-e2e.cipher.AES.prototype.copyOutput_ = function(output, startAt) {
+e2e.cipher.Aes.prototype.copyOutput_ = function(output, startAt) {
   for (var r = 0; r < this.Nb_; r++) {
     for (var c = 0; c < 4; c++) {
       output[c * 4 + r + startAt] = this.state_[r][c];
@@ -204,7 +204,7 @@ e2e.cipher.AES.prototype.copyOutput_ = function(output, startAt) {
  * @param {number} round The round number.
  * @private
  */
-e2e.cipher.AES.prototype.addRoundKey_ = function(round) {
+e2e.cipher.Aes.prototype.addRoundKey_ = function(round) {
   for (var r = 0; r < 4; r++) {
     for (var c = 0; c < 4; c++) {
       this.state_[r][c] ^= this.w_[round * 4 + c][r];
@@ -219,7 +219,7 @@ e2e.cipher.AES.prototype.addRoundKey_ = function(round) {
  * @param {Array.<number>} box The SBOX to use for the substitution.
  * @private
  */
-e2e.cipher.AES.prototype.subBytes_ = function(box) {
+e2e.cipher.Aes.prototype.subBytes_ = function(box) {
   for (var r = 0; r < 4; r++) {
     for (var c = 0; c < 4; c++) {
       this.state_[r][c] = box[this.state_[r][c]];
@@ -234,7 +234,7 @@ e2e.cipher.AES.prototype.subBytes_ = function(box) {
  * As specified in FIPS 197 Section 5.1.2.
  * @private
  */
-e2e.cipher.AES.prototype.shiftRows_ = function() {
+e2e.cipher.Aes.prototype.shiftRows_ = function() {
   for (var r = 1; r < 4; r++) {
     for (var c = 0; c < 4; c++) {
       this.temp_[r][c] = this.state_[r][c];
@@ -254,7 +254,7 @@ e2e.cipher.AES.prototype.shiftRows_ = function() {
  * As specified in FIPS 197 Section 5.3.1.
  * @private
  */
-e2e.cipher.AES.prototype.invShiftRows_ = function() {
+e2e.cipher.Aes.prototype.invShiftRows_ = function() {
   for (var r = 1; r < 4; r++) {
     for (var c = 0; c < 4; c++) {
       this.temp_[r][(c + r) % this.Nb_] = this.state_[r][c];
@@ -278,7 +278,7 @@ e2e.cipher.AES.prototype.invShiftRows_ = function() {
  * As defined in FIPS 197 Section 5.1.3.
  * @private
  */
-e2e.cipher.AES.prototype.mixColumns_ = function() {
+e2e.cipher.Aes.prototype.mixColumns_ = function() {
   var s = this.state_;
   var t = this.temp_[0];
 
@@ -289,22 +289,22 @@ e2e.cipher.AES.prototype.mixColumns_ = function() {
     t[3] = s[3][c];
 
     s[0][c] = (
-        e2e.cipher.AES.MULT_2[t[0]] ^
-        e2e.cipher.AES.MULT_3[t[1]] ^
+        e2e.cipher.Aes.MULT_2[t[0]] ^
+        e2e.cipher.Aes.MULT_3[t[1]] ^
         t[2] ^
         t[3]);
     s[1][c] = (t[0] ^
-               e2e.cipher.AES.MULT_2[t[1]] ^
-               e2e.cipher.AES.MULT_3[t[2]] ^
+               e2e.cipher.Aes.MULT_2[t[1]] ^
+               e2e.cipher.Aes.MULT_3[t[2]] ^
                t[3]);
     s[2][c] = (t[0] ^
                t[1] ^
-               e2e.cipher.AES.MULT_2[t[2]] ^
-               e2e.cipher.AES.MULT_3[t[3]]);
-    s[3][c] = (e2e.cipher.AES.MULT_3[t[0]] ^
+               e2e.cipher.Aes.MULT_2[t[2]] ^
+               e2e.cipher.Aes.MULT_3[t[3]]);
+    s[3][c] = (e2e.cipher.Aes.MULT_3[t[0]] ^
                t[1] ^
                t[2] ^
-               e2e.cipher.AES.MULT_2[t[3]]);
+               e2e.cipher.Aes.MULT_2[t[3]]);
   }
 };
 
@@ -318,7 +318,7 @@ e2e.cipher.AES.prototype.mixColumns_ = function() {
  * As defined in FIPS 197 Section 5.3.3.
  * @private
  */
-e2e.cipher.AES.prototype.invMixColumns_ = function() {
+e2e.cipher.Aes.prototype.invMixColumns_ = function() {
   var s = this.state_;
   var t = this.temp_[0];
 
@@ -328,25 +328,25 @@ e2e.cipher.AES.prototype.invMixColumns_ = function() {
     t[2] = s[2][c];
     t[3] = s[3][c];
 
-    s[0][c] = (e2e.cipher.AES.MULT_E[t[0]] ^
-               e2e.cipher.AES.MULT_B[t[1]] ^
-               e2e.cipher.AES.MULT_D[t[2]] ^
-               e2e.cipher.AES.MULT_9[t[3]]);
+    s[0][c] = (e2e.cipher.Aes.MULT_E[t[0]] ^
+               e2e.cipher.Aes.MULT_B[t[1]] ^
+               e2e.cipher.Aes.MULT_D[t[2]] ^
+               e2e.cipher.Aes.MULT_9[t[3]]);
 
-    s[1][c] = (e2e.cipher.AES.MULT_9[t[0]] ^
-               e2e.cipher.AES.MULT_E[t[1]] ^
-               e2e.cipher.AES.MULT_B[t[2]] ^
-               e2e.cipher.AES.MULT_D[t[3]]);
+    s[1][c] = (e2e.cipher.Aes.MULT_9[t[0]] ^
+               e2e.cipher.Aes.MULT_E[t[1]] ^
+               e2e.cipher.Aes.MULT_B[t[2]] ^
+               e2e.cipher.Aes.MULT_D[t[3]]);
 
-    s[2][c] = (e2e.cipher.AES.MULT_D[t[0]] ^
-               e2e.cipher.AES.MULT_9[t[1]] ^
-               e2e.cipher.AES.MULT_E[t[2]] ^
-               e2e.cipher.AES.MULT_B[t[3]]);
+    s[2][c] = (e2e.cipher.Aes.MULT_D[t[0]] ^
+               e2e.cipher.Aes.MULT_9[t[1]] ^
+               e2e.cipher.Aes.MULT_E[t[2]] ^
+               e2e.cipher.Aes.MULT_B[t[3]]);
 
-    s[3][c] = (e2e.cipher.AES.MULT_B[t[0]] ^
-               e2e.cipher.AES.MULT_D[t[1]] ^
-               e2e.cipher.AES.MULT_9[t[2]] ^
-               e2e.cipher.AES.MULT_E[t[3]]);
+    s[3][c] = (e2e.cipher.Aes.MULT_B[t[0]] ^
+               e2e.cipher.Aes.MULT_D[t[1]] ^
+               e2e.cipher.Aes.MULT_9[t[2]] ^
+               e2e.cipher.Aes.MULT_E[t[3]]);
   }
 };
 
@@ -356,7 +356,7 @@ e2e.cipher.AES.prototype.invMixColumns_ = function() {
  * initial key as specified in FIPS 197 Section 5.2.
  * @private
  */
-e2e.cipher.AES.prototype.keyExpansion_ = function() {
+e2e.cipher.Aes.prototype.keyExpansion_ = function() {
   this.w_ = new Array(this.Nb_ * (this.Nr_ + 1));
 
   for (var rowNum = 0; rowNum < this.Nk_; rowNum++) {
@@ -380,10 +380,10 @@ e2e.cipher.AES.prototype.keyExpansion_ = function() {
       this.rotWord_(temp);
       this.subWord_(temp);
 
-      temp[0] ^= e2e.cipher.AES.RCON[rowNum / this.Nk_][0];
-      temp[1] ^= e2e.cipher.AES.RCON[rowNum / this.Nk_][1];
-      temp[2] ^= e2e.cipher.AES.RCON[rowNum / this.Nk_][2];
-      temp[3] ^= e2e.cipher.AES.RCON[rowNum / this.Nk_][3];
+      temp[0] ^= e2e.cipher.Aes.RCON[rowNum / this.Nk_][0];
+      temp[1] ^= e2e.cipher.Aes.RCON[rowNum / this.Nk_][1];
+      temp[2] ^= e2e.cipher.Aes.RCON[rowNum / this.Nk_][2];
+      temp[3] ^= e2e.cipher.Aes.RCON[rowNum / this.Nk_][3];
     } else if (this.Nk_ > 6 && rowNum % this.Nk_ == 4) {
       this.subWord_(temp);
     }
@@ -405,11 +405,11 @@ e2e.cipher.AES.prototype.keyExpansion_ = function() {
  * @return {Array.<number>} The substituted word.
  * @private
  */
-e2e.cipher.AES.prototype.subWord_ = function(w) {
-  w[0] = e2e.cipher.AES.SBOX[w[0]];
-  w[1] = e2e.cipher.AES.SBOX[w[1]];
-  w[2] = e2e.cipher.AES.SBOX[w[2]];
-  w[3] = e2e.cipher.AES.SBOX[w[3]];
+e2e.cipher.Aes.prototype.subWord_ = function(w) {
+  w[0] = e2e.cipher.Aes.SBOX[w[0]];
+  w[1] = e2e.cipher.Aes.SBOX[w[1]];
+  w[2] = e2e.cipher.Aes.SBOX[w[2]];
+  w[3] = e2e.cipher.Aes.SBOX[w[3]];
 
   return w;
 };
@@ -422,7 +422,7 @@ e2e.cipher.AES.prototype.subWord_ = function(w) {
  * @return {Array.<number>} The rotated word.
  * @private
  */
-e2e.cipher.AES.prototype.rotWord_ = function(w) {
+e2e.cipher.Aes.prototype.rotWord_ = function(w) {
   var temp = w[0];
 
   w[0] = w[1];
@@ -439,7 +439,7 @@ e2e.cipher.AES.prototype.rotWord_ = function(w) {
  * @type {Array.<number>}
  * @const
  */
-e2e.cipher.AES.SBOX = [
+e2e.cipher.Aes.SBOX = [
   0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5,
   0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
   0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0,
@@ -480,7 +480,7 @@ e2e.cipher.AES.SBOX = [
  * @type {Array.<number>}
  * @const
  */
-e2e.cipher.AES.INV_SBOX = [
+e2e.cipher.Aes.INV_SBOX = [
   0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38,
   0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb,
   0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87,
@@ -523,7 +523,7 @@ e2e.cipher.AES.INV_SBOX = [
  * @type {Array.<Array.<number>>}
  * @const
  */
-e2e.cipher.AES.RCON = [
+e2e.cipher.Aes.RCON = [
   [0x00, 0x00, 0x00, 0x00],
   [0x01, 0x00, 0x00, 0x00],
   [0x02, 0x00, 0x00, 0x00],
@@ -543,7 +543,7 @@ e2e.cipher.AES.RCON = [
  * @type {Array.<number>}
  * @const
  */
-e2e.cipher.AES.MULT_2 = [
+e2e.cipher.Aes.MULT_2 = [
   0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E,
   0x10, 0x12, 0x14, 0x16, 0x18, 0x1A, 0x1C, 0x1E,
   0x20, 0x22, 0x24, 0x26, 0x28, 0x2A, 0x2C, 0x2E,
@@ -584,7 +584,7 @@ e2e.cipher.AES.MULT_2 = [
  * @type {Array.<number>}
  * @const
  */
-e2e.cipher.AES.MULT_3 = [
+e2e.cipher.Aes.MULT_3 = [
   0x00, 0x03, 0x06, 0x05, 0x0C, 0x0F, 0x0A, 0x09,
   0x18, 0x1B, 0x1E, 0x1D, 0x14, 0x17, 0x12, 0x11,
   0x30, 0x33, 0x36, 0x35, 0x3C, 0x3F, 0x3A, 0x39,
@@ -625,7 +625,7 @@ e2e.cipher.AES.MULT_3 = [
  * @type {Array.<number>}
  * @const
  */
-e2e.cipher.AES.MULT_9 = [
+e2e.cipher.Aes.MULT_9 = [
   0x00, 0x09, 0x12, 0x1B, 0x24, 0x2D, 0x36, 0x3F,
   0x48, 0x41, 0x5A, 0x53, 0x6C, 0x65, 0x7E, 0x77,
   0x90, 0x99, 0x82, 0x8B, 0xB4, 0xBD, 0xA6, 0xAF,
@@ -666,7 +666,7 @@ e2e.cipher.AES.MULT_9 = [
  * @type {Array.<number>}
  * @const
  */
-e2e.cipher.AES.MULT_B = [
+e2e.cipher.Aes.MULT_B = [
   0x00, 0x0B, 0x16, 0x1D, 0x2C, 0x27, 0x3A, 0x31,
   0x58, 0x53, 0x4E, 0x45, 0x74, 0x7F, 0x62, 0x69,
   0xB0, 0xBB, 0xA6, 0xAD, 0x9C, 0x97, 0x8A, 0x81,
@@ -707,7 +707,7 @@ e2e.cipher.AES.MULT_B = [
  * @type {Array.<number>}
  * @const
  */
-e2e.cipher.AES.MULT_D = [
+e2e.cipher.Aes.MULT_D = [
   0x00, 0x0D, 0x1A, 0x17, 0x34, 0x39, 0x2E, 0x23,
   0x68, 0x65, 0x72, 0x7F, 0x5C, 0x51, 0x46, 0x4B,
   0xD0, 0xDD, 0xCA, 0xC7, 0xE4, 0xE9, 0xFE, 0xF3,
@@ -748,7 +748,7 @@ e2e.cipher.AES.MULT_D = [
  * @type {Array.<number>}
  * @const
  */
-e2e.cipher.AES.MULT_E = [
+e2e.cipher.Aes.MULT_E = [
   0x00, 0x0E, 0x1C, 0x12, 0x38, 0x36, 0x24, 0x2A,
   0x70, 0x7E, 0x6C, 0x62, 0x48, 0x46, 0x54, 0x5A,
   0xE0, 0xEE, 0xFC, 0xF2, 0xD8, 0xD6, 0xC4, 0xCA,
@@ -785,9 +785,9 @@ e2e.cipher.AES.MULT_E = [
 
 
 // Register this implementation to handle all, 128, 192, and 256 bits keys.
-e2e.cipher.factory.add(e2e.cipher.AES,
+e2e.cipher.factory.add(e2e.cipher.Aes,
                                e2e.cipher.Algorithm.AES128);
-e2e.cipher.factory.add(e2e.cipher.AES,
+e2e.cipher.factory.add(e2e.cipher.Aes,
                                e2e.cipher.Algorithm.AES192);
-e2e.cipher.factory.add(e2e.cipher.AES,
+e2e.cipher.factory.add(e2e.cipher.Aes,
                                e2e.cipher.Algorithm.AES256);

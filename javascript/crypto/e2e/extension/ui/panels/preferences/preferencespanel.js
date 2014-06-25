@@ -70,6 +70,12 @@ panels.PreferencesPanel.prototype.decorateInternal = function(elem) {
       description: chrome.i18n.getMessage('preferenceActionSniffing'),
       setterCallback: preferences.setActionSniffingEnabled,
       isSet: preferences.isActionSniffingEnabled()
+    },
+    {
+      name: constants.StorageKey.ENABLE_LOOKING_GLASS,
+      description: chrome.i18n.getMessage('preferenceLookingGlass'),
+      setterCallback: preferences.setLookingGlassEnabled,
+      isSet: preferences.isLookingGlassEnabled()
     }
   ];
   goog.array.forEach(prefs, function(pref) {

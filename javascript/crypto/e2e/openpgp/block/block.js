@@ -55,3 +55,28 @@ e2e.openpgp.block.Block.prototype.serialize = goog.abstractMethod;
  * @type {string}
  */
 e2e.openpgp.block.Block.prototype.header;
+
+
+/**
+ * Sets the charset used in the block.
+ * @private {string}
+ */
+e2e.openpgp.block.Block.prototype.charset_ = 'utf-8';
+
+
+/**
+ * @param {string|undefined} charset The charset to use in the block.
+ */
+e2e.openpgp.block.Block.prototype.setCharset = function(charset) {
+  if (charset) {
+    this.charset_ = charset;
+  }
+};
+
+
+/**
+ * @return {string} The charset for the block.
+ */
+e2e.openpgp.block.Block.prototype.getCharset = function() {
+  return this.charset_;
+};

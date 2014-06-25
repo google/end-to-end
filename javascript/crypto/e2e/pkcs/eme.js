@@ -54,8 +54,8 @@ e2e.pkcs.eme.Oaep = function() {
  * Encodes the given message according to the OAEP method as described in
  *     RFC 3447 section 7.1.1 with SHA-1, MGF1 and an empty label.
  * @param {number} k The size of the key in bytes.
- * @param {!e2e.ByteArray} m The message to encode.
- * @return {!e2e.ByteArray} The encoded message.
+ * @param {e2e.ByteArray} m The message to encode.
+ * @return {e2e.ByteArray} The encoded message.
  */
 e2e.pkcs.eme.Oaep.prototype.encode = function(k, m) {
   // OAEP can operate only on messages of length up to k - 2hLen - 2 octets,
@@ -88,7 +88,7 @@ e2e.pkcs.eme.Oaep.prototype.encode = function(k, m) {
  *     decrypt messages without knowing the private key. As a result, it
  *     must not be used anywhere except for interoperative testing.
  * @param {number} k The size of the key in bytes.
- * @param {!e2e.ByteArray} c The message to decode.
+ * @param {e2e.ByteArray} c The message to decode.
  * @return {e2e.ByteArray} The decoded message.
  * @protected
  */

@@ -41,6 +41,8 @@ function setUp() {
     return msg;
   });
 
+  stubs.setPath('chrome.runtime.getBackgroundPage', goog.nullFunction);
+
   panel = new e2e.ext.ui.panels.KeyringMgmtFull(
       {}, goog.abstractMethod, goog.abstractMethod, goog.abstractMethod,
       goog.abstractMethod, goog.abstractMethod);
@@ -70,6 +72,15 @@ function testAddAndRemoveKey() {
 
   panel.removeKey('test@example.com');
   assertNotContains('test@example.com', document.body.textContent);
+}
+
+
+function testDuplicateKey() {
+  panel.render(document.body);
+  panel.addNewKey('test+hasplus@example.com', []);
+  panel.addNewKey('test+hasplus@example.com', []);
+  assertEquals(
+      document.body.textContent.match(/test\+hasplus@example\.com/g).length, 1);
 }
 
 
@@ -140,4 +151,20 @@ function testHandleClick() {
     testCase.continueTesting();
     mockControl.$verifyAll();
   }, 500);
+}
+
+
+function testEmptyExport() {
+  panel.render(document.body);
+
+  // button enabled on key add
+  panel.addNewKey('test@example.com', []);
+  assertFalse(panel.getElementByClass(constants.CssClass.KEYRING_EXPORT)
+      .hasAttribute('disabled'));
+
+  // removing only key disables button
+  panel.removeKey('test@example.com');
+  assertTrue(panel.getElementByClass(constants.CssClass.KEYRING_EXPORT)
+      .hasAttribute('disabled'));
+
 }

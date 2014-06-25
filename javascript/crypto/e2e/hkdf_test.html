@@ -13,7 +13,7 @@
 // limitations under the License.
 // -->
 <!DOCTYPE html>
-<title>Unit Test of e2e.HKDF</title>
+<title>Unit Test of e2e.Hkdf</title>
 <script src="../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
@@ -21,7 +21,7 @@
     goog.require('goog.testing.jsunit');
     goog.require('e2e.hash.Sha1');
     goog.require('e2e.hash.Sha256');
-    goog.require('e2e.HKDF');
+    goog.require('e2e.Hkdf');
 </script>
 <script>
     /**
@@ -100,7 +100,7 @@
 
     function testShortInputsWithSha256() {
       assertArrayEquals(goog.crypt.hexToByteArray(okms[0]),
-                        (new e2e.HKDF(new e2e.hash.Sha256()))
+                        (new e2e.Hkdf(new e2e.hash.Sha256()))
                             .getHKDF(goog.crypt.hexToByteArray(ikms[0]),
                                      goog.crypt.hexToByteArray(infos[0]),
                                      extract_lens[0],
@@ -109,7 +109,7 @@
 
     function testLongInputsWithSha256() {
       assertArrayEquals(goog.crypt.hexToByteArray(okms[1]),
-                        (new e2e.HKDF(new e2e.hash.Sha256()))
+                        (new e2e.Hkdf(new e2e.hash.Sha256()))
                             .getHKDF(goog.crypt.hexToByteArray(ikms[1]),
                                      goog.crypt.hexToByteArray(infos[1]),
                                      extract_lens[1],
@@ -118,7 +118,7 @@
 
     function testZeroLengthSaltInfoWithSha256() {
       assertArrayEquals(goog.crypt.hexToByteArray(okms[2]),
-                        (new e2e.HKDF(new e2e.hash.Sha256()))
+                        (new e2e.Hkdf(new e2e.hash.Sha256()))
                             .getHKDF(goog.crypt.hexToByteArray(ikms[2]),
                                      goog.crypt.hexToByteArray(infos[2]),
                                      extract_lens[2],
@@ -127,7 +127,7 @@
 
     function testShortInputsWithSha1() {
       assertArrayEquals(goog.crypt.hexToByteArray(okms[3]),
-                        (new e2e.HKDF(new e2e.hash.Sha1()))
+                        (new e2e.Hkdf(new e2e.hash.Sha1()))
                             .getHKDF(goog.crypt.hexToByteArray(ikms[3]),
                                      goog.crypt.hexToByteArray(infos[3]),
                                      extract_lens[3],
@@ -136,7 +136,7 @@
 
     function testLongInputsWithSha1() {
       assertArrayEquals(goog.crypt.hexToByteArray(okms[4]),
-                        (new e2e.HKDF(new e2e.hash.Sha1()))
+                        (new e2e.Hkdf(new e2e.hash.Sha1()))
                             .getHKDF(goog.crypt.hexToByteArray(ikms[4]),
                                      goog.crypt.hexToByteArray(infos[4]),
                                      extract_lens[4],
@@ -145,7 +145,7 @@
 
     function testZeroLengthSaltAndInfoWithSha1() {
       assertArrayEquals(goog.crypt.hexToByteArray(okms[5]),
-                        (new e2e.HKDF(new e2e.hash.Sha1()))
+                        (new e2e.Hkdf(new e2e.hash.Sha1()))
                             .getHKDF(goog.crypt.hexToByteArray(ikms[5]),
                                      goog.crypt.hexToByteArray(infos[5]),
                                      extract_lens[5],
@@ -154,7 +154,7 @@
 
     function testNoSaltAndZeroLengthInfoWithSha1() {
       assertArrayEquals(goog.crypt.hexToByteArray(okms[6]),
-                        (new e2e.HKDF(new e2e.hash.Sha1()))
+                        (new e2e.Hkdf(new e2e.hash.Sha1()))
                             .getHKDF(goog.crypt.hexToByteArray(ikms[6]),
                                      goog.crypt.hexToByteArray(infos[6]),
                                      extract_lens[6]));

@@ -14,12 +14,18 @@
 /**
  * @fileoverview Requires all blocks to load them into the factory.
  */
-
+/** @suppress {extraProvide} this aggregation needs a namespace */
 goog.provide('e2e.hash.all');
 
+/** @suppress {extraRequire} intentional import */
 goog.require('e2e.hash.Md5');
+/** @suppress {extraRequire} intentional import */
 goog.require('e2e.hash.Sha1');
+/** @suppress {extraRequire} intentional import */
 goog.require('e2e.hash.Sha224');
+/** @suppress {extraRequire} intentional import */
 goog.require('e2e.hash.Sha256');
+/** @suppress {extraRequire} intentional import */
 goog.require('e2e.hash.Sha384');
+/** @suppress {extraRequire} intentional import */
 goog.require('e2e.hash.Sha512');

@@ -28,12 +28,13 @@ goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.AsymmetricCipher');
 goog.require('e2e.cipher.factory');
-goog.require('e2e.ciphermode.CFB');
+goog.require('e2e.ciphermode.Cfb');
 goog.require('e2e.hash.Algorithm');
 goog.require('e2e.hash.Md5');
 goog.require('e2e.hash.Sha1');
 goog.require('e2e.hash.factory');
 goog.require('e2e.openpgp');
+goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.error.DecryptError');
 goog.require('e2e.openpgp.error.Error');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
@@ -55,7 +56,7 @@ goog.require('e2e.signer.Algorithm');
  *     use for decrypting the encrypted key data.
  * @param {e2e.ByteArray=} opt_iv The initialization vector for the key
  *     data.
- * @param {e2e.openpgp.S2K=} opt_s2k The S2K instance to use to generate
+ * @param {e2e.openpgp.S2k=} opt_s2k The S2K instance to use to generate
  *     the key from a passphrase.
  * @constructor
  * @extends {e2e.AlgorithmImpl}
@@ -90,7 +91,7 @@ e2e.openpgp.EncryptedCipher = function(
       }
       /**
        * The S2K specifier for generating the key.
-       * @type {e2e.openpgp.S2K|undefined}
+       * @type {e2e.openpgp.S2k|undefined}
        * @private
        */
       this.s2k_ = opt_s2k;
@@ -178,7 +179,7 @@ e2e.openpgp.EncryptedCipher.prototype.getKeyDerivationAlgorithm =
 
 /**
  * Returns the key derivation S2k.
- * @return {e2e.openpgp.S2K|undefined}
+ * @return {e2e.openpgp.S2k|undefined}
  */
 e2e.openpgp.EncryptedCipher.prototype.getKeyDerivationS2k = function() {
   return this.s2k_;
@@ -223,17 +224,21 @@ e2e.openpgp.EncryptedCipher.prototype.lockKey = function(
     var salt = e2e.random.getRandomBytes(8);
     this.symmetricAlgorithm_ =
         e2e.openpgp.EncryptedCipher.DEFAULT_CIPHER;
-    var cipher = e2e.cipher.factory.require(
-        this.symmetricAlgorithm_);
+    var cipher = /** @type {e2e.cipher.SymmetricCipher} */ (
+        e2e.openpgp.constants.getInstance(
+            e2e.openpgp.constants.Type.SYMMETRIC_KEY,
+            this.symmetricAlgorithm_));
     this.iv_ = e2e.random.getRandomBytes(
         cipher.blockSize);
     var count = e2e.openpgp.EncryptedCipher.DEFAULT_COUNT;
     // TODO(evn): Maybe we can use a cheaper function here instead of sha1.
     this.s2k_ = new e2e.openpgp.IteratedS2K(
         new e2e.hash.Sha1, salt, count);
-    var symCipher = e2e.cipher.factory.require(
-        e2e.openpgp.EncryptedCipher.DEFAULT_CIPHER);
-    var cfbSymCipher = new e2e.ciphermode.CFB(symCipher);
+    var symCipher = /** @type {e2e.cipher.SymmetricCipher} */ (
+        e2e.openpgp.constants.getInstance(
+            e2e.openpgp.constants.Type.SYMMETRIC_KEY,
+            e2e.openpgp.EncryptedCipher.DEFAULT_CIPHER));
+    var cfbSymCipher = new e2e.ciphermode.Cfb(symCipher);
     var key = this.s2k_.getKey(opt_passphrase, symCipher.keySize);
     symCipher.setKey({key: key});
     var sha1 = new e2e.hash.Sha1;
@@ -300,8 +305,11 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey = function(
   }
 
   var key;
-  var symCipher = e2e.cipher.factory.require(this.symmetricAlgorithm_);
-  var cfbSymCipher = new e2e.ciphermode.CFB(symCipher);
+  var symCipher = /** @type {e2e.cipher.SymmetricCipher} */ (
+      e2e.openpgp.constants.getInstance(
+          e2e.openpgp.constants.Type.SYMMETRIC_KEY,
+          this.symmetricAlgorithm_));
+  var cfbSymCipher = new e2e.ciphermode.Cfb(symCipher);
   switch (this.keyDerivation_) {
     case e2e.openpgp.EncryptedCipher.KeyDerivationType.S2K_SHA1:
     case e2e.openpgp.EncryptedCipher.KeyDerivationType.S2K_CHECKSUM:
@@ -378,18 +386,18 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey_ = function(keyBytes) {
   var keyData = this.cipher_.getKey();
   switch (this.cipher_.algorithm) {
   case e2e.cipher.Algorithm.RSA:
-    keyData.d = goog.array.clone(e2e.openpgp.MPI.parse(key));
-    keyData.p = goog.array.clone(e2e.openpgp.MPI.parse(key));
-    keyData.q = goog.array.clone(e2e.openpgp.MPI.parse(key));
-    keyData.u = goog.array.clone(e2e.openpgp.MPI.parse(key));
+    keyData.d = goog.array.clone(e2e.openpgp.Mpi.parse(key));
+    keyData.p = goog.array.clone(e2e.openpgp.Mpi.parse(key));
+    keyData.q = goog.array.clone(e2e.openpgp.Mpi.parse(key));
+    keyData.u = goog.array.clone(e2e.openpgp.Mpi.parse(key));
     break;
   case e2e.signer.Algorithm.DSA:
   case e2e.cipher.Algorithm.ELGAMAL:
-    keyData.x = goog.array.clone(e2e.openpgp.MPI.parse(key));
+    keyData.x = goog.array.clone(e2e.openpgp.Mpi.parse(key));
     break;
   case e2e.cipher.Algorithm.ECDH:
   case e2e.signer.Algorithm.ECDSA:
-    keyData.privKey = goog.array.clone(e2e.openpgp.MPI.parse(key));
+    keyData.privKey = goog.array.clone(e2e.openpgp.Mpi.parse(key));
     break;
   default:
     throw new e2e.openpgp.error.InvalidArgumentsError('Unknown algorithm');

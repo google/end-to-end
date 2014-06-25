@@ -24,20 +24,20 @@ goog.provide('e2e.ecc.PrimeCurveOid');
 goog.require('e2e.BigNum');
 goog.require('e2e.BigPrimeNum');
 goog.require('e2e.FastModulus');
-goog.require('e2e.ecc.Curve');
-goog.require('e2e.ecc.Curve.Curve25519');
-goog.require('e2e.ecc.Curve.Ed25519');
-goog.require('e2e.ecc.Curve.NIST');
-goog.require('e2e.ecc.FastModulus.Curve25519');
-goog.require('e2e.ecc.FastModulus.NIST');
-goog.require('e2e.ecc.FastModulus.NIST.P_256');
-goog.require('e2e.ecc.FastModulus.NIST.P_384');
 goog.require('e2e.ecc.constant.CURVE_25519');
-goog.require('e2e.ecc.constant.ED_25519.G_FastMultiplyTable');
 goog.require('e2e.ecc.constant.P_256');
-goog.require('e2e.ecc.constant.P_256.G_FastMultiplyTable');
 goog.require('e2e.ecc.constant.P_384');
-goog.require('e2e.ecc.constant.P_384.G_FastMultiplyTable');
+goog.require('e2e.ecc.constant.ed_25519.G_FAST_MULTIPLY_TABLE');
+goog.require('e2e.ecc.constant.p_256.G_FAST_MULTIPLY_TABLE');
+goog.require('e2e.ecc.constant.p_384.G_FAST_MULTIPLY_TABLE');
+goog.require('e2e.ecc.curve.Curve');
+goog.require('e2e.ecc.curve.Curve25519');
+goog.require('e2e.ecc.curve.Ed25519');
+goog.require('e2e.ecc.curve.Nist');
+goog.require('e2e.ecc.fastModulus.Curve25519');
+goog.require('e2e.ecc.fastModulus.Nist');
+goog.require('e2e.ecc.fastModulus.Nist.P_256');
+goog.require('e2e.ecc.fastModulus.Nist.P_384');
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('e2e.error.UnsupportedError');
 goog.require('e2e.hash.Sha512');
@@ -73,8 +73,8 @@ e2e.ecc.PrimeCurveOid = {
 
 /**
  * Representation of domain parameters for prime curves.
- * @param {!e2e.ecc.Curve} curve The elliptic curve.
- * @param {!e2e.ecc.Point} g The base point.
+ * @param {!e2e.ecc.curve.Curve} curve The elliptic curve.
+ * @param {!e2e.ecc.point.Point} g The base point.
  * @param {!e2e.BigPrimeNum} n The order of the base point.
  * @constructor
  */
@@ -93,28 +93,50 @@ e2e.ecc.DomainParam = function(curve, g, n) {
 
 /**
  * Gets curve's name from curve's OID.
- * @param {e2e.ecc.PrimeCurveOid} curveOID Curve's OID (including
+ * @param {e2e.ecc.PrimeCurveOid} curveOid Curve's OID (including
  *     the one-byte length prefix), as defined in section 11 in RFC 6637.
  * @return {e2e.ecc.PrimeCurve}
  */
-e2e.ecc.DomainParam.curveNameFromCurveOID = function(curveOID) {
-  if (goog.array.equals(curveOID, e2e.ecc.PrimeCurveOid.P_256)) {
+e2e.ecc.DomainParam.curveNameFromCurveOid = function(curveOid) {
+  if (goog.array.equals(curveOid, e2e.ecc.PrimeCurveOid.P_256)) {
     return e2e.ecc.PrimeCurve.P_256;
+  } else if (goog.array.equals(curveOid, e2e.ecc.PrimeCurveOid.P_384)) {
+    return e2e.ecc.PrimeCurve.P_384;
+  } else if (goog.array.equals(curveOid, e2e.ecc.PrimeCurveOid.P_521)) {
+    return e2e.ecc.PrimeCurve.P_521;
   }
   throw new e2e.error.UnsupportedError('Invalid curve OID');
 };
 
 
 /**
+ * Gets curve OID from curve's name.
+ * @param {e2e.ecc.PrimeCurve} curveName The name of the curve.
+ * @return {?e2e.ecc.PrimeCurveOid}
+ */
+e2e.ecc.DomainParam.curveOidFromCurveName = function(curveName) {
+  if (curveName == e2e.ecc.PrimeCurve.P_256) {
+    return e2e.ecc.PrimeCurveOid.P_256;
+  } else if (curveName == e2e.ecc.PrimeCurve.P_384) {
+    return e2e.ecc.PrimeCurveOid.P_384;
+  } else if (curveName == e2e.ecc.PrimeCurve.P_521) {
+    return e2e.ecc.PrimeCurveOid.P_521;
+  }
+  // TODO(thaidn): figure out the curve OID for Curve25519 and Ed25519.
+  return null;
+};
+
+
+/**
  * The curve.
- * @type {!e2e.ecc.Curve}
+ * @type {!e2e.ecc.curve.Curve}
  */
 e2e.ecc.DomainParam.prototype.curve;
 
 
 /**
  * The base point.
- * @type {!e2e.ecc.Point}
+ * @type {!e2e.ecc.point.Point}
  */
 e2e.ecc.DomainParam.prototype.g;
 
@@ -159,12 +181,12 @@ e2e.ecc.DomainParam.fromCurve = function(curveName) {
 
 /**
  * Generates a key pair used in ECC protocols.
- * @param {!e2e.ByteArray=} opt_privateKey  An optional already known
+ * @param {e2e.ByteArray=} opt_privateKey  An optional already known
  *     private key.  If not given, a random key will be created.
- * @return {!{privateKey: !e2e.ByteArray,
- *            publicKey: !e2e.ByteArray,
+ * @return {!{privateKey: e2e.ByteArray,
+ *            publicKey: e2e.ByteArray,
  *            privateKeyBigNum: e2e.BigNum,
- *            publicKeyPoint: e2e.ecc.Point}}
+ *            publicKeyPoint:e2e.ecc.point.Point}}
  */
 e2e.ecc.DomainParam.prototype.generateKeyPair = goog.abstractMethod;
 
@@ -174,7 +196,7 @@ e2e.ecc.DomainParam.prototype.generateKeyPair = goog.abstractMethod;
  * This code assumes that the public key has already been vetted and known
  * to be a reasonable public key.
  *
- * @param {!e2e.ecc.Point} peerPublicKey The peer's public key.
+ * @param {!e2e.ecc.point.Point} peerPublicKey The peer's public key.
  * @param {!e2e.BigNum} myPrivateKey My private key.
  * @return {!e2e.ByteArray}
  */
@@ -196,8 +218,8 @@ e2e.ecc.DomainParam.prototype.bigNumFromPrivateKey =
  * Representation of domain parameters for NIST prime curves.
  * @constructor
  * @extends {e2e.ecc.DomainParam}
- * @param {!e2e.ecc.Curve} curve The elliptic curve.
- * @param {!e2e.ecc.Point} g The base point.
+ * @param {!e2e.ecc.curve.Curve} curve The elliptic curve.
+ * @param {!e2e.ecc.point.Point} g The base point.
  * @param {!e2e.BigPrimeNum} n The order of the base point.
  */
 e2e.ecc.DomainParam.NIST = function(curve, g, n) {
@@ -214,21 +236,23 @@ goog.inherits(e2e.ecc.DomainParam.NIST, e2e.ecc.DomainParam);
  * @return {!e2e.ecc.DomainParam.NIST}
  */
 e2e.ecc.DomainParam.NIST.fromCurve = function(curveName) {
-  var constants, fastModulus;
+  var constants, fastModulus, fastMultiplyTable;
   if (curveName == e2e.ecc.PrimeCurve.P_256) {
     constants = e2e.ecc.constant.P_256;
-    fastModulus = e2e.ecc.FastModulus.NIST.P_256;
+    fastModulus = e2e.ecc.fastModulus.Nist.P_256;
+    fastMultiplyTable = e2e.ecc.constant.p_256.G_FAST_MULTIPLY_TABLE;
   } else {
     constants = e2e.ecc.constant.P_384;
-    fastModulus = e2e.ecc.FastModulus.NIST.P_384;
+    fastModulus = e2e.ecc.fastModulus.Nist.P_384;
+    fastMultiplyTable = e2e.ecc.constant.p_384.G_FAST_MULTIPLY_TABLE;
   }
   var q = new e2e.BigPrimeNum(constants.Q);  // prime field
   var b = new e2e.BigPrimeNum(constants.B);  // parameter of curve
   q.setFastModulusType(fastModulus);
-  var curve = new e2e.ecc.Curve.NIST(q, b);
+  var curve = new e2e.ecc.curve.Nist(q, b);
 
   var g = curve.pointFromByteArray(constants.G);
-  g.setFastMultiplyTable(constants.G_FastMultiplyTable);
+  g.setFastMultiplyTable(fastMultiplyTable);
   var n = new e2e.BigPrimeNum(constants.N);  // order of group
   n.setFastModulusType(e2e.FastModulus.FFFFFF);
   return new e2e.ecc.DomainParam.NIST(curve, g, n);
@@ -296,8 +320,8 @@ e2e.ecc.DomainParam.NIST.prototype.bigNumFromPrivateKey = function(p) {
  * Representation of domain parameters for Curve25519 prime curves.
  * @constructor
  * @extends {e2e.ecc.DomainParam}
- * @param {!e2e.ecc.Curve} curve The elliptic curve.
- * @param {!e2e.ecc.Point} g The base point.
+ * @param {!e2e.ecc.curve.Curve} curve The elliptic curve.
+ * @param {!e2e.ecc.point.Point} g The base point.
  * @param {!e2e.BigPrimeNum} n The order of the base point.
  */
 e2e.ecc.DomainParam.Curve25519 = function(curve, g, n) {
@@ -317,8 +341,8 @@ e2e.ecc.DomainParam.Curve25519.fromCurve = function(curveName) {
   var constants = e2e.ecc.constant.CURVE_25519;
 
   var q = new e2e.BigPrimeNum(constants.Q);  // prime field
-  q.setFastModulus(new e2e.ecc.FastModulus.Curve25519(q));
-  var curve = new e2e.ecc.Curve.Curve25519(q);
+  q.setFastModulus(new e2e.ecc.fastModulus.Curve25519(q));
+  var curve = new e2e.ecc.curve.Curve25519(q);
 
   var g = curve.POINT_AT_NINE;
   var n = new e2e.BigPrimeNum(constants.N);  // order of group
@@ -380,8 +404,8 @@ function(p) {
  * Representation of domain parameters for Ed5519 prime curves.
  * @constructor
  * @extends {e2e.ecc.DomainParam}
- * @param {!e2e.ecc.Curve} curve The elliptic curve.
- * @param {!e2e.ecc.Point} g The base point.
+ * @param {!e2e.ecc.curve.Curve} curve The elliptic curve.
+ * @param {!e2e.ecc.point.Point} g The base point.
  * @param {!e2e.BigPrimeNum} n The order of the base point.
  */
 e2e.ecc.DomainParam.Ed25519 = function(curve, g, n) {
@@ -400,11 +424,11 @@ e2e.ecc.DomainParam.Ed25519.fromCurve = function(curveName) {
   var constants = e2e.ecc.constant.CURVE_25519;
 
   var q = new e2e.BigPrimeNum(constants.Q);  // prime field
-  q.setFastModulus(new e2e.ecc.FastModulus.Curve25519(q));
-  var curve = new e2e.ecc.Curve.Ed25519(q);
+  q.setFastModulus(new e2e.ecc.fastModulus.Curve25519(q));
+  var curve = new e2e.ecc.curve.Ed25519(q);
 
-  var g = /** @type {e2e.ecc.Point} */ (curve.B);
-  g.setFastMultiplyTable(e2e.ecc.constant.ED_25519.G_FastMultiplyTable);
+  var g = /** @type {e2e.ecc.point.Point} */ (curve.B);
+  g.setFastMultiplyTable(e2e.ecc.constant.ed_25519.G_FAST_MULTIPLY_TABLE);
   var n = new e2e.BigPrimeNum(constants.N);  // order of group
   n.setFastModulusType(e2e.FastModulus.Ox1000000);
   return new e2e.ecc.DomainParam.Ed25519(curve, g, n);

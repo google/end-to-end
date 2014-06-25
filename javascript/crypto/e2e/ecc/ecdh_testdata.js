@@ -18,8 +18,8 @@
  * @author thaidn@google.com (Thai Duong)
  */
 
-goog.provide('e2e.ecc.ECDH.testData');
-goog.setTestOnly('e2e.ecc.ECDH.testData');
+goog.provide('e2e.ecc.ecdhTestData');
+goog.setTestOnly();
 
 goog.require('e2e.ecc.PrimeCurve');
 
@@ -30,7 +30,7 @@ goog.require('e2e.ecc.PrimeCurve');
  *     - d is a private key;
  *     - Z is the shared secret, which is the X coordinate of dQ.
  */
-e2e.ecc.ECDH.testData.P256Vectors = [
+e2e.ecc.ecdhTestData.P256Vectors = [
   {
     'curve': e2e.ecc.PrimeCurve.P_256,
     'Qx': '700c48f77f56584c5cc632ca65640db91b6bacce3a4df6b42ce7cc838833d287',

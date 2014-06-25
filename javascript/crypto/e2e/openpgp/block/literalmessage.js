@@ -18,11 +18,12 @@
 goog.provide('e2e.openpgp.block.LiteralMessage');
 
 goog.require('e2e.openpgp.block.Message');
+goog.require('e2e.openpgp.packet.LiteralData');
 
 
 /**
  * Representation of a literal message block.
- * @param {Array.<e2e.openpgp.packet.Signature>=} opt_signatures
+ * @param {Array.<!e2e.openpgp.packet.Signature>=} opt_signatures
  * @constructor
  * @extends {e2e.openpgp.block.Message}
  */
@@ -33,9 +34,35 @@ goog.inherits(e2e.openpgp.block.LiteralMessage,
     e2e.openpgp.block.Message);
 
 
-/** @inheritDoc */
+/**
+ * The literal data packet.
+ * @private {e2e.openpgp.packet.LiteralData}
+ */
+e2e.openpgp.block.LiteralMessage.prototype.literalData_ = null;
+
+
+/**
+ * @return {e2e.ByteArray} The data encoded in the message.
+ */
 e2e.openpgp.block.LiteralMessage.prototype.getData = function() {
-  return /** @type {e2e.openpgp.packet.LiteralData} */ (this.packets[0]);
+  return this.literalData_.data;
+};
+
+
+/**
+ * @return {number} The timestamp of the message.
+ */
+e2e.openpgp.block.LiteralMessage.prototype.getTimestamp = function() {
+  return this.literalData_.timestamp;
+};
+
+
+/**
+ * @return {string} The filename of the message.
+ */
+e2e.openpgp.block.LiteralMessage.prototype.getFilename = function() {
+  return e2e.byteArrayToString(
+      this.literalData_.filename, this.getCharset());
 };
 
 
@@ -54,12 +81,43 @@ e2e.openpgp.block.LiteralMessage.prototype.getBytesToSign = function() {
   if (this.packets.length == 0) {
     return /** @type {e2e.ByteArray} */ ([]);
   }
-  return this.packets[0].data;
+  return this.literalData_.data;
 };
 
 
-/** @inheritDoc */
+/** @override */
+e2e.openpgp.block.LiteralMessage.prototype.getLiteralMessage = function() {
+  return this;
+};
+
+
+/** @override */
 e2e.openpgp.block.LiteralMessage.prototype.parse = function(packets) {
-  this.packets = [packets.shift()];
+  var packet = packets.shift();
+  if (!(packet instanceof e2e.openpgp.packet.LiteralData)) {
+    throw new e2e.openpgp.error.ParseError(
+        'Literal block should contain LiteralData packet.');
+  }
+  this.literalData_ = packet;
+  this.packets = [packet];
   return packets;
+};
+
+
+/**
+ * Creates a literal message from a text contents
+ * @param  {string} plaintext
+ * @param  {string=} opt_filename File name to use in LiteralData packet
+ * @return {!e2e.openpgp.block.LiteralMessage} Created message.
+ */
+e2e.openpgp.block.LiteralMessage.fromText = function(plaintext, opt_filename) {
+  var literal = new e2e.openpgp.packet.LiteralData(
+      e2e.openpgp.packet.LiteralData.Format.TEXT,
+      e2e.stringToByteArray(
+        goog.isDefAndNotNull(opt_filename) ? opt_filename : ''), // file name
+      Math.floor(new Date().getTime() / 1000), // time in seconds since 1970
+      e2e.stringToByteArray(plaintext));
+  var message = new e2e.openpgp.block.LiteralMessage();
+  message.parse([literal]);
+  return message;
 };

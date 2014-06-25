@@ -17,7 +17,7 @@
  * @author evn@google.com (Eduardo Vela)
  */
 
-goog.provide('e2e.ciphermode.CFB');
+goog.provide('e2e.ciphermode.Cfb');
 
 goog.require('e2e.async.Result');
 goog.require('e2e.ciphermode.CipherMode');
@@ -28,18 +28,18 @@ goog.require('goog.array');
  * Cipher Feedback converts a block cipher into a stream cipher by using the
  * output of the previous block's ciphertext as the input to the encrypt
  * function, which is then XOR'd with the plaintext.
- * @param {e2e.cipher.Cipher} cipher The cipher to use.
+ * @param {e2e.cipher.SymmetricCipher} cipher The cipher to use.
  * @extends {e2e.ciphermode.CipherMode}
  * @constructor
  */
-e2e.ciphermode.CFB = function(cipher) {
+e2e.ciphermode.Cfb = function(cipher) {
   goog.base(this, cipher);
 };
-goog.inherits(e2e.ciphermode.CFB, e2e.ciphermode.CipherMode);
+goog.inherits(e2e.ciphermode.Cfb, e2e.ciphermode.CipherMode);
 
 
 /** @inheritDoc */
-e2e.ciphermode.CFB.prototype.encrypt = function(data, iv) {
+e2e.ciphermode.Cfb.prototype.encrypt = function(data, iv) {
   var fre = e2e.async.Result.getValue(this.cipher.encrypt(iv));
   var c = [];
   for (var i = 0; i < data.length; i += this.cipher.blockSize) {
@@ -62,7 +62,7 @@ e2e.ciphermode.CFB.prototype.encrypt = function(data, iv) {
 
 
 /** @inheritDoc */
-e2e.ciphermode.CFB.prototype.decrypt = function(data, iv) {
+e2e.ciphermode.Cfb.prototype.decrypt = function(data, iv) {
   var fre = e2e.async.Result.getValue(this.cipher.encrypt(iv));
   var p = [];
   for (var i = 0; i < data.length; i += this.cipher.blockSize) {

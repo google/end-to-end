@@ -23,8 +23,8 @@
   goog.require('goog.testing.AsyncTestCase');
   goog.require('e2e.async.Result');
   goog.require('e2e.ecc.PrimeCurveOid');
-  goog.require('e2e.cipher.ECDH');
-  goog.require('e2e.cipher.ECDH.testData');
+  goog.require('e2e.cipher.Ecdh');
+  goog.require('e2e.cipher.ecdhTestData');
   goog.require('e2e.BigNum');
   goog.require('e2e.random');
 </script>
@@ -38,12 +38,12 @@ var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 function testConsistency() {
   var key = {
       'curve': e2e.ecc.PrimeCurveOid.P_256,
-      'kdfInfo': e2e.cipher.ECDH.testData.kdfInfo,
-      'pubKey': e2e.cipher.ECDH.testData.pubKey,
-      'privKey': e2e.cipher.ECDH.testData.privKey,
+      'kdfInfo': e2e.cipher.ecdhTestData.kdfInfo,
+      'pubKey': e2e.cipher.ecdhTestData.pubKey,
+      'privKey': e2e.cipher.ecdhTestData.privKey,
       'fingerprint': goog.array.repeat(0x0, 20)
   };
-  var ecdh = new e2e.cipher.ECDH(
+  var ecdh = new e2e.cipher.Ecdh(
       e2e.cipher.Algorithm.ECDH, key);
   for (var i = 0; i < 5; i++) {
     (function(){
@@ -68,18 +68,18 @@ function testConsistency() {
 function testInteroperabilityWithGPG() {
   var pubKey = {
     'curve': e2e.ecc.PrimeCurveOid.P_256,
-    'kdfInfo': e2e.cipher.ECDH.testData.kdfInfo,
-    'pubKey': e2e.cipher.ECDH.testData.gpgEccPubKey,
-    'fingerprint': e2e.cipher.ECDH.testData.gpgEccPubKeyFingerprint};
+    'kdfInfo': e2e.cipher.ecdhTestData.kdfInfo,
+    'pubKey': e2e.cipher.ecdhTestData.gpgEccPubKey,
+    'fingerprint': e2e.cipher.ecdhTestData.gpgEccPubKeyFingerprint};
 
-  var ecdh = new e2e.cipher.ECDH(
+  var ecdh = new e2e.cipher.Ecdh(
       e2e.cipher.Algorithm.ECDH, pubKey);
 
   var c = e2e.async.Result.getValue(ecdh.encryptForTestingOnly(
-      e2e.cipher.ECDH.testData.gpgEccMessage,
-      e2e.cipher.ECDH.testData.gpgEccNonce));
+      e2e.cipher.ecdhTestData.gpgEccMessage,
+      e2e.cipher.ecdhTestData.gpgEccNonce));
 
   assertArrayEquals(c['u'],
-      e2e.cipher.ECDH.testData.gpgEccCiphertext);
+      e2e.cipher.ecdhTestData.gpgEccCiphertext);
 }
 </script>

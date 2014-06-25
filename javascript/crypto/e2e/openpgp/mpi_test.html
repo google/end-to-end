@@ -13,19 +13,19 @@
 // limitations under the License.
 // -->
 <!DOCTYPE html>
-<title>Unit Test of e2e.openpgp.MPI</title>
+<title>Unit Test of e2e.openpgp.Mpi</title>
 <script src="../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
-  goog.require('e2e.openpgp.MPI');
+  goog.require('e2e.openpgp.Mpi');
   goog.require('goog.array');
   goog.require('goog.testing.jsunit');
 </script>
 <script>
   function testMPI() {
     var numbers = [0x00, 0x09, 0x01, 0xFF, 0x00, 0x01, 0x01];
-    var mpi1 = e2e.openpgp.MPI.parse(numbers);
-    var mpi2 = e2e.openpgp.MPI.parse(numbers);
+    var mpi1 = e2e.openpgp.Mpi.parse(numbers);
+    var mpi2 = e2e.openpgp.Mpi.parse(numbers);
     assertArrayEquals([0x01, 0xFF], goog.array.clone(mpi1));
     assertArrayEquals([0x01], goog.array.clone(mpi2));
     assertArrayEquals([0x00, 0x09, 0x01, 0xFF], mpi1.serialize());

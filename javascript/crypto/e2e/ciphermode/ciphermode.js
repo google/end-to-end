@@ -24,13 +24,13 @@ goog.require('e2e.async.Result');
 
 /**
  * Constructor for all modes of operation.
- * @param {e2e.cipher.Cipher} cipher The cipher to use.
+ * @param {e2e.cipher.SymmetricCipher} cipher The cipher to use.
  * @constructor
  */
 e2e.ciphermode.CipherMode = function(cipher) {
   /**
    * The cipher to use in this mode of operation.
-   * @type {e2e.cipher.Cipher}
+   * @type {e2e.cipher.SymmetricCipher}
    * @protected
    */
   this.cipher = cipher;

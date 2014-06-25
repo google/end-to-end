@@ -14,7 +14,7 @@
 // -->
 <!DOCTYPE html>
 <title>Unit Test of e2e.FastModulus</title>
-<script src="../../../closure/base.js"></script>
+<script src="../../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
   goog.require('goog.array');
@@ -22,21 +22,21 @@
   goog.require('e2e.BigNum');
   goog.require('e2e.BigPrimeNum');
   goog.require('e2e.FastModulus');
-  goog.require('e2e.ecc.FastModulus.Curve25519');
-  goog.require('e2e.ecc.FastModulus.NIST.P_256');
-  goog.require('e2e.ecc.FastModulus.NIST.P_384');
+  goog.require('e2e.ecc.fastModulus.Curve25519');
+  goog.require('e2e.ecc.fastModulus.Nist.P_256');
+  goog.require('e2e.ecc.fastModulus.Nist.P_384');
   goog.require('e2e.ecc.constant');
 </script>
 <script>
 
 var P256 = new e2e.BigPrimeNum(e2e.ecc.constant.P_256.Q);
-var modP256 = new e2e.ecc.FastModulus.NIST.P_256(P256);
+var modP256 = new e2e.ecc.fastModulus.Nist.P_256(P256);
 
 var P384 = new e2e.BigPrimeNum(e2e.ecc.constant.P_384.Q);
-var modP384 = new e2e.ecc.FastModulus.NIST.P_384(P384);
+var modP384 = new e2e.ecc.fastModulus.Nist.P_384(P384);
 
 var C25519 = new e2e.BigPrimeNum(e2e.ecc.constant.CURVE_25519.Q);
-var modC25519 = new e2e.ecc.FastModulus.Curve25519(C25519);
+var modC25519 = new e2e.ecc.fastModulus.Curve25519(C25519);
 
 var N = new e2e.BigPrimeNum(e2e.ecc.constant.P_256.N);
 var modN = new e2e.FastModulus.FFFFFF(N);

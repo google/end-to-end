@@ -31,8 +31,8 @@ e2e.ciphermode.Pkcs7 = function() { };
  * Encodes the given message according to PKCS7 as described in:
  * http://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS7
  * @param {number} k The block size in bytes.
- * @param {!e2e.ByteArray} m The message to encode.
- * @return {!e2e.ByteArray} The encoded message.
+ * @param {e2e.ByteArray} m The message to encode.
+ * @return {e2e.ByteArray} The encoded message.
  */
 e2e.ciphermode.Pkcs7.prototype.encode = function(k, m) {
   var n = k - (m.length % k);
@@ -44,7 +44,7 @@ e2e.ciphermode.Pkcs7.prototype.encode = function(k, m) {
  * Decodes the given message according to PKCS7 as described in:
  *     http://en.wikipedia.org/wiki/Padding_(cryptography)#PKCS7
  * @param {number} k The block size in bytes.
- * @param {!e2e.ByteArray} m The message to decode.
+ * @param {e2e.ByteArray} m The message to decode.
  * @return {?e2e.ByteArray} The decode message or null
  *     for invalid encoding messages.
  */

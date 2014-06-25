@@ -19,19 +19,19 @@
  * @author fy@google.com (Frank Yellin).
  */
 
-goog.provide('e2e.ecc.Point');
+goog.provide('e2e.ecc.point.Point');
 
 
 
 /**
  * Constructs a point on a generic elliptic curve.
- * @param {!e2e.ecc.Curve} curve The curve.
+ * @param {!e2e.ecc.curve.Curve} curve The curve.
  * @constructor
  */
-e2e.ecc.Point = function(curve) {
+e2e.ecc.point.Point = function(curve) {
   /**
    * The curve on which this point is defined.
-   * @type {!e2e.ecc.Curve}
+   * @type {!e2e.ecc.curve.Curve}
    */
   this.curve = curve;
 };
@@ -41,14 +41,14 @@ e2e.ecc.Point = function(curve) {
  * Returns the x coordinate of this point.
  * @return {!e2e.ecc.Element}
  */
-e2e.ecc.Point.prototype.getX = goog.abstractMethod;
+e2e.ecc.point.Point.prototype.getX = goog.abstractMethod;
 
 
 /**
  * Returns the y coordinate of this point.
  * @return {!e2e.ecc.Element}
  */
-e2e.ecc.Point.prototype.getY = goog.abstractMethod;
+e2e.ecc.point.Point.prototype.getY = goog.abstractMethod;
 
 
 /**
@@ -56,26 +56,26 @@ e2e.ecc.Point.prototype.getY = goog.abstractMethod;
  * @param {boolean=} opt_compressed Return compressed form if true.
  * @return {e2e.ByteArray}
  */
-e2e.ecc.Point.prototype.toByteArray = goog.abstractMethod;
+e2e.ecc.point.Point.prototype.toByteArray = goog.abstractMethod;
 
 
 /**
  * Returns true if this is the identity point
  * @return {boolean}
  */
-e2e.ecc.Point.prototype.isIdentity = goog.abstractMethod;
+e2e.ecc.point.Point.prototype.isIdentity = goog.abstractMethod;
 
 
 /**
  * Multiplies this with a scalar, and return the new point. This operation
  *     dominates the running time of most ECC protocols.
  * @param {!e2e.BigNum} k The scalar to multiply this point with.
- * @return {!e2e.ecc.Point}
+ * @return {!e2e.ecc.point.Point}
  */
-e2e.ecc.Point.prototype.multiply = goog.abstractMethod;
+e2e.ecc.point.Point.prototype.multiply = goog.abstractMethod;
 
 
 /**
  * Create a fast multiply table on-the-fly and attach it to this Point.
  */
-e2e.ecc.Point.prototype.initializeForFastMultiply = goog.abstractMethod;
+e2e.ecc.point.Point.prototype.initializeForFastMultiply = goog.abstractMethod;

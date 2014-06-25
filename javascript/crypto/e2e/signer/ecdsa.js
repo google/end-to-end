@@ -16,12 +16,12 @@
  * @author thaidn@google.com (Thai Duong)
  */
 
-goog.provide('e2e.signer.ECDSA');
+goog.provide('e2e.signer.Ecdsa');
 
 goog.require('e2e.Algorithm');
 goog.require('e2e.async.Result');
 goog.require('e2e.ecc.DomainParam');
-goog.require('e2e.ecc.ECDSA');
+goog.require('e2e.ecc.Ecdsa');
 goog.require('e2e.ecc.Protocol');
 goog.require('e2e.signer.Algorithm');
 goog.require('e2e.signer.Signer');
@@ -41,30 +41,30 @@ goog.require('goog.asserts');
  * @extends {e2e.AlgorithmImpl}
  * @implements {e2e.signer.Signer}
  */
-e2e.signer.ECDSA = function(algorithm, opt_key) {
+e2e.signer.Ecdsa = function(algorithm, opt_key) {
   goog.asserts.assert(algorithm == e2e.signer.Algorithm.ECDSA,
       'Algorithm must be ECDSA.');
   goog.base(this, e2e.signer.Algorithm.ECDSA, opt_key);
 };
-goog.inherits(e2e.signer.ECDSA, e2e.AlgorithmImpl);
+goog.inherits(e2e.signer.Ecdsa, e2e.AlgorithmImpl);
 
 
 /**
  * Internal ECDSA implementation.
- * @type {!e2e.ecc.ECDSA}
+ * @type {!e2e.ecc.Ecdsa}
  * @private
  */
-e2e.signer.ECDSA.prototype.ecdsa_;
+e2e.signer.Ecdsa.prototype.ecdsa_;
 
 
 /** @return {!e2e.hash.Hash} */
-e2e.signer.ECDSA.prototype.getHash = function() {
+e2e.signer.Ecdsa.prototype.getHash = function() {
   return this.ecdsa_.getHash();
 };
 
 
 /** @override */
-e2e.signer.ECDSA.prototype.setHash = function(hash) {
+e2e.signer.Ecdsa.prototype.setHash = function(hash) {
   this.hash_ = hash;
 };
 
@@ -73,18 +73,21 @@ e2e.signer.ECDSA.prototype.setHash = function(hash) {
  * Sets the ECDSA public key and/or private key.
  * @override
  */
-e2e.signer.ECDSA.prototype.setKey = function(key, opt_keySize) {
+e2e.signer.Ecdsa.prototype.setKey = function(key, opt_keySize) {
   goog.asserts.assertArray(key['curve'], 'Curve should be defined.');
-  this.ecdsa_ = new e2e.ecc.ECDSA(
-      e2e.ecc.DomainParam.curveNameFromCurveOID(key['curve']),
-      /** @type {e2e.signer.key.ECDSA} */ (key));
+  this.ecdsa_ = new e2e.ecc.Ecdsa(
+      e2e.ecc.DomainParam.curveNameFromCurveOid(key['curve']),
+      {
+        'pubKey': key['pubKey'],
+        'privKey': key['privKey']
+      });
   // Save key material to serialize later the key.
   goog.base(this, 'setKey', key);
 };
 
 
 /** @inheritDoc */
-e2e.signer.ECDSA.prototype.sign = function(m) {
+e2e.signer.Ecdsa.prototype.sign = function(m) {
   var sig = /** @type {e2e.signer.signature.Signature} */(
       this.ecdsa_.sign(m));
   return e2e.async.Result.toResult(sig);
@@ -98,7 +101,7 @@ e2e.signer.ECDSA.prototype.sign = function(m) {
  * @return {!e2e.async.Result.<e2e.signer.signature.Signature>} The
  *     result of signing.
  */
-e2e.signer.ECDSA.prototype.signForTestingOnly = function(m, k) {
+e2e.signer.Ecdsa.prototype.signForTestingOnly = function(m, k) {
   var sig = /** @type {e2e.signer.signature.Signature} */(
       this.ecdsa_.signForTestingOnly(m, k));
   return e2e.async.Result.toResult(sig);
@@ -106,22 +109,12 @@ e2e.signer.ECDSA.prototype.signForTestingOnly = function(m, k) {
 
 
 /** @inheritDoc */
-e2e.signer.ECDSA.prototype.verify = function(m, sig) {
+e2e.signer.Ecdsa.prototype.verify = function(m, sig) {
   return e2e.async.Result.toResult(this.ecdsa_.verify(
       m, /** @type {{r: e2e.ByteArray, s:e2e.ByteArray}} */(
           sig)));
 };
 
 
-/**
- * Generates a new P-256 key pair and uses it to construct a new ECDSA object.
- * @return {e2e.signer.ECDSA}
- */
-e2e.signer.ECDSA.newECDSAWithP256 = function() {
-  var key = e2e.ecc.Protocol.generateRandomP256ECDSAKeyPair();
-  return new e2e.signer.ECDSA(e2e.signer.Algorithm.ECDSA, key);
-};
-
-
-e2e.signer.factory.add(e2e.signer.ECDSA,
+e2e.signer.factory.add(e2e.signer.Ecdsa,
                                e2e.signer.Algorithm.ECDSA);

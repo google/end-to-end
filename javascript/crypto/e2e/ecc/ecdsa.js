@@ -16,7 +16,7 @@
  * @author thaidn@google.com (Thai Duong)
  */
 
-goog.provide('e2e.ecc.ECDSA');
+goog.provide('e2e.ecc.Ecdsa');
 
 goog.require('e2e.BigNum');
 goog.require('e2e.ecc.PrimeCurve');
@@ -35,13 +35,13 @@ goog.require('goog.asserts');
  * Representation of an instance of the ECDSA protocol.
  * @param {!e2e.ecc.PrimeCurve} curveName The curve used for
  *     this protocol.
- * @param {{pubKey: e2e.ByteArray, privKey: e2e.ByteArray}=}
+ * @param {{pubKey: e2e.ByteArray, privKey: (e2e.ByteArray|undefined)}=}
  *     opt_key The public and/or private key used in this protocol.
  * @constructor
  * @extends {e2e.ecc.Protocol}
  */
-e2e.ecc.ECDSA = function(curveName, opt_key) {
-  e2e.ecc.ECDSA.base(this, 'constructor', curveName, opt_key);
+e2e.ecc.Ecdsa = function(curveName, opt_key) {
+  e2e.ecc.Ecdsa.base(this, 'constructor', curveName, opt_key);
   switch (curveName) {
     case e2e.ecc.PrimeCurve.P_256:
       this.hash_ = new e2e.hash.Sha256();
@@ -57,18 +57,18 @@ e2e.ecc.ECDSA = function(curveName, opt_key) {
         'Unknown algorithm for ECDSA: ' + curveName);
   }
 };
-goog.inherits(e2e.ecc.ECDSA, e2e.ecc.Protocol);
+goog.inherits(e2e.ecc.Ecdsa, e2e.ecc.Protocol);
 
 
 /**
  * The hash function that should be used. This is selected based on the curve.
  * @private {!e2e.hash.Hash}
  */
-e2e.ecc.ECDSA.prototype.hash_;
+e2e.ecc.Ecdsa.prototype.hash_;
 
 
 /** @return {!e2e.hash.Hash} */
-e2e.ecc.ECDSA.prototype.getHash = function() {
+e2e.ecc.Ecdsa.prototype.getHash = function() {
   return this.hash_;
 };
 
@@ -76,9 +76,9 @@ e2e.ecc.ECDSA.prototype.getHash = function() {
 /**
  * Applies the signing algorithm to the data.
  * @param {!Uint8Array|e2e.ByteArray|string} message The data to sign.
- * @return {!{s: !e2e.ByteArray, r: !e2e.ByteArray}}
+ * @return {{s: e2e.ByteArray, r: e2e.ByteArray}}
  */
-e2e.ecc.ECDSA.prototype.sign = function(message) {
+e2e.ecc.Ecdsa.prototype.sign = function(message) {
   var sig;
   var digest = this.hash_.hash(message);
   do {
@@ -93,9 +93,9 @@ e2e.ecc.ECDSA.prototype.sign = function(message) {
  * Exports the sign function for testing.
  * @param {!Uint8Array|e2e.ByteArray|string} message The data to sign.
  * @param {!e2e.BigNum} k The per-message secret.
- * @return {?{s: !e2e.ByteArray, r: !e2e.ByteArray}}
+ * @return {?{s: e2e.ByteArray, r: e2e.ByteArray}}
  */
-e2e.ecc.ECDSA.prototype.signForTestingOnly = function(message, k) {
+e2e.ecc.Ecdsa.prototype.signForTestingOnly = function(message, k) {
   var digest = this.hash_.hash(message);
   return this.signWithNonce_(digest, k);
 };
@@ -109,11 +109,11 @@ e2e.ecc.ECDSA.prototype.signForTestingOnly = function(message, k) {
  * @param {e2e.ByteArray} digest
  *     The digest of the message being signed.
  * @param {!e2e.BigNum} k The per-message secret.
- * @return {?{s:!e2e.ByteArray, r: !e2e.ByteArray,
- *            hashValue: !e2e.ByteArray}}
+ * @return {?{s:e2e.ByteArray, r: e2e.ByteArray,
+ *            hashValue: e2e.ByteArray}}
  * @private
  */
-e2e.ecc.ECDSA.prototype.signWithNonce_ = function(digest, k) {
+e2e.ecc.Ecdsa.prototype.signWithNonce_ = function(digest, k) {
   goog.asserts.assertObject(this.params, 'Domain params should be defined.');
   goog.asserts.assertObject(this.getPrivateKey(),
       'Private key value should be defined.');
@@ -156,7 +156,7 @@ e2e.ecc.ECDSA.prototype.signWithNonce_ = function(digest, k) {
  *     signature to verify.
  * @return {boolean}
  */
-e2e.ecc.ECDSA.prototype.verify = function(message, sig) {
+e2e.ecc.Ecdsa.prototype.verify = function(message, sig) {
   goog.asserts.assertObject(this.params, 'Domain params should be defined.');
   goog.asserts.assertObject(this.getPublicKey(),
       'Public key value should be defined.');
@@ -203,7 +203,7 @@ e2e.ecc.ECDSA.prototype.verify = function(message, sig) {
  * @return {!e2e.BigNum}
  * @private
  */
-e2e.ecc.ECDSA.prototype.generatePerMessageNonce_ = function(digest) {
+e2e.ecc.Ecdsa.prototype.generatePerMessageNonce_ = function(digest) {
   var N = this.params.n;
   var nonceLength = Math.ceil(this.params.curve.keySizeInBits() / 8);
   var hasher = new e2e.hash.Sha512();

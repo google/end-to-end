@@ -19,7 +19,7 @@
  * @author fy@google.com (Frank Yellin)
  */
 
-goog.provide('e2e.ecc.FastModulus.Curve25519');
+goog.provide('e2e.ecc.fastModulus.Curve25519');
 
 goog.require('e2e.FastModulus');
 
@@ -34,7 +34,7 @@ goog.require('e2e.FastModulus');
  * @param {!e2e.BigPrimeNum} modulus The large prime number for which
  *     we are building a fast modulus function.
  */
-e2e.ecc.FastModulus.Curve25519 = function(modulus) {
+e2e.ecc.fastModulus.Curve25519 = function(modulus) {
   /**
    * The modulus.
    * @private {!e2e.BigPrimeNum }
@@ -47,7 +47,7 @@ e2e.ecc.FastModulus.Curve25519 = function(modulus) {
 
 
 /** @override */
-e2e.ecc.FastModulus.Curve25519.prototype.residue = function(value) {
+e2e.ecc.fastModulus.Curve25519.prototype.residue = function(value) {
   value = value.clone();
   // Loop while bitLength(n) > 255
   while (value.n.length > 11 || (value.n[10] | 0) >= (1 << 15)) {

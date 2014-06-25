@@ -22,7 +22,8 @@ goog.require('goog.array');
 
 
 /**
- * List of hash algorithms allowed for OpenPGP signatures.
+ * List of hash algorithms allowed for OpenPGP signatures. Notable exceptions
+ * are MD5 (deprecated) and RIPEMD (unsupported).
  * @enum {string}
  */
 e2e.openpgp.SignatureDigestAlgorithm = {

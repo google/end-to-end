@@ -169,7 +169,7 @@ e2e.BigNumModulus.prototype.modSubtract = function(a, b) {
 /**
  * Calculates base ^ exp mod this.
  * @param {!e2e.BigNum} base Base.
- * @param {(!e2e.ByteArray|!e2e.BigNum)} exp Exponent.
+ * @param {(e2e.ByteArray|!e2e.BigNum)} exp Exponent.
  * @return {!e2e.BigNum} Result of modular exponentiation.
  */
 e2e.BigNumModulus.prototype.modPower = function(base, exp) {
@@ -243,7 +243,7 @@ e2e.BigNumModulus.prototype.modExp3_ = function(base) {
 /**
  * Internal modular exponentiation implementation.
  * @param {!e2e.BigNum} input Input.
- * @param {!e2e.ByteArray} exp Exponent.
+ * @param {e2e.ByteArray} exp Exponent.
  * @return {!e2e.BigNum}
  * @private
  */

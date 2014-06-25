@@ -129,7 +129,8 @@ ext.Launcher.prototype.updateSelectedContent =
 ext.Launcher.prototype.getSelectedContent = function(callback) {
   this.getActiveTab_(goog.bind(function(tabId) {
     chrome.tabs.sendMessage(tabId, {
-      editableElem: true
+      editableElem: true,
+      enableLookingGlass: preferences.isLookingGlassEnabled()
     }, callback);
   }, this));
 };

@@ -17,8 +17,8 @@
 <script src="../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
-  goog.require('e2e.cipher.DES');
-  goog.require('e2e.cipher.TripleDES');
+  goog.require('e2e.cipher.Des');
+  goog.require('e2e.cipher.TripleDes');
   goog.require('goog.array');
   goog.require('goog.math.Long');
   goog.require('goog.testing.jsunit');
@@ -37,7 +37,7 @@ function testBasic() {
     var key = goog.crypt.hexToByteArray(vector[0]);
     var plainText = goog.crypt.hexToByteArray(vector[1]);
     var cipherText = goog.crypt.hexToByteArray(vector[2]);
-    var cipher = new e2e.cipher.DES(
+    var cipher = new e2e.cipher.Des(
         e2e.cipher.Algorithm.DES,
         {key: key});
     var result = cipher.encrypt(plainText);
@@ -49,32 +49,32 @@ function testBasic() {
 
 function testPermuteBock() {
   var key = goog.crypt.hexToByteArray("0000000000000000");
-  var cipher = new e2e.cipher.DES(
+  var cipher = new e2e.cipher.Des(
       e2e.cipher.Algorithm.DES,
       {key: key});
   var result = cipher.permuteBlock_(goog.array.repeat(0, 31),
-                                    e2e.cipher.DES.permutedChoice1);
+                                    e2e.cipher.Des.permutedChoice1);
   assertTrue(result.equals(goog.math.Long.fromInt(0)));
 
   var result = cipher.permuteBlock_(goog.array.repeat(11, 31),
-                                    e2e.cipher.DES.permutedChoice1);
+                                    e2e.cipher.Des.permutedChoice1);
   assertTrue(result.equals(goog.math.Long.fromInt(267390960)));
 
   var block = goog.array.repeat(11, 31);
   block[0] = 3;
   var result = cipher.permuteBlock_(block,
-                                    e2e.cipher.DES.permutedChoice1);
+                                    e2e.cipher.Des.permutedChoice1);
   assertTrue(result.equals(goog.math.Long.fromInt(267390944)));
 
   var result = cipher.permuteBlock_(goog.array.repeat(200, 31),
-                                    e2e.cipher.DES.permutedChoice1);
+                                    e2e.cipher.Des.permutedChoice1);
   // 72056494526304240 value expected
   assertTrue(result.equals(goog.math.Long.fromBits(4080, 16776960)));
 }
 
 function testFeistel() {
   var key = goog.crypt.hexToByteArray("0000000000000000");
-  var cipher = new e2e.cipher.DES(
+  var cipher = new e2e.cipher.Des(
       e2e.cipher.Algorithm.DES,
       {key: key});
   var result = cipher.feistel_(0, goog.math.Long.fromInt(0));
@@ -86,7 +86,7 @@ function testFeistel() {
 
 function testKeyRotate() {
   var key = goog.crypt.hexToByteArray("0000000000000000");
-  var cipher = new e2e.cipher.DES(
+  var cipher = new e2e.cipher.Des(
       e2e.cipher.Algorithm.DES,
       {key: key});
   var result = cipher.keyRotate_(0);
@@ -106,7 +106,7 @@ function testKeyRotate() {
 
 function testKeyExpansion() {
   var key = goog.crypt.hexToByteArray("0000000000000000");
-  var cipher = new e2e.cipher.DES(
+  var cipher = new e2e.cipher.Des(
       e2e.cipher.Algorithm.DES,
       {key: key});
   var expected = [];
@@ -116,7 +116,7 @@ function testKeyExpansion() {
   assertArrayEquals(expected, cipher.subkeys_);
 
   key = goog.crypt.hexToByteArray("0900000000000000");
-  cipher = new e2e.cipher.DES(
+  cipher = new e2e.cipher.Des(
       e2e.cipher.Algorithm.DES,
       {key: key});
   expected = [
@@ -140,7 +140,7 @@ function testKeyExpansion() {
   assertArrayEquals(expected, cipher.subkeys_);
 
   key = goog.crypt.hexToByteArray("ffff0000ffff0000");
-  cipher = new e2e.cipher.DES(
+  cipher = new e2e.cipher.Des(
       e2e.cipher.Algorithm.DES,
       {key: key});
   expected = [
@@ -178,7 +178,7 @@ function testTripleDES() {
     var key = goog.crypt.hexToByteArray(vector[0]);
     var plainText = goog.crypt.hexToByteArray(vector[1]);
     var cipherText = goog.crypt.hexToByteArray(vector[2]);
-    var cipher = new e2e.cipher.TripleDES(
+    var cipher = new e2e.cipher.TripleDes(
         e2e.cipher.Algorithm.TripleDES,
         {key: key});
     assertArrayEquals(cipherText, e2e.async.Result.getValue(cipher.encrypt(plainText)));

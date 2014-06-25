@@ -16,7 +16,7 @@
  * @author thaidn@google.com (Thai Duong)
  */
 
-goog.provide('e2e.signer.DSA');
+goog.provide('e2e.signer.Dsa');
 
 goog.require('e2e.Algorithm');
 goog.require('e2e.BigNum');
@@ -45,33 +45,33 @@ goog.require('goog.asserts');
  * @implements {e2e.signer.Signer}
  * @extends {e2e.AlgorithmImpl}
  */
-e2e.signer.DSA = function(algorithm, opt_key) {
+e2e.signer.Dsa = function(algorithm, opt_key) {
   goog.asserts.assert(algorithm == e2e.signer.Algorithm.DSA,
       'Algorithm must be DSA.');
   goog.base(this, e2e.signer.Algorithm.DSA, opt_key);
 };
-goog.inherits(e2e.signer.DSA, e2e.AlgorithmImpl);
+goog.inherits(e2e.signer.Dsa, e2e.AlgorithmImpl);
 
 
 /**
  * The prime modulus. This must be a prime number.
  * @private {e2e.BigPrimeNum}
  */
-e2e.signer.DSA.prototype.p_;
+e2e.signer.Dsa.prototype.p_;
 
 
 /**
  * The prime order of the subgroup. This is a prime divisor of (p - 1).
  * @private {e2e.BigPrimeNum}
  */
-e2e.signer.DSA.prototype.q_;
+e2e.signer.Dsa.prototype.q_;
 
 
 /**
  * The generator of the subgroup of order q. 1 < g < p.
  * @private {e2e.BigNum}
  */
-e2e.signer.DSA.prototype.g_;
+e2e.signer.Dsa.prototype.g_;
 
 
 /**
@@ -79,14 +79,14 @@ e2e.signer.DSA.prototype.g_;
  *     such that x is in [1, q - 1].
  * @private {e2e.BigNum}
  */
-e2e.signer.DSA.prototype.x_;
+e2e.signer.Dsa.prototype.x_;
 
 
 /**
  * The public key, where y = g^x (mod p).
  * @private {e2e.BigNum}
  */
-e2e.signer.DSA.prototype.y_;
+e2e.signer.Dsa.prototype.y_;
 
 
 /**
@@ -94,19 +94,19 @@ e2e.signer.DSA.prototype.y_;
  *     lengths p and q.
  * @private {e2e.hash.Hash}
  */
-e2e.signer.DSA.prototype.hash_;
+e2e.signer.Dsa.prototype.hash_;
 
 
 /**
  * @return {e2e.hash.Hash}
  */
-e2e.signer.DSA.prototype.getHash = function() {
+e2e.signer.Dsa.prototype.getHash = function() {
   return this.hash_;
 };
 
 
 /** @override */
-e2e.signer.DSA.prototype.setHash = function(hash) {
+e2e.signer.Dsa.prototype.setHash = function(hash) {
   this.hash_ = hash;
 };
 
@@ -115,8 +115,8 @@ e2e.signer.DSA.prototype.setHash = function(hash) {
  * Sets the DSA public key and/or private key.
  * @override
  */
-e2e.signer.DSA.prototype.setKey = function(keyArg, opt_keySize) {
-  var key = /** @type {e2e.signer.key.DSA} */ (keyArg);
+e2e.signer.Dsa.prototype.setKey = function(keyArg, opt_keySize) {
+  var key = /** @type {e2e.signer.key.Dsa} */ (keyArg);
   goog.asserts.assertArray(key['p'], 'The prime modulus should be defined.');
   this.p_ = new e2e.BigPrimeNum(key['p']);
   var lenP = this.p_.getBitLength();
@@ -205,7 +205,7 @@ e2e.signer.DSA.prototype.setKey = function(keyArg, opt_keySize) {
 
 
 /** @inheritDoc */
-e2e.signer.DSA.prototype.sign = function(m) {
+e2e.signer.Dsa.prototype.sign = function(m) {
   var sig;
   do {
     var k = this.generatePerMessageSecret_();
@@ -225,13 +225,13 @@ e2e.signer.DSA.prototype.sign = function(m) {
  * @param {e2e.BigNum} k The per-message secret.
  * @return {e2e.async.Result} The result of signing.
  */
-e2e.signer.DSA.prototype.signForTestingOnly = function(m, k) {
+e2e.signer.Dsa.prototype.signForTestingOnly = function(m, k) {
   return e2e.async.Result.toResult(this.signWithNonce_(m, k));
 };
 
 
 /** @inheritDoc */
-e2e.signer.DSA.prototype.verify = function(m, sig) {
+e2e.signer.Dsa.prototype.verify = function(m, sig) {
   goog.asserts.assertObject(this.p_, 'The prime modulus should be defined.');
   goog.asserts.assertObject(this.q_, 'The prime order should be defined.');
   goog.asserts.assertObject(this.g_, 'The order should be defined.');
@@ -262,7 +262,7 @@ e2e.signer.DSA.prototype.verify = function(m, sig) {
  *           hashValue: e2e.ByteArray}}
  * @private
  */
-e2e.signer.DSA.prototype.signWithNonce_ = function(m, k) {
+e2e.signer.Dsa.prototype.signWithNonce_ = function(m, k) {
   goog.asserts.assertObject(this.p_, 'The prime modulus should be defined.');
   goog.asserts.assertObject(this.q_, 'The prime order should be defined.');
   goog.asserts.assertObject(this.g_, 'The order should be defined.');
@@ -293,7 +293,7 @@ e2e.signer.DSA.prototype.signWithNonce_ = function(m, k) {
  * @return {e2e.BigNum}
  * @private
  */
-e2e.signer.DSA.prototype.generatePerMessageSecret_ = function() {
+e2e.signer.Dsa.prototype.generatePerMessageSecret_ = function() {
   goog.asserts.assertObject(this.q_,
       'Cannot generate random per-message secret: q should be defined.');
 
@@ -319,5 +319,5 @@ e2e.signer.DSA.prototype.generatePerMessageSecret_ = function() {
 };
 
 
-e2e.signer.factory.add(e2e.signer.DSA,
+e2e.signer.factory.add(e2e.signer.Dsa,
                                e2e.signer.Algorithm.DSA);

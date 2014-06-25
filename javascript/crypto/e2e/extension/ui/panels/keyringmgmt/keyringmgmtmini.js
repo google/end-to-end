@@ -37,7 +37,7 @@ var templates = e2e.ext.ui.templates.panels.keyringmgmt;
  * Constructor for the minimized version of the keyring management UI.
  * @param {!function()} exportCallback The callback to invoke when the keyring
  *     is to be exported.
- * @param {!function(File)} importCallback The callback to invoke when an
+ * @param {!function(!File)} importCallback The callback to invoke when an
  *     existing keyring is to be imported.
  * @param {!function(string)} updatePassphraseCallback The callback to invoke
  *     when the passphrase to the keyring is to be updated.
@@ -57,7 +57,7 @@ panels.KeyringMgmtMini =
 
   /**
    * The callback to invoke when an existing keyring is to be imported.
-   * @type {!function(File)}
+   * @type {!function(!File)}
    * @private
    */
   this.importCallback_ = importCallback;
@@ -86,8 +86,6 @@ panels.KeyringMgmtMini.prototype.decorateInternal = function(elem) {
   soy.renderElement(elem, templates.ManageKeyring, {
     importKeyringLabel: chrome.i18n.getMessage('keyMgmtImportKeyringLabel'),
     exportKeyringLabel: chrome.i18n.getMessage('keyMgmtExportKeyringLabel'),
-    importActionButtonTitle:
-        chrome.i18n.getMessage('keyMgmtImportKeyringActionLabel'),
     importCancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction'),
     changePassphraseLabel:
         chrome.i18n.getMessage('keyMgmtChangePassphraseLabel'),
@@ -98,15 +96,28 @@ panels.KeyringMgmtMini.prototype.decorateInternal = function(elem) {
     passphraseChangeCancelButtonTitle:
         chrome.i18n.getMessage('actionCancelPgpAction'),
     confirmPassphrasePlaceholder:
-        chrome.i18n.getMessage('keyMgmtChangePassphrasePlaceholder'),
+        chrome.i18n.getMessage('keyMgmtConfirmPassphrasePlaceholder'),
     passphraseConfirmActionButtonTitle:
         chrome.i18n.getMessage('keyMgmtConfirmPassphraseActionLabel')
   });
 
+  // for display on welcome page
   if (this.exportCallback_ == goog.nullFunction) {
     goog.dom.classes.add(
         this.getElementByClass(constants.CssClass.KEYRING_EXPORT),
         constants.CssClass.HIDDEN);
+  } else {
+    chrome.runtime.getBackgroundPage(goog.bind(function(page) {
+      if (page.launcher) {
+        page.launcher.getContext().getAllKeys().addCallback(
+            goog.bind(function(keys) {
+              if (Object.keys(keys).length == 0) {
+                this.getElementByClass(
+                    constants.CssClass.KEYRING_EXPORT).disabled = true;
+              }
+            }, this));
+      }
+    }, this));
   }
 };
 
@@ -146,7 +157,7 @@ panels.KeyringMgmtMini.prototype.enterDocument = function() {
               constants.ElementId.KEYRING_OPTIONS_DIV)).
       listen(
           goog.dom.getElementByClass(constants.CssClass.ACTION, importDiv),
-          goog.events.EventType.CLICK,
+          goog.events.EventType.CHANGE,
           this.importKeyring_).
       listen(
           goog.dom.getElementByClass(
@@ -264,6 +275,8 @@ panels.KeyringMgmtMini.prototype.setKeyringEncrypted = function(encrypted) {
  * Resets the appearance of the panel.
  */
 panels.KeyringMgmtMini.prototype.reset = function() {
+  goog.dom.getElement(constants.ElementId.KEYRING_IMPORT_DIV)
+      .querySelector('input').value = '';
   this.showKeyringMgmtForm_(constants.ElementId.KEYRING_OPTIONS_DIV);
 };
 

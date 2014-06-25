@@ -18,16 +18,16 @@
 goog.provide('e2e.cipher.ciphertext.Asymmetric');
 goog.provide('e2e.cipher.ciphertext.AsymmetricAsync');
 goog.provide('e2e.cipher.ciphertext.CipherText');
-goog.provide('e2e.cipher.ciphertext.ECDH');
+goog.provide('e2e.cipher.ciphertext.Ecdh');
 goog.provide('e2e.cipher.ciphertext.Elgamal');
-goog.provide('e2e.cipher.ciphertext.RSA');
+goog.provide('e2e.cipher.ciphertext.Rsa');
 goog.provide('e2e.cipher.ciphertext.Symmetric');
 
 
 /**
  * @typedef {{c: e2e.ByteArray}}
  */
-e2e.cipher.ciphertext.RSA;
+e2e.cipher.ciphertext.Rsa;
 
 
 /**
@@ -39,7 +39,7 @@ e2e.cipher.ciphertext.Elgamal;
 /**
  * @typedef {{u: e2e.ByteArray, v:e2e.ByteArray}}
  */
-e2e.cipher.ciphertext.ECDH;
+e2e.cipher.ciphertext.Ecdh;
 
 
 /**
@@ -49,16 +49,16 @@ e2e.cipher.ciphertext.Symmetric;
 
 
 /**
- * @typedef {e2e.cipher.ciphertext.ECDH|
+ * @typedef {e2e.cipher.ciphertext.Ecdh|
  *     e2e.cipher.ciphertext.Elgamal|
- *     e2e.cipher.ciphertext.RSA}
+ *     e2e.cipher.ciphertext.Rsa}
  */
 e2e.cipher.ciphertext.Asymmetric;
 
 /**
- * @typedef {!e2e.async.Result.<e2e.cipher.ciphertext.ECDH>|
+ * @typedef {!e2e.async.Result.<e2e.cipher.ciphertext.Ecdh>|
  *     !e2e.async.Result.<e2e.cipher.ciphertext.Elgamal>|
- *     !e2e.async.Result.<e2e.cipher.ciphertext.RSA>}
+ *     !e2e.async.Result.<e2e.cipher.ciphertext.Rsa>}
  */
 e2e.cipher.ciphertext.AsymmetricAsync;
 

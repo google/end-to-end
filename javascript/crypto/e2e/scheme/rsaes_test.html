@@ -17,7 +17,7 @@
 <script src="../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
-  goog.require('e2e.cipher.RSA');
+  goog.require('e2e.cipher.Rsa');
   goog.require('e2e.scheme.Rsaes');
   goog.require('goog.testing.asserts');
   goog.require('goog.testing.jsunit');
@@ -216,10 +216,10 @@
   // DISABLED until Chrome makes web crypto public.
   function DISABLEDtestRsaEs() {
     var res1 = new e2e.async.Result;
-    var rsa1=new e2e.cipher.RSA('RSA');
+    var rsa1=new e2e.cipher.Rsa('RSA');
     rsa1.setKey(RSA_KEY);
     var res2 = new e2e.async.Result;
-    var rsa2=new e2e.cipher.RSA('RSA');
+    var rsa2=new e2e.cipher.Rsa('RSA');
     rsa2.setKey(RSA_KEY);
     crypto.subtle.importKey(
       'spki',
@@ -241,7 +241,7 @@
         rsaes2 = new e2e.scheme.Rsaes(rsa2);
         res2.callback(1);
     });
-    var rsa3=new e2e.cipher.RSA('RSA');
+    var rsa3=new e2e.cipher.Rsa('RSA');
     rsa3.setKey(RSA_KEY);
     rsaes3 = new e2e.scheme.Rsaes(rsa3);
     res1.addCallback(function() {

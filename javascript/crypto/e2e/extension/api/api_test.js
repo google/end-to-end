@@ -165,16 +165,15 @@ function testEncryptAndDecrypt() {
   var plaintext = 'a secret message';
 
   populatePgpKeys();
-  asyncTestCase.waitForAsync('Waiting for keys to be populated.');
+  asyncTestCase.waitForAsync('Populating keys.');
   window.setTimeout(function() {
-    asyncTestCase.continueTesting();
-
+    asyncTestCase.waitForAsync('Encrypting data.');
     api.executeAction_(function(encryptedResponse) {
-
       assertContains('-----BEGIN PGP MESSAGE-----', encryptedResponse.content);
-
+      asyncTestCase.waitForAsync('Decrypting data.');
       api.executeAction_(function(decryptedResponse) {
         assertEquals(plaintext, decryptedResponse.content);
+        asyncTestCase.continueTesting();
       }, {
         content: encryptedResponse.content,
         currentUser: 'test 4',
@@ -195,15 +194,15 @@ function testEncryptForSigner() {
 
   populatePgpKeys();
   api.pgpCtx_.importKey(function() {}, PUBLIC_KEY_ASCII_2);
-  asyncTestCase.waitForAsync('Waiting for keys to be populated.');
+  asyncTestCase.waitForAsync('Populating keys.');
   window.setTimeout(function() {
-    asyncTestCase.continueTesting();
-
+    asyncTestCase.waitForAsync('Encrypting');
     api.executeAction_(function(encryptedResponse) {
       assertContains('-----BEGIN PGP MESSAGE-----', encryptedResponse.content);
-
+      asyncTestCase.waitForAsync('Decrypting.');
       api.executeAction_(function(decryptedResponse) {
         assertEquals(plaintext, decryptedResponse.content);
+        asyncTestCase.continueTesting();
       }, {
         content: encryptedResponse.content,
         currentUser: 'test 4',
@@ -221,11 +220,10 @@ function testEncryptForSigner() {
 
 
 function testGetKeyDescription() {
-  var plaintext = 'a secret message';
-
+  asyncTestCase.waitForAsync('Waiting for api response');
   api.executeAction_(function(response) {
-    console.debug(response);
-    assertContains('test 4', response.content);
+    assertContains('test 4', response.content[0].uids);
+    asyncTestCase.continueTesting();
   }, {
     content: PUBLIC_KEY_ASCII,
     currentUser: 'test 4',
@@ -235,13 +233,15 @@ function testGetKeyDescription() {
 
 
 function testImportKeyAndGetDescription() {
-  api.executeAction_({
+  asyncTestCase.waitForAsync('Importing');
+  api.executeAction_(function() {
+    var keys = api.getEncryptKeys_(['test 4']);
+    assertEquals(1, keys.length);
+    asyncTestCase.continueTesting();
+  }, {
     content: PUBLIC_KEY_ASCII,
     currentUser: '',
     action: constants.Actions.IMPORT_KEY
-  }, {}, function() {
-    var keys = api.getEncryptKeys_(['test 4']);
-    assertEquals(1, keys.length);
   });
 }
 
@@ -296,6 +296,5 @@ function populatePgpKeys() {
   ctx.importKey(function(uid, callback) {
     callback('test');
   }, PRIVATE_KEY_ASCII);
-
   ctx.importKey(function() {}, PUBLIC_KEY_ASCII);
 }

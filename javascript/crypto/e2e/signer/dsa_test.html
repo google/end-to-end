@@ -13,15 +13,15 @@
 // limitations under the License.
 // -->
 <!DOCTYPE html>
-<title>Unit Test of e2e.signer.DSA</title>
+<title>Unit Test of e2e.signer.Dsa</title>
 <script src="../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
   goog.require('e2e.BigNum');
   goog.require('e2e.hash.all');
   goog.require('e2e.signer.Algorithm');
-  goog.require('e2e.signer.DSA');
-  goog.require('e2e.signer.DSA.testData');
+  goog.require('e2e.signer.Dsa');
+  goog.require('e2e.signer.dsaTestData');
   goog.require('e2e.random');
   goog.require('goog.testing.jsunit');
 </script>
@@ -30,7 +30,7 @@
  * Tests DSA with public test vectors downloaded from NIST.
  */
 function testWithNISTVectors() {
-  goog.array.forEach(e2e.signer.DSA.testData.NISTVectors,
+  goog.array.forEach(e2e.signer.dsaTestData.NISTVectors,
       function(vector) {
         var key = {
             'p': vector['P'],
@@ -38,7 +38,7 @@ function testWithNISTVectors() {
             'g': vector['G'],
             'x': vector['X'],
             'y': vector['Y']};
-        var dsa = new e2e.signer.DSA(
+        var dsa = new e2e.signer.Dsa(
             e2e.signer.Algorithm.DSA, key);
 
         // Test consistency
@@ -66,14 +66,14 @@ function testWithNISTVectors() {
  * Tests that invalid signatures are rejected.
  */
 function testInvalidSignature() {
-  var vector = e2e.signer.DSA.testData.NISTVectors[0];
+  var vector = e2e.signer.dsaTestData.NISTVectors[0];
   var key = {
       'p': vector['P'],
       'q': vector['Q'],
       'g': vector['G'],
       'x': vector['X'],
       'y': vector['Y']};
-  var dsa = new e2e.signer.DSA(
+  var dsa = new e2e.signer.Dsa(
       e2e.signer.Algorithm.DSA, key);
   var m = [0x00];
   var sig = {

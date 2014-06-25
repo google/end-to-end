@@ -17,14 +17,14 @@
  * @author thaidn@google.com (Thai Duong).
  */
 
-goog.provide('e2e.ecc.ECDSA.testData');
-goog.setTestOnly('e2e.ecc.ECDSA.testData');
+goog.provide('e2e.ecc.ecdsaTestData');
+goog.setTestOnly();
 
 goog.require('e2e.ecc.PrimeCurve');
 
 
 /** Test stuff */
-e2e.ecc.ECDSA.testData.testVectors = [
+e2e.ecc.ecdsaTestData.testVectors = [
   {
     'curve': e2e.ecc.PrimeCurve.P_256,
 

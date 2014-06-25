@@ -17,8 +17,8 @@
  * @author thaidn@google.com (Thai Duong)
  */
 
-goog.provide('e2e.signer.DSA.testData');
-goog.setTestOnly('e2e.signer.DSA.testData');
+goog.provide('e2e.signer.dsaTestData');
+goog.setTestOnly();
 
 
 
@@ -33,7 +33,7 @@ goog.setTestOnly('e2e.signer.DSA.testData');
  *     - K: the per-message nonce.
  *     - (R, S): the signature.
  */
-e2e.signer.DSA.testData.NISTVectors = [
+e2e.signer.dsaTestData.NISTVectors = [
   {
     // L=1024, N=160, SHA-1
     'P': [0xa8, 0xf9, 0xcd, 0x20, 0x1e, 0x5e, 0x35, 0xd8,

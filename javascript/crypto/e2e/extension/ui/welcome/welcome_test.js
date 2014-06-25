@@ -195,13 +195,14 @@ function testGenerateKey() {
 
 
 function testImportKeyring() {
-  stubs.replace(window, 'confirm', function(msg) { return true;});
-
-  stubs.replace(e2e.ext.utils, 'ReadFile',
-      mockControl.createFunctionMock('ReadFile'));
+  stubs.replace(e2e.ext.utils, 'readFile',
+      mockControl.createFunctionMock('readFile'));
+  stubs.replace(chrome.i18n, 'getMessage', function(a, b) {
+    return a + (b ? b : '');
+  });
   var readCallbackArg =
       new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  e2e.ext.utils.ReadFile(
+  e2e.ext.utils.readFile(
       goog.testing.mockmatchers.ignoreArgument, readCallbackArg);
 
   mockControl.$replayAll();
@@ -210,18 +211,29 @@ function testImportKeyring() {
   page.importKeyring_('irrelevant');
   readCallbackArg.arg(PUBLIC_KEY_ASCII);
 
-  testCase.waitForAsync('waiting for keyring to be imported');
+  testCase.waitForAsync('waiting for key description to be accepted');
   window.setTimeout(function() {
-    testCase.continueTesting();
-    assertContains('welcomeKeyImport', document.body.textContent);
+    assertContains('test 4', document.body.textContent);
+    // Click the getKeyDescription confirmation dialog.
     for (var childIdx = 0; childIdx < page.getChildCount(); childIdx++) {
       var child = page.getChildAt(childIdx);
       if (child instanceof e2e.ext.ui.Dialog) {
-        child.dialogCallback_();
+        child.dialogCallback_('');
       }
     }
-    assertNotContains('welcomeKeyImport', document.body.textContent);
-    mockControl.$verifyAll();
+    testCase.waitForAsync('waiting for keyring to be imported');
+    window.setTimeout(function() {
+      assertContains('welcomeKeyImport', document.body.textContent);
+      for (var childIdx = 0; childIdx < page.getChildCount(); childIdx++) {
+        var child = page.getChildAt(childIdx);
+        if (child instanceof e2e.ext.ui.Dialog) {
+          child.dialogCallback_();
+        }
+      }
+      assertNotContains('welcomeKeyImport', document.body.textContent);
+      mockControl.$verifyAll();
+      testCase.continueTesting();
+    }, 500);
   }, 500);
 }
 
@@ -256,8 +268,8 @@ function testUpdateKeyringPassphrase() {
 function testRenderPassphraseCallback() {
   var passphrase = 'test';
 
-  stubs.replace(chrome.i18n, 'getMessage', function() {
-    return '%s';
+  stubs.replace(chrome.i18n, 'getMessage', function(a, b) {
+    return b;
   });
 
   var callback = mockControl.createFunctionMock('callback');

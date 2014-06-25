@@ -17,7 +17,7 @@
  * @author tunatoksoz@google.com (Tuna Toksoz)
  */
 
-goog.provide('e2e.ciphermode.CBC');
+goog.provide('e2e.ciphermode.Cbc');
 
 goog.require('e2e.async.Result');
 goog.require('e2e.ciphermode.CipherMode');
@@ -27,12 +27,12 @@ goog.require('e2e.ciphermode.Pkcs7');
 /**
  * Implements the Cipher Block Chaining mode.
  *
- * @param {!e2e.cipher.Cipher} cipher The block cipher to use.
+ * @param {!e2e.cipher.SymmetricCipher} cipher The block cipher to use.
  * @constructor
  * @extends {e2e.ciphermode.CipherMode}
  * @final
  */
-e2e.ciphermode.CBC = function(cipher) {
+e2e.ciphermode.Cbc = function(cipher) {
   goog.base(this, cipher);
 
   /**
@@ -41,11 +41,11 @@ e2e.ciphermode.CBC = function(cipher) {
    */
   this.pkcs7_ = new e2e.ciphermode.Pkcs7();
 };
-goog.inherits(e2e.ciphermode.CBC, e2e.ciphermode.CipherMode);
+goog.inherits(e2e.ciphermode.Cbc, e2e.ciphermode.CipherMode);
 
 
 /** @inheritDoc */
-e2e.ciphermode.CBC.prototype.encrypt = function(data, iv) {
+e2e.ciphermode.Cbc.prototype.encrypt = function(data, iv) {
   data = this.pkcs7_.encode(this.cipher.blockSize, data);
 
   var cipherText = [];
@@ -71,7 +71,7 @@ e2e.ciphermode.CBC.prototype.encrypt = function(data, iv) {
 
 
 /** @inheritDoc */
-e2e.ciphermode.CBC.prototype.decrypt = function(data, iv) {
+e2e.ciphermode.Cbc.prototype.decrypt = function(data, iv) {
   var plainText = [];
   var blockStartIndex = 0;
   var vector = iv;

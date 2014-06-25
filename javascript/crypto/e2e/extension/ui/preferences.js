@@ -42,6 +42,11 @@ preferences.initDefaults = function() {
       constants.StorageKey.ENABLE_AUTO_SAVE)) {
     preferences.setAutoSaveEnabled(true);
   }
+
+  if (undefined == window.localStorage.getItem(
+      constants.StorageKey.ENABLE_LOOKING_GLASS)) {
+    preferences.setLookingGlassEnabled(true);
+  }
 };
 
 
@@ -102,6 +107,26 @@ preferences.setAutoSaveEnabled = function(enable) {
 preferences.isAutoSaveEnabled = function() {
   return 'true' == window.localStorage.getItem(
       constants.StorageKey.ENABLE_AUTO_SAVE);
+};
+
+
+/**
+ * Enables/disables the looking glass.
+ * @param {boolean} enable True if the looking glass is to be enabled.
+ */
+preferences.setLookingGlassEnabled = function(enable) {
+  window.localStorage.setItem(
+      constants.StorageKey.ENABLE_LOOKING_GLASS, enable.toString());
+};
+
+
+/**
+ * Indicates whether the looking glass is enabled.
+ * @return {boolean} True if enabled.
+ */
+preferences.isLookingGlassEnabled = function() {
+  return 'true' == window.localStorage.getItem(
+      constants.StorageKey.ENABLE_LOOKING_GLASS);
 };
 
 }); // goog.scope

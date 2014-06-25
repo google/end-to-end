@@ -25,15 +25,15 @@
   goog.require('goog.testing.PropertyReplacer');
   goog.require('e2e.async.Result');
   goog.require('e2e.cipher.all');
-  goog.require('e2e.cipher.AES');
+  goog.require('e2e.cipher.Aes');
   goog.require('e2e.cipher.Algorithm');
   goog.require('e2e.openpgp.block.TransferablePublicKey');
-  goog.require('e2e.openpgp.KeyRing.testData');
+  goog.require('e2e.openpgp.keyringTestData');
   goog.require('e2e.openpgp.block.factory');
   goog.require('e2e.openpgp.KeyClient');
   goog.require('e2e.hash.Sha1');
   goog.require('e2e.signer.Algorithm');
-  goog.require('e2e.signer.ECDSA');
+  goog.require('e2e.signer.Ecdsa');
 </script>
 <script>
 
@@ -90,7 +90,7 @@ function testSearchPublicKeyFoundValidKey() {
   assertEquals(
       'http://127.0.0.1:8888/pks/lookup?op=get&x-email=test%40google.com',
       xhrios[0].getLastUri());
-  xhrios[0].simulateResponse(200, e2e.openpgp.KeyRing.testData.pubKeyAscii);
+  xhrios[0].simulateResponse(200, e2e.openpgp.keyringTestData.pubKeyAscii);
   pubKeys.addCallback(function(pubKeys) {
       assertEquals(1, pubKeys.length);
       assertEquals('ecc real name <ecc@example.com>', pubKeys[0].getUserIds()[0]);

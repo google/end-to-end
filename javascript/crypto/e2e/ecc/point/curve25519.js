@@ -19,10 +19,10 @@
  * @author fy@google.com (Frank Yellin).
  */
 
-goog.provide('e2e.ecc.Point.Curve25519');
+goog.provide('e2e.ecc.point.Curve25519');
 
 goog.require('e2e.BigNum');
-goog.require('e2e.ecc.Point');
+goog.require('e2e.ecc.point.Point');
 goog.require('goog.array');
 goog.require('goog.asserts');
 
@@ -31,14 +31,14 @@ goog.require('goog.asserts');
 /**
  * Constructs a point on the elliptic curve Curve25519 defined over a
  * prime field.
- * @param {!e2e.ecc.Curve} curve The curve.
+ * @param {!e2e.ecc.curve.Curve} curve The curve.
  * @param {!e2e.ecc.Element} x The x Jacobian coordinate.
  * @param {!e2e.ecc.Element=} opt_z The optional z Jacobian coordinate.
  * @constructor
- * @extends {e2e.ecc.Point}
+ * @extends {e2e.ecc.point.Point}
  */
-e2e.ecc.Point.Curve25519 = function(curve, x, opt_z) {
-  e2e.ecc.Point.Curve25519.base(
+e2e.ecc.point.Curve25519 = function(curve, x, opt_z) {
+  e2e.ecc.point.Curve25519.base(
       this, 'constructor', curve);
   var z = opt_z || curve.ONE;
   goog.asserts.assert(!x.isEqual(curve.ZERO) || !z.isEqual(curve.ZERO),
@@ -57,15 +57,15 @@ e2e.ecc.Point.Curve25519 = function(curve, x, opt_z) {
 
   /**
    * The equivalent affine Point.
-   * @type {e2e.ecc.Point.Curve25519}
+   * @type {e2e.ecc.point.Curve25519}
    */
   this.affine = this.z.isEqual(curve.ONE) ? this : null;
 };
-goog.inherits(e2e.ecc.Point.Curve25519, e2e.ecc.Point);
+goog.inherits(e2e.ecc.point.Curve25519, e2e.ecc.point.Point);
 
 
 /** @override */
-e2e.ecc.Point.Curve25519.prototype.getX = function() {
+e2e.ecc.point.Curve25519.prototype.getX = function() {
   goog.asserts.assert(!this.isInfinity(),
       'Cannot obtain the affine coordinate of the point at infinity.');
   return this.getAffine_().x;
@@ -76,7 +76,7 @@ e2e.ecc.Point.Curve25519.prototype.getX = function() {
  * Returns the x affine coordinate of this, with infinity converted to 0.
  * @return {!e2e.ecc.Element}
  */
-e2e.ecc.Point.Curve25519.prototype.getX0 = function() {
+e2e.ecc.point.Curve25519.prototype.getX0 = function() {
   if (this.isInfinity()) {
     return this.curve.ZERO;
   } else {
@@ -87,13 +87,13 @@ e2e.ecc.Point.Curve25519.prototype.getX0 = function() {
 
 /**
  * Returns the equivalent affine point.
- * @return {!e2e.ecc.Point.Curve25519}
+ * @return {!e2e.ecc.point.Curve25519}
  * @private
  */
-e2e.ecc.Point.Curve25519.prototype.getAffine_ = function() {
+e2e.ecc.point.Curve25519.prototype.getAffine_ = function() {
   if (this.affine_ == null) {
     var x = this.x.multiply(this.z.inverse());
-    this.affine_ = new e2e.ecc.Point.Curve25519(this.curve, x);
+    this.affine_ = new e2e.ecc.point.Curve25519(this.curve, x);
   }
   return this.affine_;
 };
@@ -103,14 +103,14 @@ e2e.ecc.Point.Curve25519.prototype.getAffine_ = function() {
  * Returns true if this is the point at infinity.
  * @return {boolean}
  */
-e2e.ecc.Point.Curve25519.prototype.isInfinity = function() {
+e2e.ecc.point.Curve25519.prototype.isInfinity = function() {
   // Infinity is the only Point with z == 0.
   return this.z.isEqual(this.curve.ZERO);
 };
 
 
 /** @override */
-e2e.ecc.Point.Curve25519.prototype.isIdentity = function() {
+e2e.ecc.point.Curve25519.prototype.isIdentity = function() {
   // Infinity is identity point.
   return this.isInfinity();
 };
@@ -118,10 +118,10 @@ e2e.ecc.Point.Curve25519.prototype.isIdentity = function() {
 
 /**
  * Compares another point with this. Return true if they are the same.
- * @param {!e2e.ecc.Point} that The point to compare.
+ * @param {!e2e.ecc.point.Point} that The point to compare.
  * @return {boolean}
  */
-e2e.ecc.Point.Curve25519.prototype.isEqual = function(that) {
+e2e.ecc.point.Curve25519.prototype.isEqual = function(that) {
   if (this.isInfinity()) {
     return that.isInfinity();
   }
@@ -136,7 +136,7 @@ e2e.ecc.Point.Curve25519.prototype.isEqual = function(that) {
 /**
  * @override
  */
-e2e.ecc.Point.Curve25519.prototype.toByteArray = function(
+e2e.ecc.point.Curve25519.prototype.toByteArray = function(
     opt_compressed) {
   var X = this.getX0().toBigNum().toByteArray().reverse();
   var fieldSize = Math.ceil(this.curve.keySizeInBits() / 8);
@@ -149,23 +149,23 @@ e2e.ecc.Point.Curve25519.prototype.toByteArray = function(
 
 
 /** @override */
-e2e.ecc.Point.Curve25519.prototype.initializeForFastMultiply =
+e2e.ecc.point.Curve25519.prototype.initializeForFastMultiply =
     function() {
 };
 
 
 /**
  * Doubles this, and return the result as a new point.
- * @return {!e2e.ecc.Point.Curve25519}
+ * @return {!e2e.ecc.point.Curve25519}
  * @private
  */
-e2e.ecc.Point.Curve25519.prototype.twice_ = function() {
+e2e.ecc.point.Curve25519.prototype.twice_ = function() {
   var t1 = this.x.add(this.z).square();
   var t2 = this.x.subtract(this.z).square();
   var t3 = t1.subtract(t2);
   var xOut = t1.multiply(t2);
   var zOut = t3.multiply(t1.add(t3.multiply(this.curve.A4)));
-  return new e2e.ecc.Point.Curve25519(this.curve, xOut, zOut);
+  return new e2e.ecc.point.Curve25519(this.curve, xOut, zOut);
 };
 
 
@@ -174,12 +174,12 @@ e2e.ecc.Point.Curve25519.prototype.twice_ = function() {
  * be called if delta is infinity (i.e. this == that) or if delta is the zero
  * point.
  *
- * @param {!e2e.ecc.Point.Curve25519} that
- * @param {!e2e.ecc.Point.Curve25519} delta this - that
- * @return {!e2e.ecc.Point.Curve25519}
+ * @param {!e2e.ecc.point.Curve25519} that
+ * @param {!e2e.ecc.point.Curve25519} delta this - that
+ * @return {!e2e.ecc.point.Curve25519}
  * @private
  */
-e2e.ecc.Point.Curve25519.prototype.add_ = function(that, delta) {
+e2e.ecc.point.Curve25519.prototype.add_ = function(that, delta) {
   // This formula work only if that - this is neither zero nor infinity
   goog.asserts.assert(!delta.x.isEqual(this.curve.ZERO));
   goog.asserts.assert(!delta.z.isEqual(this.curve.ZERO));
@@ -187,14 +187,14 @@ e2e.ecc.Point.Curve25519.prototype.add_ = function(that, delta) {
   var t2 = (this.x.add(this.z)).multiply(that.x.subtract(that.z));
   var xOut = (t1.add(t2)).square().multiply(delta.z);
   var zOut = (t1.subtract(t2)).square().multiply(delta.x);
-  return new e2e.ecc.Point.Curve25519(this.curve, xOut, zOut);
+  return new e2e.ecc.point.Curve25519(this.curve, xOut, zOut);
 };
 
 
 /**
  * @override
  */
-e2e.ecc.Point.Curve25519.prototype.multiply = function(k) {
+e2e.ecc.point.Curve25519.prototype.multiply = function(k) {
   // Normally, k > 0 and this isn't infinity or the zero point.  They are
   // included here for completeness.
   if (this.isInfinity() || k.isEqual(e2e.BigNum.ZERO)) {

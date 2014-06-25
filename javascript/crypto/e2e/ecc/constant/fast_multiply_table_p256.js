@@ -24,7 +24,7 @@
  * @author fy@google.com (Frank Yellin)
  */
 
-goog.provide('e2e.ecc.constant.P_256.G_FastMultiplyTable');
+goog.provide('e2e.ecc.constant.p_256.G_FAST_MULTIPLY_TABLE');
 
 
 /**
@@ -40,7 +40,7 @@ goog.provide('e2e.ecc.constant.P_256.G_FastMultiplyTable');
  *
  * @type {!Array.<!Array.<Array.<!Array.<!number>>>>}
  */
-e2e.ecc.constant.P_256.G_FastMultiplyTable = [
+e2e.ecc.constant.p_256.G_FAST_MULTIPLY_TABLE = [
   [
     null,
     [ //  1 * (16 ** 0) * G

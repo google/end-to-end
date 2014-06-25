@@ -29,14 +29,14 @@ goog.provide('e2e.scheme.Rsaes');
  * @extends {e2e.scheme.Eme}
  */
 e2e.scheme.Rsaes = function(cipher) {
-  this.useNative = false;
+  this.useWebCrypto = false;
   this.algorithmIdentifier = {
     'name': 'RSAES-PKCS1-v1_5',
     'modulusLength': cipher.keySize,
     'publicExponent': new Uint8Array(cipher.getKey()['e'])
   };
   if (this.key = cipher.getWebCryptoKey()) {
-    this.useNative = true;
+    this.useWebCrypto = true;
   }
   goog.base(this, cipher);
 };
@@ -44,7 +44,7 @@ goog.inherits(e2e.scheme.Rsaes, e2e.scheme.Eme);
 
 
 /** @override */
-e2e.scheme.Rsaes.prototype.encryptNative = function(plaintext) {
+e2e.scheme.Rsaes.prototype.encryptWebCrypto = function(plaintext) {
   var result = new e2e.async.Result;
   this.crypto.encrypt(
       this.algorithmIdentifier,
@@ -61,7 +61,7 @@ e2e.scheme.Rsaes.prototype.encryptNative = function(plaintext) {
 
 
 /** @override */
-e2e.scheme.Rsaes.prototype.decryptNative = function(ciphertext) {
+e2e.scheme.Rsaes.prototype.decryptWebCrypto = function(ciphertext) {
   var result = new e2e.async.Result;
   this.crypto.decrypt(
       this.algorithmIdentifier,

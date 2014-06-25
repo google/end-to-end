@@ -31,13 +31,13 @@
  * @author fy@google.com (Frank Yellin).
  */
 
-goog.provide('e2e.ecc.Curve.Ed25519');
+goog.provide('e2e.ecc.curve.Ed25519');
 
 goog.require('e2e.BigNum');
-goog.require('e2e.ecc.Curve');
 goog.require('e2e.ecc.Element');
-goog.require('e2e.ecc.Point');
-goog.require('e2e.ecc.Point.Ed25519');
+goog.require('e2e.ecc.curve.Curve');
+goog.require('e2e.ecc.point.Ed25519');
+goog.require('e2e.ecc.point.Point');
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('goog.asserts');
 
@@ -47,11 +47,11 @@ goog.require('goog.asserts');
  * Constructs an Edwards elliptic curve defined over a prime field.
  *
  * @constructor
- * @extends {e2e.ecc.Curve}
+ * @extends {e2e.ecc.curve.Curve}
  * @param {!e2e.BigPrimeNum} q The modulus of the prime field.
  */
-e2e.ecc.Curve.Ed25519 = function(q) {
-  e2e.ecc.Curve.Ed25519.base(this, 'constructor', q);
+e2e.ecc.curve.Ed25519 = function(q) {
+  e2e.ecc.curve.Ed25519.base(this, 'constructor', q);
 
 
   /**
@@ -93,34 +93,34 @@ e2e.ecc.Curve.Ed25519 = function(q) {
   var five = this.elementFromInteger(5);
   /**
    * The point whose y coordinate is 4/5 and whose x coordinate is even
-   * @type {!e2e.ecc.Point.Ed25519}
+   * @type {!e2e.ecc.point.Ed25519}
    * @const
    */
   this.B = this.pointFromYCoordinate_(four.multiply(five.inverse()), 0);
 
   /**
    * The point at infinity
-   * @type {!e2e.ecc.Point.Ed25519}
+   * @type {!e2e.ecc.point.Ed25519}
    * @const
    */
-  this.INFINITY = new e2e.ecc.Point.Ed25519(this,
+  this.INFINITY = new e2e.ecc.point.Ed25519(this,
       this.ZERO, this.ZERO, this.ZERO, this.ZERO);
 
   /**
    * The additive identity
-   * @type {!e2e.ecc.Point.Ed25519}
+   * @type {!e2e.ecc.point.Ed25519}
    * @const
    */
-  this.IDENTITY = new e2e.ecc.Point.Ed25519(this,
+  this.IDENTITY = new e2e.ecc.point.Ed25519(this,
       this.ZERO, this.ONE);
 
 
 };
-goog.inherits(e2e.ecc.Curve.Ed25519, e2e.ecc.Curve);
+goog.inherits(e2e.ecc.curve.Ed25519, e2e.ecc.curve.Curve);
 
 
 /** @override */
-e2e.ecc.Curve.Ed25519.prototype.pointFromByteArray = function(p) {
+e2e.ecc.curve.Ed25519.prototype.pointFromByteArray = function(p) {
   goog.asserts.assert(p.length == 32, 'Point length must be 32 bytes');
   // Comes in little endian.  Reverse it to be big endian
   p = p.slice(0).reverse();
@@ -134,7 +134,7 @@ e2e.ecc.Curve.Ed25519.prototype.pointFromByteArray = function(p) {
 
 
 /** @override */
-e2e.ecc.Curve.Ed25519.prototype.keySizeInBits = function() {
+e2e.ecc.curve.Ed25519.prototype.keySizeInBits = function() {
   return 256;
 };
 
@@ -144,9 +144,9 @@ e2e.ecc.Curve.Ed25519.prototype.keySizeInBits = function() {
  * bignum.
  * @param {!e2e.BigNum} bignum
  *
- * @return {!e2e.ByteArray}
+ * @return {e2e.ByteArray}
  */
-e2e.ecc.Curve.Ed25519.prototype.littleEndianByteArray32FromBigNum =
+e2e.ecc.curve.Ed25519.prototype.littleEndianByteArray32FromBigNum =
 function(bignum) {
   var result = bignum.toByteArray().reverse();
   while (result.length < 32) {
@@ -158,10 +158,10 @@ function(bignum) {
 
 /**
  * Returns true if this curve is equal to another curve.
- * @param {!e2e.ecc.Curve.Ed25519} that The curve to compare.
+ * @param {!e2e.ecc.curve.Ed25519} that The curve to compare.
  * @return {boolean}
  */
-e2e.ecc.Curve.Ed25519.prototype.isEqual = function(that) {
+e2e.ecc.curve.Ed25519.prototype.isEqual = function(that) {
   if (this === that) {
     return true;
   }
@@ -175,11 +175,11 @@ e2e.ecc.Curve.Ed25519.prototype.isEqual = function(that) {
  *
  * @param {!e2e.ecc.Element} y the y coordinate
  * @param {number} parity
- * @return {!e2e.ecc.Point.Ed25519} the point with the specified x
+ * @return {!e2e.ecc.point.Ed25519} the point with the specified x
  *     coordinate.
  * @private
  */
-e2e.ecc.Curve.Ed25519.prototype.pointFromYCoordinate_ = function(
+e2e.ecc.curve.Ed25519.prototype.pointFromYCoordinate_ = function(
     y, parity) {
   var yy = y.square();
   // y^2 - 1 == x^2(d y^2 + 1) is an equivalent equation
@@ -200,5 +200,5 @@ e2e.ecc.Curve.Ed25519.prototype.pointFromYCoordinate_ = function(
     }
     x = x.negate();
   }
-  return new e2e.ecc.Point.Ed25519(this, x, y);
+  return new e2e.ecc.point.Ed25519(this, x, y);
 };

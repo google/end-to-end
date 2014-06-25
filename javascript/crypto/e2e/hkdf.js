@@ -16,7 +16,7 @@
  * @fileoverview Implements RFC 5869 HMAC-based Key Derivation Function (HKDF).
  * @author quannguyen@google.com (Quan Nguyen)
  */
-goog.provide('e2e.HKDF');
+goog.provide('e2e.Hkdf');
 
 goog.require('e2e');
 goog.require('e2e.hash.Algorithm');
@@ -31,7 +31,7 @@ goog.require('goog.structs');
  * @param {e2e.hash.Hash} hash An instance of hash to use.
  * @constructor
  */
-e2e.HKDF = function(hash) {
+e2e.Hkdf = function(hash) {
   goog.asserts.assert(goog.structs.contains(
       e2e.hash.Algorithm, hash.algorithm), 'Invalid hash function.');
   this.hash_ = hash;
@@ -43,14 +43,14 @@ e2e.HKDF = function(hash) {
  *     must use the same value.
  * @private
  */
-e2e.HKDF.HMAC_BLOCK_LENGTH_ = 64;
+e2e.Hkdf.HMAC_BLOCK_LENGTH_ = 64;
 
 
 /**
  * List of hash's digest length in octets.
  * @enum {number}
  */
-e2e.HKDF.HashLength = {
+e2e.Hkdf.HashLength = {
   'MD5': 128 / 8,
   'SHA1': 160 / 8,
   'SHA224': 224 / 8,
@@ -73,10 +73,10 @@ e2e.HKDF.HashLength = {
  *     value). If not provided, it is set to a string of hash length zeros.
  * @return {e2e.ByteArray}  Output keying material (okm).
  */
-e2e.HKDF.prototype.getHKDF = function(ikm, info, extract_len,
+e2e.Hkdf.prototype.getHKDF = function(ikm, info, extract_len,
     opt_salt) {
   goog.asserts.assertObject(this.hash_, 'Hash function must be specified.');
-  var hashLength = e2e.HKDF.HashLength[this.hash_.algorithm];
+  var hashLength = e2e.Hkdf.HashLength[this.hash_.algorithm];
   var i;
 
   goog.asserts.assert(0 < extract_len && extract_len <= hashLength * 255,
@@ -87,7 +87,7 @@ e2e.HKDF.prototype.getHKDF = function(ikm, info, extract_len,
     salt = goog.array.repeat(0x00, hashLength);
   }
   var hmacer = new goog.crypt.Hmac(this.hash_, salt,
-                                   e2e.HKDF.HMAC_BLOCK_LENGTH_);
+                                   e2e.Hkdf.HMAC_BLOCK_LENGTH_);
   var prk = hmacer.getHmac(ikm); // Pseudorandom Key
 
   // Expand
@@ -95,7 +95,7 @@ e2e.HKDF.prototype.getHKDF = function(ikm, info, extract_len,
   var t = new Array(n + 1);
   var okm = new Array(); // Output Keying Material
   hmacer = new goog.crypt.Hmac(this.hash_, prk,
-                               e2e.HKDF.HMAC_BLOCK_LENGTH_);
+                               e2e.Hkdf.HMAC_BLOCK_LENGTH_);
   t[0] = new Array(0);
 
   for (i = 1; i <= n; ++i) {

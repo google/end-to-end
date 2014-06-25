@@ -15,7 +15,10 @@
  * @fileoverview Requires all signers to load them into the factory.
  */
 
+/** @suppress {extraProvide} this aggregation needs a namespace */
 goog.provide('e2e.signer.all');
 
-goog.require('e2e.signer.DSA');
-goog.require('e2e.signer.ECDSA');
+/** @suppress {extraRequire} intentional import */
+goog.require('e2e.signer.Dsa');
+/** @suppress {extraRequire} intentional import */
+goog.require('e2e.signer.Ecdsa');

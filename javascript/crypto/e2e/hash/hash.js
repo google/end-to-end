@@ -44,7 +44,7 @@ goog.inherits(e2e.hash.Error, goog.debug.Error);
 e2e.hash.Algorithm = {
   'MD5': 'MD5',
   'SHA1': 'SHA1',
-  'RIPEMD': 'RIPEMD',
+  'RIPEMD': 'RIPEMD160',
   'SHA256': 'SHA256',
   'SHA384': 'SHA384',
   'SHA512': 'SHA512',

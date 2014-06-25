@@ -14,7 +14,7 @@
 // -->
 <!DOCTYPE html>
 <title>Unit Test of e2e.ecc.Point</title>
-<script src="../../../closure/base.js"></script>
+<script src="../../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
   goog.require('goog.array');
@@ -22,8 +22,8 @@
   goog.require('goog.testing.jsunit');
   goog.require('e2e.BigNum');
   goog.require('e2e.ecc.DomainParam');
-  goog.require('e2e.ecc.Point');
-  goog.require('e2e.ecc.Point.testData');
+  goog.require('e2e.ecc.point.Point');
+  goog.require('e2e.ecc.point.testData');
   goog.require('e2e.ecc.PrimeCurve');
   goog.require('e2e.ecc.constant.P_256');
 </script>
@@ -123,7 +123,7 @@ function testDouble() {
   assertTrue(V.isOnCurve());
 
   // U = e2e.ecc.constant.P_256.G + e2e.ecc.constant.P_256.G;
-  var U = e2e.ecc.Point.testData.G2;
+  var U = e2e.ecc.point.testData.G2;
   assertArrayEquals(U, V.toByteArray());
 
   // INFINITY + INFINITY = INFINITY
@@ -143,7 +143,7 @@ function testAdd() {
   var V1 = g.add(g);
   assertTrue(V1.isOnCurve());
   // U1 = e2e.ecc.constant.P_256.G + e2e.ecc.constant.P_256.G
-  var U1 = e2e.ecc.Point.testData.G2;
+  var U1 = e2e.ecc.point.testData.G2;
   assertArrayEquals(U1, V1.toByteArray());
 
   // V2 = 3 * e2e.ecc.constant.P_256.G
@@ -177,7 +177,7 @@ function testMultiply() {
   var V1 = g.multiply(e2e.BigNum.TWO);
   assertTrue(V1.isOnCurve());
   // U1 = e2e.ecc.constant.P_256.G + e2e.ecc.constant.P_256.G;
-  var U1 = e2e.ecc.Point.testData.G2;
+  var U1 = e2e.ecc.point.testData.G2;
   assertArrayEquals(U1, V1.toByteArray());
 
   // g * n = ~
@@ -212,7 +212,7 @@ function testMultiplyWithPublicVectors() {
   var curve = params.curve;
   var g = params.g;
 
-  goog.array.forEach(e2e.ecc.Point.testData.P_256Vectors,
+  goog.array.forEach(e2e.ecc.point.testData.P_256Vectors,
       function(vector) {
         var d = new e2e.BigNum(
             goog.crypt.hexToByteArray(vector['d']));

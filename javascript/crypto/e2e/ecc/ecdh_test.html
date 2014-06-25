@@ -13,7 +13,7 @@
 // limitations under the License.
 // -->
 <!DOCTYPE html>
-<title>Unit Test of e2e.ecc.ECDH</title>
+<title>Unit Test of e2e.ecc.Ecdh</title>
 <script src="../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
@@ -21,8 +21,8 @@
   goog.require('goog.crypt');
   goog.require('goog.testing.jsunit');
   goog.require('e2e.BigNum');
-  goog.require('e2e.ecc.ECDH');
-  goog.require('e2e.ecc.ECDH.testData');
+  goog.require('e2e.ecc.Ecdh');
+  goog.require('e2e.ecc.ecdhTestData');
   goog.require('e2e.ecc.PrimeCurve');
   goog.require('e2e.ecc.Protocol');
 </script>
@@ -49,10 +49,10 @@ function testConsistency() {
   goog.array.forEach(curveNames, function(curveName) {
     var bobKeyPair = e2e.ecc.Protocol.generateKeyPair(curveName);
 
-    var aliceECDH = new e2e.ecc.ECDH(curveName);
+    var aliceECDH = new e2e.ecc.Ecdh(curveName);
     var aliceMessage = aliceECDH.alice(bobKeyPair['pubKey']);
 
-    var bobECDH = new e2e.ecc.ECDH(curveName);
+    var bobECDH = new e2e.ecc.Ecdh(curveName);
     var bobMessage = bobECDH.bob(aliceMessage['pubKey'], bobKeyPair['privKey']);
 
     assertArrayEquals('Failure for key agreement on curve ' + curveName,
@@ -66,14 +66,14 @@ function testConsistency() {
  * Tests ECDH's shared secret derivation with public test vectors.
  */
 function testSharedSecretDerivationWithPublicVectors() {
-  goog.array.forEach(e2e.ecc.ECDH.testData.P256Vectors,
+  goog.array.forEach(e2e.ecc.ecdhTestData.P256Vectors,
       function(vector) {
          var curve = vector['curve'];
          var key = {
           'pubKey': goog.crypt.hexToByteArray(
               '04' /* uncompressed */ + vector['Qx'] + vector['Qy'])
         };
-        var ecdh = new e2e.ecc.ECDH(curve, key);
+        var ecdh = new e2e.ecc.Ecdh(curve, key);
         var S = ecdh.getPublicKeyAsPoint().multiply(hexToBigNum(vector['d']));
         var Z = S.getX().toBigNum();
         assertTrue(Z.isEqual(hexToBigNum(vector['Z'])));

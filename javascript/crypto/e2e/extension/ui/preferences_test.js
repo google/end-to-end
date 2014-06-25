@@ -28,6 +28,7 @@ function setUp() {
   window.localStorage.removeItem(constants.StorageKey.ENABLE_WELCOME_SCREEN);
   window.localStorage.removeItem(constants.StorageKey.ENABLE_ACTION_SNIFFING);
   window.localStorage.removeItem(constants.StorageKey.ENABLE_AUTO_SAVE);
+  window.localStorage.removeItem(constants.StorageKey.ENABLE_LOOKING_GLASS);
 }
 
 
@@ -49,6 +50,13 @@ function testAutoSave() {
   assertFalse(preferences.isAutoSaveEnabled());
   preferences.setAutoSaveEnabled(true);
   assertTrue(preferences.isAutoSaveEnabled());
+}
+
+
+function testLookingGlass() {
+  assertFalse(preferences.isLookingGlassEnabled());
+  preferences.setLookingGlassEnabled(true);
+  assertTrue(preferences.isLookingGlassEnabled());
 }
 
 

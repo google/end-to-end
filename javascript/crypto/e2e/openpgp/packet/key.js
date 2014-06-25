@@ -22,8 +22,10 @@ goog.provide('e2e.openpgp.packet.Key');
 goog.provide('e2e.openpgp.packet.Key.Usage');
 
 goog.require('e2e');
+goog.require('e2e.openpgp.KeyPacketInfo');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.Signature');
+goog.require('goog.crypt');
 
 
 /**
@@ -32,8 +34,8 @@ goog.require('e2e.openpgp.packet.Signature');
  * @param {number} timestamp The creation time of the key.
  * @param {!e2e.cipher.Cipher|e2e.signer.Signer} cipher An
  *     instance of the cipher used.
- * @param {!e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
- * @param {!e2e.ByteArray=} opt_keyId The key ID of the key. Should be
+ * @param {e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
+ * @param {e2e.ByteArray=} opt_keyId The key ID of the key. Should be
  *     passed in for v3 keys, but not for v4 keys.
  * @extends {e2e.openpgp.packet.Packet}
  * @constructor
@@ -177,4 +179,31 @@ e2e.openpgp.packet.Key.prototype.serialize = function() {
  */
 e2e.openpgp.packet.Key.prototype.can = function(use) {
   return false;
+};
+
+/**
+ * Converts a key packet to KeyPacketInfo.
+ * @return {!e2e.openpgp.KeyPacketInfo}
+ */
+e2e.openpgp.packet.Key.prototype.toKeyPacketInfo = function() {
+  return /** @type {e2e.openpgp.KeyPacketInfo} */ ({
+    secret: this instanceof e2e.openpgp.packet.SecretKey,
+    fingerprint: this.fingerprint,
+    fingerprintHex: this.getFingerprintHex_(),
+    algorithm: this.cipher.algorithm
+  });
+};
+
+
+/**
+ * Returns human-readable key fingerprint formatted as a hexadecimal string,
+ * with spaces separating each 4 hex digits, and 5 digit blocks.
+ * @return {string}
+ * @private
+ */
+e2e.openpgp.packet.Key.prototype.getFingerprintHex_ = function() {
+  var hex = goog.crypt.byteArrayToHex(this.fingerprint).toUpperCase();
+  hex = hex.replace(/([0-9A-F]{4})/g, '$1 '); // Group by 4 digits.
+  hex = hex.replace(/(([0-9A-F]{4} ){5})/g, '$1 '); // Space after 5 groups.
+  return hex.trim();
 };

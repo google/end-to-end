@@ -243,7 +243,8 @@ function testInstallLookingGlass() {
   helper.currentUri_ = new goog.Uri('https://mail.google.com/irrelevant');
   helper.getSelectedContent_({
     pgpAction: 'irrelevant',
-    editableElem: true
+    editableElem: true,
+    enableLookingGlass: true
   }, null, callbackMock);
 
   hasDraftArg.arg(false);

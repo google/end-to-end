@@ -25,7 +25,7 @@
   goog.require('e2e.async.Result');
   goog.require('e2e.cipher.all');
   goog.require('e2e.openpgp.KeyRing');
-  goog.require('e2e.openpgp.KeyRing.testData');
+  goog.require('e2e.openpgp.keyringTestData');
   goog.require('e2e.openpgp.block.factory');
   goog.require('e2e.openpgp.packet.PublicKey');
   goog.require('e2e.openpgp.packet.PublicSubkey');
@@ -113,7 +113,7 @@ function testSearch() {
   keyRing.generateECKey('adhintz@google.com');
   keyRing.generateECKey('evn@google.com');
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
-    e2e.openpgp.KeyRing.testData.pubKeyAscii);
+    e2e.openpgp.keyringTestData.pubKeyAscii);
   keyRing.importKey(publicKeyBlock);
 
   var evnPubKeys = keyRing.searchKey('evn@google.com');
@@ -147,7 +147,7 @@ function testSearchKeyLocalAndRemote() {
   var currentKeyRing = new e2e.openpgp.KeyRing('test',
     'http://127.0.0.1');
   var pubKeyBlocks = e2e.openpgp.block.factory.parseAsciiMulti(
-    e2e.openpgp.KeyRing.testData.pubKeyAscii);
+    e2e.openpgp.keyringTestData.pubKeyAscii);
 
   // Tests when not found locally but found remotely.
   var methodMock = mockControl.createMethodMock(currentKeyRing.keyClient_,
@@ -178,7 +178,7 @@ function testSearchKeyLocalAndRemote() {
 
 function testImport() {
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
-    e2e.openpgp.KeyRing.testData.pubKeyAscii);
+    e2e.openpgp.keyringTestData.pubKeyAscii);
   keyRing.importKey(publicKeyBlock);
   keyRing.importKey(publicKeyBlock);  // double-import for bug regression.
 
@@ -226,7 +226,7 @@ function testExistingKeys() {
   assertEquals(2, privKeys.length);
 
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
-    e2e.openpgp.KeyRing.testData.pubKeyAscii);
+    e2e.openpgp.keyringTestData.pubKeyAscii);
   keyRing.importKey(publicKeyBlock);
 
   pubKeyRing = keyRing.getAllKeys();
@@ -257,7 +257,7 @@ function testGeneratePersist() {
   assertEquals(1, privKeys.length);
 
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
-    e2e.openpgp.KeyRing.testData.pubKeyAscii);
+    e2e.openpgp.keyringTestData.pubKeyAscii);
   keyRing2.importKey(publicKeyBlock);
 
   pubKeyRing = keyRing2.getAllKeys();
@@ -271,7 +271,7 @@ function testGeneratePersist() {
 function testFailsWhenLocked() {
   localStorage.clear();
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
-    e2e.openpgp.KeyRing.testData.pubKeyAscii);
+    e2e.openpgp.keyringTestData.pubKeyAscii);
   var keyRing1 = new e2e.openpgp.KeyRing('test');
   keyRing1.reset();
   assertThrows('operations on locked keyring should fail', function() {
@@ -283,7 +283,7 @@ function testFailsWhenLocked() {
 function testImportPersistUnencrypted() {
   localStorage.clear();
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
-    e2e.openpgp.KeyRing.testData.pubKeyAscii);
+    e2e.openpgp.keyringTestData.pubKeyAscii);
   var keyRing1 = new e2e.openpgp.KeyRing('');
   keyRing1.reset();
   keyRing1.changePassphrase('');
@@ -297,7 +297,7 @@ function testImportPersistUnencrypted() {
 
 function testChangePassphrase() {
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
-    e2e.openpgp.KeyRing.testData.pubKeyAscii);
+    e2e.openpgp.keyringTestData.pubKeyAscii);
   keyRing.importKey(publicKeyBlock);
   keyRing.changePassphrase('test2');
 
@@ -314,7 +314,7 @@ function testChangePassphrase() {
 
 function testPersistPrivKeys() {  // b/12100334
   var privKeyBlocks = e2e.openpgp.block.factory.parseAsciiMulti(
-    e2e.openpgp.KeyRing.testData.privKeyAscii);
+    e2e.openpgp.keyringTestData.privKeyAscii);
   for (var i = 0; i < privKeyBlocks.length; i++) {
     keyRing.importKey(privKeyBlocks[i]);
   }
@@ -352,7 +352,7 @@ function testPersistPrivKeys() {  // b/12100334
 function testImportPersistEncrypted() {
   localStorage.clear();
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
-    e2e.openpgp.KeyRing.testData.pubKeyAscii);
+    e2e.openpgp.keyringTestData.pubKeyAscii);
   // Test encryption with no keys in the keyring.
   var keyRing0 = new e2e.openpgp.KeyRing('test');
   keyRing0.changePassphrase('test');
@@ -431,17 +431,17 @@ function importPrivKey(asciiKey, uid) {
 
 
 function testImportPrivKey() {
-  importPrivKey(e2e.openpgp.KeyRing.testData.privKeyAscii, 'Thai Duong <thaidn@google.com>');
+  importPrivKey(e2e.openpgp.keyringTestData.privKeyAscii, 'Thai Duong <thaidn@google.com>');
 }
 
 
 function testImportPrivKey2() {  // b/11712004.
-  importPrivKey(e2e.openpgp.KeyRing.testData.privKeyAscii2, 'testkey <yesykey>');
+  importPrivKey(e2e.openpgp.keyringTestData.privKeyAscii2, 'testkey <yesykey>');
 }
 
 function testLoadOldStyleKeyRing() {
   localStorage.clear();
-  localStorage.setItem('UserKeyRing', e2e.openpgp.KeyRing.testData.keyRingOldStyle);
+  localStorage.setItem('UserKeyRing', e2e.openpgp.keyringTestData.keyRingOldStyle);
   localStorage.setItem('enable-action-sniff', 'true');
   localStorage.setItem('enable-auto-save', 'true');
   localStorage.setItem('enable-welcome', 'false');

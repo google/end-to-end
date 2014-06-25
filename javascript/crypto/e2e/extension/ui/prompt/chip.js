@@ -19,7 +19,7 @@
 goog.provide('e2e.ext.Chip');
 
 goog.require('e2e.ext.constants');
-goog.require('e2e.ext.templates.prompt');
+goog.require('e2e.ext.ui.templates.prompt');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classes');
@@ -29,7 +29,7 @@ goog.require('soy');
 
 goog.scope(function() {
 var ext = e2e.ext;
-var templates = e2e.ext.templates.prompt;
+var templates = e2e.ext.ui.templates.prompt;
 var constants = e2e.ext.constants;
 
 

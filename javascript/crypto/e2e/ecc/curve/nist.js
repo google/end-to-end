@@ -19,13 +19,13 @@
  * @author thaidn@google.com (Thai Duong).
  */
 
-goog.provide('e2e.ecc.Curve.NIST');
+goog.provide('e2e.ecc.curve.Nist');
 
 goog.require('e2e.BigNum');
-goog.require('e2e.ecc.Curve');
 goog.require('e2e.ecc.Element');
-goog.require('e2e.ecc.Point');
-goog.require('e2e.ecc.Point.NIST');
+goog.require('e2e.ecc.curve.Curve');
+goog.require('e2e.ecc.point.Nist');
+goog.require('e2e.ecc.point.Point');
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('goog.asserts');
 
@@ -35,13 +35,13 @@ goog.require('goog.asserts');
  * Constructs a NIST elliptic curve defined over a prime field.
  *
  * @constructor
- * @extends {e2e.ecc.Curve}
+ * @extends {e2e.ecc.curve.Curve}
  * @param {!e2e.BigPrimeNum} q The modulus of the prime field.
  * @param {!e2e.BigNum} b The B cofficient in the elliptic equation,
  *     represented as an array of bytes in little-endian order.
  */
-e2e.ecc.Curve.NIST = function(q, b) {
-  e2e.ecc.Curve.NIST.base(this, 'constructor', q);
+e2e.ecc.curve.Nist = function(q, b) {
+  e2e.ecc.curve.Nist.base(this, 'constructor', q);
 
   /**
    * The B value in the elliptic equation. It's an element in Fq.
@@ -53,10 +53,10 @@ e2e.ecc.Curve.NIST = function(q, b) {
 
   /**
    * The INFINITE point on the curve
-   * @type {!e2e.ecc.Point.NIST}
+   * @type {!e2e.ecc.point.Nist}
    * @const
    */
-  this.INFINITY = new e2e.ecc.Point.NIST(this,
+  this.INFINITY = new e2e.ecc.point.Nist(this,
       this.ONE, this.ZERO, this.ZERO);
 
   /**
@@ -68,11 +68,11 @@ e2e.ecc.Curve.NIST = function(q, b) {
    */
   this.SQUARE_ROOT_POWER_ = this.q.add(e2e.BigNum.ONE).shiftRight(2);
 };
-goog.inherits(e2e.ecc.Curve.NIST, e2e.ecc.Curve);
+goog.inherits(e2e.ecc.curve.Nist, e2e.ecc.curve.Curve);
 
 
 /** @override */
-e2e.ecc.Curve.NIST.prototype.pointFromByteArray = function(p) {
+e2e.ecc.curve.Nist.prototype.pointFromByteArray = function(p) {
   goog.asserts.assertArray(p, 'Point should be defined.');
   if (p[0] == 0x04) {
     goog.asserts.assert(p.length % 2 == 1,
@@ -81,7 +81,7 @@ e2e.ecc.Curve.NIST.prototype.pointFromByteArray = function(p) {
     var l = p.length - 1;
     var x = this.elementFromByteArray(p.slice(1, l / 2 + 1));
     var y = this.elementFromByteArray(p.slice(l / 2 + 1));
-    var point = new e2e.ecc.Point.NIST(this, x, y);
+    var point = new e2e.ecc.point.Nist(this, x, y);
     if (!point.isOnCurve()) {
       throw new e2e.error.InvalidArgumentsError(
           'Point should lie on this curve.');
@@ -98,17 +98,17 @@ e2e.ecc.Curve.NIST.prototype.pointFromByteArray = function(p) {
 
 
 /** @override */
-e2e.ecc.Curve.NIST.prototype.keySizeInBits = function() {
+e2e.ecc.curve.Nist.prototype.keySizeInBits = function() {
   return this.q.getBitLength();
 };
 
 
 /**
  * Returns true if this curve is equal to another curve.
- * @param {!e2e.ecc.Curve.NIST} that The curve to compare.
+ * @param {!e2e.ecc.curve.Nist} that The curve to compare.
  * @return {boolean}
  */
-e2e.ecc.Curve.NIST.prototype.isEqual = function(that) {
+e2e.ecc.curve.Nist.prototype.isEqual = function(that) {
   if (this === that) {
     return true;
   }
@@ -122,10 +122,10 @@ e2e.ecc.Curve.NIST.prototype.isEqual = function(that) {
  *
  * @param {!e2e.ecc.Element} x the x coordinate
  * @param {number} parity
- * @return {!e2e.ecc.Point} the point with the specified x coordinate.
+ * @return {!e2e.ecc.point.Point} the point with the specified x coordinate.
  * @private
  */
-e2e.ecc.Curve.NIST.prototype.pointFromXCoordinate_ = function(
+e2e.ecc.curve.Nist.prototype.pointFromXCoordinate_ = function(
     x, parity) {
   goog.asserts.assert(this.q.n[0] & 3 == 3,
       'Do not know how to take square root in this prime number field.');
@@ -149,7 +149,7 @@ e2e.ecc.Curve.NIST.prototype.pointFromXCoordinate_ = function(
     }
     y = y.negate();
   }
-  var point = new e2e.ecc.Point.NIST(this, x, y);
+  var point = new e2e.ecc.point.Nist(this, x, y);
   goog.asserts.assert(point.isOnCurve(), 'pointFromXCoordinate_ broken');
   return point;
 };

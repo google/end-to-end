@@ -43,8 +43,8 @@ var templates = e2e.ext.ui.templates.panels.keyringmgmt;
  * @param {!Object} pgpKeys A collection of raw PGP keys.
  * @param {!function()} exportKeyringCallback The callback to invoke when the
  *     keyring is to be exported.
- * @param {!function(File)} importKeyringCallback The callback to invoke when an
- *     existing keyring is to be imported.
+ * @param {!function(!File)} importKeyringCallback The callback to invoke when
+ *     an existing keyring is to be imported.
  * @param {!function(string)} updateKeyringPassphraseCallback The callback to
  *     invoke when the passphrase to the keyring is to be updated.
  * @param {!function(string)} exportKeyCallback The callback to invoke when a
@@ -125,7 +125,9 @@ panels.KeyringMgmtFull.prototype.decorateInternal = function(elem) {
     noneLabel: chrome.i18n.getMessage('keyMgmtNoneLabel')
   });
 
-  this.addChild(this.keyringMgmtControls_, true);
+  var keyringTable = this.getElement().querySelector('table');
+  this.addChild(this.keyringMgmtControls_, false);
+  this.keyringMgmtControls_.renderBefore(keyringTable);
 };
 
 
@@ -147,11 +149,22 @@ panels.KeyringMgmtFull.prototype.enterDocument = function() {
 panels.KeyringMgmtFull.prototype.addNewKey = function(userId, pgpKeys) {
   var keyringTable = this.getElement().querySelector('table');
 
+  // escaped according to http://www.w3.org/TR/CSS21/syndata.html#characters
+  var userIdSel = 'tr[data-user-id="' +
+      userId.replace(/[^A-Za-z0-9_\u00A0-\uFFFF-]/g, function(c) {
+        return '\\' + c;
+      }) + '"]';
+
+  goog.dom.removeNode(keyringTable.querySelector(userIdSel));
+
   if (keyringTable.textContent == chrome.i18n.getMessage('keyMgmtNoneLabel')) {
     keyringTable.removeChild(keyringTable.firstElementChild);
   }
 
+  this.getElementByClass(constants.CssClass.KEYRING_EXPORT).disabled = false;
+
   var tr = document.createElement(goog.dom.TagName.TR);
+  tr.dataset.userId = userId;
   soy.renderElement(tr, templates.KeyEntry, {
     keyMeta: {
       'userId': userId,
@@ -184,6 +197,14 @@ panels.KeyringMgmtFull.prototype.removeKey = function(userId) {
     var parentRow = this.getParentTableRow_(elem);
     parentRow.parentElement.removeChild(parentRow);
   }, this);
+
+  if (this.getElement().querySelectorAll('tr').length == 0) {
+    this.getElementByClass(constants.CssClass.KEYRING_EXPORT).disabled = true;
+    soy.renderElement(this.getElement().querySelector('table'),
+        templates.NoneEntry, {
+          'noneLabel': chrome.i18n.getMessage('keyMgmtNoneLabel')
+        });
+  }
 };
 
 

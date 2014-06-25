@@ -18,6 +18,7 @@
 
 goog.provide('e2e.openpgp.block.TransferableKey');
 
+goog.require('e2e.openpgp.Key');
 goog.require('e2e.openpgp.block.Block');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.PublicSubkey');
@@ -106,33 +107,40 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
     this.packets.push(packets.shift());
     packet = packets[0];
   }
-  while (packet instanceof e2e.openpgp.packet.UserId) {
-    var userId = packet;
-    this.userIds.push(packet);
-    this.packets.push(packets.shift());
-    packet = packets[0];
-    while (packet instanceof e2e.openpgp.packet.Signature) {
-      userId.addCertification(packet);
+  while (packet instanceof e2e.openpgp.packet.UserId ||
+      packet instanceof e2e.openpgp.packet.UserAttribute) {
+    // Be compatible with GnuPG that creates invalid OpenPGP blocks interwining
+    // UserId and UserAttribute sequences. According to
+    // http://tools.ietf.org/html/rfc4880#section-11.1 UserId sequences should
+    // always come first. See Issue #33.
+    while (packet instanceof e2e.openpgp.packet.UserId) {
+      var userId = packet;
+      this.userIds.push(packet);
       this.packets.push(packets.shift());
-      while (packets[0] instanceof e2e.openpgp.packet.Trust) {
-        packets.shift();
-      }
       packet = packets[0];
+      while (packet instanceof e2e.openpgp.packet.Signature) {
+        userId.addCertification(packet);
+        this.packets.push(packets.shift());
+        while (packets[0] instanceof e2e.openpgp.packet.Trust) {
+          packets.shift();
+        }
+        packet = packets[0];
+      }
+    }
+    while (packet instanceof e2e.openpgp.packet.UserAttribute) {
+      var userAttribute = packet;
+      this.userAttributes.push(packet);
+      this.packets.push(packets.shift());
+      packet = packets[0];
+      while (packet instanceof e2e.openpgp.packet.Signature) {
+        userAttribute.addCertification(packet);
+        this.packets.push(packets.shift());
+        packet = packets[0];
+      }
     }
   }
   if (this.userIds.length < 1) {
     throw new Error('Invalid block. Missing User ID.');
-  }
-  while (packet instanceof e2e.openpgp.packet.UserAttribute) {
-    var userAttribute = packet;
-    this.userAttributes.push(packet);
-    this.packets.push(packets.shift());
-    packet = packets[0];
-    while (packet instanceof e2e.openpgp.packet.Signature) {
-      userAttribute.addCertification(packet);
-      this.packets.push(packets.shift());
-      packet = packets[0];
-    }
   }
   while (packet instanceof e2e.openpgp.packet.PublicSubkey ||
         packet instanceof e2e.openpgp.packet.SecretSubkey) {
@@ -208,6 +216,13 @@ e2e.openpgp.block.TransferableKey.prototype.getKeyToSign =
 
 
 /**
+ * True if the key contains material that can be serialized in Key objects.
+ * @type {boolean}
+ */
+e2e.openpgp.block.TransferableKey.prototype.SERIALIZE_IN_KEY_OBJECT = false;
+
+
+/**
  * Returns a key or one of the subkeys of a given key ID.
  * @param {e2e.ByteArray} keyId Key ID to find the key by.
  * @return {?e2e.openpgp.packet.Key} Found key
@@ -246,4 +261,26 @@ e2e.openpgp.block.TransferableKey.prototype.serialize = function() {
       function(packet) {
         return packet.serialize();
       }));
+};
+
+
+/**
+ * Creates a Key object representing the TransferableKey.
+ * @param {boolean=} opt_dontSerialize if true, skip key serialization in
+ *     results.
+ * @return {e2e.openpgp.Key}
+ */
+e2e.openpgp.block.TransferableKey.prototype.toKeyObject = function(
+    opt_dontSerialize) {
+  return {
+    key: this.keyPacket.toKeyPacketInfo(),
+    subKeys: goog.array.map(
+      this.subKeys, function(subKey) {
+        return subKey.toKeyPacketInfo();
+      }),
+    uids: this.getUserIds(),
+    serialized: /** @type {e2e.ByteArray} */(
+      (opt_dontSerialize || !this.SERIALIZE_IN_KEY_OBJECT) ?
+      [] : this.serialize())
+  };
 };

@@ -16,17 +16,17 @@
  * @author thaidn@google.com (Thai Duong)
  */
 
-goog.provide('e2e.cipher.ECDH');
+goog.provide('e2e.cipher.Ecdh');
 
 goog.require('e2e.Algorithm');
 goog.require('e2e.async.Result');
-goog.require('e2e.cipher.AES');
-goog.require('e2e.cipher.AESKeyWrap');
+goog.require('e2e.cipher.Aes');
+goog.require('e2e.cipher.AesKeyWrap');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.AsymmetricCipher');
 goog.require('e2e.cipher.factory');
 goog.require('e2e.ecc.DomainParam');
-goog.require('e2e.ecc.ECDH');
+goog.require('e2e.ecc.Ecdh');
 goog.require('e2e.ecc.Protocol');
 goog.require('e2e.hash.Algorithm');
 goog.require('e2e.hash.all');
@@ -47,20 +47,20 @@ goog.require('goog.asserts');
  * @implements {e2e.cipher.AsymmetricCipher}
  * @extends {e2e.AlgorithmImpl}
  */
-e2e.cipher.ECDH = function(algorithm, opt_key) {
+e2e.cipher.Ecdh = function(algorithm, opt_key) {
   goog.asserts.assert(algorithm == e2e.cipher.Algorithm.ECDH,
       'Algorithm must be ECDH.');
   goog.base(this, e2e.cipher.Algorithm.ECDH, opt_key);
 };
-goog.inherits(e2e.cipher.ECDH, e2e.AlgorithmImpl);
+goog.inherits(e2e.cipher.Ecdh, e2e.AlgorithmImpl);
 
 
 /**
  * Internal ECDH implemenation.
- * @type {e2e.ecc.ECDH}
+ * @type {e2e.ecc.Ecdh}
  * @private
  */
-e2e.cipher.ECDH.prototype.ecdh_;
+e2e.cipher.Ecdh.prototype.ecdh_;
 
 
 /**
@@ -69,7 +69,7 @@ e2e.cipher.ECDH.prototype.ecdh_;
  * @const
  * @private
  */
-e2e.cipher.ECDH.ALLOWED_HASH_ALGORITHMS_ = [
+e2e.cipher.Ecdh.ALLOWED_HASH_ALGORITHMS_ = [
   e2e.hash.Algorithm.SHA256,
   e2e.hash.Algorithm.SHA384,
   e2e.hash.Algorithm.SHA512];
@@ -81,7 +81,7 @@ e2e.cipher.ECDH.ALLOWED_HASH_ALGORITHMS_ = [
  * @const
  * @private
  */
-e2e.cipher.ECDH.ALLOWED_KEYWRAPPING_ALGORITHMS_ = [
+e2e.cipher.Ecdh.ALLOWED_KEYWRAPPING_ALGORITHMS_ = [
   e2e.cipher.Algorithm.AES128,
   e2e.cipher.Algorithm.AES192,
   e2e.cipher.Algorithm.AES256];
@@ -93,8 +93,8 @@ e2e.cipher.ECDH.ALLOWED_KEYWRAPPING_ALGORITHMS_ = [
  *     keys as specified in section 9 of RFC 6637.
  * @override
  */
-e2e.cipher.ECDH.prototype.setKey = function(keyArg) {
-  var key = /** @type {e2e.cipher.key.ECDH} */ (keyArg);
+e2e.cipher.Ecdh.prototype.setKey = function(keyArg) {
+  var key = /** @type {e2e.cipher.key.Ecdh} */ (keyArg);
   goog.asserts.assertArray(key['kdfInfo'], 'KDF params should be defined.');
   goog.asserts.assert(key['kdfInfo'].length == 4, 'KDF: invalid params.');
   // Length. It must be 0x3 because there're 3 more bytes after it.
@@ -105,13 +105,13 @@ e2e.cipher.ECDH.prototype.setKey = function(keyArg) {
   var hashAlgo = e2e.openpgp.constants.getAlgorithm(
       e2e.openpgp.constants.Type.HASH, key['kdfInfo'][2]);
   goog.asserts.assert(goog.array.contains(
-      e2e.cipher.ECDH.ALLOWED_HASH_ALGORITHMS_, hashAlgo),
+      e2e.cipher.Ecdh.ALLOWED_HASH_ALGORITHMS_, hashAlgo),
       'KDF: invalid hash algorithm.');
   // Key wrapping algorithm.
   var keyWrappingAlgo = e2e.openpgp.constants.getAlgorithm(
       e2e.openpgp.constants.Type.SYMMETRIC_KEY, key['kdfInfo'][3]);
   goog.asserts.assert(goog.array.contains(
-      e2e.cipher.ECDH.ALLOWED_KEYWRAPPING_ALGORITHMS_,
+      e2e.cipher.Ecdh.ALLOWED_KEYWRAPPING_ALGORITHMS_,
       keyWrappingAlgo), 'KDF: invalid key wrapping algorithm.');
 
   if (!goog.isDefAndNotNull(key['pubKey']) &&
@@ -127,16 +127,19 @@ e2e.cipher.ECDH.prototype.setKey = function(keyArg) {
   }
 
   goog.asserts.assertArray(key['curve'], 'Curve should be defined.');
-  this.ecdh_ = new e2e.ecc.ECDH(
-      e2e.ecc.DomainParam.curveNameFromCurveOID(key['curve']),
-      key);
+  this.ecdh_ = new e2e.ecc.Ecdh(
+      e2e.ecc.DomainParam.curveNameFromCurveOid(key['curve']),
+      {
+        'privKey': key['privKey'],
+        'pubKey': key['pubKey']
+      });
   // Save other key material.
   goog.base(this, 'setKey', key);
 };
 
 
 /** @inheritDoc */
-e2e.cipher.ECDH.prototype.encrypt = function(plaintext) {
+e2e.cipher.Ecdh.prototype.encrypt = function(plaintext) {
   // Performs the ECDH encryption method as described in section 8 of RFC 6637.
   var message = this.ecdh_.alice();
   // Wraps the session key with the key-wrapping key derived from the shared
@@ -158,7 +161,7 @@ e2e.cipher.ECDH.prototype.encrypt = function(plaintext) {
  * @return {e2e.cipher.ciphertext.AsymmetricAsync}
  * @protected
  */
-e2e.cipher.ECDH.prototype.encryptForTestingOnly = function(m, privKey) {
+e2e.cipher.Ecdh.prototype.encryptForTestingOnly = function(m, privKey) {
   var message = this.ecdh_.bob(this.key['pubKey'], privKey);
 
   var keyWrapper = this.getKeyWrapper_(message['secret']);
@@ -172,7 +175,7 @@ e2e.cipher.ECDH.prototype.encryptForTestingOnly = function(m, privKey) {
 
 
 /** @inheritDoc */
-e2e.cipher.ECDH.prototype.decrypt = function(ciphertext) {
+e2e.cipher.Ecdh.prototype.decrypt = function(ciphertext) {
   // Performs the ECDH decryption method as described in section 8 of RFC 6637.
   goog.asserts.assertArray(ciphertext['u'], 'Invalid ciphertext.');
   goog.asserts.assertArray(ciphertext['v'], 'Invalid ciphertext.');
@@ -186,22 +189,12 @@ e2e.cipher.ECDH.prototype.decrypt = function(ciphertext) {
 
 
 /**
- * Generates a new P-256 key pair and uses it to construct a new ECDH object.
- * @return {e2e.cipher.ECDH}
- */
-e2e.cipher.ECDH.newECDHWithP256 = function() {
-  var key = e2e.ecc.Protocol.generateRandomP256ECDHKeyPair();
-  return new e2e.cipher.ECDH(e2e.cipher.Algorithm.ECDH, key);
-};
-
-
-/**
  * Returns a key-wrapper that is used to wrap or unwrap the session key.
  * @param {e2e.ByteArray} secret The ECDH shared secret.
- * @return {e2e.cipher.AESKeyWrap} The key-wrapper object.
+ * @return {e2e.cipher.AesKeyWrap} The key-wrapper object.
  * @private
  */
-e2e.cipher.ECDH.prototype.getKeyWrapper_ = function(secret) {
+e2e.cipher.Ecdh.prototype.getKeyWrapper_ = function(secret) {
   // Constructs the KDF params.
   var kdfParams = goog.array.clone(this.key['curve']);
   goog.array.extend(
@@ -228,11 +221,11 @@ e2e.cipher.ECDH.prototype.getKeyWrapper_ = function(secret) {
   kdfHash.update(kdfParams);
   var derivedKey = kdfHash.digest();
 
-  var wrapPrimitive = /** @type {e2e.cipher.AES} */
+  var wrapPrimitive = /** @type {e2e.cipher.Aes} */
       (e2e.openpgp.constants.getInstance(
       e2e.openpgp.constants.Type.SYMMETRIC_KEY,
       this.key['kdfInfo'][3]));
-  var keyWrapper = new e2e.cipher.AESKeyWrap(wrapPrimitive);
+  var keyWrapper = new e2e.cipher.AesKeyWrap(wrapPrimitive);
   // This condition has been implicitly checked in the constructor, still can't
   // hurt to explictly double check it again here.
   goog.asserts.assert(
@@ -244,5 +237,5 @@ e2e.cipher.ECDH.prototype.getKeyWrapper_ = function(secret) {
 };
 
 
-e2e.cipher.factory.add(e2e.cipher.ECDH,
+e2e.cipher.factory.add(e2e.cipher.Ecdh,
                                e2e.cipher.Algorithm.ECDH);
