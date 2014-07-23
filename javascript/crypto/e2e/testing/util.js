@@ -15,10 +15,12 @@
  * @fileoverview Common testing utilities
  *
  * @author fy@google.com (Frank Yellin)
+ * @author koto@google.com (Krzysztof Kotowicz) (rewrite, async tests, promises)
  */
 
 goog.provide('e2e.testing.Util');
 
+goog.require('goog.Promise');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.testing.PerformanceTable');
@@ -40,8 +42,8 @@ goog.setTestOnly();
  *     Defaults to 10.
  * @param {number=} opt_timeoutInterval Number of milliseconds after which the
  *     test is to be aborted. Defaults to 5000.
- * @return {!Object.<string,Object>} Performance stats (empty when tests are
- *     run in the browser).
+ * @return {!goog.Promise.<{!Object.<!string,!Object>} Performance stats promise
+ *     Promise will be resolved when last test completes.
  */
 e2e.testing.Util.runPerfTests = function(benchmarks, opt_numSamples,
     opt_timeoutInterval) {
@@ -51,34 +53,72 @@ e2e.testing.Util.runPerfTests = function(benchmarks, opt_numSamples,
   try {
     doc = goog.dom.getDocument();
   } catch (e) {}
-  var results = {};
+  var allResults = {};
+  var deferredResults = [];
+  var displayResultsFun;
   if (doc) { // We run in a browser.
-      var body = goog.dom.getDocument().body;
-      var perfTable = goog.dom.createElement('div');
-      goog.dom.appendChild(body, perfTable);
-      var table = new goog.testing.PerformanceTable(perfTable, timer);
-      goog.array.forEach(benchmarks, function(benchmark) {
-        table.run(benchmark.benchmark, benchmark.label);
-      });
-  } else {
-      goog.array.forEach(benchmarks, function(benchmark) {
-        results[benchmark.label] = timer.run(benchmark.benchmark);
-      });
+    displayResultsFun = e2e.testing.Util.createPerformanceTable(timer);
   }
-  return results;
+
+  var processTaskResults = function(label, taskResults) {
+    allResults[label] = taskResults;
+    if (goog.isFunction(displayResultsFun)) {
+      displayResultsFun(label, taskResults);
+    }
+  };
+
+  goog.array.forEach(benchmarks, function(benchmark) {
+    var task = new goog.testing.PerformanceTimer.Task(benchmark.benchmark);
+    if (benchmark.async) {
+      var deferredResult = timer.runAsyncTask(task);
+      deferredResult.then(goog.bind(processTaskResults, this,
+          benchmark.label));
+      deferredResults.unshift(deferredResult);
+    } else {
+      processTaskResults(benchmark.label, timer.runTask(task));
+    }
+  });
+
+  return new goog.Promise.all(deferredResults).then(function() {
+    return allResults;
+  });
 };
 
 /**
- * Adds a benchmark function to performance test array.
- * @param {!Array.<!{benchmark:!function():*, label:string}>} benchmarks Array
- *     to add benchmark to.
- * @param {!function():*} fun Benchmark test to add
- * @param {string} label Benchmark test label
+ * Creates performance table in the DOM to display the results in.
+ * @param  {goog.testing.PerformanceTimer} timer Performance timer to use.
+ * @return {?function(!string,!Object)} callback function filling the results
+ *    in the created table
  */
-e2e.testing.Util.addBenchmark = function(benchmarks, fun, label) {
+e2e.testing.Util.createPerformanceTable = function(timer) {
+  var body = goog.dom.getDocument().body;
+  var perfTable = goog.dom.createElement('div');
+  goog.dom.appendChild(body, perfTable);
+  var table = new goog.testing.PerformanceTable(perfTable, timer);
+  return function(label, taskResults) {
+    table.recordResults(taskResults, label);
+  };
+};
+
+
+/**
+ * Adds a benchmark function to performance test array.
+ * Benchmark function will be executed repeatedly and the execution time will be
+ * measured. Return values and errors thrown from the function are ignored.
+ * @param {!Array.<!{benchmark:!function():?goog.async.Deferred, label:string,
+ *     async: boolean}>} benchmarks Array to add the benchmark to.
+ * @param {!function():?goog.async.Deferred} fun Benchmark test to add. The
+ *     function execution time will be measured. Iff opt_async is true,
+ *     the function should return a deferred and execute deferred callback()
+ *     when the test is complete.
+ * @param {string} label Benchmark test label
+ * @param {boolean=} opt_async Iff true, the test is asynchronous.
+ */
+e2e.testing.Util.addBenchmark = function(benchmarks, fun, label, opt_async) {
   benchmarks.push({
       benchmark: fun,
-      label: label
+      label: label,
+      async: Boolean(opt_async)
   });
 };
 
