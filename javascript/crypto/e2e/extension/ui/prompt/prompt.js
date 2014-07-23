@@ -38,7 +38,7 @@ goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.Timer');
 goog.require('goog.array');
 goog.require('goog.dom');
-goog.require('goog.dom.classes');
+goog.require('goog.dom.classlist');
 goog.require('goog.events.Event');
 goog.require('goog.events.EventType');
 goog.require('goog.format');
@@ -518,7 +518,7 @@ ui.Prompt.prototype.renderKeyringPassphrase_ = function(elem, contentBlob) {
   elem.textContent = '';
   this.addChild(dialog, false);
   dialog.render(elem);
-  goog.dom.classes.remove(elem, constants.CssClass.TRANSPARENT);
+  goog.dom.classlist.remove(elem, constants.CssClass.TRANSPARENT);
 };
 
 
@@ -768,7 +768,7 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
                   this.chipHolder_.lock();
                   var passphraseEncryptionLink = goog.dom.getElement(
                     constants.ElementId.PASSPHRASE_ENCRYPTION_LINK);
-                  goog.dom.classes.add(passphraseEncryptionLink,
+                  goog.dom.classlist.add(passphraseEncryptionLink,
                       constants.CssClass.INVISIBLE);
                   var signCheckbox = goog.dom.getElement(
                     constants.ElementId.SIGN_MESSAGE_CHECK);
@@ -778,7 +778,7 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
                   var insertButton =
                       this.getElementByClass(constants.CssClass.INSERT);
                   if (insertButton) {
-                    goog.dom.classes.remove(
+                    goog.dom.classlist.remove(
                         insertButton, constants.CssClass.HIDDEN);
                   }
                 }, this))
@@ -936,7 +936,7 @@ ui.Prompt.prototype.surfaceDismissButton_ = function() {
   goog.array.forEach(
       this.getElement().querySelectorAll('button.action,button.save'),
       function(button) {
-        goog.dom.classes.add(button, constants.CssClass.HIDDEN);
+        goog.dom.classlist.add(button, constants.CssClass.HIDDEN);
       });
 
   var cancelButton = this.getElementByClass(constants.CssClass.CANCEL);

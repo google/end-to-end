@@ -19,7 +19,7 @@ goog.require('e2e.async.Result');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
 goog.require('goog.dom');
-goog.require('goog.dom.classes');
+goog.require('goog.dom.classlist');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.Mock');
 goog.require('goog.testing.MockControl');
@@ -81,7 +81,7 @@ function testRenderWithoutExport() {
       goog.nullFunction, goog.abstractMethod, goog.abstractMethod);
   panel.render(document.body);
 
-  assertTrue(goog.dom.classes.has(
+  assertTrue(goog.dom.classlist.contains(
       panel.getElementByClass(constants.CssClass.KEYRING_EXPORT),
       constants.CssClass.HIDDEN));
 }
@@ -214,12 +214,13 @@ function testShowKeyringMgmtForm() {
   var importDiv = goog.dom.getElement(constants.ElementId.KEYRING_IMPORT_DIV);
   var optionsDiv = goog.dom.getElement(
       constants.ElementId.KEYRING_OPTIONS_DIV);
-  assertTrue(goog.dom.classes.has(importDiv, constants.CssClass.HIDDEN));
+  assertTrue(goog.dom.classlist.contains(importDiv, constants.CssClass.HIDDEN));
 
   panel.showKeyringMgmtForm_(constants.ElementId.KEYRING_IMPORT_DIV);
-  assertTrue(goog.dom.classes.has(optionsDiv, constants.CssClass.HIDDEN));
+  assertTrue(
+      goog.dom.classlist.contains(optionsDiv, constants.CssClass.HIDDEN));
   panel.showKeyringMgmtForm_(constants.ElementId.KEYRING_OPTIONS_DIV);
-  assertTrue(goog.dom.classes.has(importDiv, constants.CssClass.HIDDEN));
+  assertTrue(goog.dom.classlist.contains(importDiv, constants.CssClass.HIDDEN));
 }
 
 

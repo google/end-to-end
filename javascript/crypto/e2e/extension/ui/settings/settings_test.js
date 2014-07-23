@@ -23,7 +23,6 @@ goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.utils');
 goog.require('e2e.openpgp.KeyRing');
 goog.require('goog.dom');
-goog.require('goog.dom.classes');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.Mock');
 goog.require('goog.testing.MockControl');

@@ -22,7 +22,7 @@ goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.templates');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
-goog.require('goog.dom.classes');
+goog.require('goog.dom.classlist');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.KeyboardShortcutHandler');
@@ -161,7 +161,7 @@ ui.Dialog.prototype.enterDocument = function() {
 
   var body = goog.dom.getElement(constants.ElementId.BODY);
   if (body) {
-    goog.dom.classes.add(body, constants.CssClass.TRANSPARENT);
+    goog.dom.classlist.add(body, constants.CssClass.TRANSPARENT);
   }
 
   var elem = this.getElement();
@@ -205,7 +205,7 @@ ui.Dialog.prototype.enterDocument = function() {
 ui.Dialog.prototype.exitDocument = function() {
   var body = goog.dom.getElement(constants.ElementId.BODY);
   if (body) {
-    goog.dom.classes.remove(body, constants.CssClass.TRANSPARENT);
+    goog.dom.classlist.remove(body, constants.CssClass.TRANSPARENT);
   }
 
   goog.base(this, 'exitDocument');

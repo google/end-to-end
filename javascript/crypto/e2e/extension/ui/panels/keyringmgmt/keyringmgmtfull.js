@@ -24,7 +24,7 @@ goog.require('goog.array');
 goog.require('goog.crypt');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
-goog.require('goog.dom.classes');
+goog.require('goog.dom.classlist');
 goog.require('goog.events.Event');
 goog.require('goog.events.EventType');
 goog.require('goog.structs.Map');
@@ -283,7 +283,7 @@ panels.KeyringMgmtFull.prototype.handleClick_ = function(clickEvt) {
     return;
   }
 
-  var callback = goog.dom.classes.has(icon, constants.CssClass.REMOVE) ?
+  var callback = goog.dom.classlist.contains(icon, constants.CssClass.REMOVE) ?
       this.removeKeyCallback_ : this.exportKeyCallback_;
   var parentTR = this.getParentTableRow_(icon);
   var keyUid = goog.dom.getElementByClass(

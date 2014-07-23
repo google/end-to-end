@@ -20,7 +20,7 @@ goog.provide('e2e.ext.ChipHolder');
 goog.require('e2e.ext.Chip');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.templates.prompt');
-goog.require('goog.dom.classes');
+goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.events.KeyHandler');
@@ -276,7 +276,7 @@ ext.ChipHolder.prototype.addAndMarkChip_ = function(markChipBad) {
 
   if (markChipBad) {
     var chip = this.getChildAt(this.getChildCount() - 1);
-    goog.dom.classes.add(chip.getElement(), constants.CssClass.BAD_CHIP);
+    goog.dom.classlist.add(chip.getElement(), constants.CssClass.BAD_CHIP);
   }
 };
 
@@ -332,7 +332,7 @@ ext.ChipHolder.prototype.lock = function() {
   this.forEachChild(function(chip) {
     chip.lock();
   });
-  goog.dom.classes.add(this.shadowInputElem_, constants.CssClass.INVISIBLE);
+  goog.dom.classlist.add(this.shadowInputElem_, constants.CssClass.INVISIBLE);
 };
 
 

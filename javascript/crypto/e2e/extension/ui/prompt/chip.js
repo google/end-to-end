@@ -22,7 +22,7 @@ goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.templates.prompt');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
-goog.require('goog.dom.classes');
+goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
 goog.require('goog.ui.Component');
 goog.require('soy');
@@ -126,7 +126,7 @@ ext.Chip.prototype.remove = function() {
 ext.Chip.prototype.lock = function() {
   this.isLocked_ = true;
   var img = this.getElement().querySelector('img');
-  goog.dom.classes.add(img, constants.CssClass.INVISIBLE);
+  goog.dom.classlist.add(img, constants.CssClass.INVISIBLE);
 };
 
 

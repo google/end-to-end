@@ -25,7 +25,7 @@ goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.Timer');
 goog.require('goog.array');
 goog.require('goog.dom');
-goog.require('goog.dom.classes');
+goog.require('goog.dom.classlist');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
@@ -544,7 +544,7 @@ function testSetKeyringPassphrase() {
   prompt.decorate(document.documentElement);
   prompt.processSelectedContent_(null, constants.Actions.GET_PASSPHRASE);
 
-  assertFalse(goog.dom.classes.has(
+  assertFalse(goog.dom.classlist.contains(
       goog.dom.getElement(e2e.ext.constants.ElementId.BODY),
       e2e.ext.constants.CssClass.TRANSPARENT));
 

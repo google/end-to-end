@@ -21,7 +21,7 @@ goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.templates.panels.keyringmgmt');
 goog.require('goog.array');
 goog.require('goog.dom');
-goog.require('goog.dom.classes');
+goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
 goog.require('goog.ui.Component');
 goog.require('soy');
@@ -103,7 +103,7 @@ panels.KeyringMgmtMini.prototype.decorateInternal = function(elem) {
 
   // for display on welcome page
   if (this.exportCallback_ == goog.nullFunction) {
-    goog.dom.classes.add(
+    goog.dom.classlist.add(
         this.getElementByClass(constants.CssClass.KEYRING_EXPORT),
         constants.CssClass.HIDDEN);
   } else {
@@ -188,10 +188,10 @@ panels.KeyringMgmtMini.prototype.enterDocument = function() {
 panels.KeyringMgmtMini.prototype.showKeyringMgmtForm_ = function(formId) {
   goog.array.forEach(
       this.getElement().querySelectorAll('div[id]'), function(elem) {
-        goog.dom.classes.add(elem, constants.CssClass.HIDDEN);
+        goog.dom.classlist.add(elem, constants.CssClass.HIDDEN);
       });
 
-  goog.dom.classes.remove(
+  goog.dom.classlist.remove(
       goog.dom.getElement(formId), constants.CssClass.HIDDEN);
 };
 

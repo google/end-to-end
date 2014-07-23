@@ -17,7 +17,7 @@
 
 goog.require('e2e.ext.ChipHolder');
 goog.require('e2e.ext.constants');
-goog.require('goog.dom.classes');
+goog.require('goog.dom.classlist');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.style');
 goog.require('goog.testing.PropertyReplacer');
@@ -120,7 +120,7 @@ function testMarkChipBad() {
     }
   });
   assertEquals('1,2', chipHolder.getSelectedUids().join(','));
-  assertTrue(goog.dom.classes.has
+  assertTrue(goog.dom.classlist.contains
       (chipHolder.getChildAt(1).getElement(), constants.CssClass.BAD_CHIP));
 }
 
@@ -144,7 +144,7 @@ function testEmptyInputDoesNotMarkLastChipBad() {
     }
   });
   assertEquals('1', chipHolder.getSelectedUids().join(','));
-  assertFalse(goog.dom.classes.has
+  assertFalse(goog.dom.classlist.contains
       (chipHolder.getChildAt(0).getElement(), constants.CssClass.BAD_CHIP));
 }
 
@@ -167,7 +167,7 @@ function testPendingInputMarkChipBad() {
     }
   });
   assertEquals('1,bad', chipHolder.getSelectedUids().join(','));
-  assert(goog.dom.classes.has
+  assert(goog.dom.classlist.contains
       (chipHolder.getChildAt(1).getElement(), constants.CssClass.BAD_CHIP));
 }
 
