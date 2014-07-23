@@ -18,6 +18,7 @@
 goog.provide('e2e.ext.ui.Welcome');
 
 goog.require('e2e.cipher.Algorithm');
+goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.messages');
 goog.require('e2e.ext.ui.dialogs.Generic');
@@ -56,6 +57,14 @@ var utils = e2e.ext.utils;
  */
 ui.Welcome = function() {
   goog.base(this);
+
+  /**
+   * Executor for the End-to-End actions.
+   * @type {!e2e.ext.actions.Executor}
+   * @private
+   */
+  this.actionExecutor_ = new e2e.ext.actions.Executor(
+      goog.bind(this.displayFailure_, this));
 };
 goog.inherits(ui.Welcome, goog.ui.Component);
 
@@ -216,34 +225,26 @@ ui.Welcome.prototype.generateKey_ =
  */
 ui.Welcome.prototype.importKeyring_ = function(file) {
   utils.readFile(file, goog.bind(function(contents) {
-    this.getContext_(goog.bind(function(pgpCtx) {
-      var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
-      pgpCtx.getKeyDescription(contents)
-        .addCallback(/** @this {ui.Welcome} */ function(keyDescription) {
-          var dialog = new dialogs.ImportConfirmation(
-              keyDescription,
-              /** @type {function(string=)} */
-              (goog.bind(/** @this {ui.Welcome} */ function(returnValue) {
-                goog.dispose(dialog);
-                if (goog.isDef(returnValue)) {
-                  pgpCtx.importKey(goog.bind(this.renderPassphraseCallback_,
-                      this), contents)
-                      .addCallback(goog.bind(
-                          /** @this {ui.Welcome} */ function(res) {
-                        var dialog = new dialogs.Generic(
-                            chrome.i18n.getMessage('welcomeKeyImport'),
-                            this.hideKeyringSetup_,
-                            dialogs.InputType.NONE);
-                        this.removeChild(this.keyringMgmt_, false);
-                        this.addChild(dialog, false);
-                        dialog.decorate(this.keyringMgmt_.getElement());
-                      }, this))
-                      .addErrback(this.displayFailure_, this);
-                }
-              }, this)));
-          this.addChild(dialog, false);
-          dialog.render(popupElem);
-      }, this).addErrback(this.displayFailure_, this);
+    this.actionExecutor_.execute({
+      action: constants.Actions.GET_KEY_DESCRIPTION,
+      content: contents
+    }, this, goog.bind(function(returnValue) {
+      if (goog.isDef(returnValue)) {
+        this.getContext_(goog.bind(function(pgpCtx) {
+          pgpCtx.importKey(
+              goog.bind(this.renderPassphraseCallback_, this), contents).
+              addCallback(goog.bind(/** @this {ui.Welcome} */ function(res) {
+                var dialog = new dialogs.Generic(
+                    chrome.i18n.getMessage('welcomeKeyImport'),
+                    this.hideKeyringSetup_,
+                    dialogs.InputType.NONE);
+                this.removeChild(this.keyringMgmt_, false);
+                this.addChild(dialog, false);
+                dialog.decorate(this.keyringMgmt_.getElement());
+              }, this)).
+              addErrback(this.displayFailure_, this);
+        }, this));
+      }
     }, this));
   }, this));
 };

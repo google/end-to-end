@@ -205,35 +205,36 @@ function testImportKeyring() {
   e2e.ext.utils.readFile(
       goog.testing.mockmatchers.ignoreArgument, readCallbackArg);
 
+  stubs.setPath('e2e.ext.actions.GetKeyDescription.prototype.execute',
+      mockControl.createFunctionMock());
+  var keyDescriptionArg =
+      new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  e2e.ext.actions.GetKeyDescription.prototype.execute(
+      goog.testing.mockmatchers.ignoreArgument,
+      goog.testing.mockmatchers.ignoreArgument,
+      page,
+      keyDescriptionArg,
+      goog.testing.mockmatchers.ignoreArgument);
+
   mockControl.$replayAll();
 
   page.decorate(document.documentElement);
   page.importKeyring_('irrelevant');
   readCallbackArg.arg(PUBLIC_KEY_ASCII);
+  keyDescriptionArg.arg('');
 
-  testCase.waitForAsync('waiting for key description to be accepted');
+  testCase.waitForAsync('waiting for keyring to be imported');
   window.setTimeout(function() {
-    assertContains('test 4', document.body.textContent);
-    // Click the getKeyDescription confirmation dialog.
+    assertContains('welcomeKeyImport', document.body.textContent);
     for (var childIdx = 0; childIdx < page.getChildCount(); childIdx++) {
       var child = page.getChildAt(childIdx);
       if (child instanceof e2e.ext.ui.dialogs.Generic) {
-        child.dialogCallback_('');
+        child.dialogCallback_();
       }
     }
-    testCase.waitForAsync('waiting for keyring to be imported');
-    window.setTimeout(function() {
-      assertContains('welcomeKeyImport', document.body.textContent);
-      for (var childIdx = 0; childIdx < page.getChildCount(); childIdx++) {
-        var child = page.getChildAt(childIdx);
-        if (child instanceof e2e.ext.ui.dialogs.Generic) {
-          child.dialogCallback_();
-        }
-      }
-      assertNotContains('welcomeKeyImport', document.body.textContent);
-      mockControl.$verifyAll();
-      testCase.continueTesting();
-    }, 500);
+    assertNotContains('welcomeKeyImport', document.body.textContent);
+    mockControl.$verifyAll();
+    testCase.continueTesting();
   }, 500);
 }
 

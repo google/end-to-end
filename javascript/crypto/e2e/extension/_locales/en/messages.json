@@ -354,6 +354,13 @@
   "throttleErrorMsg": {
     "message": "The requested operation cannot be performed at this time. Please try again in 1 minute.",
     "description": "A sentence to display when the requested operation cannot be executed due to throttling."
+  },
+  "errorUnableToRenderDialog": {
+    "message": "Unable to render UI dialogs.",
+    "description": "A sentence describing that the requested operation cannot be completed due to UI problems,"
+  },
+  "errorUnsupportedAction": {
+    "message": "Unsupported End-to-End action.",
+    "description": "A sentence describing that the requested operation is not supported."
   }
-
 }
