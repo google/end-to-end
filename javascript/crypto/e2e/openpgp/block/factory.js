@@ -19,6 +19,7 @@
 
 goog.provide('e2e.openpgp.block.factory');
 
+goog.require('e2e.openpgp.ByteStream');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.Compressed');
 goog.require('e2e.openpgp.block.EncryptedMessage');
@@ -151,14 +152,15 @@ e2e.openpgp.block.factory.parseByteArrayMulti = function(data, opt_charset) {
 
 
 /**
- * Parses packets out of a ByteArray.
+ * Parses packets out of a ByteArray. Does not modify the ByteArray.
  * @param {!e2e.ByteArray} data ByteArray to parse into packets.
  * @return {!Array.<!e2e.openpgp.packet.Packet>} The packets extracted.
  */
 e2e.openpgp.block.factory.byteArrayToPackets = function(data) {
   var packets = [];
-  while (data.length) {
-    var packet = e2e.openpgp.parse.parseSerializedPacket(data);
+  var byteStream = new e2e.openpgp.ByteStream(data);
+  while (byteStream.length) {
+    var packet = e2e.openpgp.parse.parseSerializedPacket(byteStream);
     if (packet) {
       packets.push(packet);
     }
@@ -172,7 +174,8 @@ e2e.openpgp.block.factory.byteArrayToPackets = function(data) {
  *     serialization will not be included in the results, as this function
  *     should be called to display the results in the UI, where serialization
  *     is not needed.
- * @param  {!Array.<!e2e.openpgp.block.Block>} blocks Blocks to extract keys from.
+ * @param  {!Array.<!e2e.openpgp.block.Block>} blocks Blocks to extract keys
+ *     from.
  * @return {!e2e.openpgp.Keys} Extracted Keys.
  */
 e2e.openpgp.block.factory.extractKeys = function(blocks) {

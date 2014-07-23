@@ -120,4 +120,21 @@ function testParseCompressedMessage() {
 }
 
 
+function testParsingLeavesByteArrayIntact() {
+  var packets = [
+    new e2e.openpgp.packet.LiteralData(
+        e2e.openpgp.packet.LiteralData.Format.UTF8, [], 0, []),
+    new e2e.openpgp.packet.UserId('unused packet')
+  ];
+  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  assertTrue(block instanceof e2e.openpgp.block.LiteralMessage);
+  assertEquals(1, packets.length);
+
+  var serialization = block.serialize();
+  var serializationClone = goog.array.clone(serialization);
+  var parsedPackets = e2e.openpgp.block.factory.parseByteArrayMulti(
+      serialization);
+  assertArrayEquals(serialization, serializationClone);
+}
+
 </script>

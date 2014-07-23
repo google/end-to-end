@@ -48,7 +48,8 @@ e2e.openpgp.parse.CONSUME_ALL_PACKET_BODY_ = 3;
  * calls with the same data parse sequential packets.
  * Will throw a ParseError if the packet is invalid.
  * @param {number} lbits The 2 last bits of the packet tag.
- * @param {!Array.<number>} data The data of the packet.
+ * @param {!(e2e.ByteArray|e2e.openpgp.ByteStream)} data The data of
+ *     the packet.
  * @return {!Array.<number>} The body of the packet.
  * @private
  */
@@ -133,7 +134,8 @@ e2e.openpgp.parse.FIVE_BYTE_LENGTH_VAL = 255;
  * Note it will consume the required bytes from the data, so that multiple
  * calls with the same data parse sequential packets.
  * Throws a {@see e2e.openpgp.error.ParseError} if the packet is invalid.
- * @param {!Array.<number>} data The data to parse.
+ * @param {!(e2e.ByteArray|e2e.openpgp.ByteStream)} data The data to
+ *     parse.
  * @return {!Array.<number>} The body of the packet.
  * @private
  */
@@ -210,7 +212,8 @@ e2e.openpgp.parse.P_TAG_OLD_PACKET_SHIFT_ = 2;
  * Parses a packet and calls the specific subpacket class if available.
  * Specified in RFC 4880 Section 4.
  * Throws a {@code e2e.openpgp.error.ParseError} if the packet is invalid.
- * @param {Array.<number>} data The data to parse as a packet.
+ * @param {!(e2e.ByteArray|e2e.openpgp.ByteStream)} data
+ *     The data to parse as a packet.
  * @return {e2e.openpgp.packet.Packet} The packet generated.
  */
 e2e.openpgp.parse.parseSerializedPacket = function(data) {
