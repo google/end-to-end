@@ -36,6 +36,8 @@ goog.require('e2e.openpgp.block.TransferableKey');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.PassphraseError');
+/** @suppress {extraRequire} force loading of all signers */
+goog.require('e2e.signer.all');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.async.DeferredList');
