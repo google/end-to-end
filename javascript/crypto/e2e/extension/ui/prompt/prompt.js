@@ -178,12 +178,13 @@ ui.Prompt.prototype.processSelectedContent_ =
       var sniffedAction = utils.text.getPgpAction(
           content, preferences.isActionSniffingEnabled());
       if (sniffedAction == constants.Actions.DECRYPT_VERIFY) {
-        this.runWrappedProcessor_(function() {
+        this.runWrappedProcessor_(/** @this ui.Prompt */ function() {
           this.pgpLauncher_.getContext()
               .verifyDecrypt(
                   goog.bind(this.renderPassphraseCallback_, this), content)
               .addCallback(function(res) {
-                var textArea = elem.querySelector('textarea');
+                var textArea = /** @type {HTMLTextAreaElement} */
+                    (elem.querySelector('textarea'));
                 return e2e.byteArrayToStringAsync(
                     res.decrypt.data,
                     res.decrypt.options.charset).addCallback(
@@ -666,13 +667,15 @@ ui.Prompt.prototype.getTitle_ = function(action) {
     case ext.constants.Actions.GET_PASSPHRASE:
       return chrome.i18n.getMessage('actionUnlockKeyring');
   }
+
+  return '';
 };
 
 
 /**
  * Parses string and looks up keys for encrypting objects in keyring.
  * @param {!Array.<string>} userIds A list of user IDs to get keys for.
- * @return {!Array.<e2e.openpgp.packet.Key>} Array of key objects.
+ * @return {!Array.<e2e.openpgp.Key>} Array of key objects.
  * @private
  */
 ui.Prompt.prototype.getEncryptKeys_ = function(userIds) {
@@ -722,7 +725,7 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
   this.clearFailure_();
   switch (action) {
     case ext.constants.Actions.ENCRYPT_SIGN:
-      this.runWrappedProcessor_(function() {
+      this.runWrappedProcessor_(/** @this ui.Prompt */ function() {
         var selectedUids = this.chipHolder_ ?
             this.chipHolder_.getSelectedUids() : [];
         var keys = this.getEncryptKeys_(selectedUids);
@@ -787,7 +790,7 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
       });
       break;
     case constants.Actions.DECRYPT_VERIFY:
-      this.runWrappedProcessor_(function() {
+      this.runWrappedProcessor_(/** @this ui.Prompt */ function() {
         this.pgpLauncher_.getContext()
             .verifyDecrypt(
                 goog.bind(this.renderPassphraseCallback_, this),
@@ -822,7 +825,7 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
       });
       break;
     case ext.constants.Actions.IMPORT_KEY:
-      this.runWrappedProcessor_(function() {
+      this.runWrappedProcessor_(/** @this ui.Prompt */ function() {
         this.pgpLauncher_.getContext().getKeyDescription(textArea.value)
           .addCallback(function(keyDescription) {
             var dialog = new dialogs.ImportConfirmation(
@@ -870,8 +873,7 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
  */
 ui.Prompt.prototype.runWrappedProcessor_ = function(processorFunc) {
   try {
-    var scope = /** @type {ui.Prompt} */ (this);
-    processorFunc.call(scope);
+    processorFunc.call(this);
   } catch (error) {
     this.displayFailure_(error);
   }
@@ -970,7 +972,7 @@ ui.Prompt.prototype.insertMessageIntoPage_ = function(origin) {
 ui.Prompt.prototype.saveDraft_ = function(origin, evt) {
   var formText = this.getElement().querySelector('textarea');
 
-  this.runWrappedProcessor_(function() {
+  this.runWrappedProcessor_(/** @this ui.Prompt */ function() {
     var signerSelect = goog.dom.getElement(constants.ElementId.SIGNER_SELECT);
     var encryptionKeys = this.getEncryptKeys_([signerSelect.value]);
 
