@@ -34,6 +34,7 @@ goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.ui.templates');
 goog.require('e2e.ext.ui.templates.prompt');
 goog.require('e2e.ext.utils');
+goog.require('e2e.ext.utils.action');
 goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.Key');
 goog.require('e2e.openpgp.asciiArmor');
@@ -817,7 +818,7 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
                       this.displayFailure_(
                           new Error(chrome.i18n.getMessage(
                               'promptVerificationFailureMsg',
-                              this.extractUserIds_(res.verify.failure)
+                              utils.action.extractUserIds(res.verify.failure)
                       )));
                     }
                     if (goog.isDef(res.verify) &&
@@ -825,7 +826,7 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
                       successMessage += '\n\n' +
                           chrome.i18n.getMessage(
                               'promptVerificationSuccessMsg',
-                              this.extractUserIds_(res.verify.success)
+                              utils.action.extractUserIds(res.verify.success)
                       );
                     }
                     this.displaySuccess_(successMessage, goog.nullFunction);
@@ -871,20 +872,6 @@ ui.Prompt.prototype.runWrappedProcessor_ = function(processorFunc) {
   }
 };
 
-
-/**
- * Extract user IDs from array of Keys.
- * @param {!Array.<!e2e.openpgp.Key>} keys
- * @return {string} All user IDs, separated by comma.
- * @private
- */
-ui.Prompt.prototype.extractUserIds_ = function(keys) {
-  var result = goog.array.flatten(goog.array.map(keys, function(key) {
-    return key.uids;
-  }));
-  goog.array.removeDuplicates(result);
-  return result.join(', ');
-};
 
 /**
  * Displays an error message to the user.
