@@ -16,43 +16,71 @@
 
 
 /**
- * Displays the serialized backup data to the user
- * @param key The key to be displayed
+ * Creates a grid layout based on the number of rows/cols and length.
+ * @param? opt_caption The caption for the table
+ * @param content The content to be rendered in the grid.
+ */
+{template .Grid}
+  <table>
+    {if $opt_caption}<caption>{$opt_caption}</caption>{/if}
+    <tbody>
+      {$content}
+    </tbody>
+  </table>
+{/template}
+
+
+/**
+ * A single cell in a .Grid.  Only to be called as a param to .Grid.
+ * @param length Th length of the data.
+ * @param i The index of the cell being rendered.
+ * @param content The content to be rendered in the cell.
+ */
+{template .GridCell}
+  {let $dimension: e2e.ext.constants.BackupCode /}
+  {let $rowstart: $length / $dimension.ROWS /}
+  {let $colstart: $rowstart / $dimension.COLS /}
+  {if $i % $rowstart == 0}
+    <tr>
+  {/if}
+  {if $i % $colstart == 0}
+    <td>
+  {/if}
+  {$content}
+  {if $i % $colstart == $colstart - 1}
+    </td>
+  {/if}
+  {if $i % $rowstart == $rowstart - 1}
+  </tr>
+  {/if}
+{/template}
+
+
+/**
+ * Displays the serialized backup data to the user.
+ * @param key The key to be displayed.
  * @param caseSensitiveText Reminder text that codes are case sensitive.
  */
 {template .BackupKey}
   <div class="{e2e.ext.constants.CssClass.KEYRING_BACKUP_WINDOW}">
-    <h3>
-      <table>
-        <tbody>
-          {let $dimension: e2e.ext.constants.BackupCode /}
-          {let $rowstart: $key.length / $dimension.ROWS /}
-          {let $colstart: $rowstart / $dimension.COLS /}
-          {foreach $byte in $key}
-            {if index($byte) % $rowstart == 0}
-              <tr>
-            {/if}
-            {if index($byte) % $colstart == 0}
-              <td>
-            {/if}
-            {$byte}
-            {if index($byte) % $colstart == $colstart - 1}
-              </td>
-            {/if}
-            {if index($byte) % $rowstart == $rowstart - 1}
-            </tr>
-            {/if}
-          {/foreach}
-        </tbody>
-      </table>
-    </h3>
+    {call .Grid}
+      {param content kind="html"}
+        {foreach $i in $key}
+          {call .GridCell}
+            {param length: $key.length /}
+            {param i: index($i) /}
+            {param content: $i /}
+          {/call}
+        {/foreach}
+      {/param}
+    {/call}
     <span>{$caseSensitiveText}</span>
   </div>
 {/template}
 
 
 /**
- * Displays a prompt for the user to enter restore information
+ * Displays a prompt for the user to enter restore information.
  * @param emailLabel The label for the email input.
  * @param backupCodeLabel The label for the backup code input.
  */
@@ -65,10 +93,25 @@
     </label>
   </div>
 
-  <div>
-    <label>
-      <div>{$backupCodeLabel}</div>
-      <input type="text" class="{e2e.ext.constants.CssClass.KEYRING_RESTORE_INPUT}">
-    </label>
+  <div class="{e2e.ext.constants.CssClass.KEYRING_BACKUP_WINDOW}">
+    {call .Grid}
+      {param opt_caption: $backupCodeLabel /}
+      {param content kind="html"}
+        {let $dimension: e2e.ext.constants.BackupCode /}
+        {let $length: $dimension.ROWS * $dimension.COLS /}
+        {let $celllength: ceiling(e2e.ext.constants.BACKUP_CODE_LENGTH / $length) /}
+        {for $i in range($length)}
+          {call .GridCell}
+            {param length: $length /}
+            {param i: $i /}
+            {param content kind="html"}
+              <input type="text" maxlength="{$celllength}"{sp}
+                  class="{e2e.ext.constants.CssClass.KEYRING_RESTORE_INPUT}">
+            {/param}
+          {/call}
+        {/for}
+      {/param}
+    {/call}
+    <span>&nbsp;</span>
   </div>
 {/template}

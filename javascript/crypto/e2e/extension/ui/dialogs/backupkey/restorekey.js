@@ -77,7 +77,9 @@ dialogs.RestoreKey.prototype.enterDocument = function() {
  * @return {string} The base 64 encoded backup code.
  */
 dialogs.RestoreKey.prototype.getInputValue_ = function() {
-  return this.getElementByClass(constants.CssClass.KEYRING_RESTORE_INPUT).value;
+  var inputs = goog.array.toArray(
+      goog.dom.getElementsByClass('keyring-restore-input'));
+  return inputs.reduce(function(a, e) { return a + e.value; }, '');
 };
 
 
@@ -104,7 +106,14 @@ dialogs.RestoreKey.prototype.executeRestore_ = function() {
       data: this.getInputValue_(),
       email: email
     })
-  }, this, this.callback_);
+  }, this, goog.bind(function() {
+    this.getContentElement().querySelector('span').textContent = '\u00a0';
+    this.callback_.apply(this, arguments);
+    this.setVisible(false);
+  }, this), goog.bind(function(err) {
+    this.getContentElement().querySelector('span').textContent = err.message;
+  }, this));
+  return false;
 };
 
 }); // goog.scope

@@ -181,6 +181,10 @@ input:focus {
   border-collapse: collapse;
   border-style: hidden;
   margin: auto;
+  table-layout: fixed;
+  width: 100%;
+  font-size: 1.2em;
+  font-weight: bold;
 }
 
 .keyring-backup-window td {
@@ -191,5 +195,18 @@ input:focus {
 .keyring-backup-window span {
   color: red;
   font-size: .9em;
+  font-weight: bold;
+}
+
+.keyring-restore-input,
+.keyring-restore-input:hover,
+.keyring-restore-input:focus {
+  width: 100%;
+  padding: 0;
+  border: none;
+  text-align: center;
+  background: none;
+  outline: none;
+  font-size: 1.2em;
   font-weight: bold;
 }

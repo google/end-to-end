@@ -167,14 +167,14 @@ e2e.ext.constants.StorageKey = {
 
 /**
  * The number of millis to keep Chrome notifications visible.
- * @type {number}
+ * @const
  */
 e2e.ext.constants.NOTIFICATIONS_DELAY = 10 * 1000;
 
 
 /**
  * The number of millis to wait before saving a draft message.
- * @type {number}
+ * @const
  */
 e2e.ext.constants.AUTOSAVE_INTERVAL = 5 * 1000;
 
@@ -183,7 +183,7 @@ e2e.ext.constants.AUTOSAVE_INTERVAL = 5 * 1000;
  * Regular expression matching a valid email address. This needs to be very
  *    strict and reject uncommon formats to prevent vulnerability when
  *    keyserver would choose a different key than intended.
- * @type {RegExp}
+ * @const
  */
 e2e.ext.constants.EMAIL_ADDRESS_REGEXP =
     /^[+a-zA-Z0-9_.!-]+@([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,63}$/;
@@ -211,3 +211,10 @@ e2e.ext.constants.BackupCode = {
   ROWS: 3,
   COLS: 4
 };
+
+
+/**
+ * The length of backup codes.
+ * @const
+ */
+e2e.ext.constants.BACKUP_CODE_LENGTH = 24;
