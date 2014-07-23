@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 /**
- * @fileoverview Provides the UI elements ot generate a new PGP key.
+ * @fileoverview Provides the UI elements to generate a new PGP key.
  */
 
 goog.provide('e2e.ext.ui.panels.GenerateKey');
@@ -21,7 +21,10 @@ goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.templates.panels.generatekey');
 goog.require('goog.array');
 goog.require('goog.events.EventType');
+goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.Component');
+goog.require('goog.ui.KeyboardShortcutHandler');
+goog.require('goog.ui.KeyboardShortcutHandler.EventType');
 goog.require('soy');
 
 goog.scope(function() {
@@ -97,10 +100,18 @@ panels.GenerateKey.prototype.decorateInternal = function(elem) {
 panels.GenerateKey.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
-  this.getHandler().listen(
-      this.getElementByClass(constants.CssClass.ACTION),
-      goog.events.EventType.CLICK,
-      this.generate_);
+  var keyboardHandler = new goog.ui.KeyboardShortcutHandler(
+      this.getElementByClass(constants.CssClass.EMAIL));
+  keyboardHandler.registerShortcut('enter', goog.events.KeyCodes.ENTER);
+  this.getHandler().
+      listen(
+          this.getElementByClass(constants.CssClass.ACTION),
+          goog.events.EventType.CLICK,
+          this.generate_).
+      listen(
+          keyboardHandler,
+          goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+          this.generate_);
 };
 
 

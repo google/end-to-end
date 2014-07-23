@@ -23,7 +23,10 @@ goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
+goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.Component');
+goog.require('goog.ui.KeyboardShortcutHandler');
+goog.require('goog.ui.KeyboardShortcutHandler.EventType');
 goog.require('soy');
 
 goog.scope(function() {
@@ -206,6 +209,15 @@ panels.KeyringMgmtMini.prototype.showKeyringMgmtForm_ = function(formId) {
     var inputElem = goog.dom.getElement(formId).querySelector('input');
     inputElem.value = '';
     inputElem.focus();
+
+    // Pressing Enter triggers the next step.
+    var keyboardHandler = new goog.ui.KeyboardShortcutHandler(inputElem);
+    keyboardHandler.registerShortcut('enter', goog.events.KeyCodes.ENTER);
+    this.getHandler().listenOnce(
+        keyboardHandler,
+        goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
+        ((formId == constants.ElementId.KEYRING_PASSPHRASE_CHANGE_DIV) ?
+            this.confirmKeyringPassphrase_ : this.updateKeyringPassphrase_));
   }
 };
 
@@ -239,6 +251,9 @@ panels.KeyringMgmtMini.prototype.updateKeyringPassphrase_ = function() {
     this.updatePassphraseCallback_(passphrases[0]);
   } else {
     window.alert(chrome.i18n.getMessage('keyMgmtPassphraseMismatchLabel'));
+    // Show the form again to create listeners and clear the input.
+    this.showKeyringMgmtForm_(
+        constants.ElementId.KEYRING_PASSPHRASE_CONFIRM_DIV);
   }
 };
 
