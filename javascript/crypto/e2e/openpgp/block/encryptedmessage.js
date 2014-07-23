@@ -84,18 +84,21 @@ goog.inherits(e2e.openpgp.block.EncryptedMessage,
  */
 e2e.openpgp.block.EncryptedMessage.prototype.decrypt = function(
     getKeyForSessionKeyCallback, passphraseCallback) {
-  // Search for a secret key that can decrypt the session key.
+  // Search for a secret key that can decrypt the session key. foundSecretKeys
+  // will contain an entry for each of eskPackets. Some entries might be null
+  // e.g. when eskPacket is for a passhphrase.
   var foundSecretKeys = goog.array.map(
       this.eskPackets,
       function(eskPacket) {
         return getKeyForSessionKeyCallback(eskPacket.keyId);
       }, this);
 
+  // Try to decrypt with all found secret keys.
   var decryptResults =
       /** @type {!Array.<!goog.async.Deferred.<!e2e.openpgp.block.Message>>} */ (
-          goog.array.map(
-              goog.array.filter(foundSecretKeys, goog.isDefAndNotNull),
-              this.decryptWithSecretKey_, this));
+          goog.array.filter(
+              goog.array.map(foundSecretKeys, this.decryptWithSecretKey_, this),
+              goog.isDefAndNotNull));
 
   var res;
   if (decryptResults.length == 0) {
@@ -133,11 +136,15 @@ e2e.openpgp.block.EncryptedMessage.prototype.decryptCallback_ = function(
  * key packet.
  * @param {!e2e.openpgp.packet.SecretKey} secretKey The secret key to try with.
  * @param {number} index The index (on eskPackets) to try to decrypt.
- * @return {!e2e.async.Result.<!e2e.openpgp.block.Message>}
+ * @return {e2e.async.Result.<!e2e.openpgp.block.Message>} Deferred decryption
+ *     result or null, if no secretKey was passed.
  * @private
  */
 e2e.openpgp.block.EncryptedMessage.prototype.decryptWithSecretKey_ =
     function(secretKey, index) {
+  if (!secretKey) {
+    return null;
+  }
   return this.decryptKeyAndMessage_(
       goog.asserts.assertObject(secretKey.cipher.getKey()),
       this.eskPackets[index]);
