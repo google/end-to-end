@@ -32,7 +32,7 @@ goog.require('goog.asserts');
 
 /**
  * An abstract implementation of FastModulus that handles the common code
- * between the two NIST primes P_256 and P_348
+ * between the two NIST primes P_256 and P_384.
  *
  * @constructor
  * @implements {e2e.FastModulus}
