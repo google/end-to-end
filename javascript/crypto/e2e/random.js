@@ -91,10 +91,10 @@ e2e.random.tryGetWebCryptoRandomInternal_ = function(size) {
  * @private
  */
 e2e.random.getRandomBytesInternal_ = function() {
-  var WebCryptoRandom = e2e.random.tryGetWebCryptoRandomInternal_(
+  var webCryptoRandom = e2e.random.tryGetWebCryptoRandomInternal_(
       e2e.random.RNG_INTERNAL_BYTES_);
-  if (WebCryptoRandom) {
-    return WebCryptoRandom;
+  if (webCryptoRandom) {
+    return webCryptoRandom;
   }
   if (!e2e.random.initialized_) {
     if (e2e.random.seed_.length < e2e.random.RNG_INTERNAL_BYTES_) {
@@ -154,9 +154,9 @@ e2e.random.getRandomBytes = function(size, opt_blacklist) {
           }));
     }
   } else { // optimize
-    var WebCryptoRandom = e2e.random.tryGetWebCryptoRandomInternal_(size);
-    if (WebCryptoRandom) {
-      return WebCryptoRandom;
+    var webCryptoRandom = e2e.random.tryGetWebCryptoRandomInternal_(size);
+    if (webCryptoRandom) {
+      return webCryptoRandom;
     }
     while (random.length < size) {
       goog.array.extend(random, e2e.random.getRandomBytesInternal_());

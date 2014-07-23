@@ -23,13 +23,14 @@ goog.provide('e2e.scheme.Rsaes');
 
 
 /**
- * Implementation using WebCrypto if available.
+ * Implementation using alternative schemes if available.
  * @param {e2e.cipher.Cipher} cipher
  * @constructor
  * @extends {e2e.scheme.Eme}
  */
 e2e.scheme.Rsaes = function(cipher) {
   this.useWebCrypto = false;
+  this.useHardwareCrypto = false;
   this.algorithmIdentifier = {
     'name': 'RSAES-PKCS1-v1_5',
     'modulusLength': cipher.keySize,

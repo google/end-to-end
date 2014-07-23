@@ -32,7 +32,9 @@ e2e.scheme.CryptoPromise_;
  * @constructor
  */
 e2e.scheme.Scheme = function() {
-  this.useWebCrypto = this.useWebCrypto && e2e.scheme.Scheme.USE_WEBCRYPTO;
+  this.useWebCrypto = this.useWebCrypto && e2e.scheme.Scheme.USE_WEB_CRYPTO;
+  this.useHardwareCrypto = this.useHardwareCrypto &&
+    e2e.scheme.Scheme.USE_HARDWARE_CRYPTO;
   if (this.useWebCrypto && 'crypto' in goog.global) {
     this.crypto = goog.global.crypto;
     if ('subtle' in this.crypto) {
@@ -45,8 +47,12 @@ e2e.scheme.Scheme = function() {
 /**
  * @define {boolean} Whether to use webcrypto when available.
  */
-e2e.scheme.Scheme.USE_WEBCRYPTO = true;
+e2e.scheme.Scheme.USE_WEB_CRYPTO = true;
 
+/**
+ * @define {boolean} Whether to use a hardware device for crypto when available.
+ */
+e2e.scheme.Scheme.USE_HARDWARE_CRYPTO = false;
 
 /**
  * Crypto object as used by the Scheme.
