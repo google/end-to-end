@@ -171,3 +171,25 @@ input:focus {
   font-family: monospace;
   white-space: pre;
 }
+
+.keyring-backup-window {
+  text-align: center;
+  width: 300px;
+}
+
+.keyring-backup-window table {
+  border-collapse: collapse;
+  border-style: hidden;
+  margin: auto;
+}
+
+.keyring-backup-window td {
+  border: 1px solid black;
+  padding: 5px;
+}
+
+.keyring-backup-window span {
+  color: red;
+  font-size: .9em;
+  font-weight: bold;
+}

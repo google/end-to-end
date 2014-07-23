@@ -21,6 +21,7 @@ goog.require('e2e.error.InvalidArgumentsError');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.ui.dialogs.Overlay');
+goog.require('e2e.ext.ui.templates.dialogs.backupkey');
 goog.require('goog.array');
 goog.require('goog.crypt.base64');
 
@@ -53,18 +54,34 @@ dialogs.BackupKey.prototype.createDom = function() {
 dialogs.BackupKey.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
   this.setTitle(chrome.i18n.getMessage('keyMgmtBackupKeyringLabel'));
-  new e2e.ext.actions.Executor().execute({
-    action: constants.Actions.GET_KEYRING_BACKUP_DATA,
-    content: ''
-  }, this, goog.bind(function(data) {
-    if (data.count % 2) {
-      throw new e2e.error.InvalidArgumentsError('Odd number of keys');
-    }
-
-    this.setContent(goog.crypt.base64.encodeByteArray(
-        // count / 2 since we store the number of key PAIRS
-        goog.array.concat([data.count / 2 & 0x7F], data.seed)));
+  this.getBackupCode_().addCallback(goog.bind(function(key) {
+    soy.renderElement(this.getContentElement(), templates.BackupKey, {
+      key: key,
+      caseSensitiveText:
+          chrome.i18n.getMessage('keyMgmtBackupKeyringCaseSensitive')
+    });
   }, this));
 };
 
+
+/**
+ * Returns the backup code to display in the UI.
+ * @private
+ * @return {e2e.async.Result.<string>} Base64 encoded backup code to display.
+ */
+dialogs.BackupKey.prototype.getBackupCode_ = function() {
+  var result = new e2e.async.Result();
+  new e2e.ext.actions.Executor().execute({
+    action: constants.Actions.GET_KEYRING_BACKUP_DATA,
+    content: ''
+  }, this, function(data) {
+    if (data.count % 2) {
+      throw new e2e.error.InvalidArgumentsError('Odd number of keys');
+    }
+    result.callback(goog.crypt.base64.encodeByteArray(
+        // count / 2 since we store the number of key PAIRS
+        goog.array.concat([data.count / 2 & 0x7F], data.seed)));
+  });
+  return result;
+};
 }); // goog.scope

@@ -18,9 +18,36 @@
 /**
  * Displays the serialized backup data to the user
  * @param key The key to be displayed
+ * @param caseSensitiveText Reminder text that codes are case sensitive.
  */
 {template .BackupKey}
-  <div><h3>{$key}</h3></div>
+  <div class="{e2e.ext.constants.CssClass.KEYRING_BACKUP_WINDOW}">
+    <h3>
+      <table>
+        <tbody>
+          {let $dimension: e2e.ext.constants.BackupCode /}
+          {let $rowstart: $key.length / $dimension.ROWS /}
+          {let $colstart: $rowstart / $dimension.COLS /}
+          {foreach $byte in $key}
+            {if index($byte) % $rowstart == 0}
+              <tr>
+            {/if}
+            {if index($byte) % $colstart == 0}
+              <td>
+            {/if}
+            {$byte}
+            {if index($byte) % $colstart == $colstart - 1}
+              </td>
+            {/if}
+            {if index($byte) % $rowstart == $rowstart - 1}
+            </tr>
+            {/if}
+          {/foreach}
+        </tbody>
+      </table>
+    </h3>
+    <span>{$caseSensitiveText}</span>
+  </div>
 {/template}
 
 

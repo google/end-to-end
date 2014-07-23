@@ -137,6 +137,7 @@ e2e.ext.constants.CssClass = {
   KEYRING_IMPORT: 'keyring-import',
   KEYRING_EXPORT: 'keyring-export',
   KEYRING_BACKUP: 'keyring-backup',
+  KEYRING_BACKUP_WINDOW: 'keyring-backup-window',
   KEYRING_RESTORE: 'keyring-restore',
   KEYRING_RESTORE_INPUT: 'keyring-restore-input',
   /* TODO(user): Remove when we can use keyserver for lookups. */
@@ -189,4 +190,14 @@ e2e.ext.constants.KEY_DEFAULTS = {
 
   subkeyAlgo: 'ECDH',
   subkeyLength: 256
+};
+
+
+/**
+ * The dimensions for displaying the keyring backup code.
+ * @enum {number}
+ */
+e2e.ext.constants.BackupCode = {
+  ROWS: 3,
+  COLS: 4
 };

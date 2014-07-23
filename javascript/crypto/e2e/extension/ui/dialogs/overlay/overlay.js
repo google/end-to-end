@@ -41,6 +41,18 @@ goog.inherits(dialogs.Overlay, goog.ui.Dialog);
 dialogs.Overlay.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
   this.setButtonSet(goog.ui.Dialog.ButtonSet.createOk());
+
+  /*
+  There is a bug in calculating the size of the popup so it is not centered.
+  Forcing a reposition fixes the issue.
+
+  Setting a debug breakpoint, reaching it, and hitting continue places the
+  window in the correct location.
+
+  Manually checking the window size when stopped at breakpoint results in
+  correct result.
+  */
+  setTimeout(goog.bind(this.reposition, this), 1);
 };
 
 

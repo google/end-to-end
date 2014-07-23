@@ -167,6 +167,10 @@
     "message": "Show backup code",
     "description": "A sentence prompting the user to show a code to backup their generated keys"
   },
+  "keyMgmtBackupKeyringCaseSensitive": {
+    "message": "Backup codes are case sensitive!",
+    "description": "A sentence reminding the user that backup codes are case sensitive."
+  },
   "keyMgmtRestoreKeyringLabel": {
     "message": "Restore from backup code",
     "description": "A sentence prompting the user to restore the keyring's ECC seed"
