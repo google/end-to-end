@@ -15,6 +15,8 @@
  * @fileoverview Tests for the LIST_KEYS action.
  */
 
+goog.provide('e2e.ext.actions.ListKeysTest');
+
 goog.require('e2e.ext.actions.ListKeys');
 goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.testing.AsyncTestCase');
@@ -23,6 +25,7 @@ goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
+goog.setTestOnly();
 
 var actions = e2e.ext.actions;
 var mockControl = null;

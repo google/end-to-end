@@ -15,6 +15,8 @@
  * @fileoverview Tests for the minimized keyring management UI.
  */
 
+goog.provide('e2e.ext.ui.dialogs.BackupKeyTest');
+
 goog.require('e2e.ext.ui.dialogs.BackupKey');
 goog.require('goog.crypt.base64');
 goog.require('goog.testing.AsyncTestCase');
@@ -24,6 +26,7 @@ goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
+goog.setTestOnly();
 
 var dialog = null;
 var stubs = new goog.testing.PropertyReplacer();
