@@ -822,7 +822,7 @@ ui.Prompt.prototype.executeAction_ = function(action, elem, origin) {
                               utils.action.extractUserIds(res.verify.success)
                       );
                     }
-                    this.displaySuccess_(successMessage, goog.nullFunction);
+                    utils.showNotification(successMessage, goog.nullFunction);
                     this.surfaceDismissButton_();
                   }, this);
             }, this)).addErrback(this.displayFailure_, this);
@@ -836,7 +836,7 @@ ui.Prompt.prototype.executeAction_ = function(action, elem, origin) {
       }, this, goog.bind(function(res) {
         if (res.length > 0) {
           // Key import successful for at least one UID.
-          this.displaySuccess_(
+          utils.showNotification(
               chrome.i18n.getMessage(
                   'promptImportKeyNotificationLabel', res.toString()),
               goog.bind(this.close, this));
@@ -887,18 +887,6 @@ ui.Prompt.prototype.displayFailure_ = function(error) {
 ui.Prompt.prototype.clearFailure_ = function() {
   var errorDiv = goog.dom.getElement(constants.ElementId.ERROR_DIV);
   errorDiv.textContent = '';
-};
-
-
-/**
- * Notifies the user of a successfully completed operation.
- * @param {string} msg The message to display.
- * @param {!function(...)} callback A callback to invoke when the notification
- *     has been displayed.
- * @private
- */
-ui.Prompt.prototype.displaySuccess_ = function(msg, callback) {
-  this.pgpLauncher_.showNotification(msg, callback);
 };
 
 

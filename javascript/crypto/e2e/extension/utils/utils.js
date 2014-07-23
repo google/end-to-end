@@ -18,7 +18,10 @@
 goog.provide('e2e.ext.utils');
 goog.provide('e2e.ext.utils.Error');
 
+goog.require('e2e.ext.constants');
+
 goog.scope(function() {
+var constants = e2e.ext.constants;
 var utils = e2e.ext.utils;
 
 
@@ -101,6 +104,30 @@ utils.Error = function(defaultMsg, msgId) {
   this.messageId = msgId;
 };
 goog.inherits(utils.Error, Error);
+
+
+/**
+ * Displays Chrome notifications to the user.
+ * @param {string} msg The message to display to the user.
+ * @param {!function()} callback A callback to invoke when the notification
+ *     has been displayed.
+ */
+utils.showNotification = function(msg, callback) {
+   chrome.notifications.create(constants.ElementId.NOTIFICATION_SUCCESS, {
+     type: 'basic',
+     iconUrl: '/images/icon-48.png',
+     title: chrome.i18n.getMessage('extName'),
+     message: msg
+   }, function() {
+     window.setTimeout(function() {
+       chrome.notifications.clear(
+           constants.ElementId.NOTIFICATION_SUCCESS,
+           goog.nullFunction); // Dummy callback to keep Chrome happy.
+     }, constants.NOTIFICATIONS_DELAY);
+     callback();
+   });
+};
+
 
 }); // goog.scope
 

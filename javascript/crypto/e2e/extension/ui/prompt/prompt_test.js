@@ -25,6 +25,7 @@ goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.ui.preferences');
+goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.asciiArmor');
 /** @suppress {extraRequire} intentionally importing all signer functions */
@@ -53,6 +54,7 @@ var mockControl = null;
 var preferences = e2e.ext.ui.preferences;
 var prompt = null;
 var stubs = new goog.testing.PropertyReplacer();
+var utils = e2e.ext.utils;
 
 
 function setUp() {
@@ -395,13 +397,10 @@ function testEncryptForSigner() {
             stubs.replace(chrome.i18n, 'getMessage', function(a, b) {
               return b;
             });
-            stubs.replace(
-                e2e.ext.Launcher.prototype,
-                'showNotification',
-                function(a, callback) {
-                  notificationMsg = a;
-                  callback();
-                });
+            stubs.replace(utils, 'showNotification', function(a, callback) {
+              notificationMsg = a;
+              callback();
+            });
             var decryptBtn = document.querySelector('button.action');
             decryptBtn.click();
 
@@ -603,28 +602,6 @@ function testDisplayFailure() {
 
   prompt.displayFailure_(new Error('test failure'));
   assertEquals('test failure', errorDiv.textContent);
-}
-
-
-function testDisplaySuccess() {
-  var notifiedUser = false;
-  stubs.replace(
-      e2e.ext.Launcher.prototype,
-      'showNotification',
-      function(a, callback) {
-        notifiedUser = true;
-        callback();
-      });
-
-  prompt.decorate(document.documentElement);
-
-  var calledCallback = false;
-  prompt.displaySuccess_('irrelevant', function() {
-    calledCallback = true;
-  });
-
-  assertTrue('Failed to notify user', notifiedUser);
-  assertTrue('Failed to invoke callback', calledCallback);
 }
 
 

@@ -69,29 +69,6 @@ ext.Launcher = function() {
 
 
 /**
- * Displays Chrome notifications to the user.
- * @param {string} msg The message to display to the user.
- * @param {!function(...)} callback A callback to invoke when the notification
- *     has been displayed.
- * @expose
- */
-ext.Launcher.prototype.showNotification = function(msg, callback) {
-   chrome.notifications.create(constants.ElementId.NOTIFICATION_SUCCESS, {
-     type: 'basic',
-     iconUrl: '/images/icon-48.png',
-     title: chrome.i18n.getMessage('extName'),
-     message: msg
-   }, function() {
-     window.setTimeout(function() {
-       chrome.notifications.clear(constants.ElementId.NOTIFICATION_SUCCESS,
-           function() {}); // Dummy callback to keep Chrome happy.
-     }, constants.NOTIFICATIONS_DELAY);
-     callback();
-   });
-};
-
-
-/**
  * Sets the provided content into the element on the page that the user has
  * selected.
  * Note: This function might not work while debugging the extension.

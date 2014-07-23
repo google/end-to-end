@@ -210,30 +210,3 @@ function testShowWelcomeScreenDisabled() {
   launcher.start();
   assertFalse('Incorrectly opening the welcome screen', openedWindow);
 }
-
-
-function testShowNotification() {
-  stubs.replace(window, 'setTimeout', function(callback) {
-    callback();
-  });
-
-  var notifiedUser = false;
-  stubs.replace(chrome.notifications, 'create', function(a, b, callback) {
-    notifiedUser = true;
-    callback();
-  });
-
-  var dismissedNotification = false;
-  stubs.replace(chrome.notifications, 'clear', function() {
-    dismissedNotification = true;
-  });
-
-  var calledCallback = false;
-  launcher.showNotification('irrelevant', function() {
-    calledCallback = true;
-  });
-
-  assertTrue('Failed to notify user', notifiedUser);
-  assertTrue('Failed to invoke callback', calledCallback);
-  assertTrue('Failed to dismiss notification', dismissedNotification);
-}

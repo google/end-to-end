@@ -17,14 +17,36 @@
 
 goog.provide('e2e.ext.utilsTest');
 
+goog.require('e2e.ext.constants');
 goog.require('e2e.ext.utils');
 goog.require('goog.testing.AsyncTestCase');
+goog.require('goog.testing.MockControl');
+goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.require('goog.testing.mockmatchers');
 goog.setTestOnly();
 
+var constants = e2e.ext.constants;
+var mockControl = null;
+var stubs = new goog.testing.PropertyReplacer();
 var testCase = goog.testing.AsyncTestCase.createAndInstall();
 var utils = e2e.ext.utils;
+
+
+function setUp() {
+  mockControl = new goog.testing.MockControl();
+
+  stubs.setPath('chrome.i18n.getMessage', function(msg) {
+    return msg;
+  });
+}
+
+
+function tearDown() {
+  stubs.reset();
+  mockControl.$tearDown();
+}
 
 
 function testWrite() {
@@ -58,4 +80,35 @@ function testRead() {
     assertEquals('Failed to read contents', content, readContents);
     testCase.continueTesting();
   });
+}
+
+
+function testShowNotification() {
+  var delayedCb = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  stubs.replace(window, 'setTimeout', mockControl.createFunctionMock());
+  window.setTimeout(delayedCb, constants.NOTIFICATIONS_DELAY);
+
+  var notifiedCb = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  stubs.setPath(
+      'chrome.notifications.create', mockControl.createFunctionMock());
+  chrome.notifications.create(
+      constants.ElementId.NOTIFICATION_SUCCESS,
+      new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+        assertEquals('some text', arg.message);
+        return true;
+      }),
+      notifiedCb);
+
+  stubs.setPath('chrome.notifications.clear', mockControl.createFunctionMock());
+  chrome.notifications.clear(
+      constants.ElementId.NOTIFICATION_SUCCESS, goog.nullFunction);
+
+  var doneCb = mockControl.createFunctionMock();
+  doneCb();
+
+  mockControl.$replayAll();
+  utils.showNotification('some text', doneCb);
+  notifiedCb.arg();
+  delayedCb.arg();
+  mockControl.$verifyAll();
 }

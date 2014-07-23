@@ -264,7 +264,7 @@ ui.Settings.prototype.importKeyring_ = function(file) {
       passphraseCallback: goog.bind(this.renderPassphraseCallback_, this)
     }, this, goog.bind(function(res) {
       if (res.length > 0) {
-        this.pgpLauncher_.showNotification(
+        utils.showNotification(
             chrome.i18n.getMessage(
                 'promptImportKeyNotificationLabel', res.toString()),
             goog.bind(function() {
@@ -338,9 +338,9 @@ ui.Settings.prototype.exportKeyring_ = function() {
  */
 ui.Settings.prototype.updateKeyringPassphrase_ = function(passphrase) {
   this.pgpContext_.changeKeyRingPassphrase(passphrase);
-  this.pgpLauncher_.showNotification(
+  utils.showNotification(
       chrome.i18n.getMessage('keyMgmtChangePassphraseSuccessMsg'),
-      function() {/* No-op */});
+      goog.nullFunction);
   this.keyringMgmtPanel_.setKeyringEncrypted(
       this.pgpContext_.isKeyRingEncrypted());
 };
