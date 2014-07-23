@@ -17,6 +17,7 @@
  * @author evn@google.com (Eduardo Vela)
  */
 
+goog.provide('e2e.openpgp.DummyS2k');
 goog.provide('e2e.openpgp.IteratedS2K');
 goog.provide('e2e.openpgp.S2k');
 goog.provide('e2e.openpgp.SaltedS2K');
@@ -63,7 +64,8 @@ e2e.openpgp.S2k.MAX_SALT_SIZE = 8;
 e2e.openpgp.S2k.Type = {
   'SIMPLE': 0,
   'SALTED': 1,
-  'ITERATED': 3
+  'ITERATED': 3,
+  'DUMMY': 101
 };
 
 
@@ -127,12 +129,114 @@ e2e.openpgp.S2k.parse = function(bytes) {
     }
   } else if (type === e2e.openpgp.S2k.Type.SIMPLE) {
     return new e2e.openpgp.SimpleS2K(hash);
+  } else if (type === e2e.openpgp.S2k.Type.DUMMY) {
+    /* We're basing this on GnuPG's dummy S2k extension. First three bytes are
+     * 'E2E' or 'GPG', last byte is a mode. See the enums defined below for
+     * the values of these modes.
+     */
+    var header = bytes.splice(0, 3);
+    if (header.length === 3 && bytes.length >= 1) {
+      return new e2e.openpgp.DummyS2k(hash, header, bytes.shift());
+    }
   }
   // TODO(user): Implement a scrypt KDF as a new S2K type.
   throw new e2e.openpgp.error.ParseError('Invalid S2K type.');
 };
 
+/**
+ * Implements a dummy S2k algorithm for E2E.
+ * @param {e2e.hash.Hash} hash An instance of the hash algorithm to use.
+ * @param {!e2e.ByteArray} header ['E','2','E'] or ['G','N','U']
+ * @param {number} mode A byte indicating S2k mode
+ * @constructor
+ * @extends {e2e.openpgp.S2k}
+ */
+e2e.openpgp.DummyS2k = function(hash, header, mode) {
+  goog.asserts.assert(
+    header.length === e2e.openpgp.DummyS2k.E2E_HEADER.length &&
+    header.length === e2e.openpgp.DummyS2k.GPG_HEADER.length);
+  var is_e2e = goog.array.equals(header, e2e.openpgp.DummyS2k.E2E_HEADER);
+  var is_gpg = goog.array.equals(header, e2e.openpgp.DummyS2k.GPG_HEADER);
 
+  if (!is_e2e && !is_gpg) {
+    throw new e2e.openpgp.error.ParseError('Invalid dummy S2k header!');
+  }
+  this.dummy_ = is_e2e ? e2e.openpgp.DummyS2k.DummyTypes.E2E :
+                         e2e.openpgp.DummyS2k.DummyTypes.GPG;
+  var mode_enum = is_e2e ? e2e.openpgp.DummyS2k.E2E_modes :
+                           e2e.openpgp.DummyS2k.GPG_modes;
+  if (!goog.object.containsValue(mode_enum, mode)) {
+    throw new e2e.openpgp.error.ParseError('Invalid S2k mode.');
+  }
+
+  if (is_e2e) {
+    this.mode_ = /** @type {e2e.openpgp.DummyS2k.E2E_modes}*/ (mode);
+  } else {
+    this.mode_ = /** @type {e2e.openpgp.DummyS2k.GPG_modes}*/ (mode);
+  }
+  goog.base(this, hash);
+};
+goog.inherits(e2e.openpgp.DummyS2k, e2e.openpgp.S2k);
+
+/**
+ * Enum for different dummy S2ks
+ * @enum {number}
+ */
+e2e.openpgp.DummyS2k.DummyTypes = {
+  GPG: 0,
+  E2E: 1
+};
+
+/** @type {!e2e.openpgp.DummyS2k.DummyTypes} */
+e2e.openpgp.DummyS2k.prototype.dummy_;
+
+/** @type {e2e.openpgp.DummyS2k.GPG_modes | e2e.openpgp.DummyS2k.E2E_modes} */
+e2e.openpgp.DummyS2k.prototype.mode_;
+
+/**
+ * Enum for GPG modes
+ * @enum {number}
+ */
+e2e.openpgp.DummyS2k.GPG_modes = {
+  NO_SECRET: 0x01,
+  SMARTCARD_STUB: 0x02
+};
+
+/**
+ * Enum for E2E modes (currently, upper 6 bits are reserved for future
+ * extensions)
+ * @enum {number}
+ */
+e2e.openpgp.DummyS2k.E2E_modes = {
+  SERIALIZED: 0x0,
+  WEB_CRYPTO: 0x1,
+  HARDWARE: 0x2
+};
+
+
+/** @inheritDoc */
+e2e.openpgp.DummyS2k.prototype.type = e2e.openpgp.S2k.Type.DUMMY;
+
+/** @inheritDoc */
+e2e.openpgp.DummyS2k.prototype.getKey = function(passphrase, length) {
+  throw new e2e.openpgp.error.UnsupportedError(
+      'Cannot get key from special locations!');
+};
+
+/** @type {!e2e.ByteArray} */
+e2e.openpgp.DummyS2k.GPG_HEADER = [0x47, 0x4e, 0x55]; // 'GNU'
+
+/** @type {!e2e.ByteArray} */
+e2e.openpgp.DummyS2k.E2E_HEADER = [0x45, 0x32, 0x45]; // 'E2E'
+
+/** @inheritDoc */
+e2e.openpgp.DummyS2k.prototype.serialize = function() {
+  return goog.array.concat(
+      goog.base(this, 'serialize'),
+      this.is_e2e_ ? e2e.openpgp.DummyS2k.E2E_HEADER :
+        e2e.openpgp.DummyS2k.GPG_HEADER,
+      this.mode_);
+};
 
 /**
  * Implements the Simple S2K algorithm.

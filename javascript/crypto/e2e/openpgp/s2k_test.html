@@ -33,6 +33,15 @@
       assert('Simple is instance of SimpleS2K',
              simples2k instanceof e2e.openpgp.SimpleS2K);
     });
+    assertNotThrows('E2E Dummy S2k is parsed correctly.', function() {
+      var dummy = [0x65 /* type value for dummy */, 0x02 /* ID */,
+        0x45 /* 'E' */, 0x32 /* '2' */, 0x45 /* E */, 0x1 /* test location */,
+        0xFF, 0xBB];
+      var dummys2k = e2e.openpgp.S2k.parse(dummy);
+      assertArrayEquals('Dummy only consumed 5 bytes', [0xFF, 0xBB], dummy);
+      assert('Dummy is instance of DummyS2k',
+        dummys2k instanceof e2e.openpgp.DummyS2k);
+    });
     assertNotThrows('Salted S2K is parsed correctly.', function() {
       var salted = [0x01, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
           0xFF, 0xBB];
@@ -62,6 +71,10 @@
     assertThrows('Wrong salt length throws errors', function() {
       var invalid = [0x01, 0x02, 0x01];
       var simples2k = e2e.openpgp.S2k.parse(invalid);
+    });
+    assertThrows('Bad E2E dummy header throws error', function() {
+      var invalid = [0x65, 0x02, 0x45 /* E */, 0x33 /* 3 */, 0x45 /* E */, 0x1];
+      var dummys2k = e2e.openpgp.S2k.parse(invalid);
     });
   }
 
