@@ -62,15 +62,21 @@ function testRestoreData() {
 
   new e2e.ext.actions.RestoreKeyringData().execute(ctx, {
     action: constants.Actions.RESTORE_KEYRING_DATA,
-    content: goog.crypt.base64.encodeByteArray([3, 1, 2, 3, 4, 5])
-  }, ui);
+    content: JSON.stringify({
+      data: goog.crypt.base64.encodeByteArray([3, 1, 2, 3, 4, 5]),
+      email: 'Ryan Chan <rcc@google.com>'
+    })
+  }, ui, goog.partial(assertEquals, 'Ryan Chan <rcc@google.com>'));
 }
 
 
 function testInvalidVersion() {
   new e2e.ext.actions.RestoreKeyringData().execute({}, {
     action: constants.Actions.RESTORE_KEYRING_DATA,
-    content: goog.crypt.base64.encodeByteArray([0x80 | 3, 1, 2, 3, 4, 5])
+    content: JSON.stringify({
+      data: goog.crypt.base64.encodeByteArray([0x80 | 3, 1, 2, 3, 4, 5]),
+      email: 'Ryan Chan <rcc@google.com>'
+    })
   }, ui, function() {
     assert('Invalid version bit not detected', false);
   }, function(err) {
@@ -83,7 +89,10 @@ function testInvalidVersion() {
 function testInvalidRestoreSize() {
   new e2e.ext.actions.RestoreKeyringData().execute({}, {
     action: constants.Actions.RESTORE_KEYRING_DATA,
-    content: goog.crypt.base64.encodeByteArray([3, 1, 2, 3, 4, 5, 6])
+    content: JSON.stringify({
+      data: goog.crypt.base64.encodeByteArray([3, 1, 2, 3, 4, 5, 6]),
+      email: 'Ryan Chan <rcc@google.com>'
+    })
   }, ui, function() {
     assert('Invalid restore size not detected', false);
   }, function(err) {

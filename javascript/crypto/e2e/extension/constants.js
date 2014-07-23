@@ -139,6 +139,8 @@ e2e.ext.constants.CssClass = {
   KEYRING_BACKUP: 'keyring-backup',
   KEYRING_RESTORE: 'keyring-restore',
   KEYRING_RESTORE_INPUT: 'keyring-restore-input',
+  /* TODO(user): Remove when we can use keyserver for lookups. */
+  KEYRING_RESTORE_EMAIL: 'keyring-restore-email',
   KEYRING_PASSPHRASE_CHANGE: 'keyring-passphrase-change',
 
   /** Used in the welcome page */

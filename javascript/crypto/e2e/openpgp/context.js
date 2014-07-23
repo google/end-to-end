@@ -216,6 +216,7 @@ e2e.openpgp.Context.prototype.getKeyringBackupData;
 /**
  * Restores serialized data from ECC key backup
  * @param {e2e.openpgp.KeyringBackupInfo} data Serialized data to restore
+ * @param {string} email The email to associate with restored keys.
  * @return {e2e.async.Result.<undefined>}
  * @expose
  */

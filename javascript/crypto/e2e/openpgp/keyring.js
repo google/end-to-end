@@ -980,8 +980,9 @@ e2e.openpgp.KeyRing.prototype.getKeyringBackupData = function() {
  * Restores serialized data from ECC key backup
  * @param {e2e.openpgp.KeyringBackupInfo} data
  *     serialized data to restore
+ * @param {string} email The email to associate with restored keys.
  */
-e2e.openpgp.KeyRing.prototype.restoreKeyring = function(data) {
+e2e.openpgp.KeyRing.prototype.restoreKeyring = function(data, email) {
   this.eccSeed_ = data.seed;
   this.eccCount_ = 0;
 
@@ -990,7 +991,7 @@ e2e.openpgp.KeyRing.prototype.restoreKeyring = function(data) {
   }
 
   for (var i = 0; i < data.count / 2; i++) {
-    this.generateECKey('restored_key <pending keyserver lookup>');
+    this.generateECKey(email);
   }
 };
 

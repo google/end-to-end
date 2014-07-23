@@ -26,9 +26,22 @@
 
 /**
  * Displays a prompt for the user to enter restore information
+ * @param emailLabel The label for the email input.
+ * @param backupCodeLabel The label for the backup code input.
  */
 {template .RestoreKey}
+  /* TODO(rcc): Remove when we can use keyserver for lookups */
   <div>
-    <input type="text" class="{e2e.ext.constants.CssClass.KEYRING_RESTORE_INPUT}">
+    <label>
+      <div>{$emailLabel}</div>
+      <input type="text" class="{e2e.ext.constants.CssClass.KEYRING_RESTORE_EMAIL}">
+    </label>
+  </div>
+
+  <div>
+    <label>
+      <div>{$backupCodeLabel}</div>
+      <input type="text" class="{e2e.ext.constants.CssClass.KEYRING_RESTORE_INPUT}">
+    </label>
   </div>
 {/template}

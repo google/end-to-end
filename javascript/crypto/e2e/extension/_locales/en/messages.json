@@ -171,6 +171,14 @@
     "message": "Restore from backup code",
     "description": "A sentence prompting the user to restore the keyring's ECC seed"
   },
+  "keyMgmtRestoreKeyringEmailLabel": {
+    "message": "Email",
+    "description": "A word prompting the user for their email."
+  },
+  "keyMgmtRestoreKeyringBackupCodeLabel": {
+    "message": "Backup Code",
+    "description": "A word prompting the user for their backup code."
+  },
   "keyMgmtChangePassphraseLabel": {
     "message": "Change the keyring's passphrase",
     "description": "A sentence prompting the user to change the passphrase of the existing PGP keyring."

@@ -149,6 +149,8 @@ ui.Settings.prototype.renderTemplate_ = function(pgpKeys) {
       goog.bind(this.exportKeyring_, this),
       goog.bind(this.importKeyring_, this),
       goog.bind(this.updateKeyringPassphrase_, this),
+      // TODO: Perhaps perform other actions on restore.
+      goog.bind(this.renderNewKey_, this),
       goog.bind(this.exportKey_, this),
       goog.bind(this.removeKey_, this));
   this.addChild(this.keyringMgmtPanel_, true);

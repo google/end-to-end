@@ -48,7 +48,7 @@ function setUp() {
 
   panel = new e2e.ext.ui.panels.KeyringMgmtFull(
       {}, goog.abstractMethod, goog.abstractMethod, goog.abstractMethod,
-      goog.abstractMethod, goog.abstractMethod);
+      goog.abstractMethod, goog.abstractMethod, goog.abstractMethod);
 }
 
 
@@ -128,6 +128,7 @@ function testGetKeysDescription() {
 function testHandleClick() {
   panel = new e2e.ext.ui.panels.KeyringMgmtFull(
       {},
+      goog.abstractMethod,
       goog.abstractMethod,
       goog.abstractMethod,
       goog.abstractMethod,

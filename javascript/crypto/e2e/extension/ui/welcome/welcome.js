@@ -141,6 +141,7 @@ ui.Welcome.prototype.decorateInternal = function(elem) {
       this.genKeyForm_.render(
           goog.dom.getElement(constants.ElementId.WELCOME_CONTENT_NOVICE));
 
+      // TODO: Add callback for keyring restore.
       this.keyringMgmt_ = new ui.panels.KeyringMgmtMini(
           goog.nullFunction,
           goog.bind(this.importKeyring_, this),

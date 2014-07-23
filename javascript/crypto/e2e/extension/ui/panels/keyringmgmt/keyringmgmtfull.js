@@ -49,6 +49,8 @@ var templates = e2e.ext.ui.templates.panels.keyringmgmt;
  *     an existing keyring is to be imported.
  * @param {!function(string)} updateKeyringPassphraseCallback The callback to
  *     invoke when the passphrase to the keyring is to be updated.
+ * @param {!function(string)} restoreKeyringCallback The callback to invoke when
+ *     the keyring is restored.
  * @param {!function(string)} exportKeyCallback The callback to invoke when a
  *     single PGP key is to be exported.
  * @param {!function(string)} removeKeyCallback The callback to invoke when a
@@ -58,7 +60,7 @@ var templates = e2e.ext.ui.templates.panels.keyringmgmt;
  */
 panels.KeyringMgmtFull = function(pgpKeys, exportKeyringCallback,
     importKeyringCallback, updateKeyringPassphraseCallback,
-    exportKeyCallback, removeKeyCallback) {
+    restoreKeyringCallback, exportKeyCallback, removeKeyCallback) {
   goog.base(this);
 
   /**
@@ -74,7 +76,8 @@ panels.KeyringMgmtFull = function(pgpKeys, exportKeyringCallback,
    * @private
    */
   this.keyringMgmtControls_ = new panels.KeyringMgmtMini(exportKeyringCallback,
-      importKeyringCallback, updateKeyringPassphraseCallback);
+      importKeyringCallback, updateKeyringPassphraseCallback,
+      restoreKeyringCallback);
 
   /**
    * The callback to invoke when a single PGP key is to be exported.

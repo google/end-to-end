@@ -37,7 +37,7 @@ if (goog.DEBUG) {
  * @suppress {checkTypes|uselessCode}
  */
 e2e.ext.ui.templates.dialogs.backupkey.RestoreKey = function(opt_data, opt_ignored, opt_ijData) {
-  return soydata.VERY_UNSAFE.ordainSanitizedHtml('<div><input type="text" class="' + soy.$$escapeHtmlAttribute(e2e.ext.constants.CssClass.KEYRING_RESTORE_INPUT) + '"></div>');
+  return soydata.VERY_UNSAFE.ordainSanitizedHtml('<div><label><div>' + soy.$$escapeHtml(opt_data.emailLabel) + '</div><input type="text" class="' + soy.$$escapeHtmlAttribute(e2e.ext.constants.CssClass.KEYRING_RESTORE_EMAIL) + '"></label></div><div><label><div>' + soy.$$escapeHtml(opt_data.backupCodeLabel) + '</div><input type="text" class="' + soy.$$escapeHtmlAttribute(e2e.ext.constants.CssClass.KEYRING_RESTORE_INPUT) + '"></label></div>');
 };
 if (goog.DEBUG) {
   e2e.ext.ui.templates.dialogs.backupkey.RestoreKey.soyTemplateName = 'e2e.ext.ui.templates.dialogs.backupkey.RestoreKey';

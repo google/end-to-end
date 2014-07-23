@@ -36,9 +36,13 @@ actions.RestoreKeyringData = function() {};
 
 
 /** @inheritDoc */
+/* TODO(user): Remove email when we can use keyserver for lookups. */
 actions.RestoreKeyringData.prototype.execute =
     function(ctx, request, requestor, callback, errorCallback) {
-  var data = goog.crypt.base64.decodeStringToByteArray(request.content);
+  /* TODO(user): Template the request and callback. */
+  var content = /** @type {{data: string, email: string}} */
+      (JSON.parse(request.content));
+  var data = goog.crypt.base64.decodeStringToByteArray(content.data);
 
   if (data[0] & 0x80) {
     errorCallback(new e2e.error.InvalidArgumentsError('Invalid version bit'));
@@ -54,7 +58,9 @@ actions.RestoreKeyringData.prototype.execute =
   ctx.restoreKeyring({
     seed: data.slice(1),
     count: (data[0] & 0x7F) * 2 /* x2 since we store # of key PAIRS */
-  });
+  }, content.email);
+
+  callback(content.email);
 };
 
 });

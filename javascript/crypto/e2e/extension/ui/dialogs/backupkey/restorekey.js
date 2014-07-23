@@ -35,9 +35,11 @@ var templates = e2e.ext.ui.templates.dialogs.backupkey;
  * Constructor for the restore key window.
  * @constructor
  * @extends {e2e.ext.ui.dialogs.Overlay}
+ * @param {function(string)} opt_callback The callback function on restore.
  */
-dialogs.RestoreKey = function() {
+dialogs.RestoreKey = function(opt_callback) {
   goog.base(this);
+  this.callback_ = opt_callback || goog.nullFunction;
 };
 goog.inherits(dialogs.RestoreKey, dialogs.Overlay);
 
@@ -53,7 +55,11 @@ dialogs.RestoreKey.prototype.createDom = function() {
 dialogs.RestoreKey.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
   this.setTitle(chrome.i18n.getMessage('keyMgmtRestoreKeyringLabel'));
-  soy.renderElement(this.getContentElement(), templates.RestoreKey);
+  soy.renderElement(this.getContentElement(), templates.RestoreKey, {
+    emailLabel: chrome.i18n.getMessage('keyMgmtRestoreKeyringEmailLabel'),
+    backupCodeLabel:
+        chrome.i18n.getMessage('keyMgmtRestoreKeyringBackupCodeLabel')
+  });
 };
 
 
@@ -76,14 +82,29 @@ dialogs.RestoreKey.prototype.getInputValue_ = function() {
 
 
 /**
+ * Gets the contents of the email field.
+ * @private
+ * @return {string} The email supplied by the user.
+ */
+dialogs.RestoreKey.prototype.getEmailInput_ = function() {
+  return this.getElementByClass(constants.CssClass.KEYRING_RESTORE_EMAIL).value;
+};
+
+
+/**
  * Executes the action for restoring keyring data
  * @private
  */
 dialogs.RestoreKey.prototype.executeRestore_ = function() {
+  /* TODO(user): Remove email when we can use keyserver for lookups */
+  var email = this.getEmailInput_();
   new e2e.ext.actions.Executor().execute({
     action: constants.Actions.RESTORE_KEYRING_DATA,
-    content: this.getInputValue_()
-  }, this);
+    content: JSON.stringify({
+      data: this.getInputValue_(),
+      email: email
+    })
+  }, this, this.callback_);
 };
 
 }); // goog.scope

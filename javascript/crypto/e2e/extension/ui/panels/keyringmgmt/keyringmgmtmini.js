@@ -51,11 +51,14 @@ var templates = e2e.ext.ui.templates.panels.keyringmgmt;
  *     existing keyring is to be imported.
  * @param {!function(string)} updatePassphraseCallback The callback to invoke
  *     when the passphrase to the keyring is to be updated.
+ * @param {!function(string)=} opt_restoreKeyringCallback The callback to invoke
+ *     when the keyring is restored.
  * @constructor
  * @extends {goog.ui.Component}
  */
 panels.KeyringMgmtMini =
-    function(exportCallback, importCallback, updatePassphraseCallback) {
+    function(exportCallback, importCallback, updatePassphraseCallback,
+    opt_restoreKeyringCallback) {
   goog.base(this);
 
   /**
@@ -85,6 +88,14 @@ panels.KeyringMgmtMini =
    * @private
    */
   this.updatePassphraseCallback_ = updatePassphraseCallback;
+
+  /**
+   * The callback to invoke when the keyring is restored.
+   * @type {!function(string)}
+   * @private
+   */
+  this.restoreKeyringCallback_ = opt_restoreKeyringCallback ||
+      goog.nullFunction;
 
   /**
    * Executor for the End-to-End actions.
@@ -339,7 +350,10 @@ panels.KeyringMgmtMini.prototype.showBackupWindow_ = function() {
  * @private
  */
 panels.KeyringMgmtMini.prototype.showRestoreWindow_ = function() {
-  new dialogs.RestoreKey().setVisible(true);
+  new dialogs.RestoreKey(goog.bind(function() {
+    this.refreshOptions.apply(this, arguments);
+    this.restoreKeyringCallback_.apply(this, arguments);
+  }, this)).setVisible(true);
 };
 
 /**
