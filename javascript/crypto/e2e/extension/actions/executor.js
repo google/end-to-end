@@ -42,7 +42,6 @@ actions.Executor = function(opt_errorCallback) {
 
   /**
    * The default callback to call when an error is encountered.
-   * @type {!function(...)}
    * @private
    */
   this.errorCallback_ = opt_errorCallback || goog.nullFunction;
@@ -54,10 +53,11 @@ actions.Executor = function(opt_errorCallback) {
  * @param {messages.ApiRequest} request The input to the action.
  * @param {!goog.ui.Component} requestor The UI component through which the
  *     action was invoked.
- * @param {!function(...)} callback The callback to invoke once the action
- *     completes.
- * @param {!function(...)=} opt_errorCallback The callback to invoke if an error
- *     is encountered. If omitted, the default error callback will be invoked.
+ * @param {!function((string|undefined))} callback The callback to invoke once
+ *     the action completes.
+ * @param {!function(Error)=} opt_errorCallback The callback to invoke if an
+ *     error is encountered. If omitted, the default error callback will be
+ *     invoked.
  */
 actions.Executor.prototype.execute =
     function(request, requestor, callback, opt_errorCallback) {
