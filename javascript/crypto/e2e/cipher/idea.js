@@ -274,6 +274,7 @@ e2e.cipher.Idea.multMod16 = function(x, y) {
   return (
       xZero.and(mSubY).or(
       yZero.and(mSubX).and(xZeroN).or(
+      // When multiplying, the result ANDs with xZeroN (0xFFFF).
       xZeroN.and(yZeroN).and(x.multiply(y).mod(m))
       )));
 };
