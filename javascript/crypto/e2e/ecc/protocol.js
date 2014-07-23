@@ -137,4 +137,3 @@ e2e.ecc.Protocol.generateKeyPair = function(curve, opt_privateKey) {
     'curve': e2e.ecc.DomainParam.curveOidFromCurveName(curve)
   };
 };
-

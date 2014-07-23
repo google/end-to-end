@@ -27,6 +27,7 @@ goog.provide('e2e.openpgp.KeyPacketInfo');
 goog.provide('e2e.openpgp.KeyResult');
 goog.provide('e2e.openpgp.KeyRingMap');
 goog.provide('e2e.openpgp.KeyRingType');
+goog.provide('e2e.openpgp.KeyringBackupInfo');
 goog.provide('e2e.openpgp.Keys');
 goog.provide('e2e.openpgp.SerializedKeyRing');
 goog.provide('e2e.openpgp.VerifiedDecrypt');
@@ -153,6 +154,13 @@ e2e.openpgp.ArmoredMessage;
 
 
 /**
+ * Key backup information.
+ * @typedef {{seed: e2e.ByteArray, count: number}}
+ */
+e2e.openpgp.KeyringBackupInfo;
+
+
+/**
  * @typedef {Object.<!Array.<string>>}
  */
 e2e.openpgp.SerializedKeyRing;
@@ -171,4 +179,3 @@ e2e.openpgp.KeyRingType;
  * @typedef {goog.structs.Map.<string, !Array.<!e2e.openpgp.Key>>}
  */
 e2e.openpgp.KeyRingMap;
-

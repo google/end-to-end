@@ -500,3 +500,15 @@ e2e.openpgp.ContextImpl.prototype.exportKeyring = function(armored) {
       return serialized;
     }, this);
 };
+
+
+/** @inheritDoc */
+e2e.openpgp.ContextImpl.prototype.getKeyringBackupData = function() {
+  return e2e.async.Result.toResult(this.keyRing_.getKeyringBackupData());
+};
+
+
+/** @inheritDoc */
+e2e.openpgp.ContextImpl.prototype.restoreKeyring = function(data) {
+  return e2e.async.Result.toResult(this.keyRing_.restoreKeyring(data));
+};

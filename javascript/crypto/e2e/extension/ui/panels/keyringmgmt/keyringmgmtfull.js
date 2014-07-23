@@ -161,8 +161,6 @@ panels.KeyringMgmtFull.prototype.addNewKey = function(userId, pgpKeys) {
     keyringTable.removeChild(keyringTable.firstElementChild);
   }
 
-  this.getElementByClass(constants.CssClass.KEYRING_EXPORT).disabled = false;
-
   var tr = document.createElement(goog.dom.TagName.TR);
   tr.dataset.userId = userId;
   soy.renderElement(tr, templates.KeyEntry, {
@@ -174,6 +172,7 @@ panels.KeyringMgmtFull.prototype.addNewKey = function(userId, pgpKeys) {
     removeLabel: chrome.i18n.getMessage('keyMgmtRemoveLabel')
   });
   keyringTable.appendChild(tr);
+  this.keyringMgmtControls_.refreshOptions(true);
 };
 
 
@@ -199,11 +198,13 @@ panels.KeyringMgmtFull.prototype.removeKey = function(userId) {
   }, this);
 
   if (this.getElement().querySelectorAll('tr').length == 0) {
-    this.getElementByClass(constants.CssClass.KEYRING_EXPORT).disabled = true;
     soy.renderElement(this.getElement().querySelector('table'),
         templates.NoneEntry, {
           'noneLabel': chrome.i18n.getMessage('keyMgmtNoneLabel')
         });
+    this.keyringMgmtControls_.refreshOptions(false);
+  } else {
+    this.keyringMgmtControls_.refreshOptions(true);
   }
 };
 

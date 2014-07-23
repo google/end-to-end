@@ -117,7 +117,7 @@ ui.Settings.prototype.decorateInternal = function(elem) {
             .addErrback(this.displayFailure_, this);
       }
     } else {
-      console.error(chrome.runtime.lastError);
+      e2e.ext.utils.errorHandler(chrome.runtime.lastError);
     }
   }, this));
 };
@@ -173,15 +173,12 @@ ui.Settings.prototype.renderTemplate_ = function(pgpKeys) {
  */
 ui.Settings.prototype.generateKey_ =
     function(panel, name, email, comments, expDate) {
-  var keyAlgo = e2e.signer.Algorithm['ECDSA'];
-  var keyLength = 256;
 
-  var subkeyAlgo = e2e.cipher.Algorithm['ECDH'];
-  var subkeyLength = 256;
-
-  return this.pgpContext_.generateKey(
-      keyAlgo, keyLength, subkeyAlgo, subkeyLength, name, comments, email,
-      expDate).addCallback(goog.bind(function(key) {
+  var defaults = constants.KEY_DEFAULTS;
+  return this.pgpContext_.generateKey(e2e.signer.Algorithm[defaults.keyAlgo],
+      defaults.keyLength, e2e.cipher.Algorithm[defaults.subkeyAlgo],
+      defaults.subkeyLength, name, comments, email, expDate)
+      .addCallback(goog.bind(function(key) {
     this.renderNewKey_(key[0].uids[0]);
     panel.reset();
   }, this)).addErrback(this.displayFailure_, this);

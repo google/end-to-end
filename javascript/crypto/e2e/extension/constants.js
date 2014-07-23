@@ -34,6 +34,8 @@ e2e.ext.constants.Actions = {
   // Keyring management related actions.
   GET_KEY_DESCRIPTION: 'get_key_description',
   GET_PASSPHRASE: 'get_passphrase',
+  GET_KEYRING_BACKUP_DATA: 'get_keyring_backup_data',
+  RESTORE_KEYRING_DATA: 'restore_keyring_data',
   IMPORT_KEY: 'import_key',
   LIST_KEYS: 'list_keys',
 
@@ -130,6 +132,9 @@ e2e.ext.constants.CssClass = {
   KEY_SUBKEY: 'key-sub',
   KEYRING_IMPORT: 'keyring-import',
   KEYRING_EXPORT: 'keyring-export',
+  KEYRING_BACKUP: 'keyring-backup',
+  KEYRING_RESTORE: 'keyring-restore',
+  KEYRING_RESTORE_INPUT: 'keyring-restore-input',
   KEYRING_PASSPHRASE_CHANGE: 'keyring-passphrase-change',
 
   /** Used in the welcome page */
@@ -165,3 +170,17 @@ e2e.ext.constants.NOTIFICATIONS_DELAY = 10 * 1000;
  * @type {number}
  */
 e2e.ext.constants.AUTOSAVE_INTERVAL = 5 * 1000;
+
+
+/**
+ * Default options for e2e
+ * @type {{keyAlgo: string, keyLength: number,
+ *     subkeyAlgo: string, subkeyLength: number}}
+ */
+e2e.ext.constants.KEY_DEFAULTS = {
+  keyAlgo: 'ECDSA',
+  keyLength: 256,
+
+  subkeyAlgo: 'ECDH',
+  subkeyLength: 256
+};

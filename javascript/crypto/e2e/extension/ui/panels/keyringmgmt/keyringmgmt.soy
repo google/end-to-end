@@ -80,6 +80,8 @@
  * @param exportKeyringLabel The label to use when asking the user to export the existing keyring.
  * @param changePassphraseLabel The label to use when asking the user to change the passphrase to
  *     the keyring.
+ * @param backupKeyringLabel The label for creating a backup code.
+ * @param restoreKeyringLabel The label for restoring from a backup code.
  * @param importCancelButtonTitle The title for the import cancel button.
  * @param changePassphrasePlaceholder The placeholder for the passphrase change input field.
  * @param confirmPassphrasePlaceholder The placeholder for the passphrase confirm input field.
@@ -122,5 +124,10 @@
                    {sp}{e2e.ext.constants.CssClass.CANCEL}">{$exportKeyringLabel}</button>
     <button class="{e2e.ext.constants.CssClass.KEYRING_PASSPHRASE_CHANGE}{sp}
                    {e2e.ext.constants.CssClass.CANCEL}">{$changePassphraseLabel}</button>
+    <button class="{e2e.ext.constants.CssClass.KEYRING_BACKUP}{sp}
+                   {e2e.ext.constants.CssClass.CANCEL}">{$backupKeyringLabel}</button>
+    <button class="{e2e.ext.constants.CssClass.KEYRING_RESTORE}{sp}
+                   {e2e.ext.constants.CssClass.CANCEL}{sp}
+                   {e2e.ext.constants.CssClass.HIDDEN}">{$restoreKeyringLabel}</button>
   </div>
 {/template}

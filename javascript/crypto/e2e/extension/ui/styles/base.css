@@ -51,6 +51,10 @@ button:hover {
   -webkit-box-shadow: inner 0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
+button:disabled {
+  color: graytext;
+}
+
 button.back,
 button.cancel,
 button.options,
@@ -66,10 +70,6 @@ button.cancel:hover,
 button.options:hover,
 button.save:hover {
   border-color: #c6c6c6;
-}
-
-button.keyring-export:disabled {
-  color: graytext;
 }
 
 button.back {

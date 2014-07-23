@@ -157,17 +157,29 @@ function testHandleClick() {
 }
 
 
-function testEmptyExport() {
+function testEmptyKeyring() {
   panel.render(document.body);
 
-  // button enabled on key add
+  // buttons enabled on key add
   panel.addNewKey('test@example.com', []);
   assertFalse(panel.getElementByClass(constants.CssClass.KEYRING_EXPORT)
       .hasAttribute('disabled'));
+  assertFalse(goog.dom.classlist.contains(
+      panel.getElementByClass(constants.CssClass.KEYRING_BACKUP),
+      e2e.ext.constants.CssClass.HIDDEN));
+  assertTrue(goog.dom.classlist.contains(
+      panel.getElementByClass(constants.CssClass.KEYRING_RESTORE),
+      e2e.ext.constants.CssClass.HIDDEN));
 
-  // removing only key disables button
+
+  // removing only key disables buttons
   panel.removeKey('test@example.com');
   assertTrue(panel.getElementByClass(constants.CssClass.KEYRING_EXPORT)
       .hasAttribute('disabled'));
-
+  assertTrue(goog.dom.classlist.contains(
+      panel.getElementByClass(constants.CssClass.KEYRING_BACKUP),
+      e2e.ext.constants.CssClass.HIDDEN));
+  assertFalse(goog.dom.classlist.contains(
+      panel.getElementByClass(constants.CssClass.KEYRING_RESTORE),
+      e2e.ext.constants.CssClass.HIDDEN));
 }

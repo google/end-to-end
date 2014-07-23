@@ -19,7 +19,10 @@ goog.provide('e2e.ext.ui.panels.KeyringMgmtMini');
 
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.ui.dialogs.BackupKey');
+goog.require('e2e.ext.ui.dialogs.RestoreKey');
 goog.require('e2e.ext.ui.templates.panels.keyringmgmt');
+goog.require('e2e.ext.utils');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
@@ -34,6 +37,7 @@ goog.require('soy');
 goog.scope(function() {
 var constants = e2e.ext.constants;
 var panels = e2e.ext.ui.panels;
+var dialogs = e2e.ext.ui.dialogs;
 var templates = e2e.ext.ui.templates.panels.keyringmgmt;
 
 
@@ -52,6 +56,13 @@ var templates = e2e.ext.ui.templates.panels.keyringmgmt;
 panels.KeyringMgmtMini =
     function(exportCallback, importCallback, updatePassphraseCallback) {
   goog.base(this);
+
+  /**
+   * The PGP context used by the extension.
+   * @type {e2e.openpgp.Context}
+   * @private
+   */
+  this.pgpContext_ = null;
 
   /**
    * The callback to invoke when the keyring is to be exported.
@@ -84,6 +95,12 @@ panels.KeyringMgmtMini =
 goog.inherits(panels.KeyringMgmtMini, goog.ui.Component);
 
 
+/**
+ * @define {boolean} Whether backup code UI is enabled
+ */
+panels.KeyringMgmtMini.ENABLE_BACKUP_CODE = false;
+
+
 /** @override */
 panels.KeyringMgmtMini.prototype.createDom = function() {
   goog.base(this, 'createDom');
@@ -98,6 +115,8 @@ panels.KeyringMgmtMini.prototype.decorateInternal = function(elem) {
   soy.renderElement(elem, templates.ManageKeyring, {
     importKeyringLabel: chrome.i18n.getMessage('keyMgmtImportKeyringLabel'),
     exportKeyringLabel: chrome.i18n.getMessage('keyMgmtExportKeyringLabel'),
+    backupKeyringLabel: chrome.i18n.getMessage('keyMgmtBackupKeyringLabel'),
+    restoreKeyringLabel: chrome.i18n.getMessage('keyMgmtRestoreKeyringLabel'),
     importCancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction'),
     changePassphraseLabel:
         chrome.i18n.getMessage('keyMgmtChangePassphraseLabel'),
@@ -118,16 +137,20 @@ panels.KeyringMgmtMini.prototype.decorateInternal = function(elem) {
     goog.dom.classlist.add(
         this.getElementByClass(constants.CssClass.KEYRING_EXPORT),
         constants.CssClass.HIDDEN);
-  } else {
-    this.actionExecutor_.execute({
-      action: constants.Actions.LIST_KEYS,
-      content: 'public'
-    }, this, goog.bind(function(keys) {
-      if (goog.object.isEmpty(keys)) {
-        this.getElementByClass(
-            constants.CssClass.KEYRING_EXPORT).disabled = true;
-      }
-    }, this));
+  }
+
+  this.actionExecutor_.execute({
+    action: constants.Actions.LIST_KEYS,
+    content: 'public'
+  }, this, goog.bind(function(keys) {
+    this.refreshOptions(!goog.object.isEmpty(keys));
+  }, this));
+
+  if (!panels.KeyringMgmtMini.ENABLE_BACKUP_CODE) {
+    goog.style.setElementShown(
+        this.getElementByClass(constants.CssClass.KEYRING_BACKUP), false);
+    goog.style.setElementShown(
+        this.getElementByClass(constants.CssClass.KEYRING_RESTORE), false);
   }
 };
 
@@ -152,6 +175,14 @@ panels.KeyringMgmtMini.prototype.enterDocument = function() {
           this.getElementByClass(constants.CssClass.KEYRING_EXPORT),
           goog.events.EventType.CLICK,
           this.exportCallback_).
+      listen(
+          this.getElementByClass(constants.CssClass.KEYRING_BACKUP),
+          goog.events.EventType.CLICK,
+          this.showBackupWindow_).
+      listen(
+          this.getElementByClass(constants.CssClass.KEYRING_RESTORE),
+          goog.events.EventType.CLICK,
+          this.showRestoreWindow_).
       listen(
           this.getElementByClass(
               constants.CssClass.KEYRING_PASSPHRASE_CHANGE),
@@ -294,6 +325,23 @@ panels.KeyringMgmtMini.prototype.confirmKeyringPassphrase_ = function() {
 
 
 /**
+ * Shows the backup window.
+ * @private
+ */
+panels.KeyringMgmtMini.prototype.showBackupWindow_ = function() {
+  new dialogs.BackupKey().setVisible(true);
+};
+
+
+/**
+ * Shows the restore window.
+ * @private
+ */
+panels.KeyringMgmtMini.prototype.showRestoreWindow_ = function() {
+  new dialogs.RestoreKey().setVisible(true);
+};
+
+/**
  * Updates the button to set the keyring's passphrase according to whether the
  * keyring is encrypted or not.
  * @param {boolean} encrypted True if the keyring is encrypted.
@@ -314,6 +362,30 @@ panels.KeyringMgmtMini.prototype.reset = function() {
   goog.dom.getElement(constants.ElementId.KEYRING_IMPORT_DIV)
       .querySelector('input').value = '';
   this.showKeyringMgmtForm_(constants.ElementId.KEYRING_OPTIONS_DIV);
+};
+
+
+/**
+ * Refresh options when available keys have been updated
+ * @param {boolean} hasKeys Whether there are keys in the keyring
+ */
+panels.KeyringMgmtMini.prototype.refreshOptions = function(hasKeys) {
+  this.getElementByClass(constants.CssClass.KEYRING_EXPORT).disabled = !hasKeys;
+  if (hasKeys) {
+    goog.dom.classlist.remove(
+          this.getElementByClass(constants.CssClass.KEYRING_BACKUP),
+          e2e.ext.constants.CssClass.HIDDEN);
+    goog.dom.classlist.add(
+        this.getElementByClass(constants.CssClass.KEYRING_RESTORE),
+        e2e.ext.constants.CssClass.HIDDEN);
+  } else {
+    goog.dom.classlist.add(
+        this.getElementByClass(constants.CssClass.KEYRING_BACKUP),
+        e2e.ext.constants.CssClass.HIDDEN);
+    goog.dom.classlist.remove(
+        this.getElementByClass(constants.CssClass.KEYRING_RESTORE),
+        e2e.ext.constants.CssClass.HIDDEN);
+  }
 };
 
 }); // goog.scope

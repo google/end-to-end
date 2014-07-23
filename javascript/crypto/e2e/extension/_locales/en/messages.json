@@ -163,6 +163,14 @@
     "message": "Export local keyring",
     "description": "A sentence prompting the user to export the existing PGP keyring."
   },
+  "keyMgmtBackupKeyringLabel": {
+    "message": "Show backup code",
+    "description": "A sentence prompting the user to show a code to backup their generated keys"
+  },
+  "keyMgmtRestoreKeyringLabel": {
+    "message": "Restore from backup code",
+    "description": "A sentence prompting the user to restore the keyring's ECC seed"
+  },
   "keyMgmtChangePassphraseLabel": {
     "message": "Change the keyring's passphrase",
     "description": "A sentence prompting the user to change the passphrase of the existing PGP keyring."

@@ -52,6 +52,13 @@ function setUp() {
           return {
             getAllKeys: function() {
               return e2e.async.Result.toResult(keys);
+            },
+            getKeyringBackupData: function() {
+              return e2e.async.Result.toResult({
+                seed: [1, 2, 3, 4, 5],
+                count: 0,
+                timestamp: new Date(0)
+              });
             }
           };
         }
@@ -240,4 +247,23 @@ function testKeyringAutoImport() {
   input.dispatchEvent(new Event(goog.events.EventType.CHANGE));
 
   assertTrue(run);
+}
+
+
+function testBackupWindow() {
+  panel = new e2e.ext.ui.panels.KeyringMgmtMini(goog.abstractMethod,
+      goog.abstractMethod, goog.abstractMethod);
+  panel.render(document.body);
+
+  var backupButton = goog.dom.getElementByClass(
+      constants.CssClass.KEYRING_BACKUP);
+  var called = false;
+
+  stubs.setPath('goog.ui.Dialog.prototype.setVisible', function() {
+    called = true;
+  });
+
+  assertFalse(called);
+  backupButton.dispatchEvent(new Event(goog.events.EventType.CLICK));
+  assertTrue(called);
 }

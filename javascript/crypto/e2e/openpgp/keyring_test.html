@@ -17,11 +17,13 @@
 <script src="../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
+  goog.require('goog.array');
   goog.require('goog.testing.AsyncTestCase');
   goog.require('goog.testing.jsunit');
   goog.require('goog.testing.mockmatchers');
   goog.require('goog.testing.MethodMock');
   goog.require('goog.testing.MockControl');
+  goog.require('goog.testing.PropertyReplacer');
   goog.require('e2e.async.Result');
   goog.require('e2e.cipher.all');
   goog.require('e2e.openpgp.KeyRing');
@@ -37,6 +39,7 @@
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 var keyRing = null;
 var mockControl;
+var stubs = new goog.testing.PropertyReplacer();
 
 function setUp() {
   localStorage.clear();
@@ -45,6 +48,7 @@ function setUp() {
 }
 
 function tearDown() {
+  stubs.reset();
   mockControl.$tearDown();
 }
 
@@ -461,6 +465,41 @@ function testLoadOldStyleKeyRing() {
   assertArrayEquals([
     0xaa, 0x09, 0x8a, 0x8e, 0xa4, 0x9e, 0xe5, 0xc2, 0x03, 0xfa,
     0x40, 0x73, 0xf3, 0xa2, 0x8a,0xa9, 0xbd, 0x73, 0x34, 0xc7], thaiFp);
+}
+
+function testGetNextKey() {
+  stubs.setPath('e2e.random.getRandomBytes', function(bytes) {
+    return goog.array.range(bytes).map(function(i){ return i % 256; });
+  });
+  var key = keyRing.getNextKey_(256);
+  assertArrayEquals(keyRing.eccSeed_,
+      goog.array.range(e2e.openpgp.KeyRing.ECC_SEED_SIZE));
+  assertEquals(keyRing.eccCount_, 1);
+  assertEquals(key.length, 32);
+
+  var key2 = keyRing.getNextKey_(256);
+  assertNotEquals(key, key2);
+  assertArrayEquals(keyRing.eccSeed_,
+      goog.array.range(e2e.openpgp.KeyRing.ECC_SEED_SIZE));
+  assertEquals(keyRing.eccCount_, 2);
+  assertEquals(key2.length, 32);
+}
+
+/**
+Ensure that generateKey always produces 2 key pairs
+This is an assumption that we currently make when backing up / restoring
+using backup key codes
+*/
+function testGenerateKeyProducesTwoKeyPairs() {
+
+  var fn = goog.bind(keyRing.generateKey, keyRing, 'test <test@example.com>',
+      e2e.signer.Algorithm['ECDSA'], 256, e2e.cipher.Algorithm['ECDH'], 256);
+
+  assertUndefined(keyRing.eccCount_);
+  fn();
+  assertEquals(keyRing.eccCount_, 2);
+  fn();
+  assertEquals(keyRing.eccCount_, 4);
 }
 
 </script>

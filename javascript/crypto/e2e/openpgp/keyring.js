@@ -21,15 +21,18 @@
 goog.provide('e2e.openpgp.KeyRing');
 
 goog.require('e2e');
+goog.require('e2e.Hkdf');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Aes');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.ciphermode.Cfb');
 goog.require('e2e.hash.Sha1');
+goog.require('e2e.hash.Sha256');
 goog.require('e2e.openpgp');
 goog.require('e2e.openpgp.EncryptedCipher');
 goog.require('e2e.openpgp.IteratedS2K');
 goog.require('e2e.openpgp.KeyClient');
+goog.require('e2e.openpgp.KeyringBackupInfo');
 goog.require('e2e.openpgp.Mpi');
 goog.require('e2e.openpgp.block.TransferablePublicKey');
 goog.require('e2e.openpgp.block.TransferableSecretKey');
@@ -120,6 +123,23 @@ e2e.openpgp.KeyRing.prototype.passphrase_ = null;
  */
 e2e.openpgp.KeyRing.prototype.keyClient_ = null;
 
+
+/**
+ * ECC key generation seed
+ * @type {e2e.ByteArray}
+ * @private
+ */
+e2e.openpgp.KeyRing.prototype.eccSeed_;
+
+
+/**
+ * number of keys generated from ECC generation seed
+ * @type {number}
+ * @private
+ */
+e2e.openpgp.KeyRing.prototype.eccCount_;
+
+
 /**
  * The local storage's key under which the user key ring is stored.
  * @const
@@ -193,6 +213,13 @@ e2e.openpgp.KeyRing.SALT_SIZE_ = 8;
 
 
 /**
+ * Size in bytes for the ECC key generation seed.
+ * @const
+ */
+e2e.openpgp.KeyRing.ECC_SEED_SIZE = 16;
+
+
+/**
  * @param {string} passphrase Change the passphrase for encrypting the KeyRing
  *     when stored locally. Empty string for unencrypted.
  */
@@ -245,6 +272,34 @@ e2e.openpgp.KeyRing.prototype.generateECKey = function(email) {
 
 
 /**
+ * Generates the next key in the sequence based on the ECC generation seed
+ * @param {number} keyLength Length in bits of the key.
+ * @private
+ * @return {!e2e.ByteArray} Deterministic privKey based on ECC seed.
+ */
+e2e.openpgp.KeyRing.prototype.getNextKey_ = function(keyLength) {
+  if (!this.eccSeed_) {
+    this.eccSeed_ = e2e.random.getRandomBytes(
+        e2e.openpgp.KeyRing.ECC_SEED_SIZE);
+    this.eccCount_ = 0;
+  }
+
+  if (++this.eccCount_ > 0x7F) {
+    throw new e2e.openpgp.error.UnsupportedError('Too many ECC keys generated');
+  }
+
+  if (keyLength % 8) {
+    throw new e2e.openpgp.error.UnsupportedError(
+        'Key length is not a multiple of 8');
+  }
+
+  return new e2e.Hkdf(new e2e.hash.Sha256()).getHKDF(this.eccSeed_,
+      e2e.dwordArrayToByteArray([this.eccCount_]), keyLength / 8);
+
+};
+
+
+/**
  * Generates and imports to the key ring a master signing key and a subordinate
  * encryption key.
  * @param {string} email The email to associate the key with.
@@ -266,15 +321,18 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(email,
     'pubKey': new Array(),
     'privKey': new Array()
   };
+
   if (keyAlgo == e2e.signer.Algorithm.ECDSA &&
       keyLength == 256) {
-    var ecdsa = e2e.openpgp.keygenerator.newEcdsaWithP256();
-    e2e.openpgp.KeyRing.extractKeyData_(keyData, ecdsa);
+    var ecdsa = e2e.openpgp.keygenerator.newEcdsaWithP256(
+        this.getNextKey_(keyLength));
+    this.extractKeyData_(keyData, ecdsa);
   }
   if (subkeyAlgo == e2e.cipher.Algorithm.ECDH &&
       subkeyLength == 256) {
-    var ecdh = e2e.openpgp.keygenerator.newEcdhWithP256();
-    e2e.openpgp.KeyRing.extractKeyData_(keyData, ecdh, true);
+    var ecdh = e2e.openpgp.keygenerator.newEcdhWithP256(
+        this.getNextKey_(subkeyLength));
+    this.extractKeyData_(keyData, ecdh, true);
   }
 
   if (keyData['pubKey'].length == 2 && keyData['privKey'].length == 2) {
@@ -365,7 +423,6 @@ e2e.openpgp.KeyRing.prototype.getKey_ = function(keyId, opt_secret) {
   }
   return results[0];
 };
-
 
 
 /**
@@ -666,7 +723,9 @@ e2e.openpgp.KeyRing.prototype.persist_ = function() {
 e2e.openpgp.KeyRing.prototype.serialize_ = function() {
   var obj = {
     'pubKey': this.keyRingToObject_(this.pubKeyRing_),
-    'privKey': this.keyRingToObject_(this.privKeyRing_)
+    'privKey': this.keyRingToObject_(this.privKeyRing_),
+    'eccSeed': this.eccSeed_,
+    'eccCount': this.eccCount_
   };
   return JSON.stringify(obj);
 };
@@ -784,6 +843,8 @@ e2e.openpgp.KeyRing.prototype.deserialize_ = function(s) {
     var obj = JSON.parse(s);
     this.pubKeyRing_ = this.objectToPubKeyRing_(obj['pubKey']);
     this.privKeyRing_ = this.objectToPrivKeyRing_(obj['privKey']);
+    this.eccSeed_ = obj.eccSeed;
+    this.eccCount_ = obj.eccCount;
   } catch (ex) {
     throw new e2e.openpgp.error.SerializationError(
         'Invalid key ring: ' + ex.message);
@@ -904,6 +965,37 @@ e2e.openpgp.KeyRing.prototype.objectToPubKeyRing_ = function(s) {
 
 
 /**
+ * Backs up the ECC key generation seed and key count
+ * @return {e2e.openpgp.KeyringBackupInfo}
+ */
+e2e.openpgp.KeyRing.prototype.getKeyringBackupData = function() {
+  return {
+    seed: this.eccSeed_,
+    count: this.eccCount_
+  };
+};
+
+
+/**
+ * Restores serialized data from ECC key backup
+ * @param {e2e.openpgp.KeyringBackupInfo} data
+ *     serialized data to restore
+ */
+e2e.openpgp.KeyRing.prototype.restoreKeyring = function(data) {
+  this.eccSeed_ = data.seed;
+  this.eccCount_ = 0;
+
+  if (data.count % 2) {
+    throw new e2e.error.InvalidArgumentsError('Keys must be restored in pairs');
+  }
+
+  for (var i = 0; i < data.count / 2; i++) {
+    this.generateECKey('restored_key <pending keyserver lookup>');
+  }
+};
+
+
+/**
  * Extracts serialized key data contained in a crypto object.
  * @param {{privKey: (Array|null), pubKey: (Array|null)}} keyData The map
  *     to store the extracted data.
@@ -912,10 +1004,10 @@ e2e.openpgp.KeyRing.prototype.objectToPubKeyRing_ = function(s) {
  * @param {boolean=} opt_subKey Whether the key is a subkey. Defaults to false.
  * @private
  */
-e2e.openpgp.KeyRing.extractKeyData_ = function(
+e2e.openpgp.KeyRing.prototype.extractKeyData_ = function(
     keyData, cryptor, opt_subKey) {
   var version = 0x04;
-  var timestamp = Math.floor(new Date().getTime() / 1e3);
+  var timestamp = 0;
   var publicConstructor = opt_subKey ?
       e2e.openpgp.packet.PublicSubkey : e2e.openpgp.packet.PublicKey;
   var secretConstructor = opt_subKey ?

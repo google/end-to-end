@@ -42,8 +42,8 @@ actions.Action = function() {};
  *     action was invoked.
  * @param {!function(...)} callback A callback where successful results will be
  *     passed to.
- * @param {!function(Error)} errorCallback A callback where errors will
- *     be passed to.
+ * @param {!function(Error)} errorCallback A callback where errors will be
+ *     passed to.
  */
 actions.Action.prototype.execute;
 

@@ -185,26 +185,22 @@ ui.Welcome.prototype.closeAndDisableWelcomeScreen_ = function() {
  * @param {string} email The email to use.
  * @param {string} comments The comments to use.
  * @param {number} expDate The expiration date to use.
- * @return {goog.async.Deferred}
  * @private
  */
 ui.Welcome.prototype.generateKey_ =
     function(panel, name, email, comments, expDate) {
-  var keyAlgo = e2e.signer.Algorithm['ECDSA'];
-  var keyLength = 256;
-
-  var subkeyAlgo = e2e.cipher.Algorithm['ECDH'];
-  var subkeyLength = 256;
-
   var welcomePage = this;
   var anchorElem = this.genKeyForm_;
+  var defaults = constants.KEY_DEFAULTS;
   this.getContext_(goog.bind(function(pgpCtx) {
     if (pgpCtx.isKeyRingEncrypted()) {
       window.alert(chrome.i18n.getMessage('settingsKeyringLockedError'));
     }
 
-    pgpCtx.generateKey(keyAlgo, keyLength, subkeyAlgo, subkeyLength, name,
-        comments, email, expDate).addCallback(goog.bind(function(key) {
+    pgpCtx.generateKey(e2e.signer.Algorithm[defaults.keyAlgo],
+        defaults.keyLength, e2e.cipher.Algorithm[defaults.subkeyAlgo],
+        defaults.subkeyLength, name, comments, email, expDate)
+        .addCallback(goog.bind(function(key) {
       var dialog = new dialogs.Generic(
           chrome.i18n.getMessage('welcomeGenKeyConfirm'),
           this.hideKeyringSetup_,
@@ -216,6 +212,7 @@ ui.Welcome.prototype.generateKey_ =
     }, this));
 
   }, this));
+  this.keyringMgmt_.refreshOptions(true);
 };
 
 
@@ -328,7 +325,7 @@ ui.Welcome.prototype.getContext_ = function(callback) {
           /** @type {!e2e.openpgp.ContextImpl} */
           (backgroundPage.launcher.getContext()));
     } else {
-      console.error(chrome.runtime.lastError);
+      utils.errorHandler(chrome.runtime.lastError);
     }
   }, this));
 
