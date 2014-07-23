@@ -96,7 +96,7 @@ e2e.openpgp.block.factory.parseBlock = function(packets) {
 /**
  * Parses a single block out of ASCII Armor text.
  * @param {string} ascii ASCII armored text to parse into a block.
- * @return {!e2e.openpgp.block.Block} The block extracted.
+ * @return {e2e.openpgp.block.Block} The block extracted.
  */
 e2e.openpgp.block.factory.parseAscii = function(ascii) {
   var data = e2e.openpgp.asciiArmor.parse(ascii);
@@ -108,19 +108,21 @@ e2e.openpgp.block.factory.parseAscii = function(ascii) {
  * Parses a single block out of a ByteArray.
  * @param {!e2e.ByteArray} data ByteArray to parse into a block.
  * @param {string=} opt_charset The charset used to encode strings.
- * @return {!e2e.openpgp.block.Block} The block extracted.
+ * @return {e2e.openpgp.block.Block} The block extracted.
  */
 e2e.openpgp.block.factory.parseByteArray = function(data, opt_charset) {
   var packets = e2e.openpgp.block.factory.byteArrayToPackets(data);
   var block = e2e.openpgp.block.factory.parseBlock(packets);
-  block.setCharset(opt_charset);
+  if (block) {
+    block.setCharset(opt_charset);
+  }
   return block;
 };
 
 /**
  * Parses a multiple blocks out of ASCII Armor text.
  * @param {string} ascii ASCII armored text to parse into a block.
- * @return {Array.<e2e.openpgp.block.Block>} The blocks extracted.
+ * @return {!Array.<!e2e.openpgp.block.Block>} The blocks extracted.
  */
 e2e.openpgp.block.factory.parseAsciiMulti = function(ascii) {
   var data = e2e.openpgp.asciiArmor.parse(ascii);
@@ -139,8 +141,10 @@ e2e.openpgp.block.factory.parseByteArrayMulti = function(data, opt_charset) {
   var blocks = [];
   while (packets.length) {
     var block = e2e.openpgp.block.factory.parseBlock(packets);
-    block.setCharset(opt_charset);
-    blocks.push(block);
+    if (block) {
+      block.setCharset(opt_charset);
+      blocks.push(block);
+    }
   }
   return blocks;
 };
