@@ -322,7 +322,7 @@ ui.Settings.prototype.renderPassphraseCallback_ = function(uid, callback) {
  * @private
  */
 ui.Settings.prototype.exportKeyring_ = function() {
-  var filename = (!this.pgpContext_.isKeyRingEncrypted() && 'UNENCRYPTED-') +
+  var filename = (this.pgpContext_.isKeyRingEncrypted() ? '' : 'UNENCRYPTED-') +
       'keyring-private.asc';
   this.pgpContext_.exportKeyring(true).addCallback(function(armoredKey) {
     if (typeof armoredKey != 'string') {
