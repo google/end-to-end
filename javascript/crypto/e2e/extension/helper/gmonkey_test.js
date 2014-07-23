@@ -30,6 +30,7 @@ var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 var draft = null;
 var gmonkey = e2e.ext.gmonkey;
 var stubs = new goog.testing.PropertyReplacer();
+var RECIPIENTS = ['test@example.com' , 't2@example.com', 'cc@example.com'];
 
 
 function setUp() {
@@ -38,8 +39,9 @@ function setUp() {
   });
   document.documentElement.id = 'test_id';
   draft = {
-    to: 'test@example.com',
-    cc: 'foo@example.com',
+    to: 'test@example.com, "we <ird>>\'>, <a@a.com>, n<ess" <t2@example.com>' +
+        ', "inv\"<alid <invalid@example.com>, fails#e2e.regexp.vali@dation.com',
+    cc: 'cc@example.com',
     body: 'some text<br>with new<br>lines',
     getTo: function() { return this.to; },
     setTo: function(value) { this.to = value; },
@@ -70,8 +72,8 @@ function testGmonkeyCall() {
   asyncTestCase.waitForAsync('Waiting for the call to gmonkey to complete.');
 
   window.setTimeout(function() {
-    asyncTestCase.continueTesting();
     assertEquals('test_id', result);
+    asyncTestCase.continueTesting();
   }, 500);
 }
 
@@ -94,8 +96,8 @@ function testGetCurrentMessage() {
   asyncTestCase.waitForAsync('Waiting for the call to gmonkey to complete.');
 
   window.setTimeout(function() {
-    asyncTestCase.continueTesting();
     assertEquals(document.documentElement, elem);
+    asyncTestCase.continueTesting();
   }, 500);
 }
 
@@ -116,22 +118,21 @@ function testGetActiveDraft() {
   asyncTestCase.waitForAsync('Waiting for the call to gmonkey to complete.');
 
   window.setTimeout(function() {
-    asyncTestCase.continueTesting();
-    assertTrue(
-        goog.array.equals(['test@example.com', 'foo@example.com'], recipients));
+    assertArrayEquals(RECIPIENTS, recipients);
     assertEquals(draft.body.replace(/\<br\>/g, '\n'), body);
+    asyncTestCase.continueTesting();
   }, 500);
 }
 
 
 function testSetActiveDraft() {
-  gmonkey.setActiveDraft(['bar@example.com'], 'secret message');
+  gmonkey.setActiveDraft(['foo@example.com', 'noemail', '<a@>',
+      'first,"""last <bar@example.com>'], 'secret message');
 
   asyncTestCase.waitForAsync('Waiting for the call to gmonkey to complete.');
-
   window.setTimeout(function() {
-    asyncTestCase.continueTesting();
-    assertEquals('bar@example.com', draft.to);
+    assertEquals('foo@example.com, "first,last" <bar@example.com>', draft.to);
     assertEquals('secret message', draft.body);
+    asyncTestCase.continueTesting();
   }, 500);
 }

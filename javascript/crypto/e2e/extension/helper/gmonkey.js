@@ -17,7 +17,9 @@
 
 goog.provide('e2e.ext.gmonkey');
 
+goog.require('e2e.ext.utils.text');
 goog.require('goog.array');
+goog.require('goog.format.EmailAddress');
 
 goog.scope(function() {
 var gmonkey = e2e.ext.gmonkey;
@@ -85,19 +87,41 @@ gmonkey.isAvailable = function(callback) {
 
 
 /**
- * Extracts the email address out of a full email label (e.g. John Smith
- * <john@example.com>).
- * @param {string} emailLabel The full email label
- * @return {string} The extracted email address.
+ * Extracts valid email addresses out of a string with comma-separated full
+ *  email labels (e.g. "John Smith" <john@example.com>, Second
+ *  <second@example.org>).
+ * @param {string} emailLabels The full email labels
+ * @return {!Array.<string>} The extracted valid email addresses.
  * @private
  */
-gmonkey.getEmailAddress_ = function(emailLabel) {
-  var result = /<(.*)>/.exec(emailLabel);
-  if (result && result.length > 1) {
-    return result[1];
-  }
+gmonkey.getValidEmailAddressesFromString_ = function(emailLabels) {
+  var emails = goog.format.EmailAddress.parseList(emailLabels);
+  return goog.array.filter(
+      goog.array.map(
+          goog.array.map(emails, function(email) {return email.toString()}),
+          e2e.ext.utils.text.extractValidEmail),
+      goog.isDefAndNotNull);
+};
 
-  return emailLabel;
+
+/**
+ * Extracts valid email addresses out of an array with full email labels
+ * (e.g. "John Smith" <john@example.com>, Second <second@example.org>).
+ * @param {!Array.<string>} recipients List of recipients
+ * @return {string} Comma separated list of recipients with valid e-mail
+ *     addresses
+ * @private
+ */
+gmonkey.getValidEmailAddressesFromArray_ = function(recipients) {
+    var list = [];
+    goog.array.forEach(recipients, function(recipient) {
+        var emailAddress = goog.format.EmailAddress.parse(recipient);
+        // Validate e-mail address, but add full recipient record.
+        if (e2e.ext.utils.text.extractValidEmail(emailAddress.getAddress())) {
+          list.push(emailAddress.toString());
+        }
+    });
+    return list.join(', ');
 };
 
 
@@ -130,9 +154,8 @@ gmonkey.getActiveDraft = function(callback) {
 
     if (goog.isObject(result)) {
       goog.array.extend(recipients,
-          goog.array.map(result['to'].split(', '), gmonkey.getEmailAddress_));
-      goog.array.extend(recipients,
-          goog.array.map(result['cc'].split(', '), gmonkey.getEmailAddress_));
+          gmonkey.getValidEmailAddressesFromString_(result['to']),
+          gmonkey.getValidEmailAddressesFromString_(result['cc']));
       // Document.implementation.createHTMLDocument creates a new document
       // in which the scripts are not executing and network requests are not
       // made (in Chrome), so we don't create a XSS risk here.
@@ -174,7 +197,7 @@ gmonkey.setActiveDraft = function(recipients, msgBody, opt_callback) {
     callback = opt_callback;
   }
   gmonkey.callGmonkey_('setActiveDraft', callback, {
-    to: recipients.join(', '),
+    to: this.getValidEmailAddressesFromArray_(recipients),
     body: msgBody
   });
 };

@@ -18,28 +18,35 @@
 goog.provide('e2e.ext.ui.PromptTest');
 
 goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.Prompt');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.ui.preferences');
+goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.asciiArmor');
+/** @suppress {extraRequire} intentionally importing all signer functions */
+goog.require('e2e.signer.all');
 goog.require('goog.Timer');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
-goog.require('goog.events.KeyCodes');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
+goog.require('goog.testing.mockmatchers.ArgumentMatcher');
+goog.require('goog.testing.mockmatchers.SaveArgument');
+
 goog.setTestOnly();
 
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 asyncTestCase.stepTimeout = 2000;
+
 var constants = e2e.ext.constants;
 var drafts = e2e.ext.ui.draftmanager;
 var mockControl = null;
@@ -231,6 +238,7 @@ var PUBLIC_KEY_ASCII =
     '=nHBL\n' +
     '-----END PGP PUBLIC KEY BLOCK-----';
 
+var USER_ID_2 = 'Drew Hintz <adhintz@google.com>';
 
 var PUBLIC_KEY_ASCII_2 =  // user ID of 'Drew Hintz <adhintz@google.com>'
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
@@ -244,10 +252,62 @@ var PUBLIC_KEY_ASCII_2 =  // user ID of 'Drew Hintz <adhintz@google.com>'
     '=Af1R\n' +
     '-----END PGP PUBLIC KEY BLOCK-----';
 
+var PUBLIC_KEY_ASCII_2_EVIL = // Evil Drew Hintz <adhintz@google.com.evil.com>
+  '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
+  'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
+  '\n' +
+  'mI0EU7FngwEEALi4HSlK9DJuYUS7zEuJpi2RVdTE0zDQwyX7xLCERZLrPVWUHH0x\n' +
+  'XO9X7X6ngA2qNQVUirMsGK/OOwTwzN0ywmETmHJCjx7cPqruSxD+BsnceiHRWc7m\n' +
+  'FCJSP7Vl7BQUp16sbryT8dOpXmc+72ftxPahDJ0WWKSebXYVvvcJM8cLABEBAAG0\n' +
+  'MkxpbnVzIFRvcndhbGRzIDxMaW51cy5Ub3J3YWxkczFAY2FyYW1haWwuY29tLmV2\n' +
+  'aWw+iLgEEwECACIFAlOxZ4MCGwMGCwkIBwMCBhUIAgkKCwQWAgMBAh4BAheAAAoJ\n' +
+  'EMBeGa5IppzDSFoD/0KGrjnLynrzOD7ZZRCL6jcv/YXR0PCgmyko94njmozfupmp\n' +
+  'his/9Nw6EChGC1WigwmgOYXzy/fynnts1YlPSQQJpbDt1XIOkm0dmSKSI+/zNxGm\n' +
+  'BZqstDLEdUPLt7HZecz5iTbEh3NDpz8nhiHiiIq0rMN0f67+vFpsfLQLtvw7tDVM\n' +
+  'aW51cy5Ub3J3YWxkczFAY2FyYW1haWwuY29tLmV2aWwyIDxhbm90aGVyQGV2aWwu\n' +
+  'Y29tPoi4BBMBAgAiBQJTsWmqAhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIXgAAK\n' +
+  'CRDAXhmuSKacw7C+A/988WuUl7PzBjIDiCEjffe/fC4gNP7viRRQhwvh8QSgNpXl\n' +
+  '9TQ4PcKQRZvfNJk+OQvHMoPa+qXAB91GQg/nzYcFwKrsiy+wddAc/SbL0ClT5EEG\n' +
+  'hy2DzvuOHoTK51O+RwaHP08jciQIeLC0BRJEMsuxK86j9vlUEWAEP9uPEiUvobiN\n' +
+  'BFOxZ4MBBADDAzzpcIhOslSqULxjSdhQH0y8DK8GgbsCeIxf8iGIFNHEbOzUUZKV\n' +
+  'IITTBjQVZS/2enkE+UOpVZUp2SgJogEbxstjeE7NofWNqeDGye01dfGDOyjc1Se/\n' +
+  'WwHbxendlFpjZ8iHAjza4Bws2SsgCYYx0vfB8yruDnj9B299xXevLQARAQABiJ8E\n' +
+  'GAECAAkFAlOxZ4MCGwwACgkQwF4ZrkimnMMPnwP+J/cbZK5eR0v6Y9VI2uA6GW7T\n' +
+  'vILwfV3mUki9a5ag0XhL1xQWJSEBSLvNJac8/Cpc80yUpXvmvBhoefZSzzcR00pN\n' +
+  'RyfyHLU6nEU7LDvQlN3TPpuctRhrLEnn4pMhgvIxDRLKcR1JtZ9ikcYI9pC9ywx7\n' +
+  'YjNmsSc84KVYhDqIn6eZAaIEU7GElxEEAIbLqIgY+O3NLfNYp5da8c5hnPdMprOP\n' +
+  '2dzL7d0ay6LsuaAcXSq4yaOa/WOAL64kFdX+I40sV21nQZ/gYB6OFT/qk3WtKepE\n' +
+  'L6lc9iZULbVL9H14UOFAetYrmO53YetFpJZVCnsVBw7GRhOLV31oXldouh2a2NjC\n' +
+  'r+5By/EaP2ADAKDxqlytOJwCJ+sWP0PGnjONb4zOdQP/X15UGQbmsDIm/iY3yPQe\n' +
+  'FJjqMX0dKUJxB5cpVhBg2R4JZLCuDiN+3xC7/bcyZzUlaU7axt1/KvwighAnZrBD\n' +
+  'Z6RbbPdCOf+KtSifQvNSrAOk8AhRrUN+sGc/fLSotsBPXcXYSR6bm/fzRKtcmV7U\n' +
+  '95dkYanPy2rGG/HfB+opWrED/ic1Ib28DNReZ/xvbJicm2YDda8SyemX8g4/Qrir\n' +
+  'oqtXeOIyHyOeZQoFk+W5sIXy1t8lM8isYNctKdvuSPjaZbTD//bI2r2T1Sc/nwoy\n' +
+  'LupRcNH2oSfZ/4idPzCNdyHEDhzzNw1m8LQO1x5a2FJGJgaF8JCiNeNT8m65b/Uq\n' +
+  'myw7tC1FdmlsIERyZXcgSGludHogPGFkaGludHpAZ29vZ2xlLmNvbS5ldmlsLmNv\n' +
+  'bT6IYgQTEQIAIgUCU7GElwIbAwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQ\n' +
+  'qFdA2mzeclR1qwCg0a+61ZBPYdopFg8cwUjsDnFVvUAAoNun2cB7omK05P3URbVf\n' +
+  'HEWI4RSPuQENBFOxhJcQBAC/SptM2I3+1ktGrhVHTkSU0C7/hiKWqKKg4lrQe0VR\n' +
+  'GPi4SBc2stjS5HhBhDb+fBl3K+IiqDh8yCHxtXJeenrOutklMSfl89hDWLQefgrU\n' +
+  'zZ3VX3llAs4DDjxF7ppEAraHM6GpPm+oEXeOuThBAqOkstT53IehTspiqnoouKgu\n' +
+  'PwAECwQAmBGvx+TYOhEajpexobauc8yTACFwhYiwx7XK4+LGRenRJMY9/oGMb4/r\n' +
+  'L4DLA4kosrzvblbGFLOsj/MtN2HZZIjekVqEpLqNULX8WfwO4ku+ahRCT+qOQe5x\n' +
+  '9dHXUgr+ZRFtAkhxdMIF6Yh3eH7aSYZYkbUUaxtRSPsNfDe1Xh2ISQQYEQIACQUC\n' +
+  'U7GElwIbDAAKCRCoV0DabN5yVIa4AKCwMqovxeUL8m2D7aWMZBLYG5Bb2wCfVpwq\n' +
+  'x4imzBK+e4+YnAiNVhYYEJY=\n' +
+  '=lo5W\n' +
+  '-----END PGP PUBLIC KEY BLOCK-----';
 
 function testEncryptAndDecrypt() {
   var plaintext = 'a secret message';
 
+  stubs.replace(e2e.ext.utils.text, 'extractValidEmail',
+      function(recipient) {
+        if (recipient == USER_ID) {
+          return recipient;
+        }
+        return null;
+  });
   populatePgpKeys();
   asyncTestCase.waitForAsync('Waiting for keys to be populated.');
   window.setTimeout(function() {
@@ -293,6 +353,13 @@ function testEncryptForSigner() {
   var plaintext = 'a secret message';
 
   populatePgpKeys();
+  stubs.replace(e2e.ext.utils.text, 'extractValidEmail',
+      function(recipient) {
+        if (recipient == USER_ID_2) {
+          return USER_ID_2;
+        }
+        return null;
+  });
   asyncTestCase.waitForAsync('Waiting for keys to be populated.');
   prompt.pgpLauncher_.getContext().importKey(function() {}, PUBLIC_KEY_ASCII_2).
       addCallback(function() {
@@ -301,7 +368,7 @@ function testEncryptForSigner() {
           request: true,
           selection: plaintext,
           // Specify a recipient so it's not sign-only:
-          recipients: ['Drew Hintz <adhintz@google.com>']
+          recipients: [USER_ID_2]
         }, constants.Actions.ENCRYPT_SIGN);
         asyncTestCase.waitForAsync('Waiting for UI to be rendered.');
         window.setTimeout(function() {
@@ -359,8 +426,8 @@ function testEncryptForSigner() {
 function testEncryptForPassphrase() {
   var plaintext = 'a secret message';
   var passphrase = 'a passphrase';
+
   populatePgpKeys();
-  prompt.pgpLauncher_.getContext().importKey(function() {}, PUBLIC_KEY_ASCII_2);
   asyncTestCase.waitForAsync('Waiting for keys to be populated.');
   window.setTimeout(function() {
     prompt.decorate(document.documentElement);
@@ -442,6 +509,13 @@ function testContentInsertedOnEncrypt() {
   var plaintext = 'irrelevant';
   var origin = 'http://www.example.com';
 
+  stubs.replace(e2e.ext.utils.text, 'extractValidEmail',
+      function(recipient) {
+        if (recipient == USER_ID) {
+          return recipient;
+        }
+        return null;
+  });
   stubs.set(prompt.pgpLauncher_, 'updateSelectedContent',
       mockControl.createFunctionMock('updateSelectedContent'));
   var encryptedMsg = new goog.testing.mockmatchers.SaveArgument(goog.isString);
@@ -842,6 +916,13 @@ function testSaveDraftLocalStorage() {
 
   stubs.set(prompt.pgpLauncher_, 'updateSelectedContent',
       mockControl.createFunctionMock('updateSelectedContent'));
+  stubs.replace(e2e.ext.utils.text, 'extractValidEmail',
+      function(recipient) {
+        if (recipient == USER_ID) {
+          return recipient;
+        }
+        return null;
+  });
 
   mockControl.$replayAll();
   populatePgpKeys();
@@ -983,10 +1064,31 @@ function testSaveDraftNoKeys() {
 }
 
 
+function testOnlyExactAddressesMatch() {
+  var plaintext = 'irrelevant';
+  prompt.pgpLauncher_.getContext().importKey(function() {}, PUBLIC_KEY_ASCII_2);
+  prompt.pgpLauncher_.getContext().importKey(function() {},
+      PUBLIC_KEY_ASCII_2_EVIL);
+
+  asyncTestCase.waitForAsync('Waiting for keys to be populated.');
+  window.setTimeout(function() {
+    prompt.decorate(document.documentElement);
+    prompt.processSelectedContent_({
+      request: true,
+      selection: plaintext,
+      recipients: ['adhintz@google.com', 'a!weird@email.com']
+    }, constants.Actions.ENCRYPT_SIGN);
+    assertEquals(1, prompt.chipHolder_.getChildCount());
+    assertEquals(USER_ID_2,
+        prompt.chipHolder_.children_[0].getValue());
+    asyncTestCase.continueTesting();
+  }, 500);
+}
+
+
 function populatePgpKeys() {
   var ctx = prompt.pgpLauncher_.getContext();
   ctx.importKey(function(uid, callback) {
-    console.debug(arguments);
     callback('test');
   }, PRIVATE_KEY_ASCII);
 

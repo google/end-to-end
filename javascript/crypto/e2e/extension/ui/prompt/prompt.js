@@ -49,7 +49,6 @@ goog.require('goog.object');
 goog.require('goog.string');
 goog.require('goog.string.format');
 goog.require('goog.ui.Component');
-goog.require('goog.ui.ac.ArrayMatcher');
 goog.require('soy');
 
 goog.scope(function() {
@@ -125,7 +124,6 @@ ui.Prompt.prototype.decorateInternal = function(elem) {
   chrome.runtime.getBackgroundPage(goog.bind(function(page) {
     var backgroundPage = /** @type {{launcher: ext.Launcher}} */ (page);
     this.pgpLauncher_ = backgroundPage.launcher || this.pgpLauncher_;
-    console.debug(this.pgpLauncher_);
     if (this.pgpLauncher_) {
       this.pgpLauncher_.getSelectedContent(
           goog.bind(this.processSelectedContent_, this));
@@ -310,6 +308,28 @@ ui.Prompt.prototype.renderMenu_ = function(elem, contentBlob) {
 
 
 /**
+ * Extracts user addresses from user IDs and creates an email to user IDs map.
+ * Ignores user IDs without a valid e-mail address.
+ * @param  {!Array.<string>} recipients user IDs of recipients
+ * @return {!Object.<string, !Array.<string>>} email to user IDs map
+ * @private
+ */
+ui.Prompt.prototype.getRecipientsEmailMap_ = function(recipients) {
+    var map = {};
+    goog.array.forEach(recipients, function(recipient) {
+        var email = utils.text.extractValidEmail(recipient);
+        if (email) {
+          if (!map.hasOwnProperty(email)) {
+            map[email] = [];
+          }
+          map[email].push(recipient);
+        }
+    });
+    return map;
+};
+
+
+/**
  * Renders the UI elements needed for PGP encryption.
  * @param {Element} elem The element into which the UI elements are to be
  *     rendered.
@@ -330,11 +350,13 @@ ui.Prompt.prototype.renderEncrypt_ =
     content: 'public'
   }, this, goog.bind(function(searchResult) {
     var allAvailableRecipients = goog.object.getKeys(searchResult);
-
+    var recipientsEmailMap = this.getRecipientsEmailMap_(
+        allAvailableRecipients);
     goog.array.forEach(recipients, function(recipient) {
-      intendedRecipients = goog.array.concat(intendedRecipients,
-          goog.ui.ac.ArrayMatcher.getMatchesForRows(
-              recipient, 10, allAvailableRecipients));
+      if (recipientsEmailMap.hasOwnProperty(recipient)) {
+        goog.array.extend(intendedRecipients,
+            recipientsEmailMap[recipient]);
+      }
     });
 
     this.actionExecutor_.execute({

@@ -180,6 +180,16 @@ e2e.ext.constants.AUTOSAVE_INTERVAL = 5 * 1000;
 
 
 /**
+ * Regular expression matching a valid email address. This needs to be very
+ *    strict and reject uncommon formats to prevent vulnerability when
+ *    keyserver would choose a different key than intended.
+ * @type {RegExp}
+ */
+e2e.ext.constants.EMAIL_ADDRESS_REGEXP =
+    /^[+a-zA-Z0-9_.!-]+@([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,63}$/;
+
+
+/**
  * Default options for e2e
  * @type {{keyAlgo: string, keyLength: number,
  *     subkeyAlgo: string, subkeyLength: number}}

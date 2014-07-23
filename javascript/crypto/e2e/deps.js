@@ -141,7 +141,7 @@ goog.addDependency('../crypto/e2e/random/hmacprf.js', ['e2e.HmacPRF'], ['e2e.has
 goog.addDependency('../crypto/e2e/random/random.js', ['e2e.random'], ['e2e.ByteArray', 'goog.array', 'goog.crypt.Hmac', 'goog.crypt.Sha256']);
 goog.addDependency('../crypto/e2e/scheme/eme.js', ['e2e.scheme.Eme'], ['e2e.pkcs.eme.Pkcs1', 'e2e.scheme.Scheme']);
 goog.addDependency('../crypto/e2e/scheme/rsaes.js', ['e2e.scheme.Rsaes'], ['e2e.async.Result', 'e2e.scheme.Eme']);
-goog.addDependency('../crypto/e2e/scheme/scheme.js', ['e2e.scheme.EncScheme', 'e2e.scheme.Scheme', 'e2e.scheme.SigScheme'], []);
+goog.addDependency('../crypto/e2e/scheme/scheme.js', ['e2e.scheme.Scheme'], []);
 goog.addDependency('../crypto/e2e/symmetric/aes.js', ['e2e.cipher.Aes'], ['e2e', 'e2e.AlgorithmImpl', 'e2e.async.Result', 'e2e.cipher.Algorithm', 'e2e.cipher.Error', 'e2e.cipher.SymmetricCipher', 'e2e.cipher.factory']);
 goog.addDependency('../crypto/e2e/symmetric/blowfish.js', ['e2e.cipher.Blowfish'], ['e2e', 'e2e.AlgorithmImpl', 'e2e.async.Result', 'e2e.cipher.Algorithm', 'e2e.cipher.SymmetricCipher', 'e2e.cipher.factory', 'goog.array']);
 goog.addDependency('../crypto/e2e/symmetric/cast5.js', ['e2e.cipher.Cast5'], ['e2e', 'e2e.AlgorithmImpl', 'e2e.async.Result', 'e2e.cipher.Algorithm', 'e2e.cipher.Error', 'e2e.cipher.SymmetricCipher', 'e2e.cipher.factory']);

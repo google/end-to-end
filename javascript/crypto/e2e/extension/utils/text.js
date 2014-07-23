@@ -19,6 +19,7 @@ goog.provide('e2e.ext.utils.text');
 
 goog.require('e2e.ext.constants.Actions');
 goog.require('goog.array');
+goog.require('goog.format.EmailAddress');
 goog.require('goog.string');
 goog.require('goog.string.format');
 
@@ -89,6 +90,26 @@ utils.getPgpAction = function(content, opt_enableSniffing) {
   }
 
   return constants.Actions.ENCRYPT_SIGN;
+};
+
+
+/**
+ * Extract a valid e-mail address from 'user id <email>' string. If no valid
+ *   e-mail address can be extracted, returns null. Uses
+ *   goog.format.EmailAddress, but also enforces stricter rules.
+ * @param {string} recipient "username <email> string".
+ * @return {?string} Valid email address or null
+ */
+utils.extractValidEmail = function(recipient) {
+  var emailAddress = goog.format.EmailAddress.parse(recipient);
+  if (!emailAddress.isValid()) {
+    return null;
+  }
+  var email = emailAddress.getAddress();
+  if (!constants.EMAIL_ADDRESS_REGEXP.exec(emailAddress.getAddress())) {
+    return null;
+  }
+  return email;
 };
 
 }); // goog.scope

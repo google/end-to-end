@@ -34,7 +34,6 @@ function testPrettyTextWrap() {
   expectedStr = '123456789\na b c';
   assertEquals(expectedStr, utils.prettyTextWrap(inputStr, 10));
 
-  debugger;
   inputStr = '123 456789abcd';
   expectedStr = '123\n456789abcd';
   assertEquals(expectedStr, utils.prettyTextWrap(inputStr, 10));
@@ -52,4 +51,29 @@ function testGetPgpAction() {
       utils.getPgpAction('-----BEGIN PGP PUBLIC KEY BLOCK-----', true));
   assertEquals(e2e.ext.constants.Actions.IMPORT_KEY,
       utils.getPgpAction('-----BEGIN PGP PRIVATE KEY BLOCK-----', true));
+}
+
+
+function testExtractValidEmail() {
+'test@example.com, "we <ird>>\'>, <a@a.com>, n<ess" <t2@example.com>' +
+        ', "inv\"<alid <invalid@example.com>, fails#e2e.regexp.vali@dation.com',
+
+  assertEquals('test@example.com', utils.extractValidEmail('test@example.com'));
+  assertEquals('test@example.com',
+      utils.extractValidEmail('<test@example.com>'));
+  assertEquals('test@example.com',
+      utils.extractValidEmail('id <test@example.com>'));
+  assertEquals('test@example.com',
+      utils.extractValidEmail('"user id" <test@example.com>'));
+  assertEquals(null,
+      utils.extractValidEmail('"user id" <not-an-email>'));
+  assertEquals('padded@email.com',
+      utils.extractValidEmail('"user id" <padded@email.com >'));
+  assertEquals('t2@example.com',
+      utils.extractValidEmail(
+          '"we <ird>>\'>, <a@a.com>, n<ess" <t2@example.com>'));
+  assertEquals(null,
+      utils.extractValidEmail('"inv\"<alid <invalid@example.com>'));
+  assertEquals(null,
+      utils.extractValidEmail('fails#e2e.regexp.vali@dation.com'));
 }
