@@ -344,22 +344,24 @@ e2e.openpgp.KeyRing.prototype.getSecretKey = function(keyId) {
  */
 e2e.openpgp.KeyRing.prototype.getKey_ = function(keyId, opt_secret) {
   var keyRing = opt_secret ? this.privKeyRing_ : this.pubKeyRing_;
-  var result;
-  // Using goog.array.find to break on first match.
-  goog.array.find(goog.array.flatten(keyRing.getValues()), function(key) {
-    if (goog.array.equals(keyId, key.keyPacket.keyId)) {
-      result = key.keyPacket;
-      return true;
-    }
-    return Boolean(goog.array.find(key.subKeys, function(subKey) {
-      if (goog.array.equals(keyId, subKey.keyId)) {
-        result = subKey;
-        return true;
-      }
-      return false;
-    }));
-  });
-  return result || null;
+  var results = [];
+  goog.array.forEach(
+      goog.array.flatten(keyRing.getValues()), function(key) {
+        if (goog.array.equals(keyId, key.keyPacket.keyId)) {
+          results.push(key.keyPacket);
+        }
+        goog.array.forEach(
+            key.subKeys,
+            function(subKey) {
+              if (goog.array.equals(keyId, subKey.keyId)) {
+                results.push(subKey);
+              }
+            });
+      });
+  if (results.length != 1) {
+    return null;
+  }
+  return results[0];
 };
 
 
