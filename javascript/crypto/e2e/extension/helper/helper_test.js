@@ -18,7 +18,6 @@
 goog.require('e2e.ext.Helper');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.gmonkey');
-goog.require('goog.Uri');
 goog.require('goog.dom');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
@@ -229,6 +228,10 @@ function testInstallLookingGlass() {
   e2e.ext.utils.text.getPgpAction(selectionBody, true)
       .$returns(constants.Actions.DECRYPT_VERIFY);
 
+  stubs.set(helper, 'getOrigin_', function() {
+    return 'https://mail.google.com';
+  });
+
   var callbackMock = mockControl.createFunctionMock();
   var callbackArg =
       new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
@@ -240,7 +243,6 @@ function testInstallLookingGlass() {
 
   mockControl.$replayAll();
 
-  helper.currentUri_ = new goog.Uri('https://mail.google.com/irrelevant');
   helper.getSelectedContent_({
     pgpAction: 'irrelevant',
     editableElem: true,
@@ -302,9 +304,12 @@ function testDisplayDuringRead() {
       });
   callbackMock(callbackArg);
 
+  stubs.set(helper, 'getOrigin_', function() {
+    return 'https://mail.google.com';
+  });
+
   mockControl.$replayAll();
 
-  helper.currentUri_ = new goog.Uri('https://mail.google.com/irrelevant');
   helper.getSelectedContent_({
     pgpAction: 'irrelevant',
     editableElem: true
@@ -347,9 +352,12 @@ function testDisplayDuringWrite() {
       });
   callbackMock(callbackArg);
 
+  stubs.set(helper, 'getOrigin_', function() {
+    return 'https://mail.google.com';
+  });
+
   mockControl.$replayAll();
 
-  helper.currentUri_ = new goog.Uri('https://mail.google.com/irrelevant');
   helper.getSelectedContent_({
     pgpAction: 'irrelevant',
     editableElem: true
@@ -411,9 +419,12 @@ function testEnableLookingGlass() {
   stubs.setPath('chrome.runtime.getURL', mockControl.createFunctionMock());
   chrome.runtime.getURL('glass.html');
 
+  stubs.set(helper, 'getOrigin_', function() {
+    return 'https://mail.google.com';
+  });
+
   mockControl.$replayAll();
 
-  helper.currentUri_ = new goog.Uri('https://mail.google.com/irrelevant');
   helper.enableLookingGlass_();
 
   var contentElem = document.createElement('div');

@@ -25,7 +25,6 @@ goog.require('e2e.ext.ui.GlassWrapper');
 goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.Disposable');
-goog.require('goog.Uri');
 goog.require('goog.asserts');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
@@ -51,13 +50,6 @@ var utils = e2e.ext.utils;
  */
 ext.Helper = function() {
   goog.base(this);
-
-  /**
-   * The URL of the current page.
-   * @type {!goog.Uri}
-   * @private
-   */
-  this.currentUri_ = new goog.Uri(window.location.href);
 
   /**
    * The handler to get the value of the selected element.
@@ -356,7 +348,7 @@ ext.Helper.prototype.enableLookingGlass_ = function() {
  * @private
  */
 ext.Helper.prototype.isGmail_ = function() {
-  return this.currentUri_.getDomain() == 'mail.google.com';
+  return this.getOrigin_() == 'https://mail.google.com';
 };
 
 
@@ -366,15 +358,7 @@ ext.Helper.prototype.isGmail_ = function() {
  * @private
  */
 ext.Helper.prototype.getOrigin_ = function() {
-  var origin = goog.string.format(
-      '%s://%s', this.currentUri_.getScheme(), this.currentUri_.getDomain());
-
-  if (this.currentUri_.hasPort()) {
-    origin = goog.string.format(
-        '%s:%s', origin, /** @type {number} */ (this.currentUri_.getPort()));
-  }
-
-  return origin;
+  return window.location.origin;
 };
 
 }); // goog.scope
