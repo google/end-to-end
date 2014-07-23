@@ -81,7 +81,7 @@ function testExecute() {
   var pgpContext = new e2e.openpgp.ContextImpl();
   var errorCallback = mockControl.createFunctionMock('errorCallback');
   var callback = mockControl.createFunctionMock('callback');
-  callback();
+  callback('');
 
   var action = new actions.GetKeyDescription();
 
@@ -97,7 +97,7 @@ function testExecute() {
     for (var childIdx = 0; childIdx < parentUi.getChildCount(); childIdx++) {
       var child = parentUi.getChildAt(childIdx);
       if (child instanceof e2e.ext.ui.dialogs.Generic) {
-        child.dialogCallback_();
+        child.dialogCallback_('');
       }
     }
     mockControl.$verifyAll();

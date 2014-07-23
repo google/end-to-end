@@ -20,6 +20,7 @@ goog.provide('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.actions.Action');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.dialogs.ImportConfirmation');
+goog.require('e2e.ext.utils');
 goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.dom');
 goog.require('goog.ui.Component');
@@ -28,6 +29,7 @@ goog.scope(function() {
 var actions = e2e.ext.actions;
 var constants = e2e.ext.constants;
 var dialogs = e2e.ext.ui.dialogs;
+var utils = e2e.ext.utils;
 
 
 
@@ -46,17 +48,17 @@ actions.GetKeyDescription.prototype.execute =
       constants.ElementId.CALLBACK_DIALOG);
 
   if (!dialogContainer || !requestor) {
-    var error = new Error();
-    error.messageId = 'errorUnableToRenderDialog';
-    throw error;
+    throw new utils.Error(
+        'Unable to render UI dialogs.', 'errorUnableToRenderDialog');
   }
 
   ctx.getKeyDescription(request.content).
       addCallback(function(keyDescription) {
-        var dialog = new dialogs.ImportConfirmation(keyDescription, function() {
-          goog.dispose(dialog);
-          callback();
-        });
+        var dialog = new dialogs.ImportConfirmation(
+            keyDescription, function(result) {
+              goog.dispose(dialog);
+              callback(result);
+            });
         requestor.addChild(dialog, false);
         dialog.render(dialogContainer);
       }).

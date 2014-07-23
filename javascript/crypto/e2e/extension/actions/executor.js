@@ -21,12 +21,14 @@ goog.require('e2e.ext.actions.Action');
 goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.messages');
+goog.require('e2e.ext.utils');
 goog.require('e2e.openpgp.ContextImpl');
 
 goog.scope(function() {
 var actions = e2e.ext.actions;
 var constants = e2e.ext.constants;
 var messages = e2e.ext.messages;
+var utils = e2e.ext.utils;
 
 
 
@@ -71,9 +73,8 @@ actions.Executor.prototype.execute =
       }
     }, this), errorCallback);
   } else {
-    var error = new Error();
-    error.messageId = 'errorUnsupportedAction';
-    errorCallback(error);
+    errorCallback(new utils.Error(
+        'Unsupported End-to-End action.', 'errorUnsupportedAction'));
   }
 
 };
