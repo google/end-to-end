@@ -167,12 +167,12 @@ ext.Helper.prototype.setValue_ = function(elem, msg) {
 
 
 /**
- * Sets the recipients and message body into a Gmail compose window.
+ * Sets the recipients and message body into a Gmail compose window via gmonkey.
  * @param {messages.BridgeMessageResponse} msg The response bridge message from
  *     the extension.
  * @private
  */
-ext.Helper.prototype.setGmailValue_ = function(msg) {
+ext.Helper.prototype.setGmonkeyValue_ = function(msg) {
   if (msg.response && msg.origin == this.getOrigin_()) {
     gmonkey.setActiveDraft(msg.recipients, msg.value);
   }
@@ -203,14 +203,106 @@ ext.Helper.prototype.runOnce = function() {
 
 
 /**
- * Retrieves the selected content by the user.
+ * Retrieves OpenPGP content selected by the user using native browser API.
+ * @param {!messages.GetSelectionRequest} selectionRequest The request to get
+ *     the user-selected content.
+ * @param {function(*)} callback A callback to pass the selected content to.
+ * @private
+ */
+ext.Helper.prototype.getSelectedContentNative_ = function(selectionRequest,
+    callback) {
+  var activeElem = this.getActiveElement_();
+  var selection = this.getSelection_() || activeElem.value || '';
+  var canInject = this.isEditable_(activeElem);
+  if (canInject && selectionRequest.editableElem) {
+    this.attachSetValueHandler_(goog.bind(this.setValue_, this, activeElem));
+  }
+  if (selection.length == 0 && canInject) {
+    selection = activeElem.innerText;
+  }
+  callback({
+    selection: e2e.openpgp.asciiArmor.extractPgpBlock(selection),
+    recipients: [],
+    request: true,
+    origin: this.getOrigin_(),
+    canInject: canInject
+  });
+};
+
+
+/**
+ * Retrieves OpenPGP content selected by the user using GMonkey API.
+ * @param {!messages.GetSelectionRequest} selectionRequest The request to get
+ *     the user-selected content.
+ * @param {function(*)} callback A callback to pass the selected content to.
+ * @private
+ */
+ext.Helper.prototype.getSelectedContentGmonkey_ = function(selectionRequest,
+    callback) {
+  // TODO(user): Split into smaller methods.
+  this.attachSetValueHandler_(goog.bind(this.setGmonkeyValue_, this));
+  gmonkey.hasActiveDraft(goog.bind(function(hasDraft) {
+    if (hasDraft) {
+      gmonkey.getActiveDraft(goog.bind(function(recipients, msgBody) {
+        var selectionBody =
+            e2e.openpgp.asciiArmor.extractPgpBlock(msgBody);
+        callback({
+          action: constants.Actions.ENCRYPT_SIGN,
+          selection: selectionBody,
+          recipients: recipients,
+          request: true,
+          origin: this.getOrigin_(),
+          canInject: true
+        });
+      }, this));
+    } else {
+      gmonkey.getCurrentMessage(goog.bind(function(messageElem) {
+        var selectionBody;
+
+        if (messageElem) {
+          selectionBody = e2e.openpgp.asciiArmor.extractPgpBlock(
+              goog.isDef(messageElem.lookingGlass) ?
+              messageElem.lookingGlass.getOriginalContent() :
+              messageElem.innerText);
+        } else {
+          selectionBody = this.getSelection_() ||
+              this.getActiveElement_().value || '';
+        }
+
+        var action = utils.text.getPgpAction(selectionBody, true);
+        if (selectionRequest.enableLookingGlass &&
+            messageElem &&
+            !goog.isDef(messageElem.lookingGlass) &&
+            action == constants.Actions.DECRYPT_VERIFY) {
+          var glass = new ui.GlassWrapper(messageElem);
+          this.registerDisposable(glass);
+          glass.installGlass();
+
+          action = constants.Actions.NO_OP;
+        }
+
+        callback({
+          action: action,
+          selection: selectionBody,
+          recipients: [],
+          request: true,
+          origin: this.getOrigin_(),
+          canInject: true
+        });
+      }, this));
+    }
+  }, this));
+};
+
+
+/**
+ * Retrieves OpenPGP content selected by the user.
  * @param {*} req The request to get the user-selected content.
  * @param {!MessageSender} sender The sender of the initialization request.
  * @param {function(*)} callback A callback to pass the selected content to.
  * @private
  */
 ext.Helper.prototype.getSelectedContent_ = function(req, sender, callback) {
-  // TODO(user): Split into smaller methods.
   if (this.executed_) {
     goog.dispose(this);
     return;
@@ -219,80 +311,17 @@ ext.Helper.prototype.getSelectedContent_ = function(req, sender, callback) {
   }
 
   var selectionRequest = /** @type {!messages.GetSelectionRequest} */ (req);
-  var activeElem = this.getActiveElement_();
-  var selection = this.getSelection_() || activeElem.value || '';
-  var recipients = [];
 
   if (!Boolean(this.getSelection_()) && this.isGmail_()) {
-    this.attachSetValueHandler_(goog.bind(this.setGmailValue_, this));
-
-    gmonkey.hasActiveDraft(goog.bind(function(hasDraft) {
-      if (hasDraft) {
-        gmonkey.getActiveDraft(goog.bind(function(recipients, msgBody) {
-          var selectionBody =
-              e2e.openpgp.asciiArmor.extractPgpBlock(msgBody);
-          callback({
-            action: constants.Actions.ENCRYPT_SIGN,
-            selection: selectionBody,
-            recipients: recipients,
-            request: true,
-            origin: this.getOrigin_(),
-            canInject: true
-          });
-        }, this));
+    gmonkey.isAvailable(goog.bind(function(isAvailable) {
+      if (isAvailable) {
+        this.getSelectedContentGmonkey_(selectionRequest, callback);
       } else {
-        gmonkey.getCurrentMessage(goog.bind(function(messageElem) {
-          var selectionBody = selection;
-
-          if (messageElem) {
-            selectionBody = e2e.openpgp.asciiArmor.extractPgpBlock(
-                goog.isDef(messageElem.lookingGlass) ?
-                messageElem.lookingGlass.getOriginalContent() :
-                messageElem.innerText);
-          }
-
-          var action = utils.text.getPgpAction(selectionBody, true);
-          if (selectionRequest.enableLookingGlass &&
-              messageElem &&
-              !goog.isDef(messageElem.lookingGlass) &&
-              action == constants.Actions.DECRYPT_VERIFY) {
-            var glass = new ui.GlassWrapper(messageElem);
-            this.registerDisposable(glass);
-            glass.installGlass();
-
-            action = constants.Actions.NO_OP;
-          }
-
-          callback({
-            action: action,
-            selection: selectionBody,
-            recipients: recipients,
-            request: true,
-            origin: this.getOrigin_(),
-            canInject: true
-          });
-
-        }, this));
+        this.getSelectedContentNative_(selectionRequest, callback);
       }
     }, this));
   } else {
-
-    var canInject = this.isEditable_(activeElem);
-    if (canInject && selectionRequest.editableElem) {
-      this.attachSetValueHandler_(goog.bind(this.setValue_, this, activeElem));
-    }
-
-    if (selection.length == 0 && canInject) {
-      selection = activeElem.innerText;
-    }
-
-    callback({
-      selection: e2e.openpgp.asciiArmor.extractPgpBlock(selection),
-      recipients: recipients,
-      request: true,
-      origin: this.getOrigin_(),
-      canInject: canInject
-    });
+    this.getSelectedContentNative_(selectionRequest, callback);
   }
 
   chrome.runtime.onMessage.removeListener(this.getValueHandler_);

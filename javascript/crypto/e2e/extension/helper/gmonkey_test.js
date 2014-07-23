@@ -73,6 +73,15 @@ function testGmonkeyCall() {
 }
 
 
+function testIsAvailable() {
+  asyncTestCase.waitForAsync('Waiting for the call to gmonkey to complete.');
+  gmonkey.isAvailable(function(isAvailable) {
+    assertTrue(isAvailable);
+    asyncTestCase.continueTesting();
+  });
+}
+
+
 function testGetCurrentMessage() {
   var elem = null;
   gmonkey.getCurrentMessage(function(res) {

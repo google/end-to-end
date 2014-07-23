@@ -39,6 +39,7 @@ function setUp() {
   stubs.setPath('chrome.runtime.getURL', function() {});
   stubs.setPath('chrome.runtime.onMessage.addListener', function() {});
   stubs.setPath('chrome.runtime.onMessage.removeListener', function() {});
+
   helper = new e2e.ext.Helper();
 }
 
@@ -79,7 +80,7 @@ function testSetValue() {
 }
 
 
-function testSetValueForGmail() {
+function testSetValueForGmonkey() {
   var message = 'some text';
   var recipients = ['test@example.com'];
 
@@ -99,7 +100,7 @@ function testSetValueForGmail() {
 
   mockControl.$replayAll();
 
-  helper.setGmailValue_({
+  helper.setGmonkeyValue_({
     response: true,
     origin: helper.getOrigin_(),
     recipients: recipients,
@@ -214,6 +215,7 @@ function testSelectedContentPriority() {
 function testInstallLookingGlass() {
   var selectionBody = 'some text';
 
+  stubs.set(gmonkey, 'isAvailable', function(callback) { callback(true); });
   stubs.set(gmonkey, 'hasActiveDraft', mockControl.createFunctionMock());
   var hasDraftArg = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
   gmonkey.hasActiveDraft(hasDraftArg);
@@ -284,6 +286,7 @@ function testAttachSetValueHandler() {
 function testDisplayDuringRead() {
   var selectionBody = 'some text';
 
+  stubs.set(gmonkey, 'isAvailable', function(callback) { callback(true); });
   stubs.set(gmonkey, 'hasActiveDraft', mockControl.createFunctionMock());
   var hasDraftArg = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
   gmonkey.hasActiveDraft(hasDraftArg);
@@ -328,6 +331,7 @@ function testDisplayDuringWrite() {
   var selectionBody = 'some text';
   var recipients = ['test@example.com'];
 
+  stubs.set(gmonkey, 'isAvailable', function(callback) { callback(true); });
   stubs.set(helper, 'attachSetValueHandler_', mockControl.createFunctionMock());
   helper.attachSetValueHandler_(
       new goog.testing.mockmatchers.ArgumentMatcher(goog.isFunction));
@@ -432,6 +436,36 @@ function testEnableLookingGlass() {
   getCurrentMessageArg.arg(contentElem);
 
   assertNotNull(contentElem.querySelector('iframe'));
+
+  mockControl.$verifyAll();
+}
+
+
+function testGetActiveElementNoGmonkey() {
+  var content = 'some content';
+
+  stubs.set(helper, 'getActiveElement_', function() {
+    var input = document.createElement('input');
+    input.value = content;
+    return input;
+  });
+
+  stubs.set(gmonkey, 'isAvailable', function(callback) { callback(false); });
+
+  stubs.set(helper, 'getOrigin_', function() {
+    return 'https://mail.google.com';
+  });
+
+  var callback = mockControl.createFunctionMock();
+  callback(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+    assertEquals(content, arg.selection);
+
+    return true;
+  }));
+
+  mockControl.$replayAll();
+
+  helper.getSelectedContent_({editableElem: false}, {}, callback);
 
   mockControl.$verifyAll();
 }

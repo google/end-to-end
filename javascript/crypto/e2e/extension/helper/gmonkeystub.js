@@ -47,7 +47,7 @@
    * created.
    */
   var getDraft = function(api, callback) {
-    var draft = api.getMainWindow().getOpenDraftMessages().pop();
+    var draft = api.getMainWindow().getOpenDraftMessages()[0];
     if (draft) {
       callback(draft);
     } else {
@@ -72,59 +72,55 @@
     }), window.location.origin);
   };
 
-  gmonkey.load('2', function(api) {
-    switch (target) {
-      case 'getCurrentMessage':
-        var result = null;
-        var message = api.getCurrentMessage();
-        if (message) {
-          result = message.getContentElement();
-        }
-        sendResult(result);
-        break;
-      case 'getActiveDraft':
-        getDraft(api, function(draft) {
-          var result = {
-            'to': draft.getTo(),
-            'cc': draft.getCc(),
-            'body': draft.getBody()
-          };
-
-          if (isComposingNewMessage()) {
-            result['body'] = draft.getBody();
-          } else {
-            var contentElem = api.getMainWindow()
-                .getActiveMessage()
-                .getContentElement();
-            result['body'] = contentElem.innerText ||
-                contentElem.getAttribute('original_content') || '';
-          }
-
-          sendResult(result);
-        });
-
-        break;
-      case 'hasActiveDraft':
-        sendResult(hasDraft(api));
-        break;
-      case 'setActiveDraft':
-        getDraft(api, function(draft) {
-          if (args['to']) {
-            draft.setTo(args['to']);
-          }
-
-          if (args['body']) {
-            draft.setBody(args['body']);
-          }
-
-          sendResult(null);
-        });
-        break;
-    }
-  });
-
   if (lastScript && lastScript.parentElement) {
     lastScript.parentElement.removeChild(lastScript);
+  }
+
+  if (target == 'isGmonkeyAvailable') {
+    sendResult(typeof gmonkey !== 'undefined');
+    return;
+  }
+
+  if (typeof gmonkey !== 'undefined') {
+    gmonkey.load('2', function(api) {
+      switch (target) {
+        case 'getCurrentMessage':
+          var result = null;
+          var message = api.getCurrentMessage();
+          if (message) {
+            result = message.getContentElement();
+          }
+          sendResult(result);
+          break;
+        case 'getActiveDraft':
+          getDraft(api, function(draft) {
+            var result = {
+              'to': draft.getTo(),
+              'cc': draft.getCc(),
+              'body': draft.getBody()
+            };
+            sendResult(result);
+          });
+
+          break;
+        case 'hasActiveDraft':
+          sendResult(hasDraft(api));
+          break;
+        case 'setActiveDraft':
+          getDraft(api, function(draft) {
+            if (args['to']) {
+              draft.setTo(args['to']);
+            }
+
+            if (args['body']) {
+              draft.setBody(args['body']);
+            }
+
+            sendResult(null);
+          });
+          break;
+      }
+    });
   }
 }).call();
 

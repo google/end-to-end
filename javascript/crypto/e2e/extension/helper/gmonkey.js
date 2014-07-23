@@ -24,6 +24,13 @@ goog.require('goog.events.EventType');
 goog.scope(function() {
 var gmonkey = e2e.ext.gmonkey;
 
+/**
+ * True if Gmonkey object in web application is not available (this can only
+ * be determined upon first callGmonkey_ invocation).
+ * @type {?boolean}
+ * @private
+ */
+gmonkey.available_ = null;
 
 /**
  * Calls Gmail's gmonkey API.
@@ -43,7 +50,6 @@ gmonkey.callGmonkey_ = function(code, callback, opt_args) {
           responseObj.call != code) {
         return;
       }
-
       result = responseObj.result;
     } catch (e) {
       return;
@@ -61,6 +67,22 @@ gmonkey.callGmonkey_ = function(code, callback, opt_args) {
   script.src = chrome.runtime.getURL('gmonkeystub.js');
   script.setAttribute('call', window.JSON.stringify(call));
   document.documentElement.appendChild(script);
+};
+
+
+/**
+ * Checks if current web application has a gmonkey object available. Caches
+ * the check in internal variable.
+ * @param {function(boolean)} callback Function to call with the check results.
+ */
+gmonkey.isAvailable = function(callback) {
+  if (goog.isDefAndNotNull(gmonkey.available_)) {
+    return callback(/** @type {boolean} */ (gmonkey.available_));
+  }
+  gmonkey.callGmonkey_('isGmonkeyAvailable', function(result) {
+    gmonkey.available_ = /** @type {boolean} */ (result);
+    callback(gmonkey.available_);
+  });
 };
 
 
