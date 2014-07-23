@@ -580,9 +580,11 @@ function testImportKey() {
   mockControl.$replayAll();
 
   prompt.decorate(document.documentElement);
-  prompt.executeAction_(constants.Actions.IMPORT_KEY, {
-    value: PUBLIC_KEY_ASCII
-  }, 'irrelevant');
+  var div = document.createElement('div');
+  var txtArea = document.createElement('textarea');
+  txtArea.value = PUBLIC_KEY_ASCII;
+  div.appendChild(txtArea);
+  prompt.executeAction_(constants.Actions.IMPORT_KEY, div, 'irrelevant');
 
   keyDescriptionArg.arg('');
   asyncTestCase.waitForAsync('waiting for keyring to be imported');

@@ -244,27 +244,33 @@ ui.Prompt.prototype.processSelectedContent_ =
   }
 
   this.getHandler().listen(
-      this.getElementByClass(constants.CssClass.CANCEL),
-      goog.events.EventType.CLICK,
-      this.close);
+      elem, goog.events.EventType.CLICK,
+      goog.bind(this.buttonClick_, this, action, origin, contentBlob));
+};
 
-  var executeAction = goog.partial(
-      this.executeAction_, action, formText, origin);
-  this.getHandler().listen(
-      this.getElementByClass(constants.CssClass.ACTION),
-      goog.events.EventType.CLICK,
-      executeAction);
 
-  var backButton = this.getElementByClass(constants.CssClass.BACK);
-  if (backButton) {
-    this.getHandler().listen(
-        backButton,
-        goog.events.EventType.CLICK,
-        goog.bind(
-            this.processSelectedContent_,
-            this,
-            contentBlob,
-            ext.constants.Actions.USER_SPECIFIED));
+/**
+ * @param {constants.Actions} action
+ * @param {string} origin
+ * @param {messages.BridgeMessageRequest} contentBlob
+ * @param {Event} event
+ * @private
+ */
+ui.Prompt.prototype.buttonClick_ = function(
+    action, origin, contentBlob, event) {
+  var elem = goog.dom.getElement(constants.ElementId.BODY);
+  var target = event.target;
+  if (target instanceof Element) {
+    if (goog.dom.classlist.contains(target, constants.CssClass.CANCEL)) {
+      this.close();
+    } else if (
+      goog.dom.classlist.contains(target, constants.CssClass.ACTION)) {
+      this.executeAction_(action, elem, origin);
+    } else if (
+      goog.dom.classlist.contains(target, constants.CssClass.BACK)) {
+      this.processSelectedContent_(
+          contentBlob, ext.constants.Actions.USER_SPECIFIED);
+    }
   }
 };
 
@@ -713,12 +719,13 @@ ui.Prompt.prototype.selectAction_ = function(contentBlob, clickEvt) {
  * Executes the PGP action and displays the result to the user.
  * @param {constants.Actions} action The PGP action that the user has
  *     requested.
- * @param {HTMLTextAreaElement} textArea The text area where the result of the
+ * @param {Element} elem The element with the textarea where the result of the
  *     action will be displayed.
  * @param {string} origin The web origin for which the PGP action is performed.
  * @private
  */
-ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
+ui.Prompt.prototype.executeAction_ = function(action, elem, origin) {
+  var textArea = elem.querySelector('textarea');
   this.clearFailure_();
   switch (action) {
     case ext.constants.Actions.ENCRYPT_SIGN:
