@@ -20,6 +20,7 @@ goog.provide('e2e.ext.ui.dialogs.RestoreKey');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.constants.CssClass');
+goog.require('e2e.ext.messages.ApiRequest');
 goog.require('e2e.ext.ui.dialogs.Overlay');
 goog.require('e2e.ext.ui.templates.dialogs.backupkey.RestoreKey');
 goog.require('goog.ui.Dialog');
@@ -28,6 +29,7 @@ goog.require('soy');
 goog.scope(function() {
 var constants = e2e.ext.constants;
 var dialogs = e2e.ext.ui.dialogs;
+var messages = e2e.ext.messages;
 var templates = e2e.ext.ui.templates.dialogs.backupkey;
 
 
@@ -100,19 +102,24 @@ dialogs.RestoreKey.prototype.getEmailInput_ = function() {
 dialogs.RestoreKey.prototype.executeRestore_ = function() {
   /* TODO(user): Remove email when we can use keyserver for lookups */
   var email = this.getEmailInput_();
-  new e2e.ext.actions.Executor().execute({
-    action: constants.Actions.RESTORE_KEYRING_DATA,
-    content: JSON.stringify({
-      data: this.getInputValue_(),
-      email: email
-    })
-  }, this, goog.bind(function() {
-    this.getContentElement().querySelector('span').textContent = '\u00a0';
-    this.callback_.apply(this, arguments);
-    this.setVisible(false);
-  }, this), goog.bind(function(err) {
-    this.getContentElement().querySelector('span').textContent = err.message;
-  }, this));
+  new e2e.ext.actions.Executor().execute(
+      /** @type {!messages.ApiRequest} */ ({
+        action: constants.Actions.RESTORE_KEYRING_DATA,
+        content: {
+          data: this.getInputValue_(),
+          email: email
+        }
+      }),
+      this,
+      goog.bind(function() {
+        this.getContentElement().querySelector('span').textContent = '\u00a0';
+        this.callback_.apply(this, arguments);
+        this.setVisible(false);
+      }, this),
+      goog.bind(function(err) {
+        this.getContentElement().
+            querySelector('span').textContent = err.message;
+      }, this));
   return false;
 };
 

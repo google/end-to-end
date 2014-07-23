@@ -20,6 +20,7 @@ goog.provide('e2e.ext.ui.dialogs.BackupKey');
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants.Actions');
+goog.require('e2e.ext.messages.ApiRequest');
 goog.require('e2e.ext.ui.dialogs.Overlay');
 goog.require('e2e.ext.ui.templates.dialogs.backupkey');
 goog.require('goog.array');
@@ -28,6 +29,7 @@ goog.require('goog.crypt.base64');
 goog.scope(function() {
 var constants = e2e.ext.constants;
 var dialogs = e2e.ext.ui.dialogs;
+var messages = e2e.ext.messages;
 var templates = e2e.ext.ui.templates.dialogs.backupkey;
 
 
@@ -71,10 +73,9 @@ dialogs.BackupKey.prototype.decorateInternal = function(elem) {
  */
 dialogs.BackupKey.prototype.getBackupCode_ = function() {
   var result = new e2e.async.Result();
-  new e2e.ext.actions.Executor().execute({
-    action: constants.Actions.GET_KEYRING_BACKUP_DATA,
-    content: ''
-  }, this, function(data) {
+  new e2e.ext.actions.Executor().execute(/** @type {!messages.ApiRequest} */ ({
+    action: constants.Actions.GET_KEYRING_BACKUP_DATA
+  }), this, /** @param {e2e.openpgp.KeyringBackupInfo} data */ function(data) {
     if (data.count % 2) {
       throw new e2e.error.InvalidArgumentsError('Odd number of keys');
     }

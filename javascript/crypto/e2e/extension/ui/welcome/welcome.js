@@ -23,6 +23,7 @@ goog.require('e2e.ext.constants');
 goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
+goog.require('e2e.ext.messages.ApiRequest');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.panels.GenerateKey');
@@ -42,6 +43,7 @@ goog.scope(function() {
 var ui = e2e.ext.ui;
 var constants = e2e.ext.constants;
 var dialogs = e2e.ext.ui.dialogs;
+var messages = e2e.ext.messages;
 var preferences = ui.preferences;
 var templates = ui.templates.welcome;
 var utils = e2e.ext.utils;
@@ -128,10 +130,10 @@ ui.Welcome.prototype.decorateInternal = function(elem) {
   var styles = elem.querySelector('link');
   styles.href = chrome.extension.getURL('welcome_styles.css');
 
-  this.actionExecutor_.execute({
+  this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
     action: constants.Actions.LIST_KEYS,
     content: 'private'
-  }, this, goog.bind(function(keys) {
+  }), this, goog.bind(function(keys) {
     if (!goog.object.isEmpty(keys)) {
       this.hideKeyringSetup_();
     } else {
@@ -222,11 +224,11 @@ ui.Welcome.prototype.generateKey_ =
  */
 ui.Welcome.prototype.importKeyring_ = function(file) {
   utils.readFile(file, goog.bind(function(contents) {
-    this.actionExecutor_.execute({
+    this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
       action: constants.Actions.IMPORT_KEY,
       content: contents,
       passphraseCallback: goog.bind(this.renderPassphraseCallback_, this)
-    }, this, goog.bind(function(res) {
+    }), this, goog.bind(function(res) {
       var dialog = new dialogs.Generic(
           chrome.i18n.getMessage('welcomeKeyImport'),
           this.hideKeyringSetup_,

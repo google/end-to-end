@@ -30,7 +30,7 @@ var actions = e2e.ext.actions;
 /**
  * Constructor for the action.
  * @constructor
- * @implements {actions.Action}
+ * @implements {actions.Action.<{data: string, email: string}, string>}
  */
 actions.RestoreKeyringData = function() {};
 
@@ -39,10 +39,7 @@ actions.RestoreKeyringData = function() {};
 /* TODO(user): Remove email when we can use keyserver for lookups. */
 actions.RestoreKeyringData.prototype.execute =
     function(ctx, request, requestor, callback, errorCallback) {
-  /* TODO(user): Template the request and callback. */
-  var content = /** @type {{data: string, email: string}} */
-      (JSON.parse(request.content));
-  var data = goog.crypt.base64.decodeStringToByteArray(content.data);
+  var data = goog.crypt.base64.decodeStringToByteArray(request.content.data);
 
   if (data[0] & 0x80) {
     errorCallback(new e2e.error.InvalidArgumentsError('Invalid version bit'));
@@ -58,9 +55,9 @@ actions.RestoreKeyringData.prototype.execute =
   ctx.restoreKeyring({
     seed: data.slice(1),
     count: (data[0] & 0x7F) * 2 /* x2 since we store # of key PAIRS */
-  }, content.email);
+  }, request.content.email);
 
-  callback(content.email);
+  callback(request.content.email);
 };
 
 });

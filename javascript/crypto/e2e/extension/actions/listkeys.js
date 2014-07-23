@@ -30,7 +30,7 @@ var utils = e2e.ext.utils;
 /**
  * Constructor for the action.
  * @constructor
- * @implements {actions.Action}
+ * @implements {actions.Action.<string, !e2e.openpgp.KeyRingMap>}
  */
 actions.ListKeys = function() {};
 

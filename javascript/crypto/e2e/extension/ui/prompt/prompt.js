@@ -27,6 +27,7 @@ goog.require('e2e.ext.constants');
 goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
+goog.require('e2e.ext.messages.ApiRequest');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.draftmanager');
@@ -351,10 +352,10 @@ ui.Prompt.prototype.renderEncrypt_ =
   var intendedRecipients = [];
 
   // Pre-populate the list of recipients during an encrypt/sign action.
-  this.actionExecutor_.execute({
+  this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
     action: constants.Actions.LIST_KEYS,
     content: 'public'
-  }, this, goog.bind(function(searchResult) {
+  }), this, goog.bind(function(searchResult) {
     var allAvailableRecipients = goog.object.getKeys(searchResult);
     var recipientsEmailMap = this.getRecipientsEmailMap_(
         allAvailableRecipients);
@@ -365,10 +366,10 @@ ui.Prompt.prototype.renderEncrypt_ =
       }
     });
 
-    this.actionExecutor_.execute({
+    this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
       action: constants.Actions.LIST_KEYS,
       content: 'private'
-    }, this, goog.bind(function(privateKeyResult) {
+    }), this, goog.bind(function(privateKeyResult) {
       var availableSigningKeys = goog.object.getKeys(privateKeyResult);
       var signInsertLabel = /^https:\/\/mail\.google\.com$/.test(origin) ?
           chrome.i18n.getMessage('promptEncryptSignInsertIntoGmailLabel') :
@@ -829,11 +830,11 @@ ui.Prompt.prototype.executeAction_ = function(action, elem, origin) {
       });
       break;
     case ext.constants.Actions.IMPORT_KEY:
-      this.actionExecutor_.execute({
+      this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
         action: constants.Actions.IMPORT_KEY,
         content: textArea.value,
         passphraseCallback: goog.bind(this.renderPassphraseCallback_, this)
-      }, this, goog.bind(function(res) {
+      }), this, goog.bind(function(res) {
         if (res.length > 0) {
           // Key import successful for at least one UID.
           utils.showNotification(

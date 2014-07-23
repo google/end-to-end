@@ -27,7 +27,7 @@ var actions = e2e.ext.actions;
 /**
  * Constructor for the action.
  * @constructor
- * @implements {actions.Action}
+ * @implements {actions.Action.<undefined, e2e.openpgp.KeyringBackupInfo>}
  */
 actions.GetKeyringBackupData = function() {};
 

@@ -51,7 +51,7 @@ actions.Executor = function(opt_errorCallback) {
 
 /**
  * Executes an action of the specified type using the provided request.
- * @param {messages.ApiRequest} request The input to the action.
+ * @param {!messages.ApiRequest} request The input to the action.
  * @param {!goog.ui.Component} requestor The UI component through which the
  *     action was invoked.
  * @param {function(...)} opt_callback The callback to invoke once the action

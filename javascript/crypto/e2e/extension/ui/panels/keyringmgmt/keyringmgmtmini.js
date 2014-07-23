@@ -39,6 +39,7 @@ goog.scope(function() {
 var constants = e2e.ext.constants;
 var panels = e2e.ext.ui.panels;
 var dialogs = e2e.ext.ui.dialogs;
+var messages = e2e.ext.messages;
 var templates = e2e.ext.ui.templates.panels.keyringmgmt;
 
 
@@ -151,10 +152,10 @@ panels.KeyringMgmtMini.prototype.decorateInternal = function(elem) {
         constants.CssClass.HIDDEN);
   }
 
-  this.actionExecutor_.execute({
+  this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
     action: constants.Actions.LIST_KEYS,
     content: 'public'
-  }, this, goog.bind(function(keys) {
+  }), this, goog.bind(function(keys) {
     this.refreshOptions(!goog.object.isEmpty(keys));
   }, this));
 

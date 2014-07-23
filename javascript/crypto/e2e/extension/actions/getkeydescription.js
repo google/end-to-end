@@ -34,7 +34,7 @@ var utils = e2e.ext.utils;
 /**
  * Constructor for the action.
  * @constructor
- * @implements {actions.Action}
+ * @implements {actions.Action.<string, (string|undefined)>}
  */
 actions.GetKeyDescription = function() {};
 

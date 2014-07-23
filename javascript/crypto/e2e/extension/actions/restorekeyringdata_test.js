@@ -62,10 +62,10 @@ function testRestoreData() {
 
   new e2e.ext.actions.RestoreKeyringData().execute(ctx, {
     action: constants.Actions.RESTORE_KEYRING_DATA,
-    content: JSON.stringify({
+    content: {
       data: goog.crypt.base64.encodeByteArray([3, 1, 2, 3, 4, 5]),
       email: 'Ryan Chan <rcc@google.com>'
-    })
+    }
   }, ui, goog.partial(assertEquals, 'Ryan Chan <rcc@google.com>'));
 }
 
@@ -73,10 +73,10 @@ function testRestoreData() {
 function testInvalidVersion() {
   new e2e.ext.actions.RestoreKeyringData().execute({}, {
     action: constants.Actions.RESTORE_KEYRING_DATA,
-    content: JSON.stringify({
+    content: {
       data: goog.crypt.base64.encodeByteArray([0x80 | 3, 1, 2, 3, 4, 5]),
       email: 'Ryan Chan <rcc@google.com>'
-    })
+    }
   }, ui, function() {
     assert('Invalid version bit not detected', false);
   }, function(err) {
@@ -89,15 +89,14 @@ function testInvalidVersion() {
 function testInvalidRestoreSize() {
   new e2e.ext.actions.RestoreKeyringData().execute({}, {
     action: constants.Actions.RESTORE_KEYRING_DATA,
-    content: JSON.stringify({
+    content: {
       data: goog.crypt.base64.encodeByteArray([3, 1, 2, 3, 4, 5, 6]),
       email: 'Ryan Chan <rcc@google.com>'
-    })
+    }
   }, ui, function() {
     assert('Invalid restore size not detected', false);
   }, function(err) {
     assertTrue(err instanceof e2e.error.InvalidArgumentsError);
     assertEquals(err.message, 'Backup data has invalid length');
   });
-
 }

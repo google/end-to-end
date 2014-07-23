@@ -65,19 +65,29 @@ messages.BridgeMessageResponse;
  */
 messages.GetSelectionRequest;
 
+
+
 /**
  * Defines a request message to the context API.
- * @typedef {{
- *   content: string,
- *   recipients: (!Array.<string>|undefined),
- *   encryptPassphrases: (!Array.<string>|undefined),
- *   decryptPassphrase: (string|undefined),
- *   passphraseCallback: (!function(string, function(string))|undefined),
- *   currentUser: (string|undefined),
- *   action: e2e.ext.constants.Actions
- * }}
+ * @interface
+ * @template T
  */
-messages.ApiRequest;
+messages.ApiRequest = function() {};
+/** @type {T} */
+messages.ApiRequest.prototype.content;
+/** @type {!Array.<string>|undefined} */
+messages.ApiRequest.prototype.recipients;
+/** @type {!Array.<string>|undefined} */
+messages.ApiRequest.prototype.encryptPassphrases;
+/** @type {string|undefined} */
+messages.ApiRequest.prototype.decryptPassphrase;
+/** @type {!function(string, function(string))|undefined} */
+messages.ApiRequest.prototype.passphraseCallback;
+/** @type {string|undefined} */
+messages.ApiRequest.prototype.currentUser;
+/** @type {e2e.ext.constants.Actions} */
+messages.ApiRequest.prototype.action;
+
 
 /**
  * Defines the response message from the context API.

@@ -28,6 +28,7 @@ var actions = e2e.ext.actions;
 /**
  * Interface that defines the common characteristics of an End-to-End action.
  * @interface
+ * @template REQUEST_CONTENT, RESPONSE_CONTENT
  */
 actions.Action = function() {};
 
@@ -36,12 +37,12 @@ actions.Action = function() {};
  * Executes the action.
  * @param {!e2e.openpgp.ContextImpl} ctx A PGP context that can be used to
  *     complete the action.
- * @param {e2e.ext.messages.ApiRequest} request The content with which the
- *     action is to be executed.
+ * @param {!e2e.ext.messages.ApiRequest.<REQUEST_CONTENT>} request The content
+ *     with which the action is to be executed.
  * @param {!goog.ui.Component} requestor The UI component through which the
  *     action was invoked.
- * @param {!function(...)} callback A callback where successful results will be
- *     passed to.
+ * @param {!function(RESPONSE_CONTENT)} callback A callback where successful
+ *     results will be passed to.
  * @param {!function(Error)} errorCallback A callback where errors will be
  *     passed to.
  */

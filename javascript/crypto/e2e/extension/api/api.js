@@ -132,7 +132,7 @@ api.Api.prototype.openPort_ = function(port) {
  * @private
  */
 api.Api.prototype.executeAction_ = function(callback, req) {
-  var incoming = /** @type {!messages.ApiRequest} */ (req);
+  var incoming = /** @type {!messages.ApiRequest.<string>} */ (req);
   var outgoing = {
     completedAction: incoming.action
   };
