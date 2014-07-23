@@ -187,6 +187,7 @@ e2e.openpgp.packet.Key.prototype.can = function(use) {
  */
 e2e.openpgp.packet.Key.prototype.toKeyPacketInfo = function() {
   return /** @type {e2e.openpgp.KeyPacketInfo} */ ({
+    /** @suppress {missingRequire} Only used for an instanceof check. */
     secret: this instanceof e2e.openpgp.packet.SecretKey,
     fingerprint: this.fingerprint,
     fingerprintHex: this.getFingerprintHex_(),

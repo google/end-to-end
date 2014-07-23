@@ -291,6 +291,8 @@ e2e.openpgp.block.EncryptedMessage.prototype.decryptMessage_ = function(
   this.encryptedData.decrypt(
       eskPacket.symmetricAlgorithm, eskPacket.getSessionKey());
   var decryptedData = this.encryptedData.data;
+  // TODO(user): Can this be refactored to avoid the circular dependency?
+  /** @suppress {missingRequire} We assume the factory is already present. */
   var decryptedBlocks = e2e.openpgp.block.factory.parseByteArrayMulti(
       decryptedData, this.getCharset());
   if (decryptedBlocks.length == 1) {

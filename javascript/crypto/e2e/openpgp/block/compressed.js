@@ -55,6 +55,8 @@ e2e.openpgp.block.Compressed.prototype.serializeMessage = function() {
 e2e.openpgp.block.Compressed.prototype.getBlock = function() {
   this.compressedPacket_.decompress();
   var data = this.compressedPacket_.data;
+  // TODO(user): Can this be refactored to avoid the circular dependency?
+  /** @suppress {missingRequire} We assume the factory is already present. */
   var decryptedBlock = e2e.openpgp.block.factory.parseByteArrayMulti(data);
   if (decryptedBlock.length != 1) {
     throw new e2e.openpgp.error.ParseError('Invalid compressed block.');
