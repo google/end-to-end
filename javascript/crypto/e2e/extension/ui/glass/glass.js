@@ -18,18 +18,14 @@
 
 goog.provide('e2e.ext.ui.Glass');
 
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.Actions');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.ext.messages.ApiRequest');
-goog.require('e2e.ext.ui.templates.glass');
-goog.require('e2e.openpgp.ContextImpl');
+goog.require('e2e.ext.ui.templates.glass.ContentFrame');
 goog.require('e2e.random');
-
-goog.require('goog.events.MouseWheelEvent');
 goog.require('goog.events.MouseWheelHandler');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
-
 goog.require('soy');
 
 goog.scope(function() {

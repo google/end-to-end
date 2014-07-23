@@ -17,15 +17,12 @@
 
 goog.provide('e2e.ext.ui.dialogs.RestoreKey');
 
-goog.require('e2e');
-goog.require('e2e.error.InvalidArgumentsError');
 goog.require('e2e.ext.actions.Executor');
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.Actions');
+goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.ui.dialogs.Overlay');
-goog.require('e2e.ext.ui.templates.dialogs.backupkey');
-goog.require('e2e.ext.utils');
-goog.require('e2e.openpgp.KeyRing');
-goog.require('goog.crypt.base64');
+goog.require('e2e.ext.ui.templates.dialogs.backupkey.RestoreKey');
+goog.require('goog.ui.Dialog');
 goog.require('soy');
 
 goog.scope(function() {

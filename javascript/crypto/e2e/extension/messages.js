@@ -15,10 +15,12 @@
  * @fileoverview Defines the message formats used throughout the extension.
  */
 
-goog.provide('e2e.ext.messages');
 goog.provide('e2e.ext.messages.ApiRequest');
+goog.provide('e2e.ext.messages.ApiResponse');
+goog.provide('e2e.ext.messages.BridgeMessageRequest');
+goog.provide('e2e.ext.messages.BridgeMessageResponse');
+goog.provide('e2e.ext.messages.GetSelectionRequest');
 
-goog.require('e2e.ext.constants');
 
 goog.scope(function() {
 var messages = e2e.ext.messages;

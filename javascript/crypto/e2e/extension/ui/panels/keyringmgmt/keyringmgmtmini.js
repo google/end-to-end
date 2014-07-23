@@ -18,20 +18,21 @@
 goog.provide('e2e.ext.ui.panels.KeyringMgmtMini');
 
 goog.require('e2e.ext.actions.Executor');
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.Actions');
+goog.require('e2e.ext.constants.CssClass');
+goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.dialogs.BackupKey');
 goog.require('e2e.ext.ui.dialogs.RestoreKey');
-goog.require('e2e.ext.ui.templates.panels.keyringmgmt');
-goog.require('e2e.ext.utils');
+goog.require('e2e.ext.ui.templates.panels.keyringmgmt.ManageKeyring');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.object');
+goog.require('goog.style');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.KeyboardShortcutHandler');
-goog.require('goog.ui.KeyboardShortcutHandler.EventType');
 goog.require('soy');
 
 goog.scope(function() {

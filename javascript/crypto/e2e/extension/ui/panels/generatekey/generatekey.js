@@ -17,14 +17,13 @@
 
 goog.provide('e2e.ext.ui.panels.GenerateKey');
 
-goog.require('e2e.ext.constants');
-goog.require('e2e.ext.ui.templates.panels.generatekey');
+goog.require('e2e.ext.constants.CssClass');
+goog.require('e2e.ext.ui.templates.panels.generatekey.GenerateKeyForm');
 goog.require('goog.array');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.KeyboardShortcutHandler');
-goog.require('goog.ui.KeyboardShortcutHandler.EventType');
 goog.require('soy');
 
 goog.scope(function() {

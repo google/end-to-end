@@ -23,8 +23,6 @@ goog.require('e2e.ecc.DomainParam');
 goog.require('e2e.ecc.Ecdsa');
 goog.require('e2e.ecc.Protocol');
 goog.require('e2e.testing.Util');
-goog.require('goog.array');
-goog.require('goog.dom');
 goog.setTestOnly('eccTester');
 
 

@@ -21,7 +21,7 @@
 goog.provide('e2e.BigNumTester');
 
 goog.require('e2e.BigNum');
-goog.require('e2e.FastModulus');
+goog.require('e2e.BigNumModulus');
 goog.require('e2e.bigNumTestData');
 goog.require('e2e.ecc.DomainParam');
 goog.require('e2e.ecc.PrimeCurve');

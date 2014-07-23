@@ -18,18 +18,19 @@
 goog.provide('e2e.ext.ChipHolder');
 
 goog.require('e2e.ext.Chip');
-goog.require('e2e.ext.constants');
-goog.require('e2e.ext.ui.templates.prompt');
+goog.require('e2e.ext.constants.CssClass');
+goog.require('e2e.ext.ui.templates.prompt.RenderChipHolder');
+goog.require('goog.array');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.events.KeyHandler');
-goog.require('goog.events.KeyHandler.EventType');
 goog.require('goog.string');
 goog.require('goog.structs.Map');
+goog.require('goog.style');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.ac');
-goog.require('goog.ui.ac.AutoComplete.EventType');
+goog.require('goog.ui.ac.AutoComplete');
 goog.require('soy');
 
 goog.scope(function() {

@@ -18,8 +18,7 @@
 goog.provide('e2e.ext.actions.ListKeys');
 
 goog.require('e2e.ext.actions.Action');
-goog.require('e2e.ext.utils');
-goog.require('e2e.openpgp.ContextImpl');
+goog.require('e2e.ext.utils.Error');
 goog.require('goog.object');
 
 goog.scope(function() {

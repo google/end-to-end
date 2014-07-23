@@ -17,10 +17,11 @@
 
 goog.provide('e2e.ext.ui.panels.PreferencesPanel');
 
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.StorageKey');
 goog.require('e2e.ext.ui.panels.PreferenceEntry');
 goog.require('e2e.ext.ui.preferences');
-goog.require('e2e.ext.ui.templates.panels.preferences');
+goog.require('e2e.ext.ui.templates.panels.preferences.ListPreferences');
+goog.require('goog.array');
 goog.require('goog.ui.Component');
 goog.require('soy');
 

@@ -17,15 +17,17 @@
 
 goog.provide('e2e.ext.ui.panels.KeyringMgmtFull');
 
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.CssClass');
+goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
-goog.require('e2e.ext.ui.templates.panels.keyringmgmt');
+goog.require('e2e.ext.ui.templates.panels.keyringmgmt.KeyEntry');
+goog.require('e2e.ext.ui.templates.panels.keyringmgmt.ListKeys');
+goog.require('e2e.ext.ui.templates.panels.keyringmgmt.NoneEntry');
 goog.require('goog.array');
 goog.require('goog.crypt');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
-goog.require('goog.events.Event');
 goog.require('goog.events.EventType');
 goog.require('goog.structs.Map');
 goog.require('goog.ui.Component');

@@ -36,6 +36,7 @@ goog.require('e2e.openpgp.packet.SymmetricKey');
 goog.require('e2e.openpgp.packet.SymmetricallyEncryptedIntegrity');
 goog.require('e2e.random');
 goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.async.DeferredList');
 
 

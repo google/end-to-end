@@ -17,16 +17,13 @@
 
 goog.provide('e2e.ext.actions.Executor');
 
-goog.require('e2e.ext.actions.Action');
 goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.actions.GetKeyringBackupData');
 goog.require('e2e.ext.actions.ImportKey');
 goog.require('e2e.ext.actions.ListKeys');
 goog.require('e2e.ext.actions.RestoreKeyringData');
-goog.require('e2e.ext.constants');
-goog.require('e2e.ext.messages');
-goog.require('e2e.ext.utils');
-goog.require('e2e.openpgp.ContextImpl');
+goog.require('e2e.ext.constants.Actions');
+goog.require('e2e.ext.utils.Error');
 
 goog.scope(function() {
 var actions = e2e.ext.actions;

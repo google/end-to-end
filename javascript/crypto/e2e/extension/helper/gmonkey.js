@@ -18,8 +18,6 @@
 goog.provide('e2e.ext.gmonkey');
 
 goog.require('goog.array');
-goog.require('goog.events');
-goog.require('goog.events.EventType');
 
 goog.scope(function() {
 var gmonkey = e2e.ext.gmonkey;

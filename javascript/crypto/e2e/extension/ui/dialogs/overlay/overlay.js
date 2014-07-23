@@ -17,10 +17,8 @@
 
 goog.provide('e2e.ext.ui.dialogs.Overlay');
 
-goog.require('e2e');
-goog.require('e2e.ext.constants');
+goog.require('goog.events.EventType');
 goog.require('goog.ui.Dialog');
-goog.require('soy');
 
 goog.scope(function() {
 var constants = e2e.ext.constants;

@@ -17,8 +17,8 @@
 
 goog.provide('e2e.ext.ui.panels.PreferenceEntry');
 
-goog.require('e2e.ext.constants');
-goog.require('e2e.ext.ui.templates.panels.preferences');
+goog.require('e2e.ext.ui.templates.panels.preferences.PreferenceEntry');
+goog.require('goog.events.EventType');
 goog.require('goog.ui.Component');
 goog.require('soy');
 

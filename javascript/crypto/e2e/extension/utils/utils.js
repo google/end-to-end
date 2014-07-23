@@ -16,6 +16,7 @@
  */
 
 goog.provide('e2e.ext.utils');
+goog.provide('e2e.ext.utils.Error');
 
 goog.scope(function() {
 var utils = e2e.ext.utils;

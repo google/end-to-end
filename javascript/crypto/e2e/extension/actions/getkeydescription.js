@@ -18,12 +18,10 @@
 goog.provide('e2e.ext.actions.GetKeyDescription');
 
 goog.require('e2e.ext.actions.Action');
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.dialogs.ImportConfirmation');
-goog.require('e2e.ext.utils');
-goog.require('e2e.openpgp.ContextImpl');
+goog.require('e2e.ext.utils.Error');
 goog.require('goog.dom');
-goog.require('goog.ui.Component');
 
 goog.scope(function() {
 var actions = e2e.ext.actions;

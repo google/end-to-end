@@ -18,16 +18,17 @@
 
 goog.provide('e2e.ext.ui.dialogs.Generic');
 
-goog.require('e2e.ext.constants');
-goog.require('e2e.ext.ui.dialogs.InputType');
-goog.require('e2e.ext.ui.templates.dialogs.generic');
+goog.require('e2e.ext.constants.CssClass');
+goog.require('e2e.ext.constants.ElementId');
+goog.require('e2e.ext.ui.templates.dialogs.generic.Dialog');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
+goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
+goog.require('goog.style');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.KeyboardShortcutHandler');
-goog.require('goog.ui.KeyboardShortcutHandler.EventType');
 goog.require('soy');
 
 

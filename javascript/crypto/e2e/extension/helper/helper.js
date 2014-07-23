@@ -18,20 +18,14 @@
 
 goog.provide('e2e.ext.Helper');
 
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.gmonkey');
-goog.require('e2e.ext.messages');
 goog.require('e2e.ext.ui.GlassWrapper');
 goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.Disposable');
-goog.require('goog.asserts');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
-goog.require('goog.events.Key');
-goog.require('goog.string');
-goog.require('goog.string.format');
-goog.require('goog.structs.Map');
 
 goog.scope(function() {
 var ext = e2e.ext;

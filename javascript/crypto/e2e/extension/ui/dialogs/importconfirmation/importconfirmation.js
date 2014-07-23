@@ -17,13 +17,11 @@
 
 goog.provide('e2e.ext.ui.dialogs.ImportConfirmation');
 
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
-goog.require('e2e.ext.ui.templates.dialogs.importconfirmation');
-
+goog.require('e2e.ext.ui.templates.dialogs.importconfirmation.ImportKeyConfirm');
 goog.require('goog.array');
-goog.require('goog.events.Event');
 goog.require('goog.events.EventType');
 goog.require('goog.string.format');
 

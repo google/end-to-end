@@ -24,7 +24,6 @@ goog.provide('e2e.DwordArray');
 
 goog.require('e2e.async.Result');
 goog.require('goog.array');
-goog.require('goog.asserts');
 goog.require('goog.crypt');
 
 

@@ -18,8 +18,8 @@
 
 goog.provide('e2e.ext.Chip');
 
-goog.require('e2e.ext.constants');
-goog.require('e2e.ext.ui.templates.prompt');
+goog.require('e2e.ext.constants.CssClass');
+goog.require('e2e.ext.ui.templates.prompt.RenderChip');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');

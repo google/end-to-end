@@ -20,13 +20,11 @@
 
 goog.provide('e2e.ext.api.Api');
 
+goog.require('e2e');
 goog.require('e2e.ext.api.RequestThrottle');
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.Actions');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.ext.messages.ApiRequest');
-goog.require('e2e.openpgp.Context');
-goog.require('e2e.openpgp.KeyRing');
-goog.require('e2e.openpgp.packet.Key');
 goog.require('goog.Disposable');
 goog.require('goog.array');
 goog.require('goog.asserts');

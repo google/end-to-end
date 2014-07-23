@@ -17,7 +17,7 @@
 
 goog.provide('e2e.ext.ui.preferences');
 
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.StorageKey');
 
 goog.scope(function() {
 var constants = e2e.ext.constants;
