@@ -45,8 +45,8 @@ goog.require('goog.dom.classlist');
 goog.require('goog.events.Event');
 goog.require('goog.events.EventType');
 goog.require('goog.format');
+goog.require('goog.object');
 goog.require('goog.string.format');
-goog.require('goog.structs.Map');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.ac.ArrayMatcher');
@@ -212,25 +212,10 @@ ui.Prompt.prototype.processSelectedContent_ =
 
       break;
     case constants.Actions.DECRYPT_VERIFY:
-      var availablePrivateKeys = [];
-      this.pgpLauncher_.getContext().getAllKeys(true)
-      .addCallback(goog.bind(function(privateKeyResult) {
-            if (privateKeyResult) {
-              privateKeyResult = new goog.structs.Map(privateKeyResult);
-              availablePrivateKeys = privateKeyResult.getKeys();
-            }
-            if (availablePrivateKeys.length == 0) {
-              this.displayFailure_(
-                  new utils.Error(
-                      'No available private keys.',
-                      'promptNoPrivateKeysFound'));
-            }
-            this.renderGenericForm_(
-                elem,
-                chrome.i18n.getMessage('promptDecryptVerifyActionLabel'),
-                chrome.i18n.getMessage('promptDecryptVerifyPlaceholder'));
-          }, this)
-      );
+      this.renderGenericForm_(
+          elem,
+          chrome.i18n.getMessage('promptDecryptVerifyActionLabel'),
+          chrome.i18n.getMessage('promptDecryptVerifyPlaceholder'));
       break;
     case constants.Actions.IMPORT_KEY:
       this.renderGenericForm_(
@@ -338,136 +323,115 @@ ui.Prompt.prototype.renderMenu_ = function(elem, contentBlob) {
 ui.Prompt.prototype.renderEncrypt_ =
     function(elem, recipients, canInject, origin) {
   var intendedRecipients = [];
-  var allAvailableRecipients = [];
 
   // Pre-populate the list of recipients during an encrypt/sign action.
-  this.pgpLauncher_.getContext().getAllKeys().addCallback(
-      goog.bind(function(searchResult) {
-        searchResult = new goog.structs.Map(searchResult);
-        allAvailableRecipients = searchResult.getKeys();
+  this.actionExecutor_.execute({
+    action: constants.Actions.LIST_KEYS,
+    content: 'public'
+  }, this, goog.bind(function(searchResult) {
+    var allAvailableRecipients = goog.object.getKeys(searchResult);
 
-        goog.array.forEach(recipients, function(recipient) {
-          intendedRecipients = goog.array.concat(intendedRecipients,
-              goog.ui.ac.ArrayMatcher.getMatchesForRows(
-                  recipient, 10, allAvailableRecipients));
-        });
+    goog.array.forEach(recipients, function(recipient) {
+      intendedRecipients = goog.array.concat(intendedRecipients,
+          goog.ui.ac.ArrayMatcher.getMatchesForRows(
+              recipient, 10, allAvailableRecipients));
+    });
 
-        var availableSigningKeys = [];
-        this.pgpLauncher_.getContext().getAllKeys(true)
-        .addCallback(
-            goog.bind(function(privateKeyResult) {
-              if (privateKeyResult) {
-                privateKeyResult = new goog.structs.Map(privateKeyResult);
-                availableSigningKeys = privateKeyResult.getKeys();
+    this.actionExecutor_.execute({
+      action: constants.Actions.LIST_KEYS,
+      content: 'private'
+    }, this, goog.bind(function(privateKeyResult) {
+      var availableSigningKeys = goog.object.getKeys(privateKeyResult);
+      var signInsertLabel = /^https:\/\/mail\.google\.com$/.test(origin) ?
+          chrome.i18n.getMessage('promptEncryptSignInsertIntoGmailLabel') :
+          chrome.i18n.getMessage('promptEncryptSignInsertLabel');
+
+      soy.renderElement(elem, templates.RenderEncrypt, {
+        insertCheckboxEnabled: canInject,
+        signerCheckboxTitle: chrome.i18n.getMessage('promptSignMessageAs'),
+        fromLabel: chrome.i18n.getMessage('promptFromLabel'),
+        noPrivateKeysFound: chrome.i18n.getMessage('promptNoPrivateKeysFound'),
+        availableSigningKeys: availableSigningKeys,
+        passphraseEncryptionLinkTitle: chrome.i18n.getMessage(
+            'promptEncryptionPassphraseLink'),
+        actionButtonTitle: chrome.i18n.getMessage(
+            'promptEncryptSignActionLabel'),
+        cancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction'),
+        optionsButtonTitle: chrome.i18n.getMessage('actionConfigureExtension'),
+        backButtonTitle: chrome.i18n.getMessage('actionBackToMenu'),
+        saveDraftButtonTitle: chrome.i18n.getMessage(
+            'promptEncryptSignSaveDraftLabel'),
+        insertButtonTitle: signInsertLabel
+      });
+
+      var textArea = elem.querySelector('textarea');
+      if (drafts.hasDraft(origin)) {
+        var popupElem =
+            goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
+        var dialog = new dialogs.Generic(
+            chrome.i18n.getMessage('promptEncryptSignRestoreDraftMsg'),
+            goog.bind(function(dialogResult) {
+              if (goog.isDef(dialogResult)) {
+                // A passed object signals that the user has clicked the
+                // 'OK' button.
+                var draft = drafts.getDraft(origin);
+                this.pgpLauncher_.getContext().verifyDecrypt(
+                    goog.bind(this.renderPassphraseCallback_, this), draft).
+                    addCallback(goog.bind(function(res) {
+                      return e2e.byteArrayToStringAsync(res.decrypt.data,
+                          res.decrypt.options.charset).addCallback(
+                              function(dec) {
+                                textArea.value = dec;
+                              });
+                    }, this)).
+                    addErrback(this.displayFailure_, this);
+              } else {
+                drafts.clearDraft(origin);
               }
 
-              var signInsertLabel =
-                  /^https:\/\/mail\.google\.com$/.test(origin) ?
-                  chrome.i18n.getMessage(
-                      'promptEncryptSignInsertIntoGmailLabel') :
-                  chrome.i18n.getMessage('promptEncryptSignInsertLabel');
+              goog.dispose(dialog);
+            }, this),
+            dialogs.InputType.NONE,
+            '',
+            chrome.i18n.getMessage('promptEncryptSignRestoreDraftLabel'),
+            chrome.i18n.getMessage('promptEncryptSignDiscardDraftLabel'));
+        this.addChild(dialog, false);
+        dialog.render(popupElem);
+      }
 
-              soy.renderElement(elem, templates.RenderEncrypt, {
-                insertCheckboxEnabled: canInject,
-                signerCheckboxTitle: chrome.i18n.getMessage(
-                    'promptSignMessageAs'),
-                fromLabel: chrome.i18n.getMessage('promptFromLabel'),
-                noPrivateKeysFound: chrome.i18n.getMessage(
-                    'promptNoPrivateKeysFound'),
-                availableSigningKeys: availableSigningKeys,
-                passphraseEncryptionLinkTitle: chrome.i18n.getMessage(
-                    'promptEncryptionPassphraseLink'),
-                actionButtonTitle: chrome.i18n.getMessage(
-                    'promptEncryptSignActionLabel'),
-                cancelButtonTitle: chrome.i18n.getMessage(
-                    'actionCancelPgpAction'),
-                optionsButtonTitle: chrome.i18n.getMessage(
-                    'actionConfigureExtension'),
-                backButtonTitle: chrome.i18n.getMessage('actionBackToMenu'),
-                saveDraftButtonTitle: chrome.i18n.getMessage(
-                    'promptEncryptSignSaveDraftLabel'),
-                insertButtonTitle: signInsertLabel
-              });
+      this.getHandler().listen(
+          goog.dom.getElement(constants.ElementId.PASSPHRASE_ENCRYPTION_LINK),
+          goog.events.EventType.CLICK, this.renderEncryptionPassphraseDialog_);
 
-              var textArea = elem.querySelector('textarea');
-              if (drafts.hasDraft(origin)) {
-                var popupElem =
-                    goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
-                var dialog = new dialogs.Generic(
-                    chrome.i18n.getMessage('promptEncryptSignRestoreDraftMsg'),
-                    goog.bind(function(dialogResult) {
-                      if (goog.isDef(dialogResult)) {
-                        // A passed object signals that the user has clicked the
-                        // 'OK' button.
-                        var draft = drafts.getDraft(origin);
-                        this.pgpLauncher_.getContext()
-                            .verifyDecrypt(
-                                goog.bind(this.renderPassphraseCallback_, this),
-                                draft)
-                            .addCallback(goog.bind(function(res) {
-                              return e2e.byteArrayToStringAsync(
-                                  res.decrypt.data,
-                                  res.decrypt.options.charset).addCallback(
-                                  function(dec) {
-                                    textArea.value = dec;
-                                  });
-                            }, this)).addErrback(this.displayFailure_, this);
-                      } else {
-                        drafts.clearDraft(origin);
-                      }
+      this.getHandler().listen(
+          this.getElementByClass(constants.CssClass.OPTIONS),
+          goog.events.EventType.CLICK,
+          goog.partial(this.processSelectedContent_,
+              null, constants.Actions.CONFIGURE_EXTENSION));
 
-                      goog.dispose(dialog);
-                    }, this),
-                    dialogs.InputType.NONE,
-                    '',
-                    chrome.i18n.getMessage(
-                        'promptEncryptSignRestoreDraftLabel'),
-                    chrome.i18n.getMessage(
-                        'promptEncryptSignDiscardDraftLabel'));
-                this.addChild(dialog, false);
-                dialog.render(popupElem);
-              }
+      if (canInject) {
+        this.getHandler().listen(
+            this.getElementByClass(constants.CssClass.SAVE),
+            goog.events.EventType.CLICK, goog.partial(this.saveDraft_, origin));
 
-              this.getHandler().listen(
-                  goog.dom.getElement(
-                      constants.ElementId.PASSPHRASE_ENCRYPTION_LINK),
-                  goog.events.EventType.CLICK,
-                  this.renderEncryptionPassphraseDialog_);
+        this.getHandler().listen(
+            this.getElementByClass(constants.CssClass.INSERT),
+            goog.events.EventType.CLICK,
+            goog.partial(this.insertMessageIntoPage_, origin));
+      }
 
-                this.getHandler().listen(
-                    this.getElementByClass(constants.CssClass.OPTIONS),
-                    goog.events.EventType.CLICK,
-                    goog.partial(
-                        this.processSelectedContent_,
-                        null,
-                        constants.Actions.CONFIGURE_EXTENSION));
+      this.chipHolder_ = new ext.ChipHolder(
+          intendedRecipients, allAvailableRecipients);
+      this.addChild(this.chipHolder_, false);
+      this.chipHolder_.decorate(
+          goog.dom.getElement(constants.ElementId.CHIP_HOLDER));
 
-              if (canInject) {
-                this.getHandler().listen(
-                    this.getElementByClass(constants.CssClass.SAVE),
-                    goog.events.EventType.CLICK,
-                    goog.partial(this.saveDraft_, origin));
-
-                this.getHandler().listen(
-                    this.getElementByClass(constants.CssClass.INSERT),
-                    goog.events.EventType.CLICK,
-                    goog.partial(this.insertMessageIntoPage_, origin));
-              }
-
-              this.chipHolder_ = new ext.ChipHolder(
-                  intendedRecipients, allAvailableRecipients);
-              this.addChild(this.chipHolder_, false);
-              this.chipHolder_.decorate(
-                  goog.dom.getElement(constants.ElementId.CHIP_HOLDER));
-
-              if (preferences.isAutoSaveEnabled()) {
-                this.getHandler().listenOnce(
-                    textArea,
-                    goog.events.EventType.KEYDOWN,
-                    goog.bind(this.autoSaveTimer_.start, this.autoSaveTimer_));
-              }
-            }, this));
-      }, this));
+      if (preferences.isAutoSaveEnabled()) {
+        this.getHandler().listenOnce(textArea, goog.events.EventType.KEYDOWN,
+            goog.bind(this.autoSaveTimer_.start, this.autoSaveTimer_));
+      }
+    }, this));
+  }, this));
 };
 
 

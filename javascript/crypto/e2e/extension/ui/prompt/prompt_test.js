@@ -56,7 +56,6 @@ function setUp() {
   });
   stubs.setPath('chrome.extension.getURL', function() {});
   stubs.setPath('chrome.notifications.create', function() {});
-  stubs.setPath('chrome.runtime.getBackgroundPage', function() {});
   stubs.setPath('chrome.runtime.onConnect.addListener', function() {});
   stubs.setPath('chrome.runtime.onConnect.removeListener', function() {});
   stubs.setPath('chrome.tabs.query', function() {});
@@ -71,6 +70,9 @@ function setUp() {
   //localStorage.clear();
   prompt.pgpLauncher_ = new e2e.ext.Launcher();
   prompt.pgpLauncher_.start();
+  stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
+    callback({launcher: prompt.pgpLauncher_});
+  });
 
   stubs.replace(e2e.ext.Launcher.prototype, 'hasPassphrase', function() {
     return true;
@@ -288,59 +290,67 @@ function testEncryptForSigner() {
   var plaintext = 'a secret message';
 
   populatePgpKeys();
-  prompt.pgpLauncher_.getContext().importKey(function() {}, PUBLIC_KEY_ASCII_2);
   asyncTestCase.waitForAsync('Waiting for keys to be populated.');
-  window.setTimeout(function() {
-    prompt.decorate(document.documentElement);
-    prompt.processSelectedContent_({
-      request: true,
-      selection: plaintext,
-      // Specify a recipient so it's not sign-only:
-      recipients: ['Drew Hintz <adhintz@google.com>']
-    }, constants.Actions.ENCRYPT_SIGN);
-    goog.dom.getElement(constants.ElementId.SIGN_MESSAGE_CHECK).checked = true;
+  prompt.pgpLauncher_.getContext().importKey(function() {}, PUBLIC_KEY_ASCII_2).
+      addCallback(function() {
+        prompt.decorate(document.documentElement);
+        prompt.processSelectedContent_({
+          request: true,
+          selection: plaintext,
+          // Specify a recipient so it's not sign-only:
+          recipients: ['Drew Hintz <adhintz@google.com>']
+        }, constants.Actions.ENCRYPT_SIGN);
+        asyncTestCase.waitForAsync('Waiting for UI to be rendered.');
+        window.setTimeout(function() {
+          assertEquals(1, goog.dom.getElement(
+              constants.ElementId.SIGNER_SELECT).childElementCount);
+          goog.dom.getElement(
+              constants.ElementId.SIGN_MESSAGE_CHECK).checked = true;
 
-    var protectBtn = document.querySelector('button.action');
-    protectBtn.click();
+          var protectBtn = document.querySelector('button.action');
+          protectBtn.click();
 
-    asyncTestCase.waitForAsync('Waiting for message to be encrypted.');
-    window.setTimeout(function() {
-      var encrypted = document.querySelector('textarea').value;
-      assertContains('-----BEGIN PGP MESSAGE-----', encrypted);
+          asyncTestCase.waitForAsync('Waiting for message to be encrypted.');
+          window.setTimeout(function() {
+            var encrypted = document.querySelector('textarea').value;
+            assertContains('-----BEGIN PGP MESSAGE-----', encrypted);
 
-      prompt.processSelectedContent_({
-        request: true,
-        selection: encrypted
-      }, constants.Actions.DECRYPT_VERIFY);
-      asyncTestCase.waitForAsync('Waiting for text to be decrypted.');
+            prompt.processSelectedContent_({
+              request: true,
+              selection: encrypted
+            }, constants.Actions.DECRYPT_VERIFY);
+            asyncTestCase.waitForAsync('Waiting for text to be decrypted.');
 
-      var notificationMsg = '';
-      stubs.replace(chrome.i18n, 'getMessage', function(a, b) {
-        return b;
+            var notificationMsg = '';
+            stubs.replace(chrome.i18n, 'getMessage', function(a, b) {
+              return b;
+            });
+            stubs.replace(
+                e2e.ext.Launcher.prototype,
+                'showNotification',
+                function(a, callback) {
+                  notificationMsg = a;
+                  callback();
+                });
+            var decryptBtn = document.querySelector('button.action');
+            decryptBtn.click();
+
+            window.setTimeout(function() {
+              // No signature verification error.
+              var errorDiv =
+                  document.getElementById(constants.ElementId.ERROR_DIV);
+              assertEquals('', errorDiv.textContent);
+              // User ID from signature in notification message.
+              assertContains(USER_ID, notificationMsg);
+              assertEquals('',
+                  goog.dom.getElement(
+                      constants.ElementId.ERROR_DIV).textContent);
+              assertEquals(plaintext, document.querySelector('textarea').value);
+              asyncTestCase.continueTesting();
+            }, 500);
+          }, 500);
+        }, 500);
       });
-      stubs.replace(
-          e2e.ext.Launcher.prototype,
-          'showNotification',
-          function(a, callback) {
-            notificationMsg = a;
-            callback();
-          });
-      var decryptBtn = document.querySelector('button.action');
-      decryptBtn.click();
-
-      window.setTimeout(function() {
-        asyncTestCase.continueTesting();
-        // No signature verification error.
-        var errorDiv = document.getElementById(constants.ElementId.ERROR_DIV);
-        assertEquals('', errorDiv.textContent);
-        // User ID from signature in notification message.
-        assertContains(USER_ID, notificationMsg);
-        assertEquals(
-            '', goog.dom.getElement(constants.ElementId.ERROR_DIV).textContent);
-        assertEquals(plaintext, document.querySelector('textarea').value);
-      }, 500);
-    }, 500);
-  }, 500);
 }
 
 function testEncryptForPassphrase() {
@@ -376,24 +386,21 @@ function testEncryptForPassphrase() {
         request: true,
         selection: encrypted
       }, constants.Actions.DECRYPT_VERIFY);
-      asyncTestCase.waitForAsync('Waiting for text to be decrypted.');
-      stubs.replace(
-        e2e.ext.ui.Prompt.prototype,
-        'renderPassphraseCallback_',
-        function(uid, callback) {
-          fail('Should not ask for passphrase on decryption.');
-      });
+      stubs.replace(e2e.ext.ui.Prompt.prototype,
+          'renderPassphraseCallback_', function(uid, callback) {
+            fail('Should not ask for passphrase on decryption.');
+          });
       var decryptBtn = document.querySelector('button.action');
       decryptBtn.click();
+      asyncTestCase.waitForAsync('Waiting for text to be decrypted.');
       window.setTimeout(function() {
-        asyncTestCase.continueTesting();
         // No signature verification error.
         var errorDiv = document.getElementById(constants.ElementId.ERROR_DIV);
         assertEquals('', errorDiv.textContent);
         assertEquals(
             '', goog.dom.getElement(constants.ElementId.ERROR_DIV).textContent);
         assertEquals(plaintext, document.querySelector('textarea').value);
-
+        asyncTestCase.continueTesting();
       }, 500);
     }, 500);
   }, 500);
@@ -420,10 +427,10 @@ function testClearSign() {
 
     asyncTestCase.waitForAsync('Waiting for message to be encrypted.');
     window.setTimeout(function() {
-      asyncTestCase.continueTesting();
       var encrypted = document.querySelector('textarea').value;
       assertContains('-----BEGIN PGP SIGNED MESSAGE-----', encrypted);
       assertContains('-----BEGIN PGP SIGNATURE-----', encrypted);
+      asyncTestCase.continueTesting();
     }, 500);
   }, 500);
 }

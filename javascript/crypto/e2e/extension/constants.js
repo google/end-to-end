@@ -32,9 +32,10 @@ e2e.ext.constants.Actions = {
   DECRYPT_VERIFY: 'decrypt_verify',
 
   // Keyring management related actions.
-  IMPORT_KEY: 'import_key',
   GET_KEY_DESCRIPTION: 'get_key_description',
   GET_PASSPHRASE: 'get_passphrase',
+  IMPORT_KEY: 'import_key',
+  LIST_KEYS: 'list_keys',
 
   // Intended no-op. Used for closing the prompt UI when other visual elements
   // (e.g. looking glass) would display data.

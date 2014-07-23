@@ -17,6 +17,7 @@
 
 goog.provide('e2e.ext.ui.panels.KeyringMgmtMini');
 
+goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.templates.panels.keyringmgmt');
 goog.require('goog.array');
@@ -24,6 +25,7 @@ goog.require('goog.dom');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
+goog.require('goog.object');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.KeyboardShortcutHandler');
 goog.require('goog.ui.KeyboardShortcutHandler.EventType');
@@ -71,6 +73,13 @@ panels.KeyringMgmtMini =
    * @private
    */
   this.updatePassphraseCallback_ = updatePassphraseCallback;
+
+  /**
+   * Executor for the End-to-End actions.
+   * @type {!e2e.ext.actions.Executor}
+   * @private
+   */
+  this.actionExecutor_ = new e2e.ext.actions.Executor();
 };
 goog.inherits(panels.KeyringMgmtMini, goog.ui.Component);
 
@@ -110,15 +119,13 @@ panels.KeyringMgmtMini.prototype.decorateInternal = function(elem) {
         this.getElementByClass(constants.CssClass.KEYRING_EXPORT),
         constants.CssClass.HIDDEN);
   } else {
-    chrome.runtime.getBackgroundPage(goog.bind(function(page) {
-      if (page.launcher) {
-        page.launcher.getContext().getAllKeys().addCallback(
-            goog.bind(function(keys) {
-              if (Object.keys(keys).length == 0) {
-                this.getElementByClass(
-                    constants.CssClass.KEYRING_EXPORT).disabled = true;
-              }
-            }, this));
+    this.actionExecutor_.execute({
+      action: constants.Actions.LIST_KEYS,
+      content: 'public'
+    }, this, goog.bind(function(keys) {
+      if (goog.object.isEmpty(keys)) {
+        this.getElementByClass(
+            constants.CssClass.KEYRING_EXPORT).disabled = true;
       }
     }, this));
   }

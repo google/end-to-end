@@ -130,27 +130,28 @@ ui.Welcome.prototype.decorateInternal = function(elem) {
   var styles = elem.querySelector('link');
   styles.href = chrome.extension.getURL('welcome_styles.css');
 
-  this.getContext_(goog.bind(function(pgpCtx) {
-    pgpCtx.getAllKeys(true).addCallback(goog.bind(function(keys) {
-      if (!goog.object.isEmpty(keys)) {
-        this.hideKeyringSetup_();
-      } else {
-        this.genKeyForm_ = new ui.panels.GenerateKey(
-            goog.bind(this.generateKey_, this), true);
-        this.addChild(this.genKeyForm_, false);
-        this.genKeyForm_.render(
-            goog.dom.getElement(constants.ElementId.WELCOME_CONTENT_NOVICE));
+  this.actionExecutor_.execute({
+    action: constants.Actions.LIST_KEYS,
+    content: 'private'
+  }, this, goog.bind(function(keys) {
+    if (!goog.object.isEmpty(keys)) {
+      this.hideKeyringSetup_();
+    } else {
+      this.genKeyForm_ = new ui.panels.GenerateKey(
+          goog.bind(this.generateKey_, this), true);
+      this.addChild(this.genKeyForm_, false);
+      this.genKeyForm_.render(
+          goog.dom.getElement(constants.ElementId.WELCOME_CONTENT_NOVICE));
 
-        this.keyringMgmt_ = new ui.panels.KeyringMgmtMini(
-            goog.nullFunction,
-            goog.bind(this.importKeyring_, this),
-            goog.bind(this.updateKeyringPassphrase_, this));
-        this.addChild(this.keyringMgmt_, false);
-        this.keyringMgmt_.render(
-            goog.dom.getElement(constants.ElementId.WELCOME_CONTENT_ADVANCED));
-      }
-    }, this));
-  }, this));
+      this.keyringMgmt_ = new ui.panels.KeyringMgmtMini(
+          goog.nullFunction,
+          goog.bind(this.importKeyring_, this),
+          goog.bind(this.updateKeyringPassphrase_, this));
+      this.addChild(this.keyringMgmt_, false);
+      this.keyringMgmt_.render(
+          goog.dom.getElement(constants.ElementId.WELCOME_CONTENT_ADVANCED));
+    }
+  }, this), goog.nullFunction);
 };
 
 
@@ -333,6 +334,7 @@ ui.Welcome.prototype.getContext_ = function(callback) {
 
 };
 
+
 /**
  * Displays an error message to the user.
  * @param {Error} error The error to display.
@@ -345,9 +347,7 @@ ui.Welcome.prototype.displayFailure_ = function(error) {
   window.alert(errorMsg);
 };
 
-
 }); // goog.scope
-
 
 // Create the welcome page.
 if (Boolean(chrome.extension)) {

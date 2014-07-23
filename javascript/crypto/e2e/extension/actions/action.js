@@ -40,8 +40,8 @@ actions.Action = function() {};
  *     action is to be executed.
  * @param {!goog.ui.Component} requestor The UI component through which the
  *     action was invoked.
- * @param {!function((string|!Array.<string>|undefined))} callback A callback
- *     where successful results will be passed to.
+ * @param {!function(...)} callback A callback where successful results will be
+ *     passed to.
  * @param {!function(Error)} errorCallback A callback where errors will
  *     be passed to.
  */

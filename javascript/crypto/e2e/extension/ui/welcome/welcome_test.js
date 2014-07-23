@@ -147,11 +147,11 @@ function testRenderNonEmptyKeyring() {
 
   testCase.waitForAsync('waiting for page to render');
   window.setTimeout(function() {
-    testCase.continueTesting();
     assertContains('Failed to render welcome page',
         'welcomeHeader', document.body.textContent);
     assertNull(goog.dom.getElement(constants.ElementId.WELCOME_MENU_NOVICE));
     assertNull(goog.dom.getElement(constants.ElementId.WELCOME_MENU_ADVANCED));
+    testCase.continueTesting();
   }, 500);
 }
 
