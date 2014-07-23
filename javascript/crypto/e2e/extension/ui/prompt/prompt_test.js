@@ -496,7 +496,6 @@ function testImportKey() {
   mockControl.$replayAll();
 
   prompt.decorate(document.documentElement);
-  debugger;
   prompt.executeAction_(constants.Actions.IMPORT_KEY, {
     value: PUBLIC_KEY_ASCII
   }, 'irrelevant');
