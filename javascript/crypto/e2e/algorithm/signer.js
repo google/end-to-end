@@ -12,15 +12,86 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 /**
- * @fileoverview Registers and returns implementations of specific digital
- *     signature algorithms.
+ * @fileoverview Provides a base class to implement digital signatures on top.
+ *     Registers and returns implementations of specific digital signature
+ *     algorithms.
  * @author thaidn@google.com (Thai Duong)
  */
 
+goog.provide('e2e.signer.Algorithm');
+goog.provide('e2e.signer.Error');
+goog.provide('e2e.signer.Signer');
 goog.provide('e2e.signer.factory');
 
-goog.require('e2e.signer.Error');
 
+goog.require('e2e.Algorithm');
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.signer.key');
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.signer.signature.Signature');
+goog.require('goog.debug.Error');
+
+/**
+ * Algorithms (used to define which algorithm is defined).
+ * @enum {string}
+ */
+e2e.signer.Algorithm = {
+  'DSA': 'DSA',
+  'ECDSA': 'ECDSA',
+  'RSA': 'RSA'
+};
+
+/**
+ * Error class used to represent errors in the digital signature algorithms.
+ * @param {*=} opt_msg Optional message to send.
+ * @extends {goog.debug.Error}
+ * @constructor
+ */
+e2e.signer.Error = function(opt_msg) {
+  goog.base(this, opt_msg);
+};
+goog.inherits(e2e.signer.Error, goog.debug.Error);
+
+
+/**
+ * Interface for all signers.
+ * @interface
+ * @extends {e2e.Algorithm}
+ */
+e2e.signer.Signer = function() {};
+
+
+/**
+ * Applies the signing algorithm to the data.
+ * @param {e2e.ByteArray} data The data to sign.
+ * @return {!e2e.async.Result.<e2e.signer.signature.Signature>} The
+ *     result of signing.
+ */
+e2e.signer.Signer.prototype.sign;
+
+
+/**
+ * Applies the verification algorithm to the data.
+ * @param {e2e.ByteArray} data The data to verify.
+ * @param {e2e.signer.signature.Signature} sig The signature to check.
+ * @return {!e2e.async.Result.<boolean>} The result of verification.
+ */
+e2e.signer.Signer.prototype.verify;
+
+
+
+/**
+ * Returns the hash function used for the signature.
+ * @return {e2e.hash.Hash}
+ */
+e2e.signer.Signer.prototype.getHash;
+
+
+/**
+ * Sets the hash function used for the signature.
+ * @param {e2e.hash.Hash} Hash function
+ */
+e2e.signer.Signer.prototype.setHash;
 
 /**
  * Contains a list of all registered implementations for each algorithm.

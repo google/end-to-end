@@ -13,17 +13,127 @@
 // limitations under the License.
 
 /**
- * @fileoverview Registers and returns implementations of specific algorithms.
+ * @fileoverview Provides a base class to implement ciphers on top. Registers
+ *     and returns implementations of specific algorithms.
  * @author evn@google.com (Eduardo Vela)
  */
 
+goog.provide('e2e.cipher.Algorithm');
+goog.provide('e2e.cipher.AsymmetricCipher');
+goog.provide('e2e.cipher.Cipher');
+goog.provide('e2e.cipher.Error');
+goog.provide('e2e.cipher.SymmetricCipher');
 goog.provide('e2e.cipher.factory');
 
-goog.require('e2e.cipher.Algorithm');
-goog.require('e2e.cipher.Error');
-goog.require('e2e.cipher.WorkerCipher');
+goog.require('e2e.Algorithm');
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.cipher.ciphertext');
+goog.require('goog.debug.Error');
+
+/**
+ * Algorithms (used to define which algorithm is defined).
+ * @enum {string}
+ */
+e2e.cipher.Algorithm = {
+  // Symmetric Ciphers
+  'PLAINTEXT': 'PLAINTEXT',
+  'IDEA': 'IDEA',
+  'TRIPLE_DES': 'TRIPLE_DES',
+  'CAST5': 'CAST5',
+  'BLOWFISH': 'BLOWFISH',
+  'AES128': 'AES128',
+  'AES192': 'AES192',
+  'AES256': 'AES256',
+  'TWOFISH': 'TWOFISH',
+  // Asymmetric Ciphers
+  'RSA': 'RSA',
+  'ELGAMAL': 'ELGAMAL',
+  'ECDH': 'ECDH'
+};
+/**
+ * Error class used to represent errors in the ciphers.
+ * @param {*=} opt_msg Optional message to send.
+ * @extends {goog.debug.Error}
+ * @constructor
+ */
+e2e.cipher.Error = function(opt_msg) {
+  goog.base(this, opt_msg);
+};
+goog.inherits(e2e.cipher.Error, goog.debug.Error);
 
 
+
+/**
+ * @interface
+ * @extends {e2e.Algorithm}
+ */
+e2e.cipher.Cipher = function() {};
+
+
+/**
+ * Representation of a symmetric cipher.
+ * @interface
+ * @extends {e2e.cipher.Cipher}
+ */
+e2e.cipher.SymmetricCipher = function() {};
+
+
+/**
+ * The block size for this cipher in bytes.
+ * @type {number}
+ */
+e2e.cipher.SymmetricCipher.prototype.blockSize;
+
+
+/**
+ * Encrypts the given data using the current cipher and key.
+ * @param {e2e.ByteArray} data The data to encrypt.
+ * @return {!e2e.async.Result.<e2e.cipher.ciphertext.Symmetric>}
+ *     The result of encryption.
+ */
+e2e.cipher.SymmetricCipher.prototype.encrypt = goog.abstractMethod;
+
+
+/**
+ * @type {number} The cipher block size.
+ */
+e2e.cipher.SymmetricCipher.prototype.blockSize;
+
+
+/**
+ * Decrypts the given data using the current cipher and key.
+ * @param {e2e.cipher.ciphertext.Symmetric} data The encrypted data.
+ * @return {!e2e.async.Result.<e2e.ByteArray>} The result of
+ *     decryption.
+ */
+e2e.cipher.SymmetricCipher.prototype.decrypt = goog.abstractMethod;
+
+
+/**
+ * Representation of an asymmetric cipher.
+ * @interface
+ * @extends {e2e.cipher.Cipher}
+ */
+e2e.cipher.AsymmetricCipher = function() {};
+
+
+/**
+ * Encrypts the given data using the current cipher and key.
+ * @param {e2e.ByteArray} data The data to encrypt.
+ * @return {e2e.cipher.ciphertext.AsymmetricAsync}
+ *     The result of encryption.
+ */
+e2e.cipher.AsymmetricCipher.prototype.encrypt = goog.abstractMethod;
+
+
+/**
+ * Decrypts the given data using the current cipher and key.
+ * @param {e2e.cipher.ciphertext.Asymmetric} data The encrypted
+ *     data.
+ * @return {!e2e.async.Result.<e2e.ByteArray>} The result of
+ *     decryption.
+ */
+e2e.cipher.AsymmetricCipher.prototype.decrypt = goog.abstractMethod;
 
 /**
  * @define {string} List of ciphers to register asynchronously.
@@ -34,15 +144,7 @@ e2e.cipher.factory.WORKER_CIPHERS = '';
 /**
  * Initializes cipher factory.
  */
-e2e.cipher.factory.init = function() {
-  var ciphers = e2e.cipher.factory.WORKER_CIPHERS.split(',');
-  for (var i = 0; i < ciphers.length; i++) {
-    if (e2e.cipher.Algorithm.hasOwnProperty(ciphers[i])) {
-      e2e.cipher.factory.add(e2e.cipher.WorkerCipher,
-                                     e2e.cipher.Algorithm[ciphers[i]]);
-    }
-  }
-};
+e2e.cipher.factory.init = function() {};
 
 /**
  * Contains a list of all registered implementations for each algorithm.
