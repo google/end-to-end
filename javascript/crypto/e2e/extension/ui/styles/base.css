@@ -107,14 +107,18 @@ button.back > img {
   font-weight: normal;
 }
 
-#callbackDialog > div {
+#callbackDialog > div,
+.overlayDialog {
   background-color: white;
   border: 1px solid #acacac;
   border-radius: 5px;
   box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-  left: 45px;
   padding: 10px;
   position: absolute;
+}
+
+#callbackDialog > div {
+  left: 45px;
   top: 60px;
   width: 550px;
   max-height: 75%;
@@ -126,6 +130,10 @@ button.back > img {
   border: 1px solid #acacac;
   margin: 5px 0;
   width: 540px;
+}
+
+.overlayDialog .modal-dialog-title {
+  background: inherit;
 }
 
 input {

@@ -41,6 +41,10 @@ goog.inherits(dialogs.Overlay, goog.ui.Dialog);
 dialogs.Overlay.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
   this.setButtonSet(goog.ui.Dialog.ButtonSet.createOk());
+  goog.dom.classlist.add(this.getElement(), 'overlayDialog');
+  goog.dom.removeNode(
+      goog.dom.getElementByClass('modal-dialog-title-close', elem));
+
 
   /*
   There is a bug in calculating the size of the popup so it is not centered.
