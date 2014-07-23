@@ -203,6 +203,15 @@ e2e.cipher.factory.get = function(algorithm, opt_keyData) {
 
 
 /**
+ * Returns all available cipher algorithms.
+ * @return {!Array.<e2e.cipher.Algorithm>} Array of available algorithms.
+ */
+e2e.cipher.factory.getAvailable = function() {
+  return Object.keys(e2e.cipher.factory.ciphers_);
+};
+
+
+/**
  * Returns an instance of the required cipher, or throws if not available.
  * @param {!e2e.cipher.Algorithm} algorithm The algorithm to retrieve.
  * @param {e2e.cipher.key.Key=} opt_keyData The key to use (public or

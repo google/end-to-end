@@ -66,6 +66,15 @@ e2e.compression.factory.get = function(algorithm) {
 
 
 /**
+ * Returns all available compression algorithms.
+ * @return {!Array.<e2e.compression.Algorithm>} Array of available algorithms.
+ */
+e2e.compression.factory.getAvailable = function() {
+  return Object.keys(e2e.compression.factory.compressionAlgorithms_);
+};
+
+
+/**
  * Returns an instance of the required compression algorithm, or throws if not
  *     available.
  * @param {e2e.compression.Algorithm} algorithm The compression

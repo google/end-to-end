@@ -20,10 +20,10 @@ goog.provide('e2e.openpgp.block.EncryptedMessage');
 
 goog.require('e2e');
 goog.require('e2e.async.Result');
-goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.Error');
 goog.require('e2e.cipher.factory');
 goog.require('e2e.openpgp.block.Message');
+goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.error.DecryptError');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.ParseError');
@@ -96,7 +96,8 @@ e2e.openpgp.block.EncryptedMessage.prototype.decrypt = function(
 
   // Try to decrypt with all found secret keys.
   var decryptResults =
-      /** @type {!Array.<!goog.async.Deferred.<!e2e.openpgp.block.Message>>} */ (
+      /** @type {!Array.<
+              !goog.async.Deferred.<!e2e.openpgp.block.Message>>} */ (
           goog.array.filter(
               goog.array.map(foundSecretKeys, this.decryptWithSecretKey_, this),
               goog.isDefAndNotNull));
@@ -392,7 +393,8 @@ e2e.openpgp.block.EncryptedMessage.construct = function(
     literalMessage.signWithOnePass(sigKeyPacket);
   }
   var cipher = /** @type {e2e.cipher.SymmetricCipher} */ (
-      e2e.cipher.factory.require(e2e.cipher.Algorithm.AES256));
+      e2e.cipher.factory.require(
+          e2e.openpgp.constants.DEFAULT_SYMMETRIC_CIPHER));
   var sessionKey = e2e.random.getRandomBytes(cipher.keySize);
   cipher.setKey({key: sessionKey});
 

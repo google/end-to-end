@@ -60,6 +60,15 @@ e2e.hash.factory.get = function(algorithm) {
 
 
 /**
+ * Returns all available hash algorithms.
+ * @return {!Array.<e2e.hash.Algorithm>} Array of available algorithms.
+ */
+e2e.hash.factory.getAvailable = function() {
+  return Object.keys(e2e.hash.factory.hashes_);
+};
+
+
+/**
  * Returns an instance of the required hash algorithm, or throws if not
  * available.
  * @param {e2e.hash.Algorithm} algorithm The hash algorithm.

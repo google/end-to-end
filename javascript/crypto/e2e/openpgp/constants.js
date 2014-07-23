@@ -216,6 +216,13 @@ e2e.openpgp.constants.ID_TO_NAME[
 
 
 /**
+ * Symmetric cipher used to encrypt messages.
+ * @type {e2e.cipher.Algorithm}
+ */
+e2e.openpgp.constants.DEFAULT_SYMMETRIC_CIPHER = e2e.cipher.Algorithm.AES256;
+
+
+/**
  * Returns the ID of a given object or throws an exception if invalid.
  * @param {e2e.openpgp.constants.Algorithm} algorithm The requested
  *     algorithm.

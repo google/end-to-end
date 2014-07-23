@@ -18,6 +18,13 @@
 goog.provide('e2e.openpgp.packet.UserId');
 
 goog.require('e2e');
+/** @suppress {extraRequire} intentional import */
+goog.require('e2e.compression.all');
+goog.require('e2e.compression.factory');
+goog.require('e2e.hash.Algorithm');
+/** @suppress {extraRequire} intentional import */
+goog.require('e2e.hash.all');
+goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.error.SerializationError');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.Signature');
@@ -96,6 +103,14 @@ e2e.openpgp.packet.UserId.prototype.addCertification = function(sig) {
 
 
 /**
+ * @return {Array.<e2e.openpgp.packet.Signature>} certifications
+ */
+e2e.openpgp.packet.UserId.prototype.getCertifications = function() {
+  return this.certifications_;
+};
+
+
+/**
  * @param {e2e.openpgp.packet.SecretKey} key
  */
 e2e.openpgp.packet.UserId.prototype.certifyBy = function(key) {
@@ -121,13 +136,46 @@ e2e.openpgp.packet.UserId.prototype.certifyBy = function(key) {
       key,
       data,
       e2e.openpgp.packet.Signature.SignatureType.GENERIC_USER_ID,
-      {
-        'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
-          [Math.floor(new Date().getTime() / 1e3)]),
-        'ISSUER': key.keyId
-      });
+      this.getSignatureAttributes_(key));
+
   this.addCertification(sig);
 };
 
+/**
+ * Returns key certification signature attributes, including End-to-End
+ * algorithm preferences.
+ * @param {e2e.openpgp.packet.SecretKey} key
+ * @return {Object.<string, number|!e2e.ByteArray>}  Attributes
+ * @private
+ */
+e2e.openpgp.packet.UserId.prototype.getSignatureAttributes_ = function(key) {
+  // Prefer only SHA-2 family.
+  var hashAlgos = [
+      e2e.hash.Algorithm.SHA256,
+      e2e.hash.Algorithm.SHA384,
+      e2e.hash.Algorithm.SHA512,
+      e2e.hash.Algorithm.SHA224
+  ];
+  var hashIds = goog.array.map(hashAlgos, e2e.openpgp.constants.getId);
+  // Prefer all available compression mechanisms.
+  var compressionAlgos = e2e.compression.factory.getAvailable();
+  var compressionIds = goog.array.map(compressionAlgos,
+      e2e.openpgp.constants.getId);
+  // Prefer only the default symmetric algorithm (AES-256).
+  var symAlgos = [
+    e2e.openpgp.constants.DEFAULT_SYMMETRIC_CIPHER
+  ];
+  var symIds = goog.array.map(symAlgos, e2e.openpgp.constants.getId);
+
+  return {
+        'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
+          [Math.floor(new Date().getTime() / 1e3)]),
+        'ISSUER': key.keyId,
+        'PREFERRED_SYMMETRIC_ALGORITHMS': symIds,
+        'PREFERRED_HASH_ALGORITHMS': hashIds,
+        'PREFERRED_COMPRESSION_ALGORITHMS': compressionIds,
+        'FEATURES': [0x01] // Modification detection. See RFC 4880 5.2.3.24.
+      };
+};
 
 e2e.openpgp.packet.factory.add(e2e.openpgp.packet.UserId);

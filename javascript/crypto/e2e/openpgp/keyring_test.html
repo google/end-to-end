@@ -26,9 +26,11 @@
   goog.require('goog.testing.PropertyReplacer');
   goog.require('e2e.async.Result');
   goog.require('e2e.cipher.all');
+  goog.require('e2e.hash.all');
   goog.require('e2e.openpgp.KeyRing');
   goog.require('e2e.openpgp.keyringTestData');
   goog.require('e2e.openpgp.block.factory');
+  goog.require('e2e.openpgp.constants');
   goog.require('e2e.openpgp.packet.PublicKey');
   goog.require('e2e.openpgp.packet.PublicSubkey');
   goog.require('e2e.openpgp.packet.SecretKey');
@@ -68,6 +70,21 @@ function testGeneration() {
   assertEquals(2, pubKeys.length);
   var ecdsaPubKey = pubKeys[1].keyPacket;
   var ecdhPubKey = pubKeys[1].subKeys[0];
+  assertEquals(1, pubKeys[1].userIds.length);
+  var userIdPacket = pubKeys[1].userIds[0];
+  assertEquals('ecc real name <ecc@example.com>', userIdPacket.userId);
+  assertEquals(1, userIdPacket.getCertifications().length);
+  var certification = userIdPacket.getCertifications()[0];
+  assertTrue(
+      certification.attributes.PREFERRED_COMPRESSION_ALGORITHMS.length > 0);
+  assertContains(
+      e2e.openpgp.constants.getId(e2e.hash.Algorithm.SHA256),
+      certification.attributes.PREFERRED_HASH_ALGORITHMS);
+  assertArrayEquals([e2e.openpgp.constants.getId(
+      e2e.openpgp.constants.DEFAULT_SYMMETRIC_CIPHER)],
+      certification.attributes.PREFERRED_SYMMETRIC_ALGORITHMS);
+  assertEquals(0x01, certification.attributes.FEATURES); // MDC
+
   assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPubKey.cipher.algorithm);
   assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPubKey.cipher.algorithm);
 
