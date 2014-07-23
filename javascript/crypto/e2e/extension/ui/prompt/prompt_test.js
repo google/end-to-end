@@ -468,6 +468,50 @@ function testContentInsertedOnEncrypt() {
 }
 
 
+function testImportKey() {
+  stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
+    callback({launcher: prompt.pgpLauncher_});
+  });
+
+  stubs.setPath('e2e.ext.actions.GetKeyDescription.prototype.execute',
+      mockControl.createFunctionMock('execute'));
+  var keyDescriptionArg =
+      new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  e2e.ext.actions.GetKeyDescription.prototype.execute(
+      goog.testing.mockmatchers.ignoreArgument,
+      goog.testing.mockmatchers.ignoreArgument,
+      prompt,
+      keyDescriptionArg,
+      goog.testing.mockmatchers.ignoreArgument);
+
+  stubs.replace(chrome.notifications, 'create',
+      mockControl.createFunctionMock('create'));
+  var notificationArg =
+      new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  chrome.notifications.create(
+      goog.testing.mockmatchers.ignoreArgument,
+      goog.testing.mockmatchers.ignoreArgument,
+      notificationArg);
+
+  mockControl.$replayAll();
+
+  prompt.decorate(document.documentElement);
+  debugger;
+  prompt.executeAction_(constants.Actions.IMPORT_KEY, {
+    value: PUBLIC_KEY_ASCII
+  }, 'irrelevant');
+
+  keyDescriptionArg.arg('');
+  asyncTestCase.waitForAsync('waiting for keyring to be imported');
+  window.setTimeout(function() {
+    notificationArg.arg();
+
+    mockControl.$verifyAll();
+    asyncTestCase.continueTesting();
+  }, 500);
+}
+
+
 function testDisplayFailure() {
   prompt.decorate(document.documentElement);
   var errorDiv = document.getElementById(constants.ElementId.ERROR_DIV);

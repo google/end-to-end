@@ -195,11 +195,23 @@ function importKeyring(keyringContents, userName) {
       mockControl.createFunctionMock('resetControls'));
   e2e.ext.ui.panels.KeyringMgmtFull.prototype.resetControls();
 
+  stubs.setPath('e2e.ext.actions.GetKeyDescription.prototype.execute',
+      mockControl.createFunctionMock());
+  var keyDescriptionArg =
+      new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  e2e.ext.actions.GetKeyDescription.prototype.execute(
+      goog.testing.mockmatchers.ignoreArgument,
+      goog.testing.mockmatchers.ignoreArgument,
+      page,
+      keyDescriptionArg,
+      goog.testing.mockmatchers.ignoreArgument);
+
   mockControl.$replayAll();
 
   page.decorate(document.documentElement);
   page.importKeyring_('irrelevant');
   readCallbackArg.arg(keyringContents);
+  keyDescriptionArg.arg('');
 
   testCase.waitForAsync('waiting for keyring to be imported');
   for (var childIdx = 0; childIdx < page.getChildCount(); childIdx++) {

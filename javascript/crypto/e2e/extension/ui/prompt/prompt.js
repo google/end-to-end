@@ -23,6 +23,7 @@ goog.require('e2e');
 goog.require('e2e.ext.Chip');
 goog.require('e2e.ext.ChipHolder');
 goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.messages');
 goog.require('e2e.ext.ui.dialogs.Generic');
@@ -70,6 +71,14 @@ var utils = e2e.ext.utils;
  */
 ui.Prompt = function() {
   goog.base(this);
+
+  /**
+   * Executor for the End-to-End actions.
+   * @type {!e2e.ext.actions.Executor}
+   * @private
+   */
+  this.actionExecutor_ = new e2e.ext.actions.Executor(
+      goog.bind(this.displayFailure_, this));
 
   /**
    * A timer to automatically save drafts.
@@ -826,41 +835,30 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
       });
       break;
     case ext.constants.Actions.IMPORT_KEY:
-      this.runWrappedProcessor_(/** @this ui.Prompt */ function() {
-        this.pgpLauncher_.getContext().getKeyDescription(textArea.value)
-          .addCallback(function(keyDescription) {
-            var dialog = new dialogs.ImportConfirmation(
-                keyDescription,
-                goog.bind(function(returnValue) {
-                  goog.dispose(dialog);
-
-                  if (goog.isDef(returnValue)) {
-                    this.pgpLauncher_.getContext().importKey(
-                        goog.bind(this.renderPassphraseCallback_, this),
-                        textArea.value).addCallback(goog.bind(function(res) {
-                          if (res.length > 0) {
-                            // Key import successful for at least one UID.
-                            this.displaySuccess_(
-                                chrome.i18n.getMessage(
-                                    'promptImportKeyNotificationLabel',
-                                    res.toString()),
-                                goog.bind(this.close, this));
-                          } else {
-                            this.displayFailure_(
-                                new utils.Error(
-                                    'Import key error',
-                                    'promptImportKeyError'));
-                          }
-                          this.surfaceDismissButton_();
-                        }, this));
-                  }
-                }, this));
-            this.addChild(dialog, false);
-            dialog.render(goog.dom.getElement(
-                constants.ElementId.CALLBACK_DIALOG));
-          }, this).addErrback(this.displayFailure_, this);
-
-      });
+      this.actionExecutor_.execute({
+        action: constants.Actions.GET_KEY_DESCRIPTION,
+        content: textArea.value
+      }, this, goog.bind(function(returnValue) {
+        if (goog.isDef(returnValue)) {
+          this.pgpLauncher_.getContext().
+              importKey(
+                  goog.bind(this.renderPassphraseCallback_, this),
+                  textArea.value).
+              addCallback(goog.bind(function(res) {
+                if (res.length > 0) {
+                  // Key import successful for at least one UID.
+                  this.displaySuccess_(
+                      chrome.i18n.getMessage(
+                          'promptImportKeyNotificationLabel', res.toString()),
+                      goog.bind(this.close, this));
+                } else {
+                  this.displayFailure_(new utils.Error(
+                      'Import key error', 'promptImportKeyError'));
+                }
+                this.surfaceDismissButton_();
+              }, this));
+        }
+      }, this));
       break;
   }
 };
