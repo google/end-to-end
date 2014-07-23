@@ -16,6 +16,7 @@
  */
 
 goog.provide('e2e.ext.messages');
+goog.provide('e2e.ext.messages.ApiRequest');
 
 goog.require('e2e.ext.constants');
 

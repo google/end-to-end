@@ -138,7 +138,7 @@ goog.addDependency('../crypto/e2e/pkcs/eme.js', ['e2e.pkcs.eme.Oaep', 'e2e.pkcs.
 goog.addDependency('../crypto/e2e/pkcs/emsa.js', ['e2e.pkcs.ASN_PREFIXES', 'e2e.pkcs.EMSA_PKCS1_v1_5'], ['e2e.ByteArray', 'e2e.hash.Algorithm', 'e2e.pkcs.Error', 'goog.array']);
 goog.addDependency('../crypto/e2e/pkcs/pkcs.js', ['e2e.pkcs.Error'], ['goog.debug.Error']);
 goog.addDependency('../crypto/e2e/random/hmacprf.js', ['e2e.HmacPRF'], ['e2e.hash.Algorithm', 'e2e.hash.Sha256', 'goog.asserts', 'goog.crypt.Hmac', 'goog.structs']);
-goog.addDependency('../crypto/e2e/random/random.js', ['e2e.random'], ['goog.array', 'goog.crypt.Hmac', 'goog.crypt.Sha256']);
+goog.addDependency('../crypto/e2e/random/random.js', ['e2e.random'], ['e2e.ByteArray', 'goog.array', 'goog.crypt.Hmac', 'goog.crypt.Sha256']);
 goog.addDependency('../crypto/e2e/scheme/eme.js', ['e2e.scheme.Eme'], ['e2e.pkcs.eme.Pkcs1', 'e2e.scheme.Scheme']);
 goog.addDependency('../crypto/e2e/scheme/rsaes.js', ['e2e.scheme.Rsaes'], ['e2e.async.Result', 'e2e.scheme.Eme']);
 goog.addDependency('../crypto/e2e/scheme/scheme.js', ['e2e.scheme.Scheme'], []);

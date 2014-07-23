@@ -19,7 +19,8 @@
 goog.provide('e2e.ext.ui.Glass');
 
 goog.require('e2e.ext.constants');
-goog.require('e2e.ext.messages');
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.ext.messages.ApiRequest');
 goog.require('e2e.ext.ui.templates.glass');
 goog.require('e2e.openpgp.ContextImpl');
 goog.require('e2e.random');

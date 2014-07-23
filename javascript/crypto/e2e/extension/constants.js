@@ -16,6 +16,7 @@
  */
 
 goog.provide('e2e.ext.constants');
+goog.provide('e2e.ext.constants.CssClass');
 
 
 /**

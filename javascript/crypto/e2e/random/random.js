@@ -19,6 +19,8 @@
 
 goog.provide('e2e.random');
 
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.ByteArray');
 goog.require('goog.array');
 goog.require('goog.crypt.Hmac');
 goog.require('goog.crypt.Sha256');

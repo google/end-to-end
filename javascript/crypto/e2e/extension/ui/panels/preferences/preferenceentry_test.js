@@ -17,6 +17,8 @@
 
 goog.provide('e2e.ext.ui.panels.PreferenceEntryTest');
 
+/** @suppress {extraRequire} since the dependent soy files don't do this */
+goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.ui.panels.PreferenceEntry');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');

@@ -17,8 +17,8 @@
 
 goog.provide('e2e.ext.actions.Action');
 
-goog.require('e2e.ext.messages');
-
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.ext.messages.ApiRequest');
 
 goog.scope(function() {
 var actions = e2e.ext.actions;
