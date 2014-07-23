@@ -15,12 +15,15 @@
  * @fileoverview Tests for the UI chips.
  */
 
+goog.provide('e2e.ext.ChipTest');
+
 goog.require('e2e.ext.Chip');
 goog.require('e2e.ext.constants');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.ui.Component');
+goog.setTestOnly();
 
 var stubs = new goog.testing.PropertyReplacer();
 

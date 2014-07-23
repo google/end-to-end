@@ -15,10 +15,13 @@
  * @fileoverview Tests for the preferences handler.
  */
 
+goog.provide('e2e.ext.ui.preferencesTest');
+
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.preferences');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.setTestOnly();
 
 var constants = e2e.ext.constants;
 var preferences = e2e.ext.ui.preferences;

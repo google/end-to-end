@@ -15,10 +15,13 @@
  * @fileoverview Tests for the common utility methods.
  */
 
+goog.provide('e2e.ext.utilsTest');
+
 goog.require('e2e.ext.utils');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.setTestOnly();
 
 var testCase = goog.testing.AsyncTestCase.createAndInstall();
 var utils = e2e.ext.utils;

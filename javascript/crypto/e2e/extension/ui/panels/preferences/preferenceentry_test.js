@@ -15,12 +15,15 @@
  * @fileoverview Tests for the PreferenceEntry.
  */
 
+goog.provide('e2e.ext.ui.panels.PreferenceEntryTest');
+
 goog.require('e2e.ext.ui.panels.PreferenceEntry');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.events.Event');
 goog.require('goog.testing.jsunit');
+goog.setTestOnly();
 
 var stubs = null;
 var mockControl = null;

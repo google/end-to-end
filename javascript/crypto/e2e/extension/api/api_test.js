@@ -15,6 +15,8 @@
  * @fileoverview Tests for the context API.
  */
 
+goog.provide('e2e.ext.api.ApiTest');
+
 goog.require('e2e.ext.api.Api');
 goog.require('e2e.ext.api.RequestThrottle');
 goog.require('e2e.ext.constants');
@@ -25,6 +27,7 @@ goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
+goog.setTestOnly();
 
 var api = null;
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);

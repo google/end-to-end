@@ -17,6 +17,8 @@
  *
  */
 
+goog.provide('e2e.ext.ui.panels.KeyringMgmtFullTest');
+
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.panels.KeyringMgmtFull');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
@@ -27,6 +29,7 @@ goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.setTestOnly();
 
 var constants = e2e.ext.constants;
 var mockControl = null;

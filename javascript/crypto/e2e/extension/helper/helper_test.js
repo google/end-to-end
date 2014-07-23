@@ -15,6 +15,8 @@
  * @fileoverview Unit tests for the End-To-End helper.
  */
 
+goog.provide('e2e.ext.HelperTest');
+
 goog.require('e2e.ext.Helper');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.gmonkey');
@@ -24,7 +26,7 @@ goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
-
+goog.setTestOnly();
 
 var constants = e2e.ext.constants;
 var helper = null;

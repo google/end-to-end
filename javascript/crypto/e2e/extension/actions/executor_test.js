@@ -15,6 +15,8 @@
  * @fileoverview Tests for the action executor.
  */
 
+goog.provide('e2e.ext.actions.ExecutorTest');
+
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants');
 goog.require('goog.testing.MockControl');
@@ -22,6 +24,7 @@ goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
+goog.setTestOnly();
 
 var actions = e2e.ext.actions;
 var constants = e2e.ext.constants;

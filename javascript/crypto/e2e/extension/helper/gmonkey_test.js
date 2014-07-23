@@ -15,12 +15,15 @@
  * @fileoverview Tests for the wrapper of the gmonkey API.
  */
 
+goog.provide('e2e.ext.gmonkeyTest');
+
 goog.require('e2e.ext.gmonkey');
 goog.require('goog.array');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.setTestOnly();
 
 var api = null;
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);

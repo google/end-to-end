@@ -15,11 +15,14 @@
  * @fileoverview Tests for the PreferencesPanel.
  */
 
+goog.provide('e2e.ext.ui.panels.PreferencesPanelTest');
+
 goog.require('e2e.ext.ui.panels.PreferencesPanel');
 goog.require('e2e.ext.ui.preferences');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.setTestOnly();
 
 var panel = null;
 var preferences = e2e.ext.ui.preferences;

@@ -15,9 +15,12 @@
  * @fileoverview Description of this file.
  */
 
+goog.provide('e2e.ext.ui.draftmanagerTest');
+
 goog.require('e2e.ext.ui.draftmanager');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.setTestOnly();
 
 var drafts = e2e.ext.ui.draftmanager;
 

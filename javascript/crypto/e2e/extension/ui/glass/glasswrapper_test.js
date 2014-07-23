@@ -15,12 +15,15 @@
  * @fileoverview Tests for the looking glass wrapper.
  */
 
+goog.provide('e2e.ext.ui.GlassWrapperTest');
+
 goog.require('e2e.ext.ui.GlassWrapper');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.setTestOnly();
 
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 var elem = null;

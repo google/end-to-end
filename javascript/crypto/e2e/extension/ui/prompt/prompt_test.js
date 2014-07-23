@@ -15,6 +15,8 @@
  * @fileoverview Unit tests for the UI prompt.
  */
 
+goog.provide('e2e.ext.ui.PromptTest');
+
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.Prompt');
@@ -34,6 +36,7 @@ goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
+goog.setTestOnly();
 
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 asyncTestCase.stepTimeout = 2000;

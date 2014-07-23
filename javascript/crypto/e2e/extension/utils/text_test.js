@@ -15,9 +15,12 @@
  * @fileoverview Tests for the text utility methods.
  */
 
+goog.provide('e2e.ext.utils.textTest');
+
 goog.require('e2e.ext.utils.text');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.setTestOnly();
 
 var utils = e2e.ext.utils.text;
 

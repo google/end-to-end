@@ -15,6 +15,8 @@
  * @fileoverview Tests for the UI chip holder.
  */
 
+goog.provide('e2e.ext.ChipHolderTest');
+
 goog.require('e2e.ext.ChipHolder');
 goog.require('e2e.ext.constants');
 goog.require('goog.dom.classlist');
@@ -23,6 +25,7 @@ goog.require('goog.style');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.setTestOnly();
 
 var chipHolder = null;
 var constants = e2e.ext.constants;

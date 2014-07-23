@@ -15,6 +15,8 @@
  * @fileoverview Tests for the IMPORT_KEY action.
  */
 
+goog.provide('e2e.ext.actions.ImportKeyTest');
+
 goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants');
 goog.require('e2e.openpgp.ContextImpl');
@@ -25,7 +27,7 @@ goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
 goog.require('goog.ui.Component');
-
+goog.setTestOnly();
 
 var actions = e2e.ext.actions;
 var constants = e2e.ext.constants;

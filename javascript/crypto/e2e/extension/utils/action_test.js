@@ -15,12 +15,15 @@
  * @fileoverview Tests for the action utility methods.
  */
 
+goog.provide('e2e.ext.utils.actionTest');
+
 goog.require('e2e.cipher.Rsa');
 goog.require('e2e.ext.utils.action');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.factory');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.setTestOnly();
 
 var utils = e2e.ext.utils.action;
 
