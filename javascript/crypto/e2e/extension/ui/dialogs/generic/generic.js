@@ -16,10 +16,11 @@
  * bits of additional information.
  */
 
-goog.provide('e2e.ext.ui.Dialog');
+goog.provide('e2e.ext.ui.dialogs.Generic');
 
 goog.require('e2e.ext.constants');
-goog.require('e2e.ext.ui.templates');
+goog.require('e2e.ext.ui.dialogs.InputType');
+goog.require('e2e.ext.ui.templates.dialogs.generic');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
@@ -33,7 +34,8 @@ goog.require('soy');
 goog.scope(function() {
 var ui = e2e.ext.ui;
 var constants = e2e.ext.constants;
-var templates = e2e.ext.ui.templates;
+var dialogs = e2e.ext.ui.dialogs;
+var templates = e2e.ext.ui.templates.dialogs.generic;
 
 
 
@@ -43,7 +45,7 @@ var templates = e2e.ext.ui.templates;
  *     the user.
  * @param {!function(string=)} callback The callback where the user's
  *     input must be passed.
- * @param {ui.Dialog.InputType} inputType The type of input the dialog should
+ * @param {dialogs.InputType} inputType The type of input the dialog should
  *     ask for. If TEXT, a text field will be provided. If SECURE_TEXT, a
  *     password field will be provided. Defaults to NONE.
  * @param {string=} opt_placeholder Optional. A message to display as a
@@ -55,7 +57,7 @@ var templates = e2e.ext.ui.templates;
  * @constructor
  * @extends {goog.ui.Component}
  */
-ui.Dialog = function(message, callback, inputType, opt_placeholder,
+dialogs.Generic = function(message, callback, inputType, opt_placeholder,
     opt_actionButtonTitle, opt_cancelButtonTitle) {
   goog.base(this);
 
@@ -77,7 +79,7 @@ ui.Dialog = function(message, callback, inputType, opt_placeholder,
    * The type of input the dialog should ask for. If TEXT, a text field will be
    * provided. If SECURE_TEXT, a password field will be provided. Defaults to
    * NONE.
-   * @type {ui.Dialog.InputType}
+   * @type {dialogs.InputType}
    * @private
    */
   this.inputType_ = inputType;
@@ -103,18 +105,7 @@ ui.Dialog = function(message, callback, inputType, opt_placeholder,
    */
   this.cancelButtonTitle_ = opt_cancelButtonTitle || '';
 };
-goog.inherits(ui.Dialog, goog.ui.Component);
-
-
-/**
- * The type of input the dialog should handle.
- * @enum {string}
- */
-ui.Dialog.InputType = {
-  NONE: '',
-  TEXT: 'text',
-  SECURE_TEXT: 'password'
-};
+goog.inherits(dialogs.Generic, goog.ui.Component);
 
 
 /**
@@ -122,7 +113,7 @@ ui.Dialog.InputType = {
  * @type {Element}
  * @private
  */
-ui.Dialog.prototype.inputElem_ = null;
+dialogs.Generic.prototype.inputElem_ = null;
 
 
 /**
@@ -130,17 +121,17 @@ ui.Dialog.prototype.inputElem_ = null;
  * @type {goog.ui.KeyboardShortcutHandler}
  * @private
  */
-ui.Dialog.prototype.keyboardHandler_ = null;
+dialogs.Generic.prototype.keyboardHandler_ = null;
 
 
 /** @override */
-ui.Dialog.prototype.createDom = function() {
+dialogs.Generic.prototype.createDom = function() {
   this.decorateInternal(goog.dom.createElement(goog.dom.TagName.DIV));
 };
 
 
 /** @override */
-ui.Dialog.prototype.decorateInternal = function(elem) {
+dialogs.Generic.prototype.decorateInternal = function(elem) {
   this.setElementInternal(elem);
 
   soy.renderElement(elem, templates.Dialog, {
@@ -156,7 +147,7 @@ ui.Dialog.prototype.decorateInternal = function(elem) {
 
 
 /** @override */
-ui.Dialog.prototype.enterDocument = function() {
+dialogs.Generic.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
   var body = goog.dom.getElement(constants.ElementId.BODY);
@@ -202,7 +193,7 @@ ui.Dialog.prototype.enterDocument = function() {
 
 
 /** @override */
-ui.Dialog.prototype.exitDocument = function() {
+dialogs.Generic.prototype.exitDocument = function() {
   var body = goog.dom.getElement(constants.ElementId.BODY);
   if (body) {
     goog.dom.classlist.remove(body, constants.CssClass.TRANSPARENT);
@@ -218,7 +209,7 @@ ui.Dialog.prototype.exitDocument = function() {
  *     value.
  * @protected
  */
-ui.Dialog.prototype.invokeCallback = function(sendBlank) {
+dialogs.Generic.prototype.invokeCallback = function(sendBlank) {
   if (this.inputElem_) {
     var returnValue = sendBlank ? '' : this.inputElem_.value;
     this.inputElem_.value = '';

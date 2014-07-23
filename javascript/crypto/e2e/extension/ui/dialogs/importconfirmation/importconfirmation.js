@@ -18,7 +18,8 @@
 goog.provide('e2e.ext.ui.dialogs.ImportConfirmation');
 
 goog.require('e2e.ext.constants');
-goog.require('e2e.ext.ui.Dialog');
+goog.require('e2e.ext.ui.dialogs.Generic');
+goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.templates.dialogs.importconfirmation');
 
 goog.require('goog.array');
@@ -40,7 +41,7 @@ var templates = e2e.ext.ui.templates.dialogs.importconfirmation;
  * @param {!function(string=)} callback The callback where the user's
  *     input must be passed.
  * @constructor
- * @extends {ui.Dialog}
+ * @extends {dialogs.Generic}
  */
 dialogs.ImportConfirmation = function(keys, callback) {
   goog.base(
@@ -57,12 +58,12 @@ dialogs.ImportConfirmation = function(keys, callback) {
             'publicSubKeyDescription')
       }),
       callback,
-      ui.Dialog.InputType.NONE,
+      dialogs.InputType.NONE,
       '',
       chrome.i18n.getMessage('promptOkActionLabel'),
       chrome.i18n.getMessage('actionCancelPgpAction'));
 };
-goog.inherits(dialogs.ImportConfirmation, ui.Dialog);
+goog.inherits(dialogs.ImportConfirmation, dialogs.Generic);
 
 
 /** @override */

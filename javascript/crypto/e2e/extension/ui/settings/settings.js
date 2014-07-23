@@ -20,8 +20,9 @@ goog.provide('e2e.ext.ui.Settings');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.constants');
-goog.require('e2e.ext.ui.Dialog');
+goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.ImportConfirmation');
+goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.panels.GenerateKey');
 goog.require('e2e.ext.ui.panels.KeyringMgmtFull');
 goog.require('e2e.ext.ui.panels.PreferencesPanel');
@@ -297,14 +298,14 @@ ui.Settings.prototype.importKeyring_ = function(file) {
  */
 ui.Settings.prototype.renderPassphraseCallback_ = function(uid, callback) {
   var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
-  var dialog = new ui.Dialog(chrome.i18n.getMessage(
+  var dialog = new dialogs.Generic(chrome.i18n.getMessage(
           'promptPassphraseCallbackMessage', uid),
       function(passphrase) {
         goog.dispose(dialog);
         callback(/** @type {string} */ (passphrase));
       },
       // Use a password field to ask for the passphrase.
-      ui.Dialog.InputType.SECURE_TEXT,
+      dialogs.InputType.SECURE_TEXT,
       '',
       chrome.i18n.getMessage('actionEnterPassphrase'),
       chrome.i18n.getMessage('actionCancelPgpAction'));

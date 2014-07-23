@@ -18,6 +18,7 @@
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.Settings');
+goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.panels.KeyringMgmtFull');
 goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.utils');
@@ -203,7 +204,7 @@ function importKeyring(keyringContents, userName) {
   testCase.waitForAsync('waiting for keyring to be imported');
   for (var childIdx = 0; childIdx < page.getChildCount(); childIdx++) {
     var child = page.getChildAt(childIdx);
-    if (child instanceof e2e.ext.ui.Dialog) {
+    if (child instanceof e2e.ext.ui.dialogs.Generic) {
       child.dialogCallback_('');
     }
   }

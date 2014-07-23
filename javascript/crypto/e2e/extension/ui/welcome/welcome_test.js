@@ -17,8 +17,8 @@
 
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.constants');
-goog.require('e2e.ext.ui.Dialog');
 goog.require('e2e.ext.ui.Welcome');
+goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.preferences');
 goog.require('goog.array');
 goog.require('goog.dom');
@@ -183,7 +183,7 @@ function testGenerateKey() {
     assertContains('welcomeGenKeyConfirm', document.body.textContent);
     for (var childIdx = 0; childIdx < page.getChildCount(); childIdx++) {
       var child = page.getChildAt(childIdx);
-      if (child instanceof e2e.ext.ui.Dialog) {
+      if (child instanceof e2e.ext.ui.dialogs.Generic) {
         child.dialogCallback_();
       }
     }
@@ -217,7 +217,7 @@ function testImportKeyring() {
     // Click the getKeyDescription confirmation dialog.
     for (var childIdx = 0; childIdx < page.getChildCount(); childIdx++) {
       var child = page.getChildAt(childIdx);
-      if (child instanceof e2e.ext.ui.Dialog) {
+      if (child instanceof e2e.ext.ui.dialogs.Generic) {
         child.dialogCallback_('');
       }
     }
@@ -226,7 +226,7 @@ function testImportKeyring() {
       assertContains('welcomeKeyImport', document.body.textContent);
       for (var childIdx = 0; childIdx < page.getChildCount(); childIdx++) {
         var child = page.getChildAt(childIdx);
-        if (child instanceof e2e.ext.ui.Dialog) {
+        if (child instanceof e2e.ext.ui.dialogs.Generic) {
           child.dialogCallback_();
         }
       }
@@ -254,7 +254,7 @@ function testUpdateKeyringPassphrase() {
       'keyMgmtChangePassphraseSuccessMsg', document.body.textContent);
   for (var childIdx = 0; childIdx < page.getChildCount(); childIdx++) {
     var child = page.getChildAt(childIdx);
-    if (child instanceof e2e.ext.ui.Dialog) {
+    if (child instanceof e2e.ext.ui.dialogs.Generic) {
       child.dialogCallback_();
     }
   }
@@ -283,7 +283,7 @@ function testRenderPassphraseCallback() {
   assertContains('test_uid', document.body.textContent);
   for (var childIdx = 0; childIdx < page.getChildCount(); childIdx++) {
     var child = page.getChildAt(childIdx);
-    if (child instanceof e2e.ext.ui.Dialog) {
+    if (child instanceof e2e.ext.ui.dialogs.Generic) {
       child.dialogCallback_(passphrase);
     }
   }

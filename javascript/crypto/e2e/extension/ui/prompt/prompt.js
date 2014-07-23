@@ -25,8 +25,9 @@ goog.require('e2e.ext.ChipHolder');
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.messages');
-goog.require('e2e.ext.ui.Dialog');
+goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.ImportConfirmation');
+goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.ui.templates');
@@ -382,7 +383,7 @@ ui.Prompt.prototype.renderEncrypt_ =
               if (drafts.hasDraft(origin)) {
                 var popupElem =
                     goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
-                var dialog = new ui.Dialog(
+                var dialog = new dialogs.Generic(
                     chrome.i18n.getMessage('promptEncryptSignRestoreDraftMsg'),
                     goog.bind(function(dialogResult) {
                       if (goog.isDef(dialogResult)) {
@@ -407,7 +408,7 @@ ui.Prompt.prototype.renderEncrypt_ =
 
                       goog.dispose(dialog);
                     }, this),
-                    ui.Dialog.InputType.NONE,
+                    dialogs.InputType.NONE,
                     '',
                     chrome.i18n.getMessage(
                         'promptEncryptSignRestoreDraftLabel'),
@@ -490,7 +491,7 @@ ui.Prompt.prototype.renderGenericForm_ =
  * @private
  */
 ui.Prompt.prototype.renderKeyringPassphrase_ = function(elem, contentBlob) {
-  var dialog = new ui.Dialog(
+  var dialog = new dialogs.Generic(
       '',
       goog.bind(function(passphrase) {
         try {
@@ -511,7 +512,7 @@ ui.Prompt.prototype.renderKeyringPassphrase_ = function(elem, contentBlob) {
         goog.dispose(dialog);
       }, this),
       // Use a password field to ask for the passphrase.
-      ui.Dialog.InputType.SECURE_TEXT,
+      dialogs.InputType.SECURE_TEXT,
       chrome.i18n.getMessage('actionEnterPassphraseDescription'),
       chrome.i18n.getMessage('actionEnterPassphrase'),
       chrome.i18n.getMessage('actionCancelPgpAction'));
@@ -533,13 +534,13 @@ ui.Prompt.prototype.renderKeyringPassphrase_ = function(elem, contentBlob) {
  */
 ui.Prompt.prototype.renderPassphraseCallback_ = function(uid, callback) {
   var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
-  var dialog = new ui.Dialog(chrome.i18n.getMessage(
+  var dialog = new dialogs.Generic(chrome.i18n.getMessage(
           'promptPassphraseCallbackMessage', uid),
       function(passphrase) {
         goog.dispose(dialog);
         callback(/** @type {string} */ (passphrase));
       },
-      ui.Dialog.InputType.SECURE_TEXT,
+      dialogs.InputType.SECURE_TEXT,
       '',
       chrome.i18n.getMessage('actionEnterPassphrase'),
       chrome.i18n.getMessage('actionCancelPgpAction'));
@@ -556,7 +557,7 @@ ui.Prompt.prototype.renderPassphraseCallback_ = function(uid, callback) {
  */
 ui.Prompt.prototype.renderEncryptionPassphraseDialog_ = function() {
   var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
-  var passphraseDialog = new ui.Dialog(
+  var passphraseDialog = new dialogs.Generic(
       chrome.i18n.getMessage('promptEncryptionPassphraseMessage'),
       goog.bind(function(passphrase) {
         goog.dispose(passphraseDialog);
@@ -564,7 +565,7 @@ ui.Prompt.prototype.renderEncryptionPassphraseDialog_ = function() {
           this.renderEncryptionPassphraseConfirmDialog_(passphrase);
         }
       }, this),
-      ui.Dialog.InputType.SECURE_TEXT,
+      dialogs.InputType.SECURE_TEXT,
       '',
       chrome.i18n.getMessage('actionEnterPassphrase'),
       chrome.i18n.getMessage('actionCancelPgpAction'));
@@ -583,7 +584,7 @@ ui.Prompt.prototype.renderEncryptionPassphraseDialog_ = function() {
 ui.Prompt.prototype.renderEncryptionPassphraseConfirmDialog_ =
     function(passphrase) {
   var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
-  var confirmDialog = new ui.Dialog(
+  var confirmDialog = new dialogs.Generic(
       chrome.i18n.getMessage('promptEncryptionPassphraseConfirmMessage'),
       goog.bind(function(confirmedPassphrase) {
         goog.dispose(confirmDialog);
@@ -591,17 +592,17 @@ ui.Prompt.prototype.renderEncryptionPassphraseConfirmDialog_ =
           var chip = new ext.Chip(passphrase, true);
           this.chipHolder_.addChip(chip);
         } else {
-          var errorDialog = new ui.Dialog(
+          var errorDialog = new dialogs.Generic(
               chrome.i18n.getMessage('keyMgmtPassphraseMismatchLabel'),
               function() {
                 goog.dispose(errorDialog);
               },
-              ui.Dialog.InputType.NONE);
+              dialogs.InputType.NONE);
           this.addChild(errorDialog, false);
           errorDialog.render(popupElem);
         }
       }, this),
-      ui.Dialog.InputType.SECURE_TEXT,
+      dialogs.InputType.SECURE_TEXT,
       '',
       chrome.i18n.getMessage('actionEnterPassphrase'),
       chrome.i18n.getMessage('actionCancelPgpAction'));
@@ -978,12 +979,12 @@ ui.Prompt.prototype.saveDraft_ = function(origin, evt) {
 
     if (encryptionKeys.length == 0 && evt.type == goog.events.EventType.CLICK) {
       var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
-      var dialog = new ui.Dialog(
+      var dialog = new dialogs.Generic(
           chrome.i18n.getMessage('promptNoEncryptionKeysFound'),
           function() {
             goog.dispose(dialog);
           },
-          ui.Dialog.InputType.NONE);
+          dialogs.InputType.NONE);
 
       this.addChild(dialog, false);
       dialog.render(popupElem);

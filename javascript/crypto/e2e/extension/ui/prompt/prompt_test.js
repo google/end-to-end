@@ -17,8 +17,9 @@
 
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.constants');
-goog.require('e2e.ext.ui.Dialog');
 goog.require('e2e.ext.ui.Prompt');
+goog.require('e2e.ext.ui.dialogs.Generic');
+goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.openpgp.asciiArmor');
@@ -818,7 +819,7 @@ function testSaveDraftLocalStorage() {
 
       for (var childIdx = 0; childIdx < prompt.getChildCount(); childIdx++) {
         var child = prompt.getChildAt(childIdx);
-        if (child instanceof e2e.ext.ui.Dialog) {
+        if (child instanceof e2e.ext.ui.dialogs.Generic) {
           child.dialogCallback_('');
         }
       }
@@ -874,7 +875,7 @@ function testDiscardSavedDraft() {
 
       for (var childIdx = 0; childIdx < prompt.getChildCount(); childIdx++) {
         var child = prompt.getChildAt(childIdx);
-        if (child instanceof e2e.ext.ui.Dialog) {
+        if (child instanceof e2e.ext.ui.dialogs.Generic) {
           child.dialogCallback_();
         }
       }
@@ -896,16 +897,16 @@ function testSaveDraftNoKeys() {
   stubs.set(prompt.pgpLauncher_, 'updateSelectedContent',
       mockControl.createFunctionMock('updateSelectedContent'));
 
-  stubs.setPath('e2e.ext.ui.Dialog',
-      mockControl.createConstructorMock(e2e.ext.ui, 'Dialog'));
+  stubs.setPath('e2e.ext.ui.dialogs.Generic',
+      mockControl.createConstructorMock(e2e.ext.ui.dialogs, 'Generic'));
   var callbackArg = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  e2e.ext.ui.Dialog('promptNoEncryptionKeysFound',
+  e2e.ext.ui.dialogs.Generic('promptNoEncryptionKeysFound',
       callbackArg,
-      e2e.ext.ui.Dialog.InputType.NONE);
+      e2e.ext.ui.dialogs.InputType.NONE);
 
   stubs.replace(goog, 'dispose', mockControl.createFunctionMock('dispose'));
   var disposeArg = new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    return arg instanceof e2e.ext.ui.Dialog;
+    return arg instanceof e2e.ext.ui.dialogs.Generic;
   });
   goog.dispose(disposeArg);
 

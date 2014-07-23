@@ -20,8 +20,9 @@ goog.provide('e2e.ext.ui.Welcome');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.messages');
-goog.require('e2e.ext.ui.Dialog');
+goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.ImportConfirmation');
+goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.panels.GenerateKey');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
 goog.require('e2e.ext.ui.preferences');
@@ -194,10 +195,10 @@ ui.Welcome.prototype.generateKey_ =
 
     pgpCtx.generateKey(keyAlgo, keyLength, subkeyAlgo, subkeyLength, name,
         comments, email, expDate).addCallback(goog.bind(function(key) {
-      var dialog = new ui.Dialog(
+      var dialog = new dialogs.Generic(
           chrome.i18n.getMessage('welcomeGenKeyConfirm'),
           this.hideKeyringSetup_,
-          ui.Dialog.InputType.NONE);
+          dialogs.InputType.NONE);
       this.removeChild(this.genKeyForm_, false);
       this.addChild(dialog, false);
       dialog.decorate(this.genKeyForm_.getElement());
@@ -229,10 +230,10 @@ ui.Welcome.prototype.importKeyring_ = function(file) {
                       this), contents)
                       .addCallback(goog.bind(
                           /** @this {ui.Welcome} */ function(res) {
-                        var dialog = new ui.Dialog(
+                        var dialog = new dialogs.Generic(
                             chrome.i18n.getMessage('welcomeKeyImport'),
                             this.hideKeyringSetup_,
-                            ui.Dialog.InputType.NONE);
+                            dialogs.InputType.NONE);
                         this.removeChild(this.keyringMgmt_, false);
                         this.addChild(dialog, false);
                         dialog.decorate(this.keyringMgmt_.getElement());
@@ -257,7 +258,7 @@ ui.Welcome.prototype.updateKeyringPassphrase_ = function(passphrase) {
   this.getContext_(goog.bind(function(pgpCtx) {
     pgpCtx.changeKeyRingPassphrase(passphrase);
 
-    var dialog = new ui.Dialog(
+    var dialog = new dialogs.Generic(
         chrome.i18n.getMessage('keyMgmtChangePassphraseSuccessMsg'),
         goog.bind(function() {
         this.removeChild(dialog, false);
@@ -269,7 +270,7 @@ ui.Welcome.prototype.updateKeyringPassphrase_ = function(passphrase) {
           this.keyringMgmt_.decorate(dialog.getElement());
           this.keyringMgmt_.setKeyringEncrypted(pgpCtx.isKeyRingEncrypted());
         }, this),
-        ui.Dialog.InputType.NONE);
+        dialogs.InputType.NONE);
     this.removeChild(this.keyringMgmt_, false);
     this.addChild(dialog, false);
     dialog.decorate(this.keyringMgmt_.getElement());
@@ -287,14 +288,14 @@ ui.Welcome.prototype.updateKeyringPassphrase_ = function(passphrase) {
  */
 ui.Welcome.prototype.renderPassphraseCallback_ = function(uid, callback) {
   var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
-  var dialog = new ui.Dialog(chrome.i18n.getMessage(
+  var dialog = new dialogs.Generic(chrome.i18n.getMessage(
           'promptPassphraseCallbackMessage', uid),
       function(passphrase) {
         goog.dispose(dialog);
         callback(/** @type {string} */ (passphrase));
       },
       // Use a password field to ask for the passphrase.
-      ui.Dialog.InputType.SECURE_TEXT,
+      dialogs.InputType.SECURE_TEXT,
       '',
       chrome.i18n.getMessage('actionEnterPassphrase'),
       chrome.i18n.getMessage('actionCancelPgpAction'));

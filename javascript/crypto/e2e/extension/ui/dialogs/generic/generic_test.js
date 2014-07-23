@@ -15,7 +15,8 @@
  * @fileoverview Tests for the generic dialog.
  */
 
-goog.require('e2e.ext.ui.Dialog');
+goog.require('e2e.ext.ui.dialogs.Generic');
+goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.ui.Component');
@@ -24,10 +25,10 @@ var dialog = null;
 
 
 function setUp() {
-  dialog = new e2e.ext.ui.Dialog(
+  dialog = new e2e.ext.ui.dialogs.Generic(
       'message',
       function() {},
-      e2e.ext.ui.Dialog.InputType.SECURE_TEXT,
+      e2e.ext.ui.dialogs.InputType.SECURE_TEXT,
       'placeholder');
 
   var parent = new goog.ui.Component();
