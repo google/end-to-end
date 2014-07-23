@@ -114,7 +114,7 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.prototype.decrypt =
       e2e.cipher.factory.require(algorithm, keyObj));
   var iv = goog.array.repeat(0, cipher.blockSize);
   var cfbCipher = new e2e.ciphermode.Cfb(cipher);
-  var plaintext = /** @type !e2e.ByteArray */ (
+  var plaintext = /** @type {!e2e.ByteArray} */ (
       e2e.async.Result.getValue(cfbCipher.decrypt(this.encryptedData, iv)));
   // MDC is at end of packet. It's 2 bytes of header and 20 bytes of hash.
   var mdc = plaintext.splice(-20, 20);
@@ -122,14 +122,6 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.prototype.decrypt =
   var mdcCalculated = sha1.hash(plaintext);
   var mdcHeader = plaintext.splice(-2, 2);
   var prefix = plaintext.splice(0, cipher.blockSize + 2);
-  if ((prefix[prefix.length - 1] != prefix[prefix.length - 3]) ||
-      (prefix[prefix.length - 2] != prefix[prefix.length - 4])) {
-    throw new e2e.openpgp.error.DecryptError('Repeating bytes mismatch.');
-  }
-  if (!e2e.compareByteArray(mdcHeader, [0xD3, 0x14])) {
-    throw new e2e.openpgp.error.DecryptError(
-        'Modification Detection Code not properly formatted.');
-  }
   if (!e2e.compareByteArray(mdc, mdcCalculated)) {
     throw new e2e.openpgp.error.DecryptError(
         'Modification Detection Code has incorrect value.');

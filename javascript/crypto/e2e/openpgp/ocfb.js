@@ -48,13 +48,13 @@ e2e.openpgp.Ocfb = function(cipher, resync) {
 goog.inherits(e2e.openpgp.Ocfb, e2e.ciphermode.CipherMode);
 
 
-// TODO(user) Is there a way to actually make these IV arguments optional
-// so that there are no compiler warnings?
 /** @inheritDoc */
-e2e.openpgp.Ocfb.prototype.encrypt = function(data, opt_unused_iv) {
+e2e.openpgp.Ocfb.prototype.encrypt = function(data, opt_iv) {
   var rnd = e2e.random.getRandomBytes(this.cipher.blockSize);
   return this.cipher.encrypt(rnd).addCallback(function(ciphertext) {
-    ciphertext.push(ciphertext[0], ciphertext[1]);
+    // Generate a bad resync on purpose. See Issue 114.
+    // https://eprint.iacr.org/2005/033.pdf
+    ciphertext.push(0xBA, 0xDD);
     var iv;
     if (this.resync) {
       iv = ciphertext.slice(2, this.cipher.blockSize + 2);
@@ -69,7 +69,7 @@ e2e.openpgp.Ocfb.prototype.encrypt = function(data, opt_unused_iv) {
 
 
 /** @inheritDoc */
-e2e.openpgp.Ocfb.prototype.decrypt = function(data, opt_unused_iv) {
+e2e.openpgp.Ocfb.prototype.decrypt = function(data, opt_iv) {
   var iv;
   if (this.resync) {
     iv = data.slice(2, this.cipher.blockSize + 2);
