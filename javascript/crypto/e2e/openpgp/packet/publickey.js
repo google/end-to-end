@@ -20,6 +20,7 @@
 goog.provide('e2e.openpgp.packet.PublicKey');
 
 goog.require('e2e');
+goog.require('e2e.algorithm.KeyLocations');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.factory');
 goog.require('e2e.hash.Md5');
@@ -167,7 +168,9 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
   var cipherAlgorithm = e2e.openpgp.constants.getAlgorithm(
       e2e.openpgp.constants.Type.PUBLIC_KEY, cipherId);
   var cipher;
-  var keyData;
+  var keyData = {};
+  keyData.loc = e2e.algorithm.KeyLocations.JAVASCRIPT;
+  // TODO(user): Clean up these types, add loc fields when b/16299258 is fixed.
   switch (cipherAlgorithm) {
     case e2e.cipher.Algorithm.RSA:
       var n = e2e.openpgp.Mpi.parse(body);
@@ -240,7 +243,10 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
           /** @type {e2e.cipher.Algorithm} */ (cipherAlgorithm),
           keyData);
     }
-  } else if (version == 3 || version == 2) {
+  } else {
+    // We threw an exception earlier if it wasn't 2, 3, or 4
+    goog.asserts.assert(version == 3 || version == 2);
+
     // For a V3 key, the eight-octet Key ID consists of the low 64 bits of
     // the public modulus of the RSA key.
     keyId = keyData['n'].slice(-8);

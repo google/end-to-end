@@ -19,6 +19,7 @@
 
 goog.provide('e2e.ecc.Protocol');
 
+goog.require('e2e.algorithm.KeyLocations');
 goog.require('e2e.ecc.DomainParam');
 goog.require('goog.asserts');
 
@@ -134,6 +135,7 @@ e2e.ecc.Protocol.generateKeyPair = function(curve, opt_privateKey) {
   return {
     'privKey': temp['privateKey'],
     'pubKey': temp['publicKey'],
-    'curve': e2e.ecc.DomainParam.curveOidFromCurveName(curve)
+    'curve': e2e.ecc.DomainParam.curveOidFromCurveName(curve),
+    'loc': e2e.algorithm.KeyLocations.JAVASCRIPT
   };
 };

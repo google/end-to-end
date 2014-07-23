@@ -16,8 +16,10 @@
  */
 
 /** @suppress {extraProvide} provide the whole namespace for simplicity */
+goog.provide('e2e.algorithm.AsymmetricKey');
+goog.provide('e2e.algorithm.KeyLocations');
+/** @suppress {extraProvide} provide the whole namespace for simplicity */
 goog.provide('e2e.cipher.key');
-goog.provide('e2e.cipher.key.AsymmetricKey');
 goog.provide('e2e.cipher.key.Ecdh');
 goog.provide('e2e.cipher.key.ElGamal');
 goog.provide('e2e.cipher.key.Key');
@@ -31,11 +33,28 @@ goog.provide('e2e.signer.key.Key');
 goog.provide('e2e.signer.key.Rsa');
 
 
+/**
+ * Enum of various possible locations for keys. Each key is in exactly one of
+ * these.
+ * This currently means that each key needs a loc field, which is hackish.
+ * This file would be somewhat more maintainable if we added the KeyLocations
+ * field to AsymmetricKey, but then that type and all references in it would
+ * have another layer of indirection, which would make the rest of the code
+ * more complicated.
+ * TODO(user): Figure out a better way to handle this issue.
+ * @enum {string}
+ */
+e2e.algorithm.KeyLocations = {
+  JAVASCRIPT: 'JAVASCRIPT',
+  WEB_CRYPTO: 'WEB_CRYPTO',
+  HARDWARE: 'HARDWARE'
+};
 
 /**
  * @typedef {?{p: !e2e.ByteArray, q: !e2e.ByteArray,
  *     g: !e2e.ByteArray, x: !e2e.ByteArray,
- *     y: !e2e.ByteArray}}
+ *     y: !e2e.ByteArray,
+ *     loc: (undefined|!e2e.algorithm.KeyLocations)}}
  */
 e2e.signer.key.Dsa;
 
@@ -43,15 +62,17 @@ e2e.signer.key.Dsa;
 /**
  * @typedef {?{curve: ?e2e.ecc.PrimeCurveOid,
  *     pubKey: !e2e.ByteArray,
- *     privKey: !e2e.ByteArray}}
+ *     privKey: ?e2e.ByteArray,
+ *     loc: (undefined|!e2e.algorithm.KeyLocations)}}
  */
 e2e.signer.key.Ecdsa;
 
 
 /**
- * @typedef {?{d: !e2e.ByteArray, e: !e2e.ByteArray,
- *     n: !e2e.ByteArray, p: !e2e.ByteArray,
- *     q: !e2e.ByteArray}}
+ * @typedef {?{d: (e2e.ByteArray|undefined), e: !e2e.ByteArray,
+ *     n: !e2e.ByteArray, p: (e2e.ByteArray|undefined),
+ *     q: (e2e.ByteArray|undefined),
+ *     loc: (undefined|!e2e.algorithm.KeyLocations)}}
  */
 e2e.signer.key.Rsa;
 
@@ -64,9 +85,10 @@ e2e.signer.key.Key;
 
 
 /**
- * @typedef {?{d: !e2e.ByteArray, e: !e2e.ByteArray,
- *     n: !e2e.ByteArray, p: !e2e.ByteArray,
- *     q: !e2e.ByteArray}}
+ * @typedef {?{d: (e2e.ByteArray|undefined), e: !e2e.ByteArray,
+ *     n: !e2e.ByteArray, p: (e2e.ByteArray|undefined),
+ *     q: (e2e.ByteArray|undefined),
+ *     loc: (undefined|!e2e.algorithm.KeyLocations)}}
  */
 e2e.cipher.key.Rsa;
 
@@ -76,14 +98,16 @@ e2e.cipher.key.Rsa;
  *     kdfInfo: !e2e.ByteArray,
  *     pubKey: !e2e.ByteArray,
  *     fingerprint: !e2e.ByteArray,
- *     privKey: !e2e.ByteArray}}
+ *     privKey: ?e2e.ByteArray,
+ *     loc: (undefined|!e2e.algorithm.KeyLocations)}}
  */
 e2e.cipher.key.Ecdh;
 
 
 /**
- * @typedef {?{p: !e2e.ByteArray, y: !e2e.ByteArray,
- *     g: !e2e.ByteArray, x: !e2e.ByteArray}}
+  * @typedef {?{p: !e2e.ByteArray, y: !e2e.ByteArray,
+  *     g: !e2e.ByteArray, x: !e2e.ByteArray,
+  *     loc: (undefined|!e2e.algorithm.KeyLocations)}}
  */
 e2e.cipher.key.ElGamal;
 
@@ -92,7 +116,7 @@ e2e.cipher.key.ElGamal;
  * @typedef {e2e.cipher.key.ElGamal|e2e.cipher.key.Ecdh|
  *     e2e.cipher.key.Rsa|e2e.signer.key.Key|null}
  */
-e2e.cipher.key.AsymmetricKey;
+e2e.algorithm.AsymmetricKey;
 
 
 /**
@@ -102,7 +126,7 @@ e2e.cipher.key.SymmetricKey;
 
 
 /**
- * @typedef {e2e.cipher.key.AsymmetricKey|
+ * @typedef {e2e.algorithm.AsymmetricKey|
  *     e2e.cipher.key.SymmetricKey|
  *     {passphrase: !e2e.ByteArray}|null}
  */

@@ -24,6 +24,7 @@ goog.provide('e2e.openpgp.EncryptedCipher.LockedKeyError');
 
 goog.require('e2e');
 goog.require('e2e.AlgorithmImpl');
+goog.require('e2e.algorithm.KeyLocations');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.AsymmetricCipher');
@@ -405,6 +406,8 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey_ = function(keyBytes) {
   default:
     throw new e2e.openpgp.error.InvalidArgumentsError('Unknown algorithm');
   }
+  // TODO(user): Figure out what loc this is once multiple locs are supported.
+  keyData.loc = e2e.algorithm.KeyLocations.JAVASCRIPT;
   this.cipher_.setKey(keyData);
   this.locked_ = false;
   this.keyBytes_ = keyBytes;
