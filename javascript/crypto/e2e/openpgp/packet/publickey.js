@@ -175,7 +175,7 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
     case e2e.cipher.Algorithm.RSA:
       var n = e2e.openpgp.Mpi.parse(body);
       var e = e2e.openpgp.Mpi.parse(body);
-      keyData = /** @type e2e.cipher.key.Rsa */({
+      keyData = /** @type {!e2e.cipher.key.Rsa} */({
         'n': goog.array.clone(n),
         'e': goog.array.clone(e)});
       cipher = e2e.cipher.factory.require(cipherAlgorithm, keyData);
@@ -184,7 +184,7 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
       var p = e2e.openpgp.Mpi.parse(body);
       var g = e2e.openpgp.Mpi.parse(body);
       var y = e2e.openpgp.Mpi.parse(body);
-      keyData = /** @type e2e.cipher.key.ElGamal */(
+      keyData = /** @type {!e2e.cipher.key.ElGamal} */(
           {'p': goog.array.clone(p),
            'g': goog.array.clone(g),
            'y': goog.array.clone(y)});
@@ -206,7 +206,7 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
       var curveSize = body.shift();
       var curve = body.splice(0, curveSize);
       var pubKey = e2e.openpgp.Mpi.parse(body);
-      keyData = /** @type e2e.signer.key.Ecdsa */(
+      keyData = /** @type {!e2e.signer.key.Ecdsa} */(
             {'curve': goog.array.concat(curveSize, curve),
              'pubKey': goog.array.clone(pubKey)});
       cipher = e2e.signer.factory.require(cipherAlgorithm, keyData);
@@ -216,7 +216,7 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
       var curve = body.splice(0, curveSize);
       var pubKey = e2e.openpgp.Mpi.parse(body);
       var kdfInfo = body.splice(0, 4);
-      keyData = /** @type e2e.cipher.key.Ecdh */(
+      keyData = /** @type {!e2e.cipher.key.Ecdh} */(
             {'curve': goog.array.concat(curveSize, curve),
              'kdfInfo': goog.array.clone(kdfInfo),
              'pubKey': goog.array.clone(pubKey)});
