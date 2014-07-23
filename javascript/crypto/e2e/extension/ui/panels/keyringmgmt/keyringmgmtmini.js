@@ -175,7 +175,14 @@ panels.KeyringMgmtMini.prototype.enterDocument = function() {
           goog.dom.getElementByClass(
               constants.CssClass.ACTION, passphraseConfirmDiv),
           goog.events.EventType.CLICK,
-          this.updateKeyringPassphrase_);
+          this.updateKeyringPassphrase_).
+      listen(
+          goog.dom.getElementByClass(
+              constants.CssClass.CANCEL, passphraseConfirmDiv),
+          goog.events.EventType.CLICK,
+          goog.partial(
+              this.showKeyringMgmtForm_,
+              constants.ElementId.KEYRING_OPTIONS_DIV));
 
 };
 
@@ -193,6 +200,13 @@ panels.KeyringMgmtMini.prototype.showKeyringMgmtForm_ = function(formId) {
 
   goog.dom.classlist.remove(
       goog.dom.getElement(formId), constants.CssClass.HIDDEN);
+
+  if (formId == constants.ElementId.KEYRING_PASSPHRASE_CHANGE_DIV ||
+      formId == constants.ElementId.KEYRING_PASSPHRASE_CONFIRM_DIV) {
+    var inputElem = goog.dom.getElement(formId).querySelector('input');
+    inputElem.value = '';
+    inputElem.focus();
+  }
 };
 
 

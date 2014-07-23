@@ -212,8 +212,7 @@ function testShowKeyringMgmtForm() {
   panel.render(document.body);
 
   var importDiv = goog.dom.getElement(constants.ElementId.KEYRING_IMPORT_DIV);
-  var optionsDiv = goog.dom.getElement(
-      constants.ElementId.KEYRING_OPTIONS_DIV);
+  var optionsDiv = goog.dom.getElement(constants.ElementId.KEYRING_OPTIONS_DIV);
   assertTrue(goog.dom.classlist.contains(importDiv, constants.CssClass.HIDDEN));
 
   panel.showKeyringMgmtForm_(constants.ElementId.KEYRING_IMPORT_DIV);
@@ -221,6 +220,7 @@ function testShowKeyringMgmtForm() {
       goog.dom.classlist.contains(optionsDiv, constants.CssClass.HIDDEN));
   panel.showKeyringMgmtForm_(constants.ElementId.KEYRING_OPTIONS_DIV);
   assertTrue(goog.dom.classlist.contains(importDiv, constants.CssClass.HIDDEN));
+  panel.showKeyringMgmtForm_(constants.ElementId.KEYRING_PASSPHRASE_CHANGE_DIV);
 }
 
 
