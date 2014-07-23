@@ -147,7 +147,8 @@ textarea:focus,
   -webkit-appearance: initial;
 }
 
-#passphraseEncryptionLink {
+#passphraseEncryptionLink,
+.select-all-link {
   color: #acacac;
   cursor: pointer;
   margin-right: 10px;
@@ -155,7 +156,8 @@ textarea:focus,
   text-align: right;
 }
 
-#passphraseEncryptionLink:hover {
+#passphraseEncryptionLink:hover,
+.select-all-link:hover {
   color: #0c0c0c;
 }
 

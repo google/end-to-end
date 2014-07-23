@@ -127,10 +127,7 @@ function testAllSelected() {
   mockControl.$replayAll();
 
   parent.addChild(dialog, true);
-  goog.array.forEach(
-      document.querySelectorAll('input[type=checkbox]'), function(checkbox) {
-        checkbox.checked = true;
-      });
+  dialog.selectAll_();
   dialog.invokeCallback(false);
 
   mockControl.$verifyAll();

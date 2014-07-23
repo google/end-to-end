@@ -366,5 +366,10 @@
   "errorUnableToImportKey": {
     "message": "Unable to import key.",
     "description": "A sentence describing that the extension is unable to import the provided key(s)."
+  },
+  "dialogSelectAll": {
+    "message": "Select all",
+    "description": "A fragment indicating to the user to select all items in the dialog."
   }
+
 }

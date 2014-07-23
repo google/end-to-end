@@ -113,6 +113,7 @@ e2e.ext.constants.CssClass = {
   /* Common UI components */
   DIALOG_INPUT: 'dialog-input',
   PREFERENCE_DIV: 'preference-div',
+  SELECT_ALL_LINK: 'select-all-link',
 
   /* Used in the generate PGP keys form. */
   EMAIL: 'email',

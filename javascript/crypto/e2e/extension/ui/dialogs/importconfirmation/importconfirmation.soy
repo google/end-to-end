@@ -18,6 +18,7 @@
  * Renders the text for key import confirmation dialog.
  * @param promptImportKeyConfirmLabel A sentence asking the user to confirm
  *     the key import.
+ * @param selectAllLabel The label for the "select all" link.
  * @param keys Array of keys (e2e.openpgp.Keys).
  * @param secretKeyDescription Text describing a secret key.
  * @param publicKeyDescription Text describing a public key.
@@ -25,7 +26,9 @@
  * @param publicSubKeyDescription Text describing a public subkey.
  */
 {template .ImportKeyConfirm}
-  <p>{$promptImportKeyConfirmLabel}</p>
+  <p>{$promptImportKeyConfirmLabel} (
+    <a class="{e2e.ext.constants.CssClass.SELECT_ALL_LINK}">{$selectAllLabel}</a>)
+  </p>
   <div>
     {foreach $key in $keys}
       <div class="{e2e.ext.constants.CssClass.KEY_META}">

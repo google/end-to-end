@@ -49,6 +49,7 @@ dialogs.ImportConfirmation = function(keys, callback) {
       templates.ImportKeyConfirm({
         promptImportKeyConfirmLabel: chrome.i18n.getMessage(
             'promptImportKeyConfirmLabel'),
+        selectAllLabel: chrome.i18n.getMessage('dialogSelectAll'),
         keys: keys,
         secretKeyDescription: chrome.i18n.getMessage('secretKeyDescription'),
         publicKeyDescription: chrome.i18n.getMessage('publicKeyDescription'),
@@ -75,6 +76,11 @@ dialogs.ImportConfirmation.prototype.enterDocument = function() {
       goog.events.EventType.CHANGE,
       this.handleSelect_,
       true);
+
+  this.getHandler().listen(
+      this.getElementByClass(constants.CssClass.SELECT_ALL_LINK),
+      goog.events.EventType.CLICK,
+      this.selectAll_);
 };
 
 
@@ -110,6 +116,20 @@ dialogs.ImportConfirmation.prototype.handleSelect_ = function(changeEvt) {
         });
   }
 };
+
+
+/**
+ * Selects all keys in the dialog.
+ * @private
+ */
+dialogs.ImportConfirmation.prototype.selectAll_ = function() {
+  goog.array.forEach(
+      this.getElement().querySelectorAll('input[data-mainkey]'),
+      function(checkbox) {
+        checkbox.checked = true;
+      });
+};
+
 
 /** @override */
 dialogs.ImportConfirmation.prototype.invokeCallback = function(sendBlank) {

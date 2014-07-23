@@ -22,29 +22,29 @@ goog.require('goog.i18n.bidi');
  * @suppress {checkTypes|uselessCode}
  */
 e2e.ext.ui.templates.dialogs.importconfirmation.ImportKeyConfirm = function(opt_data, opt_ignored, opt_ijData) {
-  var output = '<p>' + soy.$$escapeHtml(opt_data.promptImportKeyConfirmLabel) + '</p><div>';
-  var keyList6 = opt_data.keys;
-  var keyListLen6 = keyList6.length;
-  for (var keyIndex6 = 0; keyIndex6 < keyListLen6; keyIndex6++) {
-    var keyData6 = keyList6[keyIndex6];
+  var output = '<p>' + soy.$$escapeHtml(opt_data.promptImportKeyConfirmLabel) + ' (<a class="' + soy.$$escapeHtmlAttribute(e2e.ext.constants.CssClass.SELECT_ALL_LINK) + '">' + soy.$$escapeHtml(opt_data.selectAllLabel) + '</a>)</p><div>';
+  var keyList10 = opt_data.keys;
+  var keyListLen10 = keyList10.length;
+  for (var keyIndex10 = 0; keyIndex10 < keyListLen10; keyIndex10++) {
+    var keyData10 = keyList10[keyIndex10];
     output += '<div class="' + soy.$$escapeHtmlAttribute(e2e.ext.constants.CssClass.KEY_META) + '"><p><strong>';
-    var uidList10 = keyData6.uids;
-    var uidListLen10 = uidList10.length;
-    for (var uidIndex10 = 0; uidIndex10 < uidListLen10; uidIndex10++) {
-      var uidData10 = uidList10[uidIndex10];
-      output += soy.$$escapeHtml(uidData10) + ((! (uidIndex10 == uidListLen10 - 1)) ? ', ' : '');
+    var uidList14 = keyData10.uids;
+    var uidListLen14 = uidList14.length;
+    for (var uidIndex14 = 0; uidIndex14 < uidListLen14; uidIndex14++) {
+      var uidData14 = uidList14[uidIndex14];
+      output += soy.$$escapeHtml(uidData14) + ((! (uidIndex14 == uidListLen14 - 1)) ? ', ' : '');
     }
     output += '</strong>:</p>';
-    var keyId__soy17 = 'key-' + ('' + keyIndex6);
-    keyId__soy17 = soydata.$$markUnsanitizedTextForInternalBlocks(keyId__soy17);
-    output += '<br><input id="' + soy.$$escapeHtmlAttribute(keyId__soy17) + '" type="checkbox" data-mainkey="' + soy.$$escapeHtmlAttribute(keyIndex6) + '"><label for="' + soy.$$escapeHtmlAttribute(keyId__soy17) + '">' + e2e.ext.ui.templates.dialogs.importconfirmation.KeyPacketInfo({keyPacketInfo: keyData6.key, secretKeyDescription: opt_data.secretKeyDescription, publicKeyDescription: opt_data.publicKeyDescription}, null, opt_ijData) + '</label>';
-    var subKeyInfoList32 = keyData6.subKeys;
-    var subKeyInfoListLen32 = subKeyInfoList32.length;
-    for (var subKeyInfoIndex32 = 0; subKeyInfoIndex32 < subKeyInfoListLen32; subKeyInfoIndex32++) {
-      var subKeyInfoData32 = subKeyInfoList32[subKeyInfoIndex32];
-      var subKeyId__soy33 = '' + keyId__soy17 + '-sub-' + ('' + subKeyInfoIndex32);
-      subKeyId__soy33 = soydata.$$markUnsanitizedTextForInternalBlocks(subKeyId__soy33);
-      output += '<br><input id="' + soy.$$escapeHtmlAttribute(subKeyId__soy33) + '" type="checkbox" data-mainkey="' + soy.$$escapeHtmlAttribute(keyIndex6) + '" data-subkey="yes" class="' + soy.$$escapeHtmlAttribute(e2e.ext.constants.CssClass.KEY_SUBKEY) + '"><label for="' + soy.$$escapeHtmlAttribute(subKeyId__soy33) + '">' + e2e.ext.ui.templates.dialogs.importconfirmation.KeyPacketInfo({keyPacketInfo: subKeyInfoData32, secretKeyDescription: opt_data.secretSubKeyDescription, publicKeyDescription: opt_data.publicSubKeyDescription}, null, opt_ijData) + '</label>';
+    var keyId__soy21 = 'key-' + ('' + keyIndex10);
+    keyId__soy21 = soydata.$$markUnsanitizedTextForInternalBlocks(keyId__soy21);
+    output += '<br><input id="' + soy.$$escapeHtmlAttribute(keyId__soy21) + '" type="checkbox" data-mainkey="' + soy.$$escapeHtmlAttribute(keyIndex10) + '"><label for="' + soy.$$escapeHtmlAttribute(keyId__soy21) + '">' + e2e.ext.ui.templates.dialogs.importconfirmation.KeyPacketInfo({keyPacketInfo: keyData10.key, secretKeyDescription: opt_data.secretKeyDescription, publicKeyDescription: opt_data.publicKeyDescription}, null, opt_ijData) + '</label>';
+    var subKeyInfoList36 = keyData10.subKeys;
+    var subKeyInfoListLen36 = subKeyInfoList36.length;
+    for (var subKeyInfoIndex36 = 0; subKeyInfoIndex36 < subKeyInfoListLen36; subKeyInfoIndex36++) {
+      var subKeyInfoData36 = subKeyInfoList36[subKeyInfoIndex36];
+      var subKeyId__soy37 = '' + keyId__soy21 + '-sub-' + ('' + subKeyInfoIndex36);
+      subKeyId__soy37 = soydata.$$markUnsanitizedTextForInternalBlocks(subKeyId__soy37);
+      output += '<br><input id="' + soy.$$escapeHtmlAttribute(subKeyId__soy37) + '" type="checkbox" data-mainkey="' + soy.$$escapeHtmlAttribute(keyIndex10) + '" data-subkey="yes" class="' + soy.$$escapeHtmlAttribute(e2e.ext.constants.CssClass.KEY_SUBKEY) + '"><label for="' + soy.$$escapeHtmlAttribute(subKeyId__soy37) + '">' + e2e.ext.ui.templates.dialogs.importconfirmation.KeyPacketInfo({keyPacketInfo: subKeyInfoData36, secretKeyDescription: opt_data.secretSubKeyDescription, publicKeyDescription: opt_data.publicSubKeyDescription}, null, opt_ijData) + '</label>';
     }
     output += '</div>';
   }
