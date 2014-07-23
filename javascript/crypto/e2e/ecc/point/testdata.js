@@ -17,7 +17,6 @@
  */
 
 goog.provide('e2e.ecc.point.testData');
-goog.provide('e2e.ecc.point.testData.P_256Vectors');
 goog.setTestOnly();
 
 
@@ -43,7 +42,7 @@ e2e.ecc.point.testData.G2 = [0x04,
  *     - P = dG, where G is the base point;
  *     - Z is the shared secret, which is the X coordinate of dQ.
  */
-e2e.ecc.point.testData.P_256Vectors = [
+e2e.ecc.point.testData.P256_VECTORS = [
   {
     'Qx': '700c48f77f56584c5cc632ca65640db91b6bacce3a4df6b42ce7cc838833d287',
     'Qy': 'db71e509e3fd9b060ddb20ba5c51dcc5948d46fbf640dfe0441782cab85fa4ac',

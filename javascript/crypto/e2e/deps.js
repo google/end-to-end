@@ -74,7 +74,7 @@ goog.addDependency('../crypto/e2e/ecc/point/curve25519.js', ['e2e.ecc.point.Curv
 goog.addDependency('../crypto/e2e/ecc/point/ed25519.js', ['e2e.ecc.point.Ed25519', 'e2e.ecc.point.Ed25519X'], ['e2e.BigNum', 'e2e.ecc.Element', 'e2e.ecc.point.Point', 'goog.array', 'goog.asserts']);
 goog.addDependency('../crypto/e2e/ecc/point/nist.js', ['e2e.ecc.point.Nist'], ['e2e.BigNum', 'e2e.ecc.Element', 'e2e.ecc.point.Point', 'e2e.fixedtiming', 'goog.array', 'goog.asserts']);
 goog.addDependency('../crypto/e2e/ecc/point/point.js', ['e2e.ecc.point.Point'], []);
-goog.addDependency('../crypto/e2e/ecc/point/testdata.js', ['e2e.ecc.point.testData', 'e2e.ecc.point.testData.P_256Vectors'], []);
+goog.addDependency('../crypto/e2e/ecc/point/testdata.js', ['e2e.ecc.point.testData'], []);
 goog.addDependency('../crypto/e2e/ecc/protocol.js', ['e2e.ecc.Protocol'], ['e2e.ecc.DomainParam', 'goog.asserts']);
 goog.addDependency('../crypto/e2e/error.js', ['e2e.error.Error', 'e2e.error.InvalidArgumentsError', 'e2e.error.UnsupportedError'], ['goog.debug.Error']);
 goog.addDependency('../crypto/e2e/fastmodulus.js', ['e2e.FastModulus', 'e2e.FastModulus.FFFFFF', 'e2e.FastModulus.Ox1000000'], ['e2e.BigNum', 'e2e.openpgp.error.InvalidArgumentsError', 'goog.asserts']);
@@ -146,7 +146,7 @@ goog.addDependency('../crypto/e2e/scheme/rsaes.js', ['e2e.scheme.Rsaes'], ['e2e.
 goog.addDependency('../crypto/e2e/scheme/scheme.js', ['e2e.scheme.Scheme'], []);
 goog.addDependency('../crypto/e2e/signer/all.js', ['e2e.signer.all'], ['e2e.signer.Dsa', 'e2e.signer.Ecdsa']);
 goog.addDependency('../crypto/e2e/signer/dsa.js', ['e2e.signer.Dsa'], ['e2e.AlgorithmImpl', 'e2e.BigNum', 'e2e.BigPrimeNum', 'e2e.async.Result', 'e2e.hash.Algorithm', 'e2e.hash.factory', 'e2e.openpgp.error.InvalidArgumentsError', 'e2e.openpgp.error.UnsupportedError', 'e2e.random', 'e2e.signer.Algorithm', 'e2e.signer.Signer', 'e2e.signer.factory', 'goog.asserts']);
-goog.addDependency('../crypto/e2e/signer/dsa_testdata.js', ['e2e.signer.dsaTestData.NISTVectors'], []);
+goog.addDependency('../crypto/e2e/signer/dsa_testdata.js', ['e2e.signer.dsaTestData'], []);
 goog.addDependency('../crypto/e2e/signer/ecdsa.js', ['e2e.signer.Ecdsa'], ['e2e.AlgorithmImpl', 'e2e.async.Result', 'e2e.ecc.DomainParam', 'e2e.ecc.Ecdsa', 'e2e.signer.Algorithm', 'e2e.signer.Signer', 'e2e.signer.factory', 'goog.asserts']);
 goog.addDependency('../crypto/e2e/signer/factory.js', ['e2e.signer.factory'], ['e2e.signer.Error']);
 goog.addDependency('../crypto/e2e/signer/key.js', ['e2e.signer.key', 'e2e.signer.key.Dsa', 'e2e.signer.key.Ecdsa', 'e2e.signer.key.Key', 'e2e.signer.key.Rsa'], []);

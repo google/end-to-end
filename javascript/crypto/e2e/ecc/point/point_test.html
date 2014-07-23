@@ -212,7 +212,7 @@ function testMultiplyWithPublicVectors() {
   var curve = params.curve;
   var g = params.g;
 
-  goog.array.forEach(e2e.ecc.point.testData.P_256Vectors,
+  goog.array.forEach(e2e.ecc.point.testData.P256_VECTORS,
       function(vector) {
         var d = new e2e.BigNum(
             goog.crypt.hexToByteArray(vector['d']));

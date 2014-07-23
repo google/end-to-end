@@ -21,7 +21,7 @@
   goog.require('e2e.hash.all');
   goog.require('e2e.signer.Algorithm');
   goog.require('e2e.signer.Dsa');
-  goog.require('e2e.signer.dsaTestData.NISTVectors');
+  goog.require('e2e.signer.dsaTestData');
   goog.require('e2e.random');
   goog.require('goog.testing.jsunit');
 </script>
@@ -30,7 +30,7 @@
  * Tests DSA with public test vectors downloaded from NIST.
  */
 function testWithNISTVectors() {
-  goog.array.forEach(e2e.signer.dsaTestData.NISTVectors,
+  goog.array.forEach(e2e.signer.dsaTestData.NIST_VECTORS,
       function(vector) {
         var key = {
             'p': vector['P'],
@@ -66,7 +66,7 @@ function testWithNISTVectors() {
  * Tests that invalid signatures are rejected.
  */
 function testInvalidSignature() {
-  var vector = e2e.signer.dsaTestData.NISTVectors[0];
+  var vector = e2e.signer.dsaTestData.NIST_VECTORS[0];
   var key = {
       'p': vector['P'],
       'q': vector['Q'],
