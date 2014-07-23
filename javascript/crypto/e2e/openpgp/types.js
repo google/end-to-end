@@ -25,17 +25,24 @@ goog.provide('e2e.openpgp.ImportKeyResult');
 goog.provide('e2e.openpgp.Key');
 goog.provide('e2e.openpgp.KeyPacketInfo');
 goog.provide('e2e.openpgp.KeyResult');
+goog.provide('e2e.openpgp.KeyRingMap');
+goog.provide('e2e.openpgp.KeyRingType');
 goog.provide('e2e.openpgp.Keys');
+goog.provide('e2e.openpgp.SerializedKeyRing');
+goog.provide('e2e.openpgp.VerifiedDecrypt');
 goog.provide('e2e.openpgp.VerifyDecryptResult');
 goog.provide('e2e.openpgp.VerifyResult');
 /** @suppress {extraProvide} provide the whole namespace for simplicity */
 goog.provide('e2e.openpgp.types');
 
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.ByteArray');
+
 
 
 /**
  * File information for encrypting and decrypting files.
- * @typedef {{filename: string, creationTime: number,
+ * @typedef {?{filename: string, creationTime: number,
  *     charset: (string|undefined)}}
  */
 e2e.openpgp.FileOptions;
@@ -51,7 +58,7 @@ e2e.openpgp.EncryptOptions;
 
 /**
  * Result of a decrypt operation.
- * @typedef {{data: e2e.ByteArray,
+ * @typedef {?{data: !e2e.ByteArray,
  *     options: !e2e.openpgp.FileOptions}}
  */
 e2e.openpgp.DecryptResult;
@@ -59,13 +66,13 @@ e2e.openpgp.DecryptResult;
 
 /**
  * Result of a decrypt operation.
- * @typedef {!e2e.async.Result.<!Array.<e2e.openpgp.Key>>}
+ * @typedef {e2e.async.Result.<!Array.<e2e.openpgp.Key>>}
  */
 e2e.openpgp.GenerateKeyResult;
 
 /**
  * Result of an import key operation.
- * @typedef {!e2e.async.Result.<!Array.<string>>}
+ * @typedef {goog.async.Deferred.<!Array.<string>>}
  */
 e2e.openpgp.ImportKeyResult;
 
@@ -75,7 +82,7 @@ e2e.openpgp.ImportKeyResult;
  * a signature, keys for which signature verification failed (indicating
  * message tampering). Signatures for which keys could not be found are not
  * included in VerifyResults.
- * @typedef {{
+ * @typedef {?{
  *   success: !Array.<!e2e.openpgp.Key>,
  *   failure: !Array.<!e2e.openpgp.Key>
  * }}
@@ -85,30 +92,31 @@ e2e.openpgp.VerifyResult;
 
 /**
  * Result of a verification and decryption operation.
- * @typedef {!e2e.async.Result.<{
+ * @typedef {{
  *    decrypt: !e2e.openpgp.DecryptResult,
  *    verify: ?e2e.openpgp.VerifyResult
- * }>}
+ * }}
+ */
+e2e.openpgp.VerifiedDecrypt;
+
+
+/**
+ * Result of a verification and decryption operation.
+ * @typedef {e2e.async.Result.<!e2e.openpgp.VerifiedDecrypt>}
  */
 e2e.openpgp.VerifyDecryptResult;
 
 
 /**
  * The result of the encryption and signing operation.
- * @typedef {!e2e.async.Result.<e2e.ByteArray>}
+ * @typedef {e2e.async.Result.<!e2e.ByteArray>|e2e.async.Result.<string>}
  */
 e2e.openpgp.EncryptSignResult;
 
 
 /**
- * The result of a key search operation.
- * @typedef {!e2e.async.Result.<!e2e.openpgp.Keys>}
- */
-e2e.openpgp.KeyResult;
-
-/**
  * Single key packet information.
- * @typedef {{fingerprint: e2e.ByteArray, secret: boolean,
+ * @typedef {?{fingerprint: !e2e.ByteArray, secret: boolean,
  *     algorithm: string, fingerprintHex: string}}
  */
 e2e.openpgp.KeyPacketInfo;
@@ -116,22 +124,51 @@ e2e.openpgp.KeyPacketInfo;
 
 /**
  * Key object.
- * @typedef {{subKeys: !Array.<e2e.openpgp.KeyPacketInfo>, uids:
- *     !Array.<string>, key: e2e.openpgp.KeyPacketInfo, serialized:
- *     e2e.ByteArray}}
+ * @typedef {?{subKeys: !Array.<!e2e.openpgp.KeyPacketInfo>, uids:
+ *     !Array.<string>, key: !e2e.openpgp.KeyPacketInfo, serialized:
+ *     !e2e.ByteArray}}
  */
 e2e.openpgp.Key;
 
 
 /**
  * Array of Keys.
- * @typedef {!Array.<!e2e.openpgp.Key>}
+ * @typedef {Array.<!e2e.openpgp.Key>}
  */
 e2e.openpgp.Keys;
 
 
 /**
+ * The result of a key search operation.
+ * @typedef {e2e.async.Result.<!e2e.openpgp.Keys>}
+ */
+e2e.openpgp.KeyResult;
+
+
+/**
  * Armored OpenPGP message.
- * @typedef {{data: e2e.ByteArray, charset: (string|undefined)}}
+ * @typedef {?{data: !e2e.ByteArray, charset: (string|undefined)}}
  */
 e2e.openpgp.ArmoredMessage;
+
+
+/**
+ * @typedef {Object.<!Array.<string>>}
+ */
+e2e.openpgp.SerializedKeyRing;
+
+
+/**
+ * The key ring map structure.
+ * @typedef {goog.structs.Map.<string,
+ *                            !Array.<!e2e.openpgp.block.TransferableKey>>}
+ */
+e2e.openpgp.KeyRingType;
+
+
+/**
+ * The key ring map structure as used by the context.
+ * @typedef {goog.structs.Map.<string, !Array.<!e2e.openpgp.Key>>}
+ */
+e2e.openpgp.KeyRingMap;
+

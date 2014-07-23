@@ -50,7 +50,7 @@ e2e.openpgp.block.Compressed.prototype.serializeMessage = function() {
 
 /**
  * Extracts a block from the compressed data.
- * @return {e2e.openpgp.block.Block}
+ * @return {!e2e.openpgp.block.Block}
  */
 e2e.openpgp.block.Compressed.prototype.getBlock = function() {
   this.compressedPacket_.decompress();

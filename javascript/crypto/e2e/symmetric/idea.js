@@ -204,9 +204,9 @@ e2e.cipher.Idea.prototype.decrypt = function(data) {
 
 /***
  * Divide the byte array into 64 bit blocks and transform each with the key.
- * @param {e2e.ByteArray} data The data to transform
+ * @param {!e2e.ByteArray} data The data to transform
  * @param {Array.<!e2e.BigNum>} key Transformation key
- * @return {e2e.ByteArray}
+ * @return {!e2e.ByteArray}
  */
 e2e.cipher.Idea.prototype.blockAndTackle = function(data, key) {
   var din = 0; // data index

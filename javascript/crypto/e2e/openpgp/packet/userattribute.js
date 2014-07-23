@@ -52,7 +52,7 @@ e2e.openpgp.packet.UserAttribute.prototype.addCertification =
 
 
 /**
- * @param {e2e.ByteArray} body
+ * @param {!e2e.ByteArray} body
  * @return {e2e.openpgp.packet.UserAttribute}
  */
 e2e.openpgp.packet.UserAttribute.parse = function(body) {

@@ -143,7 +143,7 @@ e2e.ecc.curve.Ed25519.prototype.keySizeInBits = function() {
  * bignum.
  * @param {!e2e.BigNum} bignum
  *
- * @return {e2e.ByteArray}
+ * @return {!e2e.ByteArray}
  */
 e2e.ecc.curve.Ed25519.prototype.littleEndianByteArray32FromBigNum =
 function(bignum) {

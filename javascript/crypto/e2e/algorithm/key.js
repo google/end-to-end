@@ -33,69 +33,70 @@ goog.provide('e2e.signer.key.Rsa');
 
 
 /**
- * @typedef {{p: e2e.ByteArray, q: e2e.ByteArray,
- *     g: e2e.ByteArray, x: e2e.ByteArray,
- *     y: e2e.ByteArray}}
+ * @typedef {?{p: !e2e.ByteArray, q: !e2e.ByteArray,
+ *     g: !e2e.ByteArray, x: !e2e.ByteArray,
+ *     y: !e2e.ByteArray}}
  */
 e2e.signer.key.Dsa;
 
 
 /**
- * @typedef {{curve: ?e2e.ecc.PrimeCurveOid,
- *     pubKey: e2e.ByteArray,
- *     privKey: e2e.ByteArray}}
+ * @typedef {?{curve: ?e2e.ecc.PrimeCurveOid,
+ *     pubKey: !e2e.ByteArray,
+ *     privKey: !e2e.ByteArray}}
  */
 e2e.signer.key.Ecdsa;
 
 
 /**
- * @typedef {{d: e2e.ByteArray, e: e2e.ByteArray,
- *     n: e2e.ByteArray, p: e2e.ByteArray,
- *     q: e2e.ByteArray}}
+ * @typedef {?{d: !e2e.ByteArray, e: !e2e.ByteArray,
+ *     n: !e2e.ByteArray, p: !e2e.ByteArray,
+ *     q: !e2e.ByteArray}}
  */
 e2e.signer.key.Rsa;
 
 
 /**
  * @typedef {e2e.signer.key.Dsa|e2e.signer.key.Ecdsa|
- *     e2e.signer.key.Rsa}
+ *     e2e.signer.key.Rsa|null}
  */
 e2e.signer.key.Key;
 
 
 /**
- * @typedef {{d: e2e.ByteArray, e: e2e.ByteArray,
- *     n: e2e.ByteArray, p: e2e.ByteArray,
- *     q: e2e.ByteArray}}
+ * @typedef {?{d: !e2e.ByteArray, e: !e2e.ByteArray,
+ *     n: !e2e.ByteArray, p: !e2e.ByteArray,
+ *     q: !e2e.ByteArray}}
  */
 e2e.cipher.key.Rsa;
 
 
 /**
- * @typedef {{curve: ?e2e.ecc.PrimeCurveOid,
- *     kdfInfo: e2e.ByteArray,
- *     pubKey: e2e.ByteArray, fingerprint: e2e.ByteArray,
- *     privKey: e2e.ByteArray}}
+ * @typedef {?{curve: ?e2e.ecc.PrimeCurveOid,
+ *     kdfInfo: !e2e.ByteArray,
+ *     pubKey: !e2e.ByteArray,
+ *     fingerprint: !e2e.ByteArray,
+ *     privKey: !e2e.ByteArray}}
  */
 e2e.cipher.key.Ecdh;
 
 
 /**
- * @typedef {{p: e2e.ByteArray, y: e2e.ByteArray,
- *     g: e2e.ByteArray, x: e2e.ByteArray}}
+ * @typedef {?{p: !e2e.ByteArray, y: !e2e.ByteArray,
+ *     g: !e2e.ByteArray, x: !e2e.ByteArray}}
  */
 e2e.cipher.key.ElGamal;
 
 
 /**
  * @typedef {e2e.cipher.key.ElGamal|e2e.cipher.key.Ecdh|
- *     e2e.cipher.key.Rsa|e2e.signer.key.Key}
+ *     e2e.cipher.key.Rsa|e2e.signer.key.Key|null}
  */
 e2e.cipher.key.AsymmetricKey;
 
 
 /**
- * @typedef {{key: e2e.ByteArray}}
+ * @typedef {?{key: !e2e.ByteArray}}
  */
 e2e.cipher.key.SymmetricKey;
 
@@ -103,6 +104,6 @@ e2e.cipher.key.SymmetricKey;
 /**
  * @typedef {e2e.cipher.key.AsymmetricKey|
  *     e2e.cipher.key.SymmetricKey|
- *     {passphrase: e2e.ByteArray}}
+ *     {passphrase: !e2e.ByteArray}|null}
  */
 e2e.cipher.key.Key;

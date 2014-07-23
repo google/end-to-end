@@ -25,7 +25,7 @@ goog.require('e2e.openpgp.packet.Data');
 
 /**
  * Representation of an Encrypted Data Packet.
- * @param {e2e.ByteArray} encryptedData The encrypted data.
+ * @param {!e2e.ByteArray} encryptedData The encrypted data.
  * @extends {e2e.openpgp.packet.Data}
  * @constructor
  */
@@ -35,7 +35,7 @@ e2e.openpgp.packet.EncryptedData = function(
 
   /**
    * The encrypted data.
-   * @type {e2e.ByteArray}
+   * @type {!e2e.ByteArray}
    * @protected
    */
   this.encryptedData = encryptedData;

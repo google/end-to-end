@@ -27,16 +27,17 @@ goog.require('e2e.hash.Sha256');
 goog.require('e2e.hash.Sha384');
 goog.require('e2e.hash.Sha512');
 goog.require('e2e.random');
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.signer.signature.Signature');
 goog.require('goog.array');
 goog.require('goog.asserts');
-
 
 
 /**
  * Representation of an instance of the ECDSA protocol.
  * @param {!e2e.ecc.PrimeCurve} curveName The curve used for
  *     this protocol.
- * @param {{pubKey: e2e.ByteArray, privKey: (e2e.ByteArray|undefined)}=}
+ * @param {{pubKey: !e2e.ByteArray, privKey: (!e2e.ByteArray|undefined)}=}
  *     opt_key The public and/or private key used in this protocol.
  * @constructor
  * @extends {e2e.ecc.Protocol}
@@ -76,8 +77,8 @@ e2e.ecc.Ecdsa.prototype.getHash = function() {
 
 /**
  * Applies the signing algorithm to the data.
- * @param {!Uint8Array|e2e.ByteArray|string} message The data to sign.
- * @return {{s: e2e.ByteArray, r: e2e.ByteArray}}
+ * @param {!Uint8Array|!e2e.ByteArray|string} message The data to sign.
+ * @return {!e2e.signer.signature.Signature}
  */
 e2e.ecc.Ecdsa.prototype.sign = function(message) {
   var sig;
@@ -92,9 +93,9 @@ e2e.ecc.Ecdsa.prototype.sign = function(message) {
 
 /**
  * Exports the sign function for testing.
- * @param {!Uint8Array|e2e.ByteArray|string} message The data to sign.
+ * @param {!Uint8Array|!e2e.ByteArray|string} message The data to sign.
  * @param {!e2e.BigNum} k The per-message secret.
- * @return {?{s: e2e.ByteArray, r: e2e.ByteArray}}
+ * @return {?e2e.signer.signature.Signature}
  */
 e2e.ecc.Ecdsa.prototype.signForTestingOnly = function(message, k) {
   var digest = this.hash_.hash(message);
@@ -107,11 +108,9 @@ e2e.ecc.Ecdsa.prototype.signForTestingOnly = function(message, k) {
  * Returns null in the very rare case that r or s evalutes to 0, and we need
  * to try a different nonce.
  *
- * @param {e2e.ByteArray} digest
- *     The digest of the message being signed.
+ * @param {!e2e.ByteArray} digest The digest of the message being signed.
  * @param {!e2e.BigNum} k The per-message secret.
- * @return {?{s:e2e.ByteArray, r: e2e.ByteArray,
- *            hashValue: e2e.ByteArray}}
+ * @return {?e2e.signer.signature.Signature}
  * @private
  */
 e2e.ecc.Ecdsa.prototype.signWithNonce_ = function(digest, k) {
@@ -152,8 +151,8 @@ e2e.ecc.Ecdsa.prototype.signWithNonce_ = function(digest, k) {
 
 /**
  * Applies the verification algorithm to the data.
- * @param {!Uint8Array|e2e.ByteArray|string} message The data to verify.
- * @param {!{s: !e2e.ByteArray, r: !e2e.ByteArray}} sig The
+ * @param {!Uint8Array|!e2e.ByteArray|string} message The data to verify.
+ * @param {{s: !e2e.ByteArray, r: !e2e.ByteArray}} sig The
  *     signature to verify.
  * @return {boolean}
  */

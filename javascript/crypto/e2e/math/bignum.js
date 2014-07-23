@@ -28,7 +28,7 @@ goog.require('goog.asserts');
 
 /**
  * Non-negative arbitrary-precision integers.
- * @param {e2e.ByteArray=} opt_value The value of the BigNum in big endian.
+ * @param {!e2e.ByteArray=} opt_value The value of the BigNum in big endian.
  * @constructor
  */
 e2e.BigNum = function(opt_value) {
@@ -119,7 +119,7 @@ e2e.BigNum.fromInteger = function(value) {
 
 /**
  * Converts big endian byte array to internal format.
- * @param {e2e.ByteArray} input The big endian number.
+ * @param {!e2e.ByteArray} input The big endian number.
  * @return {!Array.<number>}
  * @private
  */
@@ -159,7 +159,7 @@ e2e.BigNum.select = function(a, b, bit) {
 
 /**
  * Converts this to big endian byte array. Drop leading zeros.
- * @return {e2e.ByteArray} The big endian representation.
+ * @return {!e2e.ByteArray} The big endian representation.
  */
 e2e.BigNum.prototype.toByteArray = function() {
   var i = this.n.length;
@@ -205,10 +205,7 @@ e2e.BigNum.prototype.toSignedNybbleArray = function() {
 };
 
 
-/**
- * Returns the decimal string representation of "this"
- * @return {!string}
- */
+/** @override */
 e2e.BigNum.prototype.toString = function() {
   var result = [];
   var current = this;

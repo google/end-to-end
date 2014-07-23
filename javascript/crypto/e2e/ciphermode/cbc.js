@@ -23,6 +23,7 @@ goog.require('e2e.async.Result');
 goog.require('e2e.ciphermode.CipherMode');
 goog.require('e2e.ciphermode.Pkcs7');
 goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.crypt');
 
 
@@ -50,6 +51,7 @@ goog.inherits(e2e.ciphermode.Cbc, e2e.ciphermode.CipherMode);
 e2e.ciphermode.Cbc.prototype.encrypt = function(data, iv) {
   data = this.pkcs7_.encode(this.cipher.blockSize, data);
 
+  /** @type {!e2e.cipher.ciphertext.Symmetric} */
   var cipherText = [];
   var vector = iv;
 
@@ -92,6 +94,6 @@ e2e.ciphermode.Cbc.prototype.decrypt = function(data, iv) {
     blockStartIndex += this.cipher.blockSize;
   }
 
-  return e2e.async.Result.toResult(
-      this.pkcs7_.decode(this.cipher.blockSize, plainText));
+  return e2e.async.Result.toResult(goog.asserts.assertObject(
+      this.pkcs7_.decode(this.cipher.blockSize, plainText)));
 };

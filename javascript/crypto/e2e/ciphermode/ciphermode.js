@@ -19,6 +19,11 @@
 
 goog.provide('e2e.ciphermode.CipherMode');
 
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.ByteArray');
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.cipher.ciphertext');
+
 
 
 /**
@@ -37,17 +42,18 @@ e2e.ciphermode.CipherMode = function(cipher) {
 
 /**
  * Asynchronous call to encrypt the data with a given iv.
- * @param {e2e.ByteArray} data The data to encrypt.
- * @param {e2e.ByteArray} iv The initialization vector.
- * @return {!e2e.async.Result} The encrypted data.
+ * @param {!e2e.ByteArray} data The data to encrypt.
+ * @param {!e2e.ByteArray} iv The initialization vector.
+ * @return {!e2e.async.Result.<!e2e.cipher.ciphertext.Symmetric>} The
+ *     encrypted data.
  */
 e2e.ciphermode.CipherMode.prototype.encrypt = goog.abstractMethod;
 
 
 /**
  * Asynchronous call to decrypt the data with the given iv.
- * @param {e2e.ByteArray} data The data to decrypt.
- * @param {e2e.ByteArray} iv The initialization vector.
- * @return {!e2e.async.Result} The decrypted data.
+ * @param {!e2e.ByteArray} data The data to decrypt.
+ * @param {!e2e.ByteArray} iv The initialization vector.
+ * @return {!e2e.async.Result.<!e2e.ByteArray>} The decrypted data.
  */
 e2e.ciphermode.CipherMode.prototype.decrypt = goog.abstractMethod;

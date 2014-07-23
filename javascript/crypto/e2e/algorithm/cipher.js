@@ -27,6 +27,8 @@ goog.provide('e2e.cipher.factory');
 
 goog.require('e2e.Algorithm');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.ByteArray');
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.cipher.ciphertext');
 goog.require('goog.debug.Error');
 
@@ -87,8 +89,8 @@ e2e.cipher.SymmetricCipher.prototype.blockSize;
 
 /**
  * Encrypts the given data using the current cipher and key.
- * @param {e2e.ByteArray} data The data to encrypt.
- * @return {!e2e.async.Result.<e2e.cipher.ciphertext.Symmetric>}
+ * @param {!e2e.ByteArray} data The data to encrypt.
+ * @return {!e2e.async.Result.<!e2e.cipher.ciphertext.Symmetric>}
  *     The result of encryption.
  */
 e2e.cipher.SymmetricCipher.prototype.encrypt = goog.abstractMethod;
@@ -102,8 +104,8 @@ e2e.cipher.SymmetricCipher.prototype.blockSize;
 
 /**
  * Decrypts the given data using the current cipher and key.
- * @param {e2e.cipher.ciphertext.Symmetric} data The encrypted data.
- * @return {!e2e.async.Result.<e2e.ByteArray>} The result of
+ * @param {!e2e.cipher.ciphertext.Symmetric} data The encrypted data.
+ * @return {!e2e.async.Result.<!e2e.ByteArray>} The result of
  *     decryption.
  */
 e2e.cipher.SymmetricCipher.prototype.decrypt = goog.abstractMethod;
@@ -119,8 +121,8 @@ e2e.cipher.AsymmetricCipher = function() {};
 
 /**
  * Encrypts the given data using the current cipher and key.
- * @param {e2e.ByteArray} data The data to encrypt.
- * @return {e2e.cipher.ciphertext.AsymmetricAsync}
+ * @param {!e2e.ByteArray} data The data to encrypt.
+ * @return {!e2e.cipher.ciphertext.AsymmetricAsync}
  *     The result of encryption.
  */
 e2e.cipher.AsymmetricCipher.prototype.encrypt = goog.abstractMethod;
@@ -128,9 +130,9 @@ e2e.cipher.AsymmetricCipher.prototype.encrypt = goog.abstractMethod;
 
 /**
  * Decrypts the given data using the current cipher and key.
- * @param {e2e.cipher.ciphertext.Asymmetric} data The encrypted
+ * @param {!e2e.cipher.ciphertext.Asymmetric} data The encrypted
  *     data.
- * @return {!e2e.async.Result.<e2e.ByteArray>} The result of
+ * @return {!e2e.async.Result.<!e2e.ByteArray>} The result of
  *     decryption.
  */
 e2e.cipher.AsymmetricCipher.prototype.decrypt = goog.abstractMethod;
@@ -149,7 +151,7 @@ e2e.cipher.factory.init = function() {};
 /**
  * Contains a list of all registered implementations for each algorithm.
  * @type {!Object.<e2e.cipher.Algorithm,
- *     function(new:e2e.Algorithm, e2e.cipher.Algorithm,
+ *     function(new:e2e.Algorithm, !e2e.cipher.Algorithm,
  *     e2e.cipher.key.Key=)>}
  * @private
  */
@@ -158,7 +160,7 @@ e2e.cipher.factory.ciphers_ = {};
 
 /**
  * Registers a class for a specific algorithm.
- * @param {function(new:e2e.Algorithm, e2e.cipher.Algorithm,
+ * @param {function(new:e2e.Algorithm, !e2e.cipher.Algorithm,
  *     e2e.cipher.key.Key=)} cipher The implementation.
  * @param {e2e.cipher.Algorithm=} opt_algorithm The name to register
  *     the cipher to if different from the cipher's prototype algorithm.
@@ -174,7 +176,7 @@ e2e.cipher.factory.add = function(cipher, opt_algorithm) {
 
 /**
  * Returns whether the algorithm is present in the factory.
- * @param {e2e.cipher.Algorithm} algorithm The cipher algorithm.
+ * @param {!e2e.cipher.Algorithm} algorithm The cipher algorithm.
  * @return {boolean} Whether the algorithm is present in the factory.
  */
 e2e.cipher.factory.has = function(algorithm) {
@@ -184,10 +186,10 @@ e2e.cipher.factory.has = function(algorithm) {
 
 /**
  * Returns an instance of the required cipher, or null if not available.
- * @param {e2e.cipher.Algorithm} algorithm The algorithm to retrieve.
+ * @param {!e2e.cipher.Algorithm} algorithm The algorithm to retrieve.
  * @param {e2e.cipher.key.Key=} opt_keyData The key to use (public or
  *     private).
- * @return {e2e.cipher.Cipher?} The cipher instance requested.
+ * @return {?e2e.cipher.Cipher} The cipher instance requested.
  */
 e2e.cipher.factory.get = function(algorithm, opt_keyData) {
   if (e2e.cipher.factory.ciphers_.hasOwnProperty(algorithm)) {
@@ -202,7 +204,7 @@ e2e.cipher.factory.get = function(algorithm, opt_keyData) {
 
 /**
  * Returns an instance of the required cipher, or throws if not available.
- * @param {e2e.cipher.Algorithm} algorithm The algorithm to retrieve.
+ * @param {!e2e.cipher.Algorithm} algorithm The algorithm to retrieve.
  * @param {e2e.cipher.key.Key=} opt_keyData The key to use (public or
  *     private).
  * @return {!e2e.cipher.Cipher} The cipher instance requested.

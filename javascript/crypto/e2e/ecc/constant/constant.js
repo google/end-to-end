@@ -30,7 +30,7 @@ e2e.ecc.constant.CURVE_25519 = {};
 
 /**
  * The field order, e.g., 2^224 (2^32 - 1) + 2^192 + 2^96 - 1.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  */
 e2e.ecc.constant.P_256.Q = [
     0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x01,
@@ -41,7 +41,7 @@ e2e.ecc.constant.P_256.Q = [
 
 /**
  * The B coefficient in the equation of the elliptic curve.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  */
 e2e.ecc.constant.P_256.B = [
    0x5A, 0xC6, 0x35, 0xD8, 0xAA, 0x3A, 0x93, 0xE7,
@@ -52,7 +52,7 @@ e2e.ecc.constant.P_256.B = [
 
 /**
  * The base point in uncompressed form.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  */
 e2e.ecc.constant.P_256.G = [0x04, /* uncompressed */
    // x
@@ -69,7 +69,7 @@ e2e.ecc.constant.P_256.G = [0x04, /* uncompressed */
 
 /**
  * The order of the base point.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  */
 e2e.ecc.constant.P_256.N = [
    0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x00,
@@ -80,7 +80,7 @@ e2e.ecc.constant.P_256.N = [
 
 /**
  * The field order 2^384 - 2^128 - 2^196 + 2^32 - 1
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  */
 e2e.ecc.constant.P_384.Q = [
    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -93,7 +93,7 @@ e2e.ecc.constant.P_384.Q = [
 
 /**
  * The B coefficient in the equation of the elliptic curve.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  */
 e2e.ecc.constant.P_384.B = [
    0xb3, 0x31, 0x2f, 0xa7, 0xe2, 0x3e, 0xe7, 0xe4,
@@ -106,7 +106,7 @@ e2e.ecc.constant.P_384.B = [
 
 /**
  * The base point in uncompressed form.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  */
 e2e.ecc.constant.P_384.G = [0x04, /* uncompressed */
    // x
@@ -127,7 +127,7 @@ e2e.ecc.constant.P_384.G = [0x04, /* uncompressed */
 
 /**
  * The order of the base point.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  */
 e2e.ecc.constant.P_384.N = [
   0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -140,7 +140,7 @@ e2e.ecc.constant.P_384.N = [
 
 /**
  * The field order for Curve25519: 2^255 - 19.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  */
 e2e.ecc.constant.CURVE_25519.Q = [
   0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
@@ -151,7 +151,7 @@ e2e.ecc.constant.CURVE_25519.Q = [
 
 /**
  * The order of the base point.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  */
 e2e.ecc.constant.CURVE_25519.N = [
   0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

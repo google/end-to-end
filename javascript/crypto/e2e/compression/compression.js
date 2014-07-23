@@ -50,7 +50,7 @@ e2e.compression.Algorithm = {
 
 /**
  * Constructor for all compression algorithms.
- * @param {e2e.compression.Algorithm} algorithm The algorithm being
+ * @param {!e2e.compression.Algorithm} algorithm The algorithm being
  *     implemented.
  * @constructor
  */
@@ -61,14 +61,14 @@ e2e.compression.Compression = function(algorithm) {
 
 /**
  * The implemented algorithm.
- * @type {e2e.compression.Algorithm}
+ * @type {!e2e.compression.Algorithm}
  */
 e2e.compression.Compression.prototype.algorithm;
 
 
 /**
  * Compresses the given data..
- * @param {e2e.ByteArray} data The data to compress.
+ * @param {!e2e.ByteArray} data The data to compress.
  * @return {!e2e.async.Result} The compressed data.
  */
 e2e.compression.Compression.prototype.compress = goog.abstractMethod;
@@ -76,7 +76,7 @@ e2e.compression.Compression.prototype.compress = goog.abstractMethod;
 
 /**
  * Decompresses the given data.
- * @param {e2e.ByteArray} compressedData The data to decompress.
+ * @param {!e2e.ByteArray} compressedData The data to decompress.
  * @return {!e2e.async.Result} The decompressed data.
  */
 e2e.compression.Compression.prototype.decompress = goog.abstractMethod;

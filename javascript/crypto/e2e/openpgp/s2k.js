@@ -76,10 +76,10 @@ e2e.openpgp.S2k.prototype.type;
 
 /**
  * Generates a key from the given input. To be implemented by the subclasses.
- * @param {e2e.ByteArray} passphrase A ByteArray representation of the
+ * @param {!e2e.ByteArray} passphrase A ByteArray representation of the
  *     passphrase (must be encoded in UTF-8).
  * @param {number} length The length of the key requested.
- * @return {e2e.ByteArray} The key generated from that passphrase using
+ * @return {!e2e.ByteArray} The key generated from that passphrase using
  *     the S2K algorithm.
  */
 e2e.openpgp.S2k.prototype.getKey = goog.abstractMethod;
@@ -87,7 +87,7 @@ e2e.openpgp.S2k.prototype.getKey = goog.abstractMethod;
 
 /**
  * Serializes the S2K object to a string.
- * @return {e2e.ByteArray} The serialized S2K.
+ * @return {!e2e.ByteArray} The serialized S2K.
  */
 e2e.openpgp.S2k.prototype.serialize = function() {
   return goog.array.concat(
@@ -99,7 +99,7 @@ e2e.openpgp.S2k.prototype.serialize = function() {
 /**
  * Parses (and extracts) an S2K object from the given ByteArray.
  * Throws e2e.openpgp.error.Error if it fails.
- * @param {e2e.ByteArray} bytes The ByteArray to extract the S2K from.
+ * @param {!e2e.ByteArray} bytes The ByteArray to extract the S2K from.
  * @return {e2e.openpgp.S2k} The generated S2K instance.
  */
 e2e.openpgp.S2k.parse = function(bytes) {
@@ -169,7 +169,7 @@ e2e.openpgp.SimpleS2K.prototype.getKey = function(passphrase, length) {
  * Implements the Salted S2K algorithm. Throws e2e.openpgp.error.Error if it
  * fails.
  * @param {e2e.hash.Hash} hash An instance of the hash algorithm to use.
- * @param {e2e.ByteArray} salt The salt to use for the S2K.
+ * @param {!e2e.ByteArray} salt The salt to use for the S2K.
  * @constructor
  * @extends {e2e.openpgp.SimpleS2K}
  */
@@ -180,7 +180,7 @@ e2e.openpgp.SaltedS2K = function(hash, salt) {
   }
   /**
    * The salt for the key.
-   * @type {e2e.ByteArray}
+   * @type {!e2e.ByteArray}
    * @private
    */
   this.salt_ = salt;
@@ -212,7 +212,7 @@ e2e.openpgp.SaltedS2K.prototype.serialize = function() {
  * Implements the Iterated S2K algorithm. Throws e2e.openpgp.error.Error if
  * it fails.
  * @param {e2e.hash.Hash} hash An instance of the hash algorithm to use.
- * @param {e2e.ByteArray} salt The salt to use for the S2K.
+ * @param {!e2e.ByteArray} salt The salt to use for the S2K.
  * @param {number} encodedCount The encoded number of bytes to be hashed.
  * @constructor
  * @extends {e2e.openpgp.SimpleS2K}
@@ -230,7 +230,7 @@ e2e.openpgp.IteratedS2K = function(hash, salt, encodedCount) {
   }
   /**
    * The salt to use for the S2K. Must be 8 bytes long.
-   * @type {e2e.ByteArray}
+   * @type {!e2e.ByteArray}
    * @private
    */
   this.salt_ = salt;

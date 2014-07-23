@@ -28,7 +28,7 @@ goog.require('goog.array');
 /**
  * An RFC 4880 style MPI. The number would be available as
  * an Array of bytes but should be treated as read-only.
- * @param {e2e.ByteArray} number The MPI's value.
+ * @param {!e2e.ByteArray} number The MPI's value.
  * @extends {Array}
  * @constructor
  */
@@ -42,7 +42,7 @@ goog.inherits(e2e.openpgp.Mpi, Array);
 
 /**
  * Serialize the MPI into a ByteArray.
- * @return {e2e.ByteArray} The serialized MPI.
+ * @return {!e2e.ByteArray} The serialized MPI.
  */
 e2e.openpgp.Mpi.prototype.serialize = function() {
   var number = goog.array.clone(this);
@@ -50,14 +50,14 @@ e2e.openpgp.Mpi.prototype.serialize = function() {
   // This is the length in bits.
   var length = (number.length - 1) * 8 + number[0].toString(2).length;
   var length_bytes = e2e.dwordArrayToByteArray([length]).slice(-2);
-  return /** @type {e2e.ByteArray} */ (
+  return /** @type {!e2e.ByteArray} */ (
       goog.array.flatten(length_bytes, number));
 };
 
 
 /**
  * Extracts an MPI from the body, and returns the MPI.
- * @param {e2e.ByteArray} body The body from where to extract the data.
+ * @param {!e2e.ByteArray} body The body from where to extract the data.
  * @return {!e2e.openpgp.Mpi} The generated packet.
  */
 e2e.openpgp.Mpi.parse = function(body) {

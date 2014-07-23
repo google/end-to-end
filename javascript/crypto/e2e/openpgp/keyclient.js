@@ -96,9 +96,9 @@ e2e.openpgp.KeyClient.X_EMAIL_PARAM_ = 'x-email';
 
 /**
  * Imports a public key to the key server.
- * @param {string| e2e.openpgp.block.TransferablePublicKey} key The ASCII
+ * @param {string|!e2e.openpgp.block.TransferablePublicKey} key The ASCII
  *    armored or {e2e.openpgp.block.TransferablePublicKey} key to import.
- * @return {e2e.async.Result.<boolean>} True if importing key is succeeded.
+ * @return {!e2e.async.Result.<boolean>} True if importing key is succeeded.
  */
 e2e.openpgp.KeyClient.prototype.importPublicKey = function(key) {
   var result = new e2e.async.Result();
@@ -122,7 +122,7 @@ e2e.openpgp.KeyClient.prototype.importPublicKey = function(key) {
  * Searches a public key based on an email.
  * @param {string} email The email which is used to search for the
  *    corresponding public keys.
- * @return {e2e.async.Result.<Array.<e2e.openpgp.block.TransferableKey>>}
+ * @return {!e2e.async.Result.<!Array.<!e2e.openpgp.block.TransferableKey>>}
  *    The public keys correspond to the email or [] if not found.
  */
 e2e.openpgp.KeyClient.prototype.searchPublicKey = function(email) {

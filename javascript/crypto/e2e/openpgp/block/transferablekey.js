@@ -44,7 +44,7 @@ goog.require('goog.array');
  *  - After each Subkey packet, one Signature packet, plus optionally a
  *    revocation
  * @param {function(new:e2e.openpgp.packet.Key, number, number,
- *     !e2e.cipher.Cipher, e2e.ByteArray)} keyPacketClass The
+ *     !e2e.cipher.Cipher, !e2e.ByteArray)} keyPacketClass The
  *     class of key packet to parse.
  * @constructor
  * @extends {e2e.openpgp.block.Block}
@@ -53,27 +53,27 @@ e2e.openpgp.block.TransferableKey = function(keyPacketClass) {
   /**
    * The class of key packet to extract.
    * @type {function(new:e2e.openpgp.packet.Key,
-   *     number, number, !e2e.cipher.Cipher, e2e.ByteArray)}
+   *     number, number, !e2e.cipher.Cipher, !e2e.ByteArray)}
    */
   this.keyPacketClass = keyPacketClass;
   /**
    * Main key, public or private, for this block.
-   * @type {e2e.openpgp.packet.Key}
+   * @type {?e2e.openpgp.packet.Key}
    */
   this.keyPacket = null;
   /**
    * List of user IDs in this block.
-   * @type {!Array.<e2e.openpgp.packet.UserId>}
+   * @type {!Array.<!e2e.openpgp.packet.UserId>}
    */
   this.userIds = [];
   /**
    * List of subkeys on this block.
-   * @type {!Array.<e2e.openpgp.packet.Key>}
+   * @type {!Array.<!e2e.openpgp.packet.Key>}
    */
   this.subKeys = [];
   /**
    * List of user attributes in this block.
-   * @type {!Array.<e2e.openpgp.packet.UserAttribute>}
+   * @type {!Array.<!e2e.openpgp.packet.UserAttribute>}
    */
   this.userAttributes = [];
   goog.base(this);
@@ -223,7 +223,7 @@ e2e.openpgp.block.TransferableKey.prototype.SERIALIZE_IN_KEY_OBJECT = false;
 
 /**
  * Returns a key or one of the subkeys of a given key ID.
- * @param {e2e.ByteArray} keyId Key ID to find the key by.
+ * @param {!e2e.ByteArray} keyId Key ID to find the key by.
  * @return {?e2e.openpgp.packet.Key} Found key
  */
 e2e.openpgp.block.TransferableKey.prototype.getKeyById = function(keyId) {
@@ -231,25 +231,18 @@ e2e.openpgp.block.TransferableKey.prototype.getKeyById = function(keyId) {
     return this.keyPacket;
   }
   return goog.array.find(this.subKeys, function(key) {
-    return Boolean(key.keyId) && goog.array.equals(
-      /** @type e2e.ByteArray */ (key.keyId), keyId);
+    return !!key.keyId && goog.array.equals(key.keyId, keyId);
   });
 };
 
 
 /**
  * Checks if a key or one of the subkeys has a given key ID.
- * @param {e2e.ByteArray} keyId Key ID to find the key by.
+ * @param {!e2e.ByteArray} keyId Key ID to find the key by.
  * @return {boolean} If true, this TransferableKey has a key with given ID.
  */
 e2e.openpgp.block.TransferableKey.prototype.hasKeyById = function(keyId) {
-  if (this.keyPacket.keyId && goog.array.equals(this.keyPacket.keyId, keyId)) {
-    return true;
-  }
-  return goog.array.some(this.subKeys, function(key) {
-    return Boolean(key.keyId) && goog.array.equals(
-      /** @type e2e.ByteArray */ (key.keyId), keyId);
-  });
+  return !!this.getKeyById(keyId);
 };
 
 
@@ -267,7 +260,7 @@ e2e.openpgp.block.TransferableKey.prototype.serialize = function() {
  * Creates a Key object representing the TransferableKey.
  * @param {boolean=} opt_dontSerialize if true, skip key serialization in
  *     results.
- * @return {e2e.openpgp.Key}
+ * @return {!e2e.openpgp.Key}
  */
 e2e.openpgp.block.TransferableKey.prototype.toKeyObject = function(
     opt_dontSerialize) {
@@ -278,7 +271,7 @@ e2e.openpgp.block.TransferableKey.prototype.toKeyObject = function(
         return subKey.toKeyPacketInfo();
       }),
     uids: this.getUserIds(),
-    serialized: /** @type {e2e.ByteArray} */(
+    serialized: /** @type {!e2e.ByteArray} */(
       (opt_dontSerialize || !this.SERIALIZE_IN_KEY_OBJECT) ?
       [] : this.serialize())
   };

@@ -44,7 +44,7 @@ e2e.openpgp.packet.Marker.prototype.serializePacketBody = function() {
 
 
 /**
- * @param {e2e.ByteArray} body
+ * @param {!e2e.ByteArray} body
  * @return {e2e.openpgp.packet.Marker}
  */
 e2e.openpgp.packet.Marker.parse = function(body) {

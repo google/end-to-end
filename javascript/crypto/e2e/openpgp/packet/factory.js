@@ -26,7 +26,7 @@ goog.require('e2e.openpgp.error.ParseError');
  * Dictionary of parsers for specific Packet types. The keys are the packet
  * tags.
  * @type {!Object.<number,
- *     function(e2e.ByteArray):!e2e.openpgp.packet.Packet>}
+ *     function(!e2e.ByteArray):!e2e.openpgp.packet.Packet>}
  * @private
  */
 e2e.openpgp.packet.factory.parsers_ = {};
@@ -47,7 +47,7 @@ e2e.openpgp.packet.factory.add = function(packet) {
  * Parses a packet of the given tag and returns it.
  * Throws a {@code e2e.openpgp.error.ParseError} for nonexistent packets.
  * @param {number} tag The tag to generate a packet for.
- * @param {e2e.ByteArray} body The body of the packet.
+ * @param {!e2e.ByteArray} body The body of the packet.
  * @return {!e2e.openpgp.packet.Packet} The packet.
  */
 e2e.openpgp.packet.factory.parse = function(tag, body) {

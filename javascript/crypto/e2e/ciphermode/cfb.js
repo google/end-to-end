@@ -41,6 +41,7 @@ goog.inherits(e2e.ciphermode.Cfb, e2e.ciphermode.CipherMode);
 /** @inheritDoc */
 e2e.ciphermode.Cfb.prototype.encrypt = function(data, iv) {
   var fre = e2e.async.Result.getValue(this.cipher.encrypt(iv));
+  /** @type {!e2e.cipher.ciphertext.Symmetric} */
   var c = [];
   for (var i = 0; i < data.length; i += this.cipher.blockSize) {
     var fr = goog.array.slice(data, i, i + this.cipher.blockSize);

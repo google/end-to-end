@@ -57,7 +57,7 @@ e2e.openpgp.constants.Algorithm;
 
 /**
  * Empty key ID.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  * @const
  */
 e2e.openpgp.constants.EMPTY_KEY_ID = [0, 0, 0, 0, 0, 0, 0, 0];

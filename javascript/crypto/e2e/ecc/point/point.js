@@ -54,7 +54,7 @@ e2e.ecc.point.Point.prototype.getY = goog.abstractMethod;
 /**
  * Converts this point to a byte array.
  * @param {boolean=} opt_compressed Return compressed form if true.
- * @return {e2e.ByteArray}
+ * @return {!e2e.ByteArray}
  */
 e2e.ecc.point.Point.prototype.toByteArray = goog.abstractMethod;
 

@@ -55,7 +55,7 @@ goog.inherits(e2e.signer.Ecdsa, e2e.AlgorithmImpl);
 e2e.signer.Ecdsa.prototype.ecdsa_;
 
 
-/** @return {!e2e.hash.Hash} */
+/** @override */
 e2e.signer.Ecdsa.prototype.getHash = function() {
   return this.ecdsa_.getHash();
 };
@@ -86,21 +86,19 @@ e2e.signer.Ecdsa.prototype.setKey = function(key, opt_keySize) {
 
 /** @inheritDoc */
 e2e.signer.Ecdsa.prototype.sign = function(m) {
-  var sig = /** @type {e2e.signer.signature.Signature} */(
-      this.ecdsa_.sign(m));
-  return e2e.async.Result.toResult(sig);
+  return e2e.async.Result.toResult(this.ecdsa_.sign(m));
 };
 
 
 /**
  * Exports the sign function for testing.
- * @param {e2e.ByteArray} m The message to be signed.
+ * @param {!e2e.ByteArray} m The message to be signed.
  * @param {!e2e.BigNum} k The per-message secret.
  * @return {!e2e.async.Result.<e2e.signer.signature.Signature>} The
  *     result of signing.
  */
 e2e.signer.Ecdsa.prototype.signForTestingOnly = function(m, k) {
-  var sig = /** @type {e2e.signer.signature.Signature} */(
+  var sig = /** @type {e2e.signer.signature.Signature} */ (
       this.ecdsa_.signForTestingOnly(m, k));
   return e2e.async.Result.toResult(sig);
 };
@@ -109,10 +107,9 @@ e2e.signer.Ecdsa.prototype.signForTestingOnly = function(m, k) {
 /** @inheritDoc */
 e2e.signer.Ecdsa.prototype.verify = function(m, sig) {
   return e2e.async.Result.toResult(this.ecdsa_.verify(
-      m, /** @type {{r: e2e.ByteArray, s:e2e.ByteArray}} */(
+      m, /** @type {{r: !e2e.ByteArray, s:!e2e.ByteArray}} */(
           sig)));
 };
 
 
-e2e.signer.factory.add(e2e.signer.Ecdsa,
-                               e2e.signer.Algorithm.ECDSA);
+e2e.signer.factory.add(e2e.signer.Ecdsa, e2e.signer.Algorithm.ECDSA);

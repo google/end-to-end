@@ -56,7 +56,7 @@ e2e.openpgp.packet.UserId.prototype.tag = 13;
 /**
  * Parses and extracts the data from the body. It will consume all data from the
  * array.
- * @param {e2e.ByteArray} body The data to parse.
+ * @param {!e2e.ByteArray} body The data to parse.
  * @return {e2e.openpgp.packet.UserId} A user ID Packet.
  */
 e2e.openpgp.packet.UserId.parse = function(body) {

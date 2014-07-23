@@ -26,8 +26,8 @@ goog.require('goog.asserts');
 
 /**
  * Representation of an ECC protocol.
- * @param {e2e.ecc.PrimeCurve} curve The curve used for this protocol.
- * @param {{pubKey: e2e.ByteArray, privKey: (e2e.ByteArray|undefined)}=}
+ * @param {!e2e.ecc.PrimeCurve} curve The curve used for this protocol.
+ * @param {{pubKey: !e2e.ByteArray, privKey: (!e2e.ByteArray|undefined)}=}
  *     opt_key The public and/or private key used in this protocol.
  * @constructor
  */
@@ -50,7 +50,7 @@ e2e.ecc.Protocol.prototype.params;
 
 /**
  * The public key used in this protocol, as an array
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  * @private
  */
 e2e.ecc.Protocol.prototype.pubKey_;
@@ -66,7 +66,7 @@ e2e.ecc.Protocol.prototype.pubKeyAsPoint_;
 
 /**
  * The private key used in this protocol.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  * @private
  */
 e2e.ecc.Protocol.prototype.privKey_;
@@ -74,7 +74,7 @@ e2e.ecc.Protocol.prototype.privKey_;
 
 /**
  * Sets the public and/or private key.
- * @param {{pubKey: e2e.ByteArray, privKey: (e2e.ByteArray|undefined)}}
+ * @param {{pubKey: !e2e.ByteArray, privKey: (!e2e.ByteArray|undefined)}}
  *     key The public and/or private key.
  */
 e2e.ecc.Protocol.prototype.setKey = function(key) {
@@ -95,7 +95,7 @@ e2e.ecc.Protocol.prototype.setKey = function(key) {
 
 /**
  * Returns the public key.
- * @return {e2e.ByteArray}
+ * @return {!e2e.ByteArray}
  */
 e2e.ecc.Protocol.prototype.getPublicKey = function() {
   return this.pubKey_;
@@ -124,10 +124,9 @@ e2e.ecc.Protocol.prototype.getPrivateKey = function() {
  * Generates a key pair used in ECC protocols.
  * @param {!e2e.ecc.PrimeCurve} curve The curve of the to-be-generated
  *     key pair.
- * @param {e2e.ByteArray=} opt_privateKey  An optional already known
+ * @param {!e2e.ByteArray=} opt_privateKey  An optional already known
  *     private key. If not given, a random key will be created.
- * @return {{curve: ?e2e.ecc.PrimeCurveOid,
- *     privKey: e2e.ByteArray, pubKey: e2e.ByteArray}}
+ * @return {!e2e.signer.key.Ecdsa}
  */
 e2e.ecc.Protocol.generateKeyPair = function(curve, opt_privateKey) {
   var params = e2e.ecc.DomainParam.fromCurve(curve);

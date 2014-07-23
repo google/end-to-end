@@ -61,7 +61,7 @@ goog.inherits(e2e.cipher.Aes, e2e.AlgorithmImpl);
 
 /** @inheritDoc */
 e2e.cipher.Aes.prototype.setKey = function(keyObj) {
-  if (!e2e.isByteArray(keyObj.key)) {
+  if (!keyObj.key || !e2e.isByteArray(keyObj.key)) {
     throw new e2e.cipher.Error('Invalid values for key.');
   }
 

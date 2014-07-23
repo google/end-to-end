@@ -38,7 +38,7 @@ goog.require('goog.array');
 /**
  * Representation of a Symmetrically Encrypted Data Packet (Tag 9).
  * As defined in RFC 4880 Section 5.7.
- * @param {e2e.ByteArray} encryptedData The encrypted data.
+ * @param {!e2e.ByteArray} encryptedData The encrypted data.
  * @extends {e2e.openpgp.packet.EncryptedData}
  * @constructor
  */
@@ -61,7 +61,7 @@ e2e.openpgp.packet.SymmetricallyEncrypted.prototype.decrypt =
       e2e.openpgp.constants.getInstance(
           e2e.openpgp.constants.Type.SYMMETRIC_KEY, algorithm, keyObj));
   var ocfbCipher = new e2e.openpgp.Ocfb(cipher, true);
-  this.data = /** @type e2e.ByteArray */ (
+  this.data = /** @type !e2e.ByteArray */ (
       e2e.async.Result.getValue(ocfbCipher.decrypt(this.encryptedData, [])));
 };
 
@@ -76,7 +76,7 @@ e2e.openpgp.packet.SymmetricallyEncrypted.prototype.serializePacketBody =
 /**
  * Parses and extracts the data from the body.
  * Throws a {@code e2e.openpgp.error.ParseError} if malformed.
- * @param {e2e.ByteArray} body The data to parse.
+ * @param {!e2e.ByteArray} body The data to parse.
  * @return {e2e.openpgp.packet.SymmetricallyEncrypted} packet.
  */
 e2e.openpgp.packet.SymmetricallyEncrypted.parse =
@@ -91,7 +91,7 @@ e2e.openpgp.packet.factory.add(
 /**
  * Representation of a Sym. Encrypted Integrity Protected Data Packet (Tag 18).
  * As defined in RFC 4880 Section 5.13.
- * @param {e2e.ByteArray} encryptedData The encrypted data.
+ * @param {!e2e.ByteArray} encryptedData The encrypted data.
  * @extends {e2e.openpgp.packet.SymmetricallyEncrypted}
  * @constructor
  */
@@ -114,7 +114,7 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.prototype.decrypt =
       e2e.cipher.factory.require(algorithm, keyObj));
   var iv = goog.array.repeat(0, cipher.blockSize);
   var cfbCipher = new e2e.ciphermode.Cfb(cipher);
-  var plaintext = /** @type e2e.ByteArray */ (
+  var plaintext = /** @type !e2e.ByteArray */ (
       e2e.async.Result.getValue(cfbCipher.decrypt(this.encryptedData, iv)));
   // MDC is at end of packet. It's 2 bytes of header and 20 bytes of hash.
   var mdc = plaintext.splice(-20, 20);
@@ -141,7 +141,7 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.prototype.decrypt =
 /**
  * Makes a Symmetrically Encrypted Integrity-protected packet containing the
  * specified plaintext packet. Does the encryption and creates the MDC.
- * @param {e2e.ByteArray} innerPacket The unencrypted inner packet.
+ * @param {!e2e.ByteArray} innerPacket The unencrypted inner packet.
  * @param {!e2e.cipher.SymmetricCipher} cipher The cipher to use for encryption.
  * @return {e2e.openpgp.packet.SymmetricallyEncryptedIntegrity}
  */
@@ -158,7 +158,7 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.construct = function(
   goog.array.extend(plaintext, mdcCalculated);
   var iv = goog.array.repeat(0, cipher.blockSize);
   var cfbCipher = new e2e.ciphermode.Cfb(cipher);
-  var ciphertext = /** @type e2e.ByteArray */ (
+  var ciphertext = /** @type !e2e.ByteArray */ (
       e2e.async.Result.getValue(cfbCipher.encrypt(plaintext, iv)));
   var packet = new e2e.openpgp.packet.SymmetricallyEncryptedIntegrity(
       ciphertext);
@@ -177,7 +177,7 @@ serializePacketBody = function() {
 /**
  * Parses and extracts the data from the body.
  * Throws a {@code e2e.openpgp.error.ParseError} if malformed.
- * @param {e2e.ByteArray} body The data to parse.
+ * @param {!e2e.ByteArray} body The data to parse.
  * @return {e2e.openpgp.packet.SymmetricallyEncryptedIntegrity} packet.
  */
 e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.parse =

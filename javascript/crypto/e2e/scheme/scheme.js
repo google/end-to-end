@@ -63,7 +63,7 @@ e2e.scheme.Scheme.prototype.crypto;
 
 
 /**
- * @param {e2e.ByteArray} plaintext
+ * @param {!e2e.ByteArray} plaintext
  * @return {!e2e.async.Result.<e2e.cipher.ciphertext.CipherText>}
  */
 e2e.scheme.Scheme.prototype.encrypt = function(plaintext) {
@@ -77,7 +77,7 @@ e2e.scheme.Scheme.prototype.encrypt = function(plaintext) {
 
 /**
  * @param {e2e.cipher.ciphertext.CipherText} ciphertext
- * @return {!e2e.async.Result.<e2e.ByteArray>}
+ * @return {!e2e.async.Result.<!e2e.ByteArray>}
  */
 e2e.scheme.Scheme.prototype.decrypt = function(ciphertext) {
   if (this.useWebCrypto) {
@@ -90,7 +90,7 @@ e2e.scheme.Scheme.prototype.decrypt = function(ciphertext) {
 
 /**
  * JavaScript implementation of the scheme.
- * @param {e2e.ByteArray} plaintext
+ * @param {!e2e.ByteArray} plaintext
  * @return {!e2e.async.Result.<e2e.cipher.ciphertext.CipherText>}
  */
 e2e.scheme.Scheme.prototype.encryptJavaScript;
@@ -98,7 +98,7 @@ e2e.scheme.Scheme.prototype.encryptJavaScript;
 
 /**
  * WebCrypto implementation of the scheme.
- * @param {e2e.ByteArray} plaintext
+ * @param {!e2e.ByteArray} plaintext
  * @return {!e2e.async.Result.<e2e.cipher.ciphertext.CipherText>}
  */
 e2e.scheme.Scheme.prototype.encryptWebCrypto;
@@ -107,7 +107,7 @@ e2e.scheme.Scheme.prototype.encryptWebCrypto;
 /**
  * JavaScript implementation of the scheme.
  * @param {e2e.cipher.ciphertext.CipherText} ciphertext
- * @return {!e2e.async.Result.<e2e.ByteArray>}
+ * @return {!e2e.async.Result.<!e2e.ByteArray>}
  */
 e2e.scheme.Scheme.prototype.decryptJavaScript;
 
@@ -115,6 +115,6 @@ e2e.scheme.Scheme.prototype.decryptJavaScript;
 /**
  * WebCrypto implementation of the scheme.
  * @param {e2e.cipher.ciphertext.CipherText} ciphertext
- * @return {!e2e.async.Result.<e2e.ByteArray>}
+ * @return {!e2e.async.Result.<!e2e.ByteArray>}
  */
 e2e.scheme.Scheme.prototype.decryptWebCrypto;

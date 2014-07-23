@@ -45,9 +45,9 @@ e2e.HmacPRF = function(opt_hash) {
 
 /**
  * Computes HmacPRF according to the formula HMAC(key, input).
- * @param {e2e.ByteArray} key The secret key.
- * @param {e2e.ByteArray} input The input to the HmacPRF.
- * @return {e2e.ByteArray} Pseudorandom bytes with length is the digest
+ * @param {!e2e.ByteArray} key The secret key.
+ * @param {!e2e.ByteArray} input The input to the HmacPRF.
+ * @return {!e2e.ByteArray} Pseudorandom bytes with length is the digest
  *     size of the underlying hash function.
  */
 e2e.HmacPRF.prototype.getHmacPRF = function(key, input) {

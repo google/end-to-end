@@ -50,14 +50,14 @@ goog.require('goog.array');
  * An EncryptedCipher wraps a e2e.cipher.Cipher so that some of the
  * operations (sign/decrypt) are only available after unlocking the encrypted
  * key material.
- * @param {e2e.ByteArray} encryptedKeyData The encrypted key data.
+ * @param {!e2e.ByteArray} encryptedKeyData The encrypted key data.
  * @param {e2e.openpgp.EncryptedCipher.KeyDerivationType} keyDerivation The
  *     key derivation style to use.
  * @param {e2e.cipher.Cipher|e2e.signer.Signer} cipher Instance
  *     of the cipher with the public key.
  * @param {e2e.cipher.Algorithm=} opt_algorithm The algorithm to
  *     use for decrypting the encrypted key data.
- * @param {e2e.ByteArray=} opt_iv The initialization vector for the key
+ * @param {!e2e.ByteArray=} opt_iv The initialization vector for the key
  *     data.
  * @param {e2e.openpgp.S2k=} opt_s2k The S2K instance to use to generate
  *     the key from a passphrase.
@@ -108,7 +108,7 @@ e2e.openpgp.EncryptedCipher = function(
       }
       /**
        * The IV to be used for decrypting the data.
-       * @type {e2e.ByteArray|undefined}
+       * @type {!e2e.ByteArray|undefined}
        * @private
        */
       this.iv_ = opt_iv;
@@ -132,7 +132,7 @@ e2e.openpgp.EncryptedCipher = function(
       }
       /**
        * The potentially encrypted key data.
-       * @type {e2e.ByteArray}
+       * @type {!e2e.ByteArray}
        */
       this.encryptedKeyData = encryptedKeyData;
       break;
@@ -147,7 +147,7 @@ goog.inherits(e2e.openpgp.EncryptedCipher, e2e.AlgorithmImpl);
 
 /**
  * The key bytes, only available after key was unlocked.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  * @private
  */
 e2e.openpgp.EncryptedCipher.prototype.keyBytes_;
@@ -163,7 +163,7 @@ e2e.openpgp.EncryptedCipher.prototype.getKeyDerivationType = function() {
 
 /**
  * Returns the key derivation IV.
- * @return {e2e.ByteArray|undefined}
+ * @return {!e2e.ByteArray|undefined}
  */
 e2e.openpgp.EncryptedCipher.prototype.getKeyDerivationIv = function() {
   return this.iv_;
@@ -205,7 +205,7 @@ e2e.openpgp.EncryptedCipher.DEFAULT_CIPHER =
 
 /**
  * Locks the key with the given passphrase.
- * @param {e2e.ByteArray=} opt_passphrase
+ * @param {!e2e.ByteArray=} opt_passphrase
  */
 e2e.openpgp.EncryptedCipher.prototype.lockKey = function(
     opt_passphrase) {
@@ -256,7 +256,7 @@ e2e.openpgp.EncryptedCipher.prototype.lockKey = function(
 /**
  * Checks if the key data is valid and sets the key. Can throw an error
  * if the key type is unrecognized.
- * @param {e2e.ByteArray} decryptedKeyData The key data.
+ * @param {!e2e.ByteArray} decryptedKeyData The key data.
  * @private
  */
 e2e.openpgp.EncryptedCipher.prototype.unlockAndVerifyKey_ = function(
@@ -288,7 +288,7 @@ e2e.openpgp.EncryptedCipher.prototype.unlockAndVerifyKey_ = function(
  * was correct. Each has different decryption modes of operation as well, and
  * the encoding of the data inside the code is formatted differently depending
  * on which key derivation type.
- * @param {e2e.ByteArray=} opt_passphrase The passphrase to use to
+ * @param {!e2e.ByteArray=} opt_passphrase The passphrase to use to
  *     decrypt it.
  */
 e2e.openpgp.EncryptedCipher.prototype.unlockKey = function(
@@ -345,7 +345,7 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey = function(
 
 /**
  * Verifies the data is valid, and unlocks the key to do private operations.
- * @param {e2e.ByteArray} data The data to verify and import.
+ * @param {!e2e.ByteArray} data The data to verify and import.
  * @private
  */
 e2e.openpgp.EncryptedCipher.prototype.unlockKeyWithSha1Checksum_ =
@@ -353,7 +353,7 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKeyWithSha1Checksum_ =
   var key = data.slice(0, -20);
   var chk = data.slice(-20);
   var sha1 = new e2e.hash.Sha1;
-  var hash = /** @type {e2e.ByteArray} */ (sha1.hash(key));
+  var hash = /** @type {!e2e.ByteArray} */ (sha1.hash(key));
   if (!e2e.compareByteArray(chk, hash)) {
     throw new e2e.openpgp.error.WrongPassphraseError();
   }
@@ -363,7 +363,7 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKeyWithSha1Checksum_ =
 
 /**
  * Verifies the data is valid, and unlocks the key to do private operations.
- * @param {e2e.ByteArray} data The data to verify and import.
+ * @param {!e2e.ByteArray} data The data to verify and import.
  * @private
  */
 e2e.openpgp.EncryptedCipher.prototype.unlockKeyWithNumericChecksum_ =
@@ -380,7 +380,7 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKeyWithNumericChecksum_ =
 
 /**
  * Unlocks the encrypted cipher so that it can do private operations.
- * @param {e2e.ByteArray} keyBytes The key data to use to get the MPIs.
+ * @param {!e2e.ByteArray} keyBytes The key data to use to get the MPIs.
  * @private
  */
 e2e.openpgp.EncryptedCipher.prototype.unlockKey_ = function(keyBytes) {

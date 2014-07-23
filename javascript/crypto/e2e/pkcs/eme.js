@@ -42,7 +42,7 @@ e2e.pkcs.eme.Oaep = function() {
   /**
    * The SHA-1 hash of the empty label, used to verify the decryption.
    * Is equivalent to the output of new e2e.hash.Sha1().hash([]).
-   * @private {e2e.ByteArray}
+   * @private {!e2e.ByteArray}
    */
    this.labelHash_ = [
      0xda, 0x39, 0xa3, 0xee, 0x5e, 0x6b, 0x4b, 0x0d, 0x32, 0x55,
@@ -54,8 +54,8 @@ e2e.pkcs.eme.Oaep = function() {
  * Encodes the given message according to the OAEP method as described in
  *     RFC 3447 section 7.1.1 with SHA-1, MGF1 and an empty label.
  * @param {number} k The size of the key in bytes.
- * @param {e2e.ByteArray} m The message to encode.
- * @return {e2e.ByteArray} The encoded message.
+ * @param {!e2e.ByteArray} m The message to encode.
+ * @return {!e2e.ByteArray} The encoded message.
  */
 e2e.pkcs.eme.Oaep.prototype.encode = function(k, m) {
   // OAEP can operate only on messages of length up to k - 2hLen - 2 octets,
@@ -88,8 +88,8 @@ e2e.pkcs.eme.Oaep.prototype.encode = function(k, m) {
  *     decrypt messages without knowing the private key. As a result, it
  *     must not be used anywhere except for interoperative testing.
  * @param {number} k The size of the key in bytes.
- * @param {e2e.ByteArray} c The message to decode.
- * @return {e2e.ByteArray} The decoded message.
+ * @param {!e2e.ByteArray} c The message to decode.
+ * @return {!e2e.ByteArray} The decoded message.
  * @protected
  */
 e2e.pkcs.eme.Oaep.prototype.decodeForTestingOnly = function(k, c) {
@@ -123,7 +123,7 @@ e2e.pkcs.eme.Oaep.prototype.decodeForTestingOnly = function(k, c) {
  * @param {!e2e.ByteArray} seed The seed from which mask is generated.
  * @param {number} maskLen intended length in octets of the mask, at most
  *     2^32 * HashLength.
- * @return {e2e.ByteArray}
+ * @return {!e2e.ByteArray}
  * @private
  */
 e2e.pkcs.eme.Oaep.prototype.maskGenerationFunction_ =
@@ -154,8 +154,8 @@ e2e.pkcs.eme.Pkcs1 = function() {
 /**
  * Encodes the given message according to EME PKCS1-v1.5.
  * @param {number} k The size of the key in bytes.
- * @param {e2e.ByteArray} m The message to encode.
- * @return {e2e.ByteArray} The encoded message.
+ * @param {!e2e.ByteArray} m The message to encode.
+ * @return {!e2e.ByteArray} The encoded message.
  */
 e2e.pkcs.eme.Pkcs1.prototype.encode = function(k, m) {
   var em, ps;
@@ -272,10 +272,10 @@ goog.object.forEach(e2e.pkcs.eme.Pkcs1.decodeStateTransitions,
 /**
  * Decodes the given encoded message according to EME PKCS1-v1.5. This MUST be
  * done close to constant time, that's why we have a state machine.
- * @param {e2e.ByteArray} em The data to decode.
+ * @param {!e2e.ByteArray} em The data to decode.
  * @param {number=} opt_messageLength The expected length of the message.
  * @param {number=} opt_keySize The size of the key (which should be em size).
- * @return {e2e.ByteArray} The decoded message.
+ * @return {!e2e.ByteArray} The decoded message.
  */
 e2e.pkcs.eme.Pkcs1.prototype.decode = function(
     em, opt_messageLength, opt_keySize) {

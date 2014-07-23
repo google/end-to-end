@@ -40,7 +40,7 @@ goog.require('goog.array');
  * As defined in RFC 4880 Section 5.3.
  * @param {number} version The Encrypted Session Key Packet version.
  * @param {e2e.cipher.Algorithm} algorithm The symmetric key algorithm.
- * @param {e2e.ByteArray} encryptedKey The encrypted key.
+ * @param {!e2e.ByteArray} encryptedKey The encrypted key.
  * @param {e2e.openpgp.S2k} s2k The string-to-key object.
  * @constructor
  * @extends {e2e.openpgp.packet.EncryptedSessionKey}
@@ -76,7 +76,7 @@ e2e.openpgp.packet.SymmetricKey.prototype.decryptSessionKey =
     var iv = goog.array.repeat(0, cipher.blockSize);
     var cfbCipher = new e2e.ciphermode.Cfb(cipher);
     return cfbCipher.decrypt(
-        /** @type e2e.ByteArray */(this.encryptedKey), iv).addCallback(
+        /** @type !e2e.ByteArray */(this.encryptedKey), iv).addCallback(
         function(decoded) {
           try {
             this.symmetricAlgorithm =
@@ -119,9 +119,9 @@ e2e.openpgp.packet.SymmetricKey.prototype.serializePacketBody = function() {
 
 /**
  * Constructs an SymmetricKey packet from an unencrypted session key.
- * @param {e2e.ByteArray} passphrase Symmetrically encrypt session key
+ * @param {!e2e.ByteArray} passphrase Symmetrically encrypt session key
  *   with this passphrase.
- * @param {e2e.ByteArray} sessionKey Unencrypted session key.
+ * @param {!e2e.ByteArray} sessionKey Unencrypted session key.
  * @return {e2e.openpgp.packet.SymmetricKey}
  */
 e2e.openpgp.packet.SymmetricKey.construct =
@@ -142,7 +142,7 @@ e2e.openpgp.packet.SymmetricKey.construct =
       sessionKey);
   var result = cfbCipher.encrypt(unencryptedKeyData,
       goog.array.repeat(0, cipher.blockSize));  // IV
-  var encryptedKey = /** @type e2e.ByteArray */(
+  var encryptedKey = /** @type !e2e.ByteArray */(
       e2e.async.Result.getValue(result));
   var packet = new e2e.openpgp.packet.SymmetricKey(
       4, //version

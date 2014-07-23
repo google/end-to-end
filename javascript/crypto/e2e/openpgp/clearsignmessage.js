@@ -31,7 +31,7 @@ goog.require('goog.string');
 /**
  * Representation of a clearsign message.
  * @param {string} body The body
- * @param {e2e.ByteArray} signatureBytes The serialized signature
+ * @param {!e2e.ByteArray} signatureBytes The serialized signature
  * @param {string=} opt_hash Hash algorithm declared in the message
  * @constructor
  */

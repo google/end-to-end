@@ -31,19 +31,19 @@ goog.require('goog.string');
 /**
  * Does base64 decoding ignoring extra characters, such as whitespace.
  * @param {string} ascii The ASCII text to parse.
- * @return {e2e.ByteArray} The decoded data.
+ * @return {!e2e.ByteArray} The decoded data.
  * @private
  */
 e2e.openpgp.asciiArmor.decodeRadix64_ = function(ascii) {
   var real = ascii.replace(/[^a-zA-Z0-9+/=]+/g, '');
-  return /** @type {e2e.ByteArray} */ (
+  return /** @type {!e2e.ByteArray} */ (
       goog.crypt.base64.decodeStringToByteArray(real));
 };
 
 
 /**
  * Does base64 encoding, inserting newlines to wrap long text.
- * @param {e2e.ByteArray} data The data to encode.
+ * @param {!e2e.ByteArray} data The data to encode.
  * @return {string} The encoded data as ASCII text.
  * @private
  */
@@ -56,7 +56,7 @@ e2e.openpgp.asciiArmor.encodeRadix64_ = function(data) {
 
 /**
  * Calculates CRC24.
- * @param {e2e.ByteArray} data The data to do a checksum of.
+ * @param {!e2e.ByteArray} data The data to do a checksum of.
  * @return {number} The checksum.
  * @private
  */
@@ -91,7 +91,7 @@ e2e.openpgp.asciiArmor.NEW_LINE_ = '[\\t\\u00a0 ]?\\r?\\n';
  * Specified in RFC 4880 Section 6.2.
  * Throws a {@code e2e.openpgp.error.ParseError} if the Armor is invalid.
  * @param {string} text The text to parse as ASCII Armor.
- * @return {e2e.openpgp.ArmoredMessage} The parsed message.
+ * @return {!e2e.openpgp.ArmoredMessage} The parsed message.
  */
 e2e.openpgp.asciiArmor.parse = function(text) {
   // The 0x80 bit is always set for the Packet Tag for OpenPGP packets.
@@ -241,7 +241,7 @@ e2e.openpgp.asciiArmor.encodeClearSign = function(message, opt_headers) {
  * Encode data as ASCII Armor.
  * Specified in RFC 4880 Section 6.2.
  * @param {string} type Descriptive type, such as "MESSAGE".
- * @param {e2e.ByteArray} payload The data to encode.
+ * @param {!e2e.ByteArray} payload The data to encode.
  * @param {!Object.<string>=} opt_headers Extra headers to add.
  * @return {string} The ASCII Armored text.
  */

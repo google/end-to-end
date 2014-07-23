@@ -26,10 +26,10 @@ goog.require('goog.structs.Map');
 
 /**
  * Signature Subpackets as defined in RFC 4880, section 5.2.3.1.
- * @param {e2e.openpgp.packet.SignatureSub.Type} type Subpacket type.
+ * @param {!e2e.openpgp.packet.SignatureSub.Type} type Subpacket type.
  * @param {boolean} critical True if interpretation of this type is critical.
- * @param {e2e.ByteArray} body Unparsed data for this subpacket.
- * @param {e2e.ByteArray=} opt_packetLengthBytes The encoded length of
+ * @param {!e2e.ByteArray} body Unparsed data for this subpacket.
+ * @param {!e2e.ByteArray=} opt_packetLengthBytes The encoded length of
  *     the packet length.
  * @constructor
  */
@@ -44,7 +44,7 @@ e2e.openpgp.packet.SignatureSub = function(
 
 /**
  * Calculates the encoded length of the signature subpacket.
- * @return {e2e.ByteArray}
+ * @return {!e2e.ByteArray}
  * @private
  */
 e2e.openpgp.packet.SignatureSub.prototype.getLength_ = function() {
@@ -56,7 +56,7 @@ e2e.openpgp.packet.SignatureSub.prototype.getLength_ = function() {
 
 
 /**
- * @return {e2e.ByteArray}
+ * @return {!e2e.ByteArray}
  */
 e2e.openpgp.packet.SignatureSub.prototype.serialize = function() {
   var ptag = (Number(this.critical) << 7) | this.type;
@@ -68,8 +68,8 @@ e2e.openpgp.packet.SignatureSub.prototype.serialize = function() {
 
 
 /**
- * @param {Object} attributes
- * @return {Array.<e2e.openpgp.packet.SignatureSub>}
+ * @param {!Object} attributes
+ * @return {!Array.<!e2e.openpgp.packet.SignatureSub>}
  */
 e2e.openpgp.packet.SignatureSub.construct = function(attributes) {
   var packets = [];
@@ -90,8 +90,8 @@ e2e.openpgp.packet.SignatureSub.construct = function(attributes) {
 
 /**
  * Parses data and returns all of the parsed subpackets.
- * @param {e2e.ByteArray} data Data for subpackets.
- * @return {Array.<e2e.openpgp.packet.SignatureSub>} Parsed subpackets.
+ * @param {!e2e.ByteArray} data Data for subpackets.
+ * @return {!Array.<!e2e.openpgp.packet.SignatureSub>} Parsed subpackets.
  */
 e2e.openpgp.packet.SignatureSub.parse = function(data) {
   var packets = [];
@@ -127,9 +127,8 @@ e2e.openpgp.packet.SignatureSub.parse = function(data) {
         type & 0x7F);
     var body = data.splice(0, packetLength - 1);
 
-    goog.array.extend(packets,
-        new e2e.openpgp.packet.SignatureSub(
-            type, critical, body, packetLengthBytes));
+    packets.push(new e2e.openpgp.packet.SignatureSub(type, critical, body,
+                                                     packetLengthBytes));
   }
 
   return packets;
@@ -138,9 +137,9 @@ e2e.openpgp.packet.SignatureSub.parse = function(data) {
 
 /**
  * Parses the subpacket and populates the attributes object with the data.
- * @param {Object.<string, number|e2e.ByteArray>} attributes Attributes
+ * @param {!Object.<string, number|!e2e.ByteArray>} attributes Attributes
  *   record object to populate.
- * @param {e2e.openpgp.packet.SignatureSub} subpacket Subpacket to parse.
+ * @param {!e2e.openpgp.packet.SignatureSub} subpacket Subpacket to parse.
  * @param {boolean} hashed True If subpacket is in hashed section of signature.
  */
 e2e.openpgp.packet.SignatureSub.populateAttribute = function(

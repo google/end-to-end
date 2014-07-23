@@ -36,7 +36,7 @@ goog.require('goog.array');
  * Representation of a Public-Key Encrypted Session-Key Packet (Tag 1).
  * As defined in RFC 4880 Section 5.1.
  * @param {number} version The Encrypted Session Key Packet version.
- * @param {e2e.ByteArray} keyId The keyId of the public key.
+ * @param {!e2e.ByteArray} keyId The keyId of the public key.
  * @param {e2e.cipher.Algorithm} algorithm The public key algorithm.
  * @param {e2e.cipher.ciphertext.CipherText} encryptedKey The encrypted
  *     key material with values as MPIs.
@@ -76,8 +76,8 @@ e2e.openpgp.packet.PKEncryptedSessionKey.prototype.decryptSessionKey =
 
 /**
  * Removes the padding for ECC OpenPGP keys.
- * @param {e2e.ByteArray} decrypted The data with the padding.
- * @return {e2e.ByteArray} The data without the padding.
+ * @param {!e2e.ByteArray} decrypted The data with the padding.
+ * @return {!e2e.ByteArray} The data without the padding.
  * @private
  */
 e2e.openpgp.packet.PKEncryptedSessionKey.prototype.removeEccPadding_ =
@@ -105,7 +105,7 @@ e2e.openpgp.packet.PKEncryptedSessionKey.prototype.removeEccPadding_ =
 /**
  * Verifies the checksum and extracts the key of a session key. Throws if
  * the checksum is invalid.
- * @param {e2e.ByteArray} decoded The decoded key (without padding).
+ * @param {!e2e.ByteArray} decoded The decoded key (without padding).
  * @return {boolean} Whether the key was extracted correctly.
  * @private
  */
@@ -165,7 +165,7 @@ serializePacketBody = function() {
  * Constructs an PKEncryptedSessionKey packet from an unencrypted session key.
  * @param {e2e.openpgp.packet.Key} publicKey Encrypt session key for this
  *   public key.
- * @param {e2e.ByteArray} sessionKey Unencrypted session key.
+ * @param {!e2e.ByteArray} sessionKey Unencrypted session key.
  * @return {e2e.async.Result.<e2e.openpgp.packet.PKEncryptedSessionKey>}
  */
 e2e.openpgp.packet.PKEncryptedSessionKey.construct = function(publicKey,

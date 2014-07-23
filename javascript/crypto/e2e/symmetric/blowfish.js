@@ -45,7 +45,7 @@ goog.require('goog.array');
  */
 e2e.cipher.Blowfish = function(algorithm, opt_keyObj) {
   /**
-   * @type {e2e.DwordArray}
+   * @type {!e2e.DwordArray}
    * @private
    */
   this.p_ = [];  // 18 uint32 values.
@@ -150,7 +150,7 @@ e2e.cipher.Blowfish.prototype.decrypt = function(data) {
  * Encrypt block.
  * @param {number} xl 32bit number for left half.
  * @param {number} xr 32bit number for right half.
- * @return {e2e.DwordArray} Computed values of [xl, xr].
+ * @return {!e2e.DwordArray} Computed values of [xl, xr].
  * @private
  */
 e2e.cipher.Blowfish.prototype.encryptBlock_ = function(xl, xr) {
@@ -196,7 +196,7 @@ e2e.cipher.Blowfish.prototype.encryptBlock_ = function(xl, xr) {
  * Decrypt block.
  * @param {number} xl 32bit number for left half.
  * @param {number} xr 32bit number for right half.
- * @return {e2e.DwordArray} Computed values of [xl, xr].
+ * @return {!e2e.DwordArray} Computed values of [xl, xr].
  * @private
  */
 e2e.cipher.Blowfish.prototype.decryptBlock_ = function(xl, xr) {

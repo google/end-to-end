@@ -112,8 +112,8 @@ e2e.async.Service.prototype.name = 'Generic Service';
 
 /**
  * Returns the response to a bid from a client.
- * @param {e2e.async.Bid} bid Service specific information.
- * @return {e2e.async.BidResponse} The response to the bid.
+ * @param {!e2e.async.Bid} bid Service specific information.
+ * @return {!e2e.async.BidResponse} The response to the bid.
  */
 e2e.async.Service.prototype.getResponse = function(bid) {
   return {

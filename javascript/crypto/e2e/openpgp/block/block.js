@@ -28,7 +28,7 @@ goog.provide('e2e.openpgp.block.Block');
  */
 e2e.openpgp.block.Block = function() {
   /**
-   * @type {Array.<!e2e.openpgp.packet.Packet>}
+   * @type {!Array.<!e2e.openpgp.packet.Packet>}
    */
   this.packets = [];
 };
@@ -36,9 +36,9 @@ e2e.openpgp.block.Block = function() {
 
 /**
  * Parses a block out of a series of packets.
- * @param {Array.<e2e.openpgp.packet.Packet>} packets The list of packets
+ * @param {!Array.<!e2e.openpgp.packet.Packet>} packets The list of packets
  *     that hold the block information.
- * @return {Array.<e2e.openpgp.packet.Packet>} Any extra packets left over
+ * @return {!Array.<!e2e.openpgp.packet.Packet>} Any extra packets left over
  *     after parsing this block.
  */
 e2e.openpgp.block.Block.prototype.parse = goog.abstractMethod;
@@ -46,7 +46,7 @@ e2e.openpgp.block.Block.prototype.parse = goog.abstractMethod;
 
 /**
  * Serializes the block to a byte array.
- * @return {e2e.ByteArray} The serialization of the block.
+ * @return {!e2e.ByteArray} The serialization of the block.
  */
 e2e.openpgp.block.Block.prototype.serialize = goog.abstractMethod;
 

@@ -34,6 +34,7 @@ goog.require('e2e.openpgp.packet.factory');
 goog.require('e2e.signer.Algorithm');
 goog.require('e2e.signer.factory');
 goog.require('goog.array');
+goog.require('goog.asserts');
 
 
 
@@ -41,10 +42,10 @@ goog.require('goog.array');
  * A Public Key Packet (Tag 6) RFC 4880 Section 5.5.1.1.
  * @param {number} version The version of the key. Should be 0x04.
  * @param {number} timestamp The creation time of the key.
- * @param {!e2e.cipher.Cipher|e2e.signer.Signer} cipher
+ * @param {!e2e.cipher.Cipher|!e2e.signer.Signer} cipher
  *     An instance of the cipher used.
- * @param {e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
- * @param {e2e.ByteArray=} opt_keyId The key ID of the key. Should be
+ * @param {!e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
+ * @param {!e2e.ByteArray=} opt_keyId The key ID of the key. Should be
  *     passed in for v3 keys, but not for v4 keys.
  * @extends {e2e.openpgp.packet.Key}
  * @constructor
@@ -148,7 +149,7 @@ e2e.openpgp.packet.PublicKey.prototype.getPublicKeyPacket = function() {
 
 /**
  * Extracts a Public Key Packet from the body, and returns a PublicKey.
- * @param {e2e.ByteArray} body The body from where to extract the data.
+ * @param {!e2e.ByteArray} body The body from where to extract the data.
  * @return {!e2e.openpgp.packet.PublicKey} The generated packet.
  */
 e2e.openpgp.packet.PublicKey.parse = function(body) {
@@ -191,7 +192,7 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
       var q = e2e.openpgp.Mpi.parse(body);
       var g = e2e.openpgp.Mpi.parse(body);
       var y = e2e.openpgp.Mpi.parse(body);
-      keyData = /** @type e2e.signer.key.Dsa */(
+      keyData = /** @type {!e2e.signer.key.Dsa} */(
           {'p': goog.array.clone(p),
            'q': goog.array.clone(q),
            'g': goog.array.clone(g),
@@ -216,7 +217,7 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
             {'curve': goog.array.concat(curveSize, curve),
              'kdfInfo': goog.array.clone(kdfInfo),
              'pubKey': goog.array.clone(pubKey)});
-      // Cannot require() here as we need the fignerprint calculation first.
+      // Cannot require() here as we need the fingerprint calculation first.
       cipher = null;  // Set to avoid compile warning.
       break;
     default:
@@ -248,20 +249,21 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
     // the two-octet length) of the MPIs that form the key material (public
     // modulus n, followed by exponent e) with MD5.
     var md5 = new e2e.hash.Md5();
-    fingerprint = /** @type {e2e.ByteArray} */ (md5.hash(
+    fingerprint = /** @type {!e2e.ByteArray} */ (md5.hash(
         goog.array.concat(keyData['n'], keyData['e'])));
   }
 
-  return new e2e.openpgp.packet.PublicKey(
-      version, timestamp, cipher, fingerprint, keyId);
+  return new e2e.openpgp.packet.PublicKey(version, timestamp,
+                                          goog.asserts.assertObject(cipher),
+                                          fingerprint, keyId);
 };
 
 
 /**
  * Calculates the v4 fingerprints per RFC 4880 Section 12.2.
- * @param {e2e.ByteArray} pubKey The public key, which contains
+ * @param {!e2e.ByteArray} pubKey The public key, which contains
  *     version + timestamp + algorithm + key data.
- * @return {e2e.ByteArray}
+ * @return {!e2e.ByteArray}
  */
 e2e.openpgp.packet.PublicKey.calculateFingerprint = function(pubKey) {
   var fingerprintData = goog.array.concat(
@@ -270,7 +272,7 @@ e2e.openpgp.packet.PublicKey.calculateFingerprint = function(pubKey) {
     pubKey.length % 256,
     pubKey);
   var sha1 = new e2e.hash.Sha1();
-  return /** @type {e2e.ByteArray} */ (sha1.hash(fingerprintData));
+  return /** @type {!e2e.ByteArray} */ (sha1.hash(fingerprintData));
 };
 
 e2e.openpgp.packet.factory.add(e2e.openpgp.packet.PublicKey);

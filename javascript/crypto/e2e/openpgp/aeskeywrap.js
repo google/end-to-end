@@ -59,7 +59,7 @@ e2e.cipher.AesKeyWrap.prototype.aes_;
 
 /**
  * IV used in key wrapping.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  * @const
  * @private
  */
@@ -67,7 +67,7 @@ e2e.cipher.AesKeyWrap.prototype.IV_ = goog.array.repeat(0xA6, 8);
 
 /**
  * Sets key-wrapping key.
- * @param {{key: e2e.ByteArray}} key The key-wrapping key.
+ * @param {!e2e.cipher.key.SymmetricKey} key The key-wrapping key.
  */
 e2e.cipher.AesKeyWrap.prototype.setKey = function(key) {
   goog.asserts.assertObject(this.aes_);
@@ -80,8 +80,8 @@ e2e.cipher.AesKeyWrap.prototype.setKey = function(key) {
 /**
  * Wraps key data with the key-wrapping key, as described in section 2.2.1 in
  *     RFC 3394. This key-wrapping method is used in ECDH.
- * @param {e2e.ByteArray} keyData The key data to be wrapped.
- * @return {e2e.ByteArray} The wrapped key data.
+ * @param {!e2e.ByteArray} keyData The key data to be wrapped.
+ * @return {!e2e.ByteArray} The wrapped key data.
  */
 e2e.cipher.AesKeyWrap.prototype.wrap = function(keyData) {
   goog.asserts.assertArray(keyData,
@@ -126,8 +126,8 @@ e2e.cipher.AesKeyWrap.prototype.wrap = function(keyData) {
 /**
  * Unwraps key data with the key-wrapping key, as described in section 2.2.1 in
  *     RFC 3394. This key-unwrapping method is used in ECDH.
- * @param {e2e.ByteArray} wrappedKeyData The key data to be unwrapped.
- * @return {e2e.ByteArray} The unwrapped key data.
+ * @param {!e2e.ByteArray} wrappedKeyData The key data to be unwrapped.
+ * @return {!e2e.ByteArray} The unwrapped key data.
  */
 e2e.cipher.AesKeyWrap.prototype.unwrap = function(wrappedKeyData) {
   goog.asserts.assertArray(wrappedKeyData,

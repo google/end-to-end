@@ -63,14 +63,14 @@ e2e.Hkdf.HashLength = {
  * 1st stage takes the input keying material and extracts from it a fixed-length
  * pseudorandom key prk. The 2nd stage expands the key prk into serveral
  * additional pseudorandom keys.
- * @param {e2e.ByteArray} ikm Input keying material.
- * @param {e2e.ByteArray} info Context and application specific
+ * @param {!e2e.ByteArray} ikm Input keying material.
+ * @param {!e2e.ByteArray} info Context and application specific
  *     information (can be a zero-length array).
  * @param {number} extract_len Length of extracted output keying material in
  *     octets. The maximum size of extracted keys is 255 * hashLength.
- * @param {e2e.ByteArray=} opt_salt Salt value (a non-secret random
+ * @param {!e2e.ByteArray=} opt_salt Salt value (a non-secret random
  *     value). If not provided, it is set to a string of hash length zeros.
- * @return {e2e.ByteArray}  Output keying material (okm).
+ * @return {!e2e.ByteArray}  Output keying material (okm).
  */
 e2e.Hkdf.prototype.getHKDF = function(ikm, info, extract_len,
     opt_salt) {

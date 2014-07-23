@@ -145,19 +145,19 @@ e2e.cipher.Ecdh.prototype.encrypt = function(plaintext) {
   // Wraps the session key with the key-wrapping key derived from the shared
   // secret.
   var keyWrapper = this.getKeyWrapper_(message['secret']);
+  /** @type {!e2e.cipher.ciphertext.Ecdh} */
   var ciphertext = {
     'u': keyWrapper.wrap(plaintext),
     'v': message.pubKey
   };
-  return /** @type {e2e.cipher.ciphertext.AsymmetricAsync} */(
-      e2e.async.Result.toAsynchronousResult(ciphertext));
+  return e2e.async.Result.toAsynchronousResult(ciphertext);
 };
 
 
 /**
  * Encrypts with an ephemeral private key. Used for testing only.
- * @param {e2e.ByteArray} m The message to be encrypted.
- * @param {e2e.ByteArray} privKey The ephemeral private key.
+ * @param {!e2e.ByteArray} m The message to be encrypted.
+ * @param {!e2e.ByteArray} privKey The ephemeral private key.
  * @return {e2e.cipher.ciphertext.AsymmetricAsync}
  * @protected
  */
@@ -190,8 +190,8 @@ e2e.cipher.Ecdh.prototype.decrypt = function(ciphertext) {
 
 /**
  * Returns a key-wrapper that is used to wrap or unwrap the session key.
- * @param {e2e.ByteArray} secret The ECDH shared secret.
- * @return {e2e.cipher.AesKeyWrap} The key-wrapper object.
+ * @param {!e2e.ByteArray} secret The ECDH shared secret.
+ * @return {!e2e.cipher.AesKeyWrap} The key-wrapper object.
  * @private
  */
 e2e.cipher.Ecdh.prototype.getKeyWrapper_ = function(secret) {
@@ -237,5 +237,4 @@ e2e.cipher.Ecdh.prototype.getKeyWrapper_ = function(secret) {
 };
 
 
-e2e.cipher.factory.add(e2e.cipher.Ecdh,
-                               e2e.cipher.Algorithm.ECDH);
+e2e.cipher.factory.add(e2e.cipher.Ecdh, e2e.cipher.Algorithm.ECDH);

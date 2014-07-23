@@ -41,8 +41,8 @@ goog.require('goog.asserts');
  *     who shall derive the shared secret with his private key b by computing
  *     S = bA = baG = aB.
  *     Note: the actual shared secret is the x-coordinate of S.
- * @param {e2e.ecc.PrimeCurve} curve The curve used for this protocol.
- * @param {{pubKey: e2e.ByteArray, privKey: (e2e.ByteArray|undefined)}=}
+ * @param {!e2e.ecc.PrimeCurve} curve The curve used for this protocol.
+ * @param {{pubKey: !e2e.ByteArray, privKey: (!e2e.ByteArray|undefined)}=}
  *     opt_key The public and/or private key used in this protocol.
  * @constructor
  * @extends {e2e.ecc.Protocol}
@@ -50,9 +50,7 @@ goog.require('goog.asserts');
 e2e.ecc.Ecdh = function(curve, opt_key) {
   e2e.ecc.Ecdh.base(this, 'constructor', curve, opt_key);
 };
-goog.inherits(
-    e2e.ecc.Ecdh,
-    e2e.ecc.Protocol);
+goog.inherits(e2e.ecc.Ecdh, e2e.ecc.Protocol);
 
 
 /**
@@ -63,9 +61,9 @@ goog.inherits(
  *     The public key used here should belong to Bob. The returned message
  *     consists of Alice's ephemeral public key and the shared key, which is
  *     the x-coordinate of the shared secret value.
- * @param {e2e.ByteArray=} opt_bobPubKey Bob's public key.
- * @return {{secret: e2e.ByteArray,
- *           pubKey: e2e.ByteArray}}
+ * @param {!e2e.ByteArray=} opt_bobPubKey Bob's public key.
+ * @return {{secret: !e2e.ByteArray,
+ *           pubKey: !e2e.ByteArray}}
  */
 e2e.ecc.Ecdh.prototype.alice = function(opt_bobPubKey) {
   goog.asserts.assertObject(this.params, 'Domain params should be defined.');
@@ -95,10 +93,10 @@ e2e.ecc.Ecdh.prototype.alice = function(opt_bobPubKey) {
  *     The public key used here is Alice's ephemeral public key. The private
  *     key should belong to Bob. The returned message is the shared key, which
  *     is the x-coordinate of the shared secret value.
- * @param {e2e.ByteArray} alicePubKey Alice's ephemeral public key,
+ * @param {!e2e.ByteArray} alicePubKey Alice's ephemeral public key,
  *     which is sent by Alice to Bob as part of the protocol.
- * @param {e2e.ByteArray=} opt_bobPrivKey Bob's private key.
- * @return {{secret: e2e.ByteArray}}
+ * @param {!e2e.ByteArray=} opt_bobPrivKey Bob's private key.
+ * @return {{secret: !e2e.ByteArray}}
  */
 e2e.ecc.Ecdh.prototype.bob = function(alicePubKey, opt_bobPrivKey) {
   goog.asserts.assertObject(this.params, 'Domain params should be defined.');

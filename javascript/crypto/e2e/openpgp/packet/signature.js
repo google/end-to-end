@@ -34,23 +34,24 @@ goog.require('e2e.openpgp.packet.SignatureSub');
 goog.require('e2e.openpgp.packet.factory');
 goog.require('e2e.signer.Algorithm');
 goog.require('goog.array');
+goog.require('goog.asserts');
 
 
 /**
  * A Signature Packet (Tag 2) RFC 4880 Section 5.2.
  * @param {number} version The version of the signature packet.
- * @param {e2e.openpgp.packet.Signature.SignatureType} signatureType
+ * @param {!e2e.openpgp.packet.Signature.SignatureType} signatureType
  *     The signature type.
- * @param {e2e.signer.Algorithm} pubKeyAlgorithm The public key
+ * @param {!e2e.signer.Algorithm} pubKeyAlgorithm The public key
  *     algorithm.
- * @param {e2e.hash.Algorithm} hashAlgorithm The hash algorithm.
- * @param {e2e.signer.signature.Signature} signature The signature.
- * @param {e2e.ByteArray} leftTwoBytes The left two bytes of the hash.
+ * @param {!e2e.hash.Algorithm} hashAlgorithm The hash algorithm.
+ * @param {!e2e.signer.signature.Signature} signature The signature.
+ * @param {!e2e.ByteArray} leftTwoBytes The left two bytes of the hash.
  * @param {Array.<e2e.openpgp.packet.SignatureSub>=} opt_hashedSubpackets
  *     The hashed subpackets of the signature.
  * @param {Array.<e2e.openpgp.packet.SignatureSub>=} opt_unhashedSubpackets
  *     The non hashed subpackets of the signature.
- * @param {e2e.ByteArray=} opt_signerKeyId The key id of the signer.
+ * @param {!e2e.ByteArray=} opt_signerKeyId The key id of the signer.
  * @param {number=} opt_creationTime The time the signature was created.
  * @constructor
  * @extends {e2e.openpgp.packet.Packet}
@@ -65,11 +66,11 @@ e2e.openpgp.packet.Signature = function(
   if (version == 0x04) {
     /**
      * Hashed signature subpackets.
-     * @type {Array.<e2e.openpgp.packet.SignatureSub>}
+     * @type {!Array.<!e2e.openpgp.packet.SignatureSub>}
      */
     this.hashedSubpackets = opt_hashedSubpackets || [];
     /**
-     * @type {Object.<string, number|e2e.ByteArray>}
+     * @type {!Object.<string, number|!e2e.ByteArray>}
      */
     this.attributes = {};
     goog.array.forEach(this.hashedSubpackets, function(subpacket) {
@@ -78,11 +79,11 @@ e2e.openpgp.packet.Signature = function(
     }, this);
     /**
      * Non hashed signature subpackets.
-     * @type {Array.<e2e.openpgp.packet.SignatureSub>}
+     * @type {!Array.<!e2e.openpgp.packet.SignatureSub>}
      */
     this.unhashedSubpackets = opt_unhashedSubpackets || [];
     /**
-     * @type {Object.<string, number|e2e.ByteArray>}
+     * @type {!Object.<string, number|!e2e.ByteArray>}
      */
     this.untrustedAttributes = {};
     goog.array.forEach(this.unhashedSubpackets, function(subpacket) {
@@ -97,7 +98,7 @@ e2e.openpgp.packet.Signature = function(
     }
     /**
      * ID of the key that generated this signature..
-     * @type {e2e.ByteArray}
+     * @type {!e2e.ByteArray}
      */
     this.signerKeyId = opt_signerKeyId;
     /**
@@ -116,27 +117,27 @@ e2e.openpgp.packet.Signature = function(
   this.version = version;
   /**
    * Type of the signature.
-   * @type {e2e.openpgp.packet.Signature.SignatureType}
+   * @type {!e2e.openpgp.packet.Signature.SignatureType}
    */
   this.signatureType = signatureType;
   /**
    * Public key algorithm used in this signature.
-   * @type {e2e.signer.Algorithm}
+   * @type {!e2e.signer.Algorithm}
    */
   this.pubKeyAlgorithm = pubKeyAlgorithm;
   /**
    * Hash algorithm used in this signature.
-   * @type {e2e.hash.Algorithm}
+   * @type {!e2e.hash.Algorithm}
    */
   this.hashAlgorithm = hashAlgorithm;
   /**
    * Signature data.
-   * @type {e2e.signer.signature.Signature}
+   * @type {!e2e.signer.signature.Signature}
    */
   this.signature = signature;
   /**
    * Left Two Bytes of hash.
-   * @type {e2e.ByteArray}
+   * @type {!e2e.ByteArray}
    */
   this.leftTwoBytes = leftTwoBytes;
 };
@@ -149,8 +150,7 @@ e2e.openpgp.packet.Signature.prototype.tag = 2;
 
 
 /** @inheritDoc */
-e2e.openpgp.packet.Signature.prototype.serializePacketBody =
-    function() {
+e2e.openpgp.packet.Signature.prototype.serializePacketBody = function() {
   var serialized = [];
   serialized.push(this.version);
   if (this.version == 0x03 || this.version == 0x02) {
@@ -196,17 +196,16 @@ e2e.openpgp.packet.Signature.prototype.serializePacketBody =
 
 
 /**
- * @return {e2e.ByteArray} The serialized subpackets.
+ * @return {!e2e.ByteArray} The serialized subpackets.
  */
-e2e.openpgp.packet.Signature.prototype.serializeHashedSubpackets =
-    function() {
+e2e.openpgp.packet.Signature.prototype.serializeHashedSubpackets = function() {
   return e2e.openpgp.packet.Signature.serializeSubpackets(
       this.hashedSubpackets);
 };
 
 
 /**
- * @return {e2e.ByteArray} The serialized subpackets.
+ * @return {!e2e.ByteArray} The serialized subpackets.
  */
 e2e.openpgp.packet.Signature.prototype.serializeUnhashedSubpackets =
     function() {
@@ -293,7 +292,7 @@ e2e.openpgp.packet.Signature.parse = function(data) {
 /**
  * Extracts key ID used to place the signature directly from the packet
  *     (for version 3 packets) or from subpackets (for version 4 packets).
- * @return {e2e.ByteArray} signer key ID
+ * @return {!e2e.ByteArray} signer key ID
  */
 e2e.openpgp.packet.Signature.prototype.getSignerKeyId = function() {
   if (this.version == 0x03 || this.version == 0x02) {
@@ -301,11 +300,11 @@ e2e.openpgp.packet.Signature.prototype.getSignerKeyId = function() {
   }
   if (this.version == 0x04) {
     if (this.attributes.hasOwnProperty('ISSUER')) {
-      return /** @type e2e.ByteArray */ (this.attributes['ISSUER']);
+      return /** @type !e2e.ByteArray */ (this.attributes['ISSUER']);
     }
     if (this.untrustedAttributes.hasOwnProperty('ISSUER')) {
       // GnuPG puts Key ID in unhashed subpacket.
-      return /** @type e2e.ByteArray */ (
+      return /** @type !e2e.ByteArray */ (
         this.untrustedAttributes['ISSUER']);
     }
   }
@@ -317,26 +316,26 @@ e2e.openpgp.packet.Signature.prototype.getSignerKeyId = function() {
  * Creates OnePassSignature packet with data consistent with this packet.
  * @param {boolean=} opt_nested Should the OnePassSignature be nested
  *     (false by default).
- * @return {e2e.openpgp.packet.OnePassSignature} created signature packet
+ * @return {!e2e.openpgp.packet.OnePassSignature} created signature packet
  */
 e2e.openpgp.packet.Signature.prototype.constructOnePassSignaturePacket =
-  function(opt_nested) {
+    function(opt_nested) {
   return new e2e.openpgp.packet.OnePassSignature(
-    3, // Only version 3 packets exist according to RFC 4880.
-    this.signatureType,
-    e2e.openpgp.constants.getId(this.hashAlgorithm),
-    e2e.openpgp.constants.getId(this.pubKeyAlgorithm),
-    this.getSignerKeyId(),
-    Boolean(opt_nested));
+      3,  // Only version 3 packets exist according to RFC 4880.
+      this.signatureType,
+      e2e.openpgp.constants.getId(this.hashAlgorithm),
+      e2e.openpgp.constants.getId(this.pubKeyAlgorithm),
+      this.getSignerKeyId(),
+      Boolean(opt_nested));
 };
 
 
 /**
  * Verifies that a key pair actually signed the specified data.
- * @param {Array.<number> | Uint8Array } data The signed data.
- * @param {e2e.signer.Signer} signer Signer with the public key that
+ * @param {!e2e.ByteArray|!Uint8Array} data The signed data.
+ * @param {!e2e.signer.Signer} signer Signer with the public key that
  *     signed the data.
- * @param {string} opt_hashAlgo message digest algorithm declared in the message
+ * @param {string=} opt_hashAlgo message digest algorithm declared in the message
  * @return {boolean} True if the signature correctly verifies.
  */
 e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
@@ -354,24 +353,23 @@ e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
   }
   return e2e.async.Result.getValue(
       signer.verify(e2e.openpgp.packet.Signature.getDataToHash(
-          data,
-          this.signatureType,
-          this.pubKeyAlgorithm, this.hashAlgorithm,
-          this.hashedSubpackets),
-      /** @type e2e.signer.signature.Signature */ (this.signature)));
+                        data,
+                        this.signatureType, this.pubKeyAlgorithm,
+                        this.hashAlgorithm, this.hashedSubpackets),
+                    this.signature));
 };
 
 
 /**
  * Signs the data and creates a signature packet.
- * @param {e2e.openpgp.packet.SecretKey} key Key to sign with.
- * @param {e2e.ByteArray} data Data to sign.
- * @param {e2e.openpgp.packet.Signature.SignatureType} signatureType
- * @param {Object.<string, number|e2e.ByteArray>=} opt_attributes
+ * @param {!e2e.openpgp.packet.SecretKey} key Key to sign with.
+ * @param {!e2e.ByteArray} data Data to sign.
+ * @param {!e2e.openpgp.packet.Signature.SignatureType} signatureType
+ * @param {Object.<string, number|!e2e.ByteArray>=} opt_attributes
  *     The signature attributes.
- * @param {Object.<string, number|e2e.ByteArray>=}
+ * @param {Object.<string, number|!e2e.ByteArray>=}
  *     opt_untrustedAttributes The signature untrusted attributes.
- * @return {e2e.openpgp.packet.Signature} The signature packet.
+ * @return {!e2e.openpgp.packet.Signature} The signature packet.
  */
 e2e.openpgp.packet.Signature.construct = function(
     key, data, signatureType, opt_attributes, opt_untrustedAttributes) {
@@ -381,18 +379,21 @@ e2e.openpgp.packet.Signature.construct = function(
   var unhashedSubpackets = opt_untrustedAttributes ?
       e2e.openpgp.packet.SignatureSub.construct(opt_untrustedAttributes) :
       [];
-  var signer = /** @type {e2e.signer.Signer} */ (key.cipher);
+  var signer = key.cipher;
+  var algorithm = /** @type {!e2e.signer.Algorithm} */ (signer.algorithm);
+  goog.asserts.assert(algorithm in e2e.signer.Algorithm);
+
   var plaintext = e2e.openpgp.packet.Signature.getDataToHash(
       data,
       signatureType,
-      /** @type {e2e.signer.Algorithm} */ (signer.algorithm),
+      algorithm,
       signer.getHash().algorithm,
       hashedSubpackets);
   var signature = e2e.async.Result.getValue(signer.sign(plaintext));
   return new e2e.openpgp.packet.Signature(
       4, // version
       signatureType,
-      /** @type {e2e.signer.Algorithm} */ (signer.algorithm),
+      algorithm,
       signer.getHash().algorithm,
       signature,
       signature['hashValue'].slice(0, 2),
@@ -403,15 +404,15 @@ e2e.openpgp.packet.Signature.construct = function(
 
 /**
  * Returns the data that has to be hashed for the signature algorithm.
- * @param {e2e.ByteArray|Uint8Array} data The data that was signed.
- * @param {e2e.openpgp.packet.Signature.SignatureType} signatureType
+ * @param {!e2e.ByteArray|!Uint8Array} data The data that was signed.
+ * @param {!e2e.openpgp.packet.Signature.SignatureType} signatureType
  *     The signature type.
- * @param {e2e.signer.Algorithm} pubKeyAlgorithm The public key
+ * @param {!e2e.signer.Algorithm} pubKeyAlgorithm The public key
  *     algorithm.
- * @param {e2e.hash.Algorithm} hashAlgorithm The hash algorithm.
- * @param {Array.<e2e.openpgp.packet.SignatureSub>} subpackets
+ * @param {!e2e.hash.Algorithm} hashAlgorithm The hash algorithm.
+ * @param {!Array.<!e2e.openpgp.packet.SignatureSub>} subpackets
  *     The hashed subpackets of the signature.
- * @return {e2e.ByteArray} The data to hash.
+ * @return {!e2e.ByteArray} The data to hash.
  */
 e2e.openpgp.packet.Signature.getDataToHash = function(
     data, signatureType, pubKeyAlgorithm, hashAlgorithm, subpackets) {
@@ -435,8 +436,8 @@ e2e.openpgp.packet.Signature.getDataToHash = function(
 
 /**
  * Serializes a list of subpackets.
- * @param {Array.<e2e.openpgp.packet.SignatureSub>} subpackets
- * @return {e2e.ByteArray} The serialized subpackets.
+ * @param {!Array.<!e2e.openpgp.packet.SignatureSub>} subpackets
+ * @return {!e2e.ByteArray} The serialized subpackets.
  */
 e2e.openpgp.packet.Signature.serializeSubpackets =
     function(subpackets) {

@@ -39,8 +39,8 @@ e2e.openpgp.SignatureDigestAlgorithm = {
 /**
  * Calculates a numeric checksum of the data as specificed in RFC 4880
  * Section 5.5.3. This checksum is used in private key data.
- * @param {e2e.ByteArray} data The input data.
- * @return {e2e.ByteArray}
+ * @param {!e2e.ByteArray} data The input data.
+ * @return {!e2e.ByteArray}
  */
 e2e.openpgp.calculateNumericChecksum = function(data) {
   var sum = 0;

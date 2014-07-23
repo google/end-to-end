@@ -40,7 +40,9 @@ e2e.openpgp.packet.Packet = function() {};
 
 /**
  * Parser for this specific Packet. Should be implemented by subclasses.
- * @see #add
+ * @param {!e2e.ByteArray} data
+ * @return {T} The parsed packet.
+ * @template T
  */
 e2e.openpgp.packet.Packet.parse = goog.abstractMethod;
 
@@ -55,7 +57,7 @@ e2e.openpgp.packet.Packet.prototype.tag;
 /**
  * Serializer for this specific Packet.
  * @see #toString
- * @return {e2e.ByteArray} The ByteArray representation of this packet.
+ * @return {!e2e.ByteArray} The ByteArray representation of this packet.
  */
 e2e.openpgp.packet.Packet.prototype.serializePacketBody =
     goog.abstractMethod;
@@ -74,7 +76,7 @@ e2e.openpgp.packet.MAXIMUM_PACKET_SIZE = 0xFFFFFFFF;
  * the length as a 'new format' packet as defined in RFC 4880 Section 4.2.2.3.
  * We only support packets of up to 0xFFFFFFFF, longer packets will throw an
  * exception.
- * @return {e2e.ByteArray} The PGP RFC 4880 packet serialization.
+ * @return {!e2e.ByteArray} The PGP RFC 4880 packet serialization.
  */
 e2e.openpgp.packet.Packet.prototype.serialize = function() {
   // The first bit is always one, the second one specifies this is new format.

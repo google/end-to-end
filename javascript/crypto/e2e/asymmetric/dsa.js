@@ -91,14 +91,12 @@ e2e.signer.Dsa.prototype.y_;
 /**
  * The hash function that should be used. This is selected based on the bit
  *     lengths p and q.
- * @private {e2e.hash.Hash}
+ * @private {!e2e.hash.Hash}
  */
 e2e.signer.Dsa.prototype.hash_;
 
 
-/**
- * @return {e2e.hash.Hash}
- */
+/** @override */
 e2e.signer.Dsa.prototype.getHash = function() {
   return this.hash_;
 };
@@ -115,7 +113,7 @@ e2e.signer.Dsa.prototype.setHash = function(hash) {
  * @override
  */
 e2e.signer.Dsa.prototype.setKey = function(keyArg, opt_keySize) {
-  var key = /** @type {e2e.signer.key.Dsa} */ (keyArg);
+  var key = /** @type {!e2e.signer.key.Dsa} */ (keyArg);
   goog.asserts.assertArray(key['p'], 'The prime modulus should be defined.');
   this.p_ = new e2e.BigPrimeNum(key['p']);
   var lenP = this.p_.getBitLength();
@@ -205,6 +203,7 @@ e2e.signer.Dsa.prototype.setKey = function(keyArg, opt_keySize) {
 
 /** @inheritDoc */
 e2e.signer.Dsa.prototype.sign = function(m) {
+  /** @type {!e2e.signer.signature.Signature} */
   var sig;
   do {
     var k = this.generatePerMessageSecret_();
@@ -213,16 +212,15 @@ e2e.signer.Dsa.prototype.sign = function(m) {
     var s = new e2e.BigNum(sig['s']);
   } while (r.isEqual(e2e.BigNum.ZERO) ||
            s.isEqual(e2e.BigNum.ZERO));
-  return /** @type {e2e.signer.signature.SignatureAsync} */ (
-      e2e.async.Result.toResult(sig));
+  return e2e.async.Result.toResult(sig);
 };
 
 
 /**
  * Exports the sign function for testing.
- * @param {e2e.ByteArray} m The message to be signed.
- * @param {e2e.BigNum} k The per-message secret.
- * @return {e2e.async.Result} The result of signing.
+ * @param {!e2e.ByteArray} m The message to be signed.
+ * @param {!e2e.BigNum} k The per-message secret.
+ * @return {!e2e.async.Result.<!e2e.signer.signature.Signature>} The result of signing.
  */
 e2e.signer.Dsa.prototype.signForTestingOnly = function(m, k) {
   return e2e.async.Result.toResult(this.signWithNonce_(m, k));
@@ -255,10 +253,9 @@ e2e.signer.Dsa.prototype.verify = function(m, sig) {
 
 /**
  * Generates the DSA signature using the provided per-message secret.
- * @param {e2e.ByteArray} m The message to be signed.
- * @param {e2e.BigNum} k The per-message secret.
- * @return {{s: e2e.ByteArray, r: e2e.ByteArray,
- *           hashValue: e2e.ByteArray}}
+ * @param {!e2e.ByteArray} m The message to be signed.
+ * @param {!e2e.BigNum} k The per-message secret.
+ * @return {!e2e.signer.signature.Signature}
  * @private
  */
 e2e.signer.Dsa.prototype.signWithNonce_ = function(m, k) {
@@ -289,7 +286,7 @@ e2e.signer.Dsa.prototype.signWithNonce_ = function(m, k) {
 
 /**
  * Generates a random number used as the per-message secret in DSA.
- * @return {e2e.BigNum}
+ * @return {!e2e.BigNum}
  * @private
  */
 e2e.signer.Dsa.prototype.generatePerMessageSecret_ = function() {
@@ -318,5 +315,4 @@ e2e.signer.Dsa.prototype.generatePerMessageSecret_ = function() {
 };
 
 
-e2e.signer.factory.add(e2e.signer.Dsa,
-                               e2e.signer.Algorithm.DSA);
+e2e.signer.factory.add(e2e.signer.Dsa, e2e.signer.Algorithm.DSA);

@@ -89,7 +89,7 @@ e2e.openpgp.KeyRing.prototype.localStorage_;
 /**
  * The public key ring. It's a map keyed by email. The values are lists of
  * block.TransferablePublicKey objects associated with this email.
- * @type {goog.structs.Map}
+ * @type {!e2e.openpgp.KeyRingType}
  * @private
  */
 e2e.openpgp.KeyRing.prototype.pubKeyRing_;
@@ -98,7 +98,7 @@ e2e.openpgp.KeyRing.prototype.pubKeyRing_;
 /**
  * The private key ring. It's a map keyed by email. The values are lists of
  * block.TransferableSecretKey objects associated with this email.
- * @type {goog.structs.Map}
+ * @type {!e2e.openpgp.KeyRingType}
  * @private
  */
 e2e.openpgp.KeyRing.prototype.privKeyRing_;
@@ -204,9 +204,9 @@ e2e.openpgp.KeyRing.prototype.changePassphrase = function(passphrase) {
 
 /**
  * Imports a key block to the key ring.
- * @param {e2e.openpgp.block.TransferableKey} keyBlock The key block to
+ * @param {!e2e.openpgp.block.TransferableKey} keyBlock The key block to
  *     import.
- * @param {e2e.ByteArray=} opt_passphrase The passphrase to use to
+ * @param {!e2e.ByteArray=} opt_passphrase The passphrase to use to
  *     import the key.
  * @return {boolean} If the key import was succesful.
  */
@@ -248,7 +248,7 @@ e2e.openpgp.KeyRing.prototype.generateECKey = function(email) {
  * Generates and imports to the key ring a master signing key and a subordinate
  * encryption key.
  * @param {string} email The email to associate the key with.
- * @param {e2e.signer.Algorithm} keyAlgo Algorithm of the master key.
+ * @param {!e2e.signer.Algorithm} keyAlgo Algorithm of the master key.
  *     It must be one of the digital signature algorithms.
  * @param {number} keyLength Length in bits of the master key.
  * @param {e2e.cipher.Algorithm} subkeyAlgo Algorithm of the subkey.
@@ -315,8 +315,9 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(email,
 
 /**
  * Obtains the key with a given keyId.
- * @param {e2e.ByteArray} keyId The key id to search for.
- * @return {e2e.openpgp.packet.PublicKey} The key packet with that key id.
+ * @param {!e2e.ByteArray} keyId The key id to search for.
+ * @return {?e2e.openpgp.packet.PublicKey} The key packet with that key id or
+ *     null.
  */
 e2e.openpgp.KeyRing.prototype.getPublicKey = function(keyId) {
   return /** @type {e2e.openpgp.packet.PublicKey} */ (this.getKey_(keyId));
@@ -325,8 +326,9 @@ e2e.openpgp.KeyRing.prototype.getPublicKey = function(keyId) {
 
 /**
  * Obtains a secret key with a given keyId.
- * @param {e2e.ByteArray} keyId The key id to search for.
- * @return {e2e.openpgp.packet.SecretKey} The secret key with that key id.
+ * @param {!e2e.ByteArray} keyId The key id to search for.
+ * @return {?e2e.openpgp.packet.SecretKey} The secret key with that key id or
+ *     null.
  */
 e2e.openpgp.KeyRing.prototype.getSecretKey = function(keyId) {
   return /** @type {e2e.openpgp.packet.SecretKey} */ (this.getKey_(
@@ -337,9 +339,9 @@ e2e.openpgp.KeyRing.prototype.getSecretKey = function(keyId) {
 /**
  * Obtains the key with a given keyId. If opt_secret is set, it only returns
  * secret keys.
- * @param {e2e.ByteArray} keyId The key id to search for.
+ * @param {!e2e.ByteArray} keyId The key id to search for.
  * @param {boolean=} opt_secret Whether to search the private key ring.
- * @return {e2e.openpgp.packet.Key} The key packet with that key id.
+ * @return {?e2e.openpgp.packet.Key} The key packet with that key id or null.
  * @private
  */
 e2e.openpgp.KeyRing.prototype.getKey_ = function(keyId, opt_secret) {
@@ -368,8 +370,8 @@ e2e.openpgp.KeyRing.prototype.getKey_ = function(keyId, opt_secret) {
 
 /**
  * Obtains a key block corresponding to the given key object or null.
- * @param {e2e.openpgp.Key} keyObject
- * @return {e2e.openpgp.block.TransferableKey}
+ * @param {!e2e.openpgp.Key} keyObject
+ * @return {?e2e.openpgp.block.TransferableKey}
  */
 e2e.openpgp.KeyRing.prototype.getKeyBlock = function(keyObject) {
   var fingerprint = keyObject.key.fingerprint;
@@ -379,7 +381,7 @@ e2e.openpgp.KeyRing.prototype.getKeyBlock = function(keyObject) {
       goog.array.flatten(keyRing.getValues()),
       function(keyBlock) {
         return goog.array.equals(keyBlock.keyPacket.fingerprint, fingerprint);
-      }) || null;
+      });
   return this.lockSecretKey_(ret);
 };
 
@@ -387,8 +389,8 @@ e2e.openpgp.KeyRing.prototype.getKeyBlock = function(keyObject) {
 /**
  * Locks a TransferableSecretKey with keyring passphrase. Used to prevent
  * exporting unencrypted secret keys. Operates on a copy of key argument.
- * @param {e2e.openpgp.block.TransferableKey} key
- * @return {e2e.openpgp.block.TransferableKey}
+ * @param {!e2e.openpgp.block.TransferableKey} key
+ * @return {?e2e.openpgp.block.TransferableKey}
  * @private
  */
 e2e.openpgp.KeyRing.prototype.lockSecretKey_ = function(key) {
@@ -409,13 +411,13 @@ e2e.openpgp.KeyRing.prototype.lockSecretKey_ = function(key) {
     }
     return success ? parsed : null;
   }
-  return /** @type {!e2e.openpgp.block.TransferableKey} */ (key);
+  return key;
 };
 
 
 /**
  * Obtains a key block having a key with the given key ID or null.
- * @param {e2e.ByteArray} keyId
+ * @param {!e2e.ByteArray} keyId
  * @param {boolean=} opt_secret Whether to search the private key ring.
  * @return {e2e.openpgp.block.TransferableKey}
  */
@@ -446,7 +448,7 @@ e2e.openpgp.KeyRing.Type = {
  * Searches a public or private key from an email.
  * @param {string} email The email to search for, or empty to search all.
  * @param {e2e.openpgp.KeyRing.Type=} opt_type Key type to search for.
- * @return {Array.<e2e.openpgp.block.TransferableKey>} An array of keys for
+ * @return {?Array.<!e2e.openpgp.block.TransferableKey>} An array of keys for
  *     the given email or null if not found.
  */
 e2e.openpgp.KeyRing.prototype.searchKey = function(email, opt_type) {
@@ -479,7 +481,7 @@ e2e.openpgp.KeyRing.prototype.searchKey = function(email, opt_type) {
  *    server and imports the the found key to keyring.
  * @param {string} email The email to search for, or empty to search all.
  * @param {e2e.openpgp.KeyRing.Type=} opt_type Key type to search for.
- * @return {e2e.async.Result.<Array.<e2e.openpgp.block.TransferableKey>>}
+ * @return {!e2e.async.Result.<!Array.<!e2e.openpgp.block.TransferableKey>>}
  *    An array of keys for the given email or [] if not found.
  */
 e2e.openpgp.KeyRing.prototype.searchKeyLocalAndRemote = function(email,
@@ -501,7 +503,7 @@ e2e.openpgp.KeyRing.prototype.searchKeyLocalAndRemote = function(email,
 /**
  * Gets all of the keys in the keyring.
  * @param {boolean} opt_priv If true, fetch only private keys.
- * @return {goog.structs.Map} A clone of the key ring maps.
+ * @return {!e2e.openpgp.KeyRingType} A clone of the key ring maps.
  */
 e2e.openpgp.KeyRing.prototype.getAllKeys = function(opt_priv) {
   if (opt_priv) {
@@ -558,9 +560,9 @@ e2e.openpgp.KeyRing.prototype.reset = function() {
 
 /**
  * Searches a key in a key ring from an email.
- * @param {goog.structs.Map} keyRing The key ring to search.
+ * @param {!e2e.openpgp.KeyRingType} keyRing The key ring to search.
  * @param {string} email The email to search for.
- * @return {Array.<e2e.openpgp.block.TransferableKey>} An array of keys for
+ * @return {Array.<!e2e.openpgp.block.TransferableKey>} An array of keys for
  *     that user id or null.
  * @private
  */
@@ -572,7 +574,7 @@ e2e.openpgp.KeyRing.prototype.searchKey_ = function(keyRing, email) {
 /**
   * Searches a public key remotely by email.
   * @param {string} email The email to search for.
-  * @return {e2e.async.Result.<Array.<e2e.openpgp.block.TransferableKey>>}
+  * @return {!e2e.async.Result.<!Array.<!e2e.openpgp.block.TransferableKey>>}
   *     An array of public keys for that email or [] if not found.
   * @private
   */
@@ -601,9 +603,9 @@ e2e.openpgp.KeyRing.prototype.searchPublicKeyRemote_ = function(email) {
  * Imports a new key associated with an email to the key ring. Does not add the
  * key if there is already a matching key ID.
  * @param {string} email The email associated with the key.
- * @param {e2e.openpgp.block.TransferableKey} keyBlock The key to import.
- * @param {goog.structs.Map} keyRing The keyring to add the keys to.
- * @param {e2e.ByteArray=} opt_passphrase The passphrase used to
+ * @param {!e2e.openpgp.block.TransferableKey} keyBlock The key to import.
+ * @param {!e2e.openpgp.KeyRingType} keyRing The keyring to add the keys to.
+ * @param {!e2e.ByteArray=} opt_passphrase The passphrase used to
  *     protect the key.
  * @return {boolean} If the key import was succesful.
  * @private
@@ -710,7 +712,7 @@ e2e.openpgp.KeyRing.prototype.encrypt_ = function(plaintext) {
 
 /**
  * Gets current Salt or generates one if needed.
- * @return {e2e.ByteArray}
+ * @return {!e2e.ByteArray}
  * @private
  */
 e2e.openpgp.KeyRing.prototype.getOrCreateSalt_ = function() {
@@ -730,8 +732,8 @@ e2e.openpgp.KeyRing.prototype.getOrCreateSalt_ = function() {
 
 /**
  * Serializes a key ring to an object.
- * @param {goog.structs.Map} keyRing The key ring to be serialized.
- * @return {Object}
+ * @param {!e2e.openpgp.KeyRingType} keyRing The key ring to be serialized.
+ * @return {!Object}
  * @private
  */
 e2e.openpgp.KeyRing.prototype.keyRingToObject_ = function(keyRing) {
@@ -833,8 +835,8 @@ e2e.openpgp.KeyRing.prototype.decrypt_ = function(ciphertext) {
 
 /**
  * Deserializes a private key ring from an object.
- * @param {Object} s The serialized key ring.
- * @return {goog.structs.Map}
+ * @param {!e2e.openpgp.SerializedKeyRing} s The serialized key ring.
+ * @return {!e2e.openpgp.KeyRingType}
  * @private
  */
 e2e.openpgp.KeyRing.prototype.objectToPrivKeyRing_ = function(s) {
@@ -868,8 +870,8 @@ e2e.openpgp.KeyRing.prototype.objectToPrivKeyRing_ = function(s) {
 
 /**
  * Deserializes a public key ring from an object.
- * @param {Object} s The serialized key ring.
- * @return {goog.structs.Map}
+ * @param {!e2e.openpgp.SerializedKeyRing} s The serialized key ring.
+ * @return {!e2e.openpgp.KeyRingType}
  * @private
  */
 e2e.openpgp.KeyRing.prototype.objectToPubKeyRing_ = function(s) {
@@ -905,7 +907,7 @@ e2e.openpgp.KeyRing.prototype.objectToPubKeyRing_ = function(s) {
  * Extracts serialized key data contained in a crypto object.
  * @param {{privKey: (Array|null), pubKey: (Array|null)}} keyData The map
  *     to store the extracted data.
- * @param {e2e.cipher.Cipher|e2e.signer.Signer} cryptor
+ * @param {!e2e.cipher.Cipher|!e2e.signer.Signer} cryptor
  *     The crypto object to extract key material.
  * @param {boolean=} opt_subKey Whether the key is a subkey. Defaults to false.
  * @private

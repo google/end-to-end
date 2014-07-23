@@ -57,7 +57,7 @@ e2e.ecc.PrimeCurve = {
 /**
  * Prime curve OIDs (including the one-byte length prefix), as defined in
  *     section 11 in RFC 6637.
- * @enum {e2e.ByteArray}.
+ * @enum {!e2e.ByteArray}.
  */
 e2e.ecc.PrimeCurveOid = {
   // First byte is the length of what comes next.
@@ -176,13 +176,19 @@ e2e.ecc.DomainParam.fromCurve = function(curveName) {
 
 
 /**
+ * @typedef {?{privateKey: !e2e.ByteArray,
+ *             publicKey: !e2e.ByteArray,
+ *             privateKeyBigNum: ?e2e.BigNum,
+ *             publicKeyPoint: !e2e.ecc.point.Point}}
+ */
+e2e.ecc.DomainParam.KeyPair;
+
+
+/**
  * Generates a key pair used in ECC protocols.
- * @param {e2e.ByteArray=} opt_privateKey  An optional already known
+ * @param {!e2e.ByteArray=} opt_privateKey  An optional already known
  *     private key.  If not given, a random key will be created.
- * @return {!{privateKey: e2e.ByteArray,
- *            publicKey: e2e.ByteArray,
- *            privateKeyBigNum: e2e.BigNum,
- *            publicKeyPoint:e2e.ecc.point.Point}}
+ * @return {!e2e.ecc.DomainParam.KeyPair}
  */
 e2e.ecc.DomainParam.prototype.generateKeyPair = goog.abstractMethod;
 
@@ -476,7 +482,7 @@ function(p) {
  * are returned as extra bytes
  * @param {!e2e.hash.Hash} hash The hasher
  * @param {!e2e.ByteArray} privateKey  The private key.
- * @return {!{multiplier: !e2e.BigNum, extra: !e2e.ByteArray}}
+ * @return {{multiplier: !e2e.BigNum, extra: !e2e.ByteArray}}
  */
 e2e.ecc.DomainParam.Ed25519.prototype.expandPrivateKey = function(hash,
     privateKey) {

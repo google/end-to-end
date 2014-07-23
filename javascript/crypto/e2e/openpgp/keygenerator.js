@@ -29,25 +29,24 @@ goog.require('e2e.signer.Ecdsa');
 /**
  * Generates a key pair on the default curve and uses it to construct
  * an ECDSA object.
- * @param {e2e.ByteArray=} opt_privateKey  An optional already known
+ * @param {!e2e.ByteArray=} opt_privateKey  An optional already known
  *     private key. If not given, a random key will be created.
- * @return {e2e.signer.Ecdsa}
+ * @return {!e2e.signer.Ecdsa}
  */
 e2e.openpgp.keygenerator.newEcdsaWithP256 = function(
     opt_privateKey) {
   var key = e2e.ecc.Protocol.generateKeyPair(
       e2e.ecc.PrimeCurve.P_256, opt_privateKey);
-  return new e2e.signer.Ecdsa(e2e.signer.Algorithm.ECDSA,
-      /** @type e2e.signer.key.Ecdsa */ (key));
+  return new e2e.signer.Ecdsa(e2e.signer.Algorithm.ECDSA, key);
 };
 
 
 /**
  * Generates a key pair on the default curve and uses it to construct
  * an ECDH object.
- * @param {e2e.ByteArray=} opt_privateKey  An optional already known
+ * @param {!e2e.ByteArray=} opt_privateKey  An optional already known
  *     private key. If not given, a random key will be created.
- * @return {e2e.cipher.Ecdh}
+ * @return {!e2e.cipher.Ecdh}
  */
 e2e.openpgp.keygenerator.newEcdhWithP256 = function(
     opt_privateKey) {
@@ -55,6 +54,5 @@ e2e.openpgp.keygenerator.newEcdhWithP256 = function(
       e2e.ecc.PrimeCurve.P_256, opt_privateKey);
   key['kdfInfo'] = [
       0x3, 0x1, 0x8 /* SHA256 Algo ID*/, 0x7 /* AES-128 Algo ID */];
-  return new e2e.cipher.Ecdh(e2e.cipher.Algorithm.ECDH,
-      /** @type e2e.cipher.key.Ecdh */ (key));
+  return new e2e.cipher.Ecdh(e2e.cipher.Algorithm.ECDH, key);
 };

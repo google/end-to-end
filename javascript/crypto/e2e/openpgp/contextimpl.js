@@ -32,13 +32,16 @@ goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.EncryptedMessage');
 goog.require('e2e.openpgp.block.LiteralMessage');
 goog.require('e2e.openpgp.block.Message');
+goog.require('e2e.openpgp.block.TransferableKey');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.PassphraseError');
 goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.async.DeferredList');
 goog.require('goog.structs');
 goog.require('goog.structs.Map');
+
 
 
 
@@ -125,31 +128,29 @@ e2e.openpgp.ContextImpl.prototype.importKey = function(
     key = e2e.openpgp.asciiArmor.parse(key).data;
   }
   var blocks = e2e.openpgp.block.factory.parseByteArrayMulti(key);
-  var importedBlocksResult = goog.array.map(
-      blocks,
-      goog.bind(function(block) {
-        return this.tryToImportKey_(passphraseCallback, block);
-      }, this));
-  return /** @type {e2e.openpgp.ImportKeyResult} */ (
-      goog.async.DeferredList.gatherResults(
-      importedBlocksResult).addCallback(function(importedBlocks) {
-    return goog.array.flatten(
-          goog.array.map(
-              importedBlocks,
-              function(block) {
-                return block ? block.getUserIds() : [];
-              }));
+  var importedBlocksResult = goog.array.map(blocks, function(block) {
+    goog.asserts.assertInstanceof(block, e2e.openpgp.block.TransferableKey);
+    return this.tryToImportKey_(passphraseCallback, block);
+  }, this);
+  var allResults =
+      /** @type {!goog.async.Deferred.<!Array.<!string>>} */ (
+          goog.async.DeferredList.gatherResults(importedBlocksResult)
+              .addCallback(function(importedBlocks) {
+    return goog.array.flatten(goog.array.map(importedBlocks, function(block) {
+      return block ? block.getUserIds() : [];
+    }));
   }));
+  return allResults;
 };
 
 
 /**
  * Attempts to decrypt and import the key with the given passphrase.
  * @param {function(string, function(string))} callback
- * @param {e2e.openpgp.block.TransferableKey} block
- * @param {e2e.async.Result.<Array.<string>>=} opt_result
+ * @param {!e2e.openpgp.block.TransferableKey} block
+ * @param {e2e.async.Result.<!Array.<string>>=} opt_result
  * @param {string=} opt_passphrase
- * @return {e2e.async.Result.<Array.<string>>} Result with all imported uids.
+ * @return {!e2e.async.Result.<!Array.<string>>} Result with all imported uids.
  * @private
  */
 e2e.openpgp.ContextImpl.prototype.tryToImportKey_ = function(
@@ -240,10 +241,10 @@ e2e.openpgp.ContextImpl.prototype.verifyDecrypt = function(
  * Internal implementation of the verification/decryption operation.
  * @param {function(string, function(string))} passphraseCallback This callback
  *     is used for requesting an action-specific passphrase from the user.
- * @param {e2e.ByteArray} encryptedMessage The encrypted data.
+ * @param {!e2e.ByteArray} encryptedMessage The encrypted data.
  * @param {string=} opt_charset The (optional) charset to decrypt with.
  * @protected
- * @return {e2e.openpgp.VerifyDecryptResult}
+ * @return {!e2e.openpgp.VerifyDecryptResult}
  */
 e2e.openpgp.ContextImpl.prototype.verifyDecryptInternal = function(
     passphraseCallback, encryptedMessage, opt_charset) {
@@ -270,7 +271,7 @@ e2e.openpgp.ContextImpl.prototype.verifyDecryptInternal = function(
 /**
  * Processes a literal message and returns the result of verification.
  * @param {e2e.openpgp.block.Message} block
- * @return {e2e.openpgp.VerifyDecryptResult}
+ * @return {!e2e.openpgp.VerifyDecryptResult}
  * @private
  */
 e2e.openpgp.ContextImpl.prototype.processLiteralMessage_ = function(block) {
@@ -279,25 +280,26 @@ e2e.openpgp.ContextImpl.prototype.processLiteralMessage_ = function(block) {
   if (literalBlock.signatures) {
     verifyResult = this.verifyMessage_(literalBlock);
   }
-  return /** @type {!e2e.openpgp.VerifyDecryptResult} */ (
-      e2e.async.Result.toResult({
-          'decrypt': {
-              'data': literalBlock.getData(),
-              'options': {
-                'charset': literalBlock.getCharset(),
-                'creationTime': literalBlock.getTimestamp(),
-                'filename': literalBlock.getFilename()
-              }
-          },
-          'verify': verifyResult
-      }));
+  /** @type {!e2e.openpgp.VerifiedDecrypt} */
+  var result = {
+    'decrypt': {
+      'data': literalBlock.getData(),
+      'options': {
+        'charset': literalBlock.getCharset(),
+        'creationTime': literalBlock.getTimestamp(),
+        'filename': literalBlock.getFilename()
+      }
+    },
+    'verify': verifyResult
+  };
+  return e2e.async.Result.toResult(result);
 };
 
 
 /**
  * Verifies signatures places on a LiteralMessage
- * @param  {e2e.openpgp.block.LiteralMessage} message Block to verify
- * @return {e2e.openpgp.VerifyResult} Verification result.
+ * @param  {!e2e.openpgp.block.LiteralMessage} message Block to verify
+ * @return {!e2e.openpgp.VerifyResult} Verification result.
  * @private
  */
 e2e.openpgp.ContextImpl.prototype.verifyMessage_ = function(
@@ -312,14 +314,14 @@ e2e.openpgp.ContextImpl.prototype.verifyMessage_ = function(
     function(block) {
       return !goog.isNull(block);
     }));
-  return /** type {e2e.openpgp.VerifyResult} */ ({
+  return {
     success: goog.array.map(verifyResult.success, function(key) {
       return key.toKeyObject();
     }),
     failure: goog.array.map(verifyResult.failure, function(key) {
       return key.toKeyObject();
     })
-  });
+  };
 };
 
 
@@ -337,15 +339,13 @@ e2e.openpgp.ContextImpl.prototype.encryptSign = function(
   var encryptSignResult = this.encryptSignInternal(
       plaintext,
       options,
-      goog.array.map(
-          encryptionKeys,
-          goog.bind(this.keyRing_.getKeyBlock, this.keyRing_)),
+      goog.array.map(encryptionKeys, this.keyRing_.getKeyBlock, this.keyRing_),
       passphrases,
       signatureKeyBlock);
   if (this.armorOutput) {
     return encryptSignResult.addCallback(function(data) {
       return e2e.openpgp.asciiArmor.encode(
-          'MESSAGE', data, this.armorHeaders_);
+          'MESSAGE', goog.asserts.assertArray(data), this.armorHeaders_);
     }, this);
   } else {
     return encryptSignResult;
@@ -359,30 +359,29 @@ e2e.openpgp.ContextImpl.prototype.encryptSign = function(
  * @param {!e2e.openpgp.block.TransferableKey} key The key to sign the
  *     message with.
  * @protected
- * @return {e2e.openpgp.EncryptSignResult}
+ * @return {!e2e.openpgp.EncryptSignResult}
  */
 e2e.openpgp.ContextImpl.prototype.clearSignInternal = function(
     plaintext, key) {
   var message = e2e.openpgp.ClearSignMessage.construct(plaintext, key);
   var cleartext = e2e.openpgp.asciiArmor.encodeClearSign(message,
       this.armorHeaders_);
-  return /** @type {e2e.openpgp.EncryptSignResult} */ (
-      e2e.async.Result.toResult(cleartext));
+  return e2e.async.Result.toResult(cleartext);
 };
 
 
 /**
  * Internal implementation of the encrypt/sign operation.
  * @param {string} plaintext The plaintext.
- * @param {e2e.openpgp.EncryptOptions} options Metadata to add.
- * @param {!Array.<e2e.openpgp.block.TransferableKey>} encryptionKeys The
+ * @param {!e2e.openpgp.EncryptOptions} options Metadata to add.
+ * @param {!Array.<!e2e.openpgp.block.TransferableKey>} encryptionKeys The
  *     keys to encrypt the message with.
  * @param {!Array.<string>} passphrases Passphrases to use for symmetric
  *     key encryption of the message.
  * @param {e2e.openpgp.block.TransferableKey=} opt_signatureKey The key to
  *     sign the message with.
  * @protected
- * @return {e2e.openpgp.EncryptSignResult}
+ * @return {!e2e.openpgp.EncryptSignResult}
  */
 e2e.openpgp.ContextImpl.prototype.encryptSignInternal = function(
     plaintext, options, encryptionKeys, passphrases, opt_signatureKey) {
@@ -398,7 +397,7 @@ e2e.openpgp.ContextImpl.prototype.encryptSignInternal = function(
     }, this);
     return serializedBlock;
   } catch (e) {
-    /** @type {e2e.openpgp.EncryptSignResult} */
+    /** @type {!e2e.openpgp.EncryptSignResult} */
     var errorResult = new e2e.async.Result();
     errorResult.errback(e);
     return errorResult;
@@ -409,17 +408,19 @@ e2e.openpgp.ContextImpl.prototype.encryptSignInternal = function(
 /**
  * Searches a key (either public, private, or both) in the keyring.
  * @param {string} uid The user id.
- * @param {e2e.openpgp.KeyRing.Type} type Type of key to search for.
+ * @param {!e2e.openpgp.KeyRing.Type} type Type of key to search for.
  * @private
- * @return {e2e.openpgp.KeyResult} The result of the search.
+ * @return {!e2e.openpgp.KeyResult} The result of the search.
  */
-e2e.openpgp.ContextImpl.prototype.searchKey_ =
-    function(uid, type) {
-  return e2e.async.Result.toResult(goog.array.map(
-      this.keyRing_.searchKey(uid, type) || [],
-      function(keyBlock) {
-          return keyBlock.toKeyObject();
-      }));
+e2e.openpgp.ContextImpl.prototype.searchKey_ = function(uid, type) {
+  /** @type {!Array.<!e2e.openpgp.block.TransferableKey>} */
+  var keyBlocks = this.keyRing_.searchKey(uid, type) || [];
+  /** @type {!e2e.openpgp.Keys} */
+  var keys = goog.array.map(keyBlocks,
+    function(keyBlock) {
+    return keyBlock.toKeyObject();
+  });
+  return e2e.async.Result.toResult(keys);
 };
 
 
@@ -443,18 +444,14 @@ e2e.openpgp.ContextImpl.prototype.searchKey = function(uid) {
 
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.getAllKeys = function(opt_priv) {
-  return e2e.async.Result.toResult(
-      /** @type {!Array.<e2e.openpgp.Key>} */
-      (goog.structs.map(
-          this.keyRing_.getAllKeys(opt_priv),
-          function(value) {
-            return goog.array.map(
-                value,
-                function(keyBlock) {
-                  return keyBlock.toKeyObject();
-                });
-          },
-          this)));
+  var keyMap = this.keyRing_.getAllKeys(opt_priv);
+  var result = /** @type {!e2e.openpgp.KeyRingMap} */ (
+      goog.structs.map(keyMap, function(keyList) {
+        return goog.array.map(keyList, function(keyBlock) {
+          return keyBlock.toKeyObject();
+        });
+      }));
+  return e2e.async.Result.toResult(result);
 };
 
 
@@ -469,15 +466,14 @@ e2e.openpgp.ContextImpl.prototype.deleteKey = function(uid) {
  * @param {function(string, function(string))} passphraseCallback This callback
  *     is used for requesting an action-specific passphrase from the user.
  * @param {string} message A message to display to the user.
- * @return {!e2e.async.Result.<e2e.ByteArray>} A result with the
- *     passphrase.
+ * @return {!e2e.async.Result.<!e2e.ByteArray>} A result with the passphrase.
  * @private
  */
 e2e.openpgp.ContextImpl.prototype.getPassphrase_ =
     function(passphraseCallback, message) {
   /**
    * Obtains a passphrase from the user.
-   * @type {!e2e.async.Result.<e2e.ByteArray>}
+   * @type {!e2e.async.Result.<!e2e.ByteArray>}
    */
   var passphraseResult = new e2e.async.Result();
   passphraseCallback(message, function(passphrase) {

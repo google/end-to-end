@@ -139,7 +139,7 @@ e2e.cipher.Des.prototype.keyExpansion_ = function() {
 
 /**
  * @param {number} key 32-bit value.
- * @return {e2e.ByteArray} 16 keys, each 28 bits.
+ * @return {!e2e.ByteArray} 16 keys, each 28 bits.
  * @private
  */
 e2e.cipher.Des.prototype.keyRotate_ = function(key) {
@@ -155,9 +155,9 @@ e2e.cipher.Des.prototype.keyRotate_ = function(key) {
 
 
 /**
- * @param {e2e.ByteArray} key
- * @param {e2e.ByteArray} permutedChoice
- * @return {goog.math.Long}
+ * @param {!e2e.ByteArray} key
+ * @param {!e2e.ByteArray} permutedChoice
+ * @return {!goog.math.Long}
  * @private
  */
 e2e.cipher.Des.prototype.permuteBlock_ = function(key, permutedChoice) {
@@ -186,7 +186,7 @@ e2e.cipher.Des.prototype.decrypt = function(data) {
 
 /**
  * Implements encryption and decryption.
- * @param {e2e.ByteArray} data The data to encrypt.
+ * @param {!e2e.ByteArray} data The data to encrypt.
  * @param {boolean} encrypt If true, does encryption, otherwise decrypttion.
  * @return {!e2e.async.Result} The result of encryption.
  * @private
@@ -209,8 +209,7 @@ e2e.cipher.Des.prototype.crypt_ = function(data, encrypt) {
       goog.math.Long.fromBits(left, right));  // Left and right are swapped.
   var result = this.permuteBlock_(combined,
       e2e.cipher.Des.initialPermutationInverse);
-  return e2e.async.Result.toResult(
-      e2e.longToByteArray(result));
+  return e2e.async.Result.toResult(e2e.longToByteArray(result));
 };
 
 
@@ -241,7 +240,7 @@ e2e.cipher.Des.prototype.feistel_ = function(right, key) {
 
 /**
  * IP, initial permutation.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  * @const
  */
 e2e.cipher.Des.initialPermutation = [
@@ -258,7 +257,7 @@ e2e.cipher.Des.initialPermutation = [
 
 /**
  * IP**-1, final permutation.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  * @const
  */
 e2e.cipher.Des.initialPermutationInverse = [
@@ -275,7 +274,7 @@ e2e.cipher.Des.initialPermutationInverse = [
 
 /**
  * E bit-selection table, expansion function.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  * @const
  */
 e2e.cipher.Des.eBitSelection = [
@@ -292,7 +291,7 @@ e2e.cipher.Des.eBitSelection = [
 
 /**
  * P, permutation function.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  * @const
  */
 e2e.cipher.Des.permutationFunction = [
@@ -309,7 +308,7 @@ e2e.cipher.Des.permutationFunction = [
 
 /**
  * Note that S-boxes in spec are 1-indexed.
- * @type {Array.<Array.<e2e.ByteArray>>}
+ * @type {Array.<Array.<!e2e.ByteArray>>}
  * @const
  */
 e2e.cipher.Des.sBoxes = [
@@ -366,7 +365,7 @@ e2e.cipher.Des.sBoxes = [
 
 /**
  * PC-1, Permuted choice 1.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  * @const
  */
 e2e.cipher.Des.permutedChoice1 = [
@@ -383,7 +382,7 @@ e2e.cipher.Des.permutedChoice1 = [
 
 /**
  * Note iterations in spec are 1-indexed.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  * @const
  */
 e2e.cipher.Des.leftShifts =
@@ -392,7 +391,7 @@ e2e.cipher.Des.leftShifts =
 
 /**
  * PC-2, Permuted choice 2.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  * @const
  */
 e2e.cipher.Des.permutedChoice2 = [

@@ -28,9 +28,9 @@ goog.require('goog.asserts');
 /**
  * BigNumModuluses are odd BigNums that could be used as the modulus in modular
  * arithmetic operations in crypto schemes such as RSA.
- * @param {e2e.ByteArray} modulus The value of the BigNum in big
+ * @param {!e2e.ByteArray} modulus The value of the BigNum in big
  *     endian.
- * @param {e2e.ByteArray=} opt_RR The precomputed Montgomery constant.
+ * @param {!e2e.ByteArray=} opt_RR The precomputed Montgomery constant.
  *     RR is usually (1 << 2|N|) mod N, where N is the modulus and |N| is its
  *     length in bits. Usually |N| is the key size, but this library actually
  *     stores N as a ((key_size / 8 + 2) / 3 * 24)-bit number.
@@ -97,9 +97,9 @@ e2e.BigNumModulus.fromBigNum = function(bignum) {
 
 /**
  * Calculates base ^ exp mod this. Input and output are big endian.
- * @param {e2e.ByteArray} base Base.
- * @param {e2e.ByteArray} exp Exponent.
- * @return {e2e.ByteArray} Result of modular exponentiation.
+ * @param {!e2e.ByteArray} base Base.
+ * @param {!e2e.ByteArray} exp Exponent.
+ * @return {!e2e.ByteArray} Result of modular exponentiation.
  */
 e2e.BigNumModulus.prototype.pow = function(base, exp) {
   var base_ = new e2e.BigNum(base);
@@ -109,8 +109,8 @@ e2e.BigNumModulus.prototype.pow = function(base, exp) {
 
 /**
  * Calculates base ^ 3 mod this. Input and output are big endian.
- * @param {e2e.ByteArray} base Base.
- * @return {e2e.ByteArray} Result of modular exponentiation.
+ * @param {!e2e.ByteArray} base Base.
+ * @return {!e2e.ByteArray} Result of modular exponentiation.
  */
 e2e.BigNumModulus.prototype.pow3 = function(base) {
   var base_ = new e2e.BigNum(base);
@@ -120,9 +120,9 @@ e2e.BigNumModulus.prototype.pow3 = function(base) {
 
 /**
  * Calculates a * b mod this. Input and output are big endian.
- * @param {e2e.ByteArray} a Multiplicand.
- * @param {e2e.ByteArray} b Multiplicator.
- * @return {e2e.ByteArray} Result of multiplication mod this.
+ * @param {!e2e.ByteArray} a Multiplicand.
+ * @param {!e2e.ByteArray} b Multiplicator.
+ * @return {!e2e.ByteArray} Result of multiplication mod this.
  */
 e2e.BigNumModulus.prototype.mul = function(a, b) {
   var a_ = new e2e.BigNum(a);
@@ -168,7 +168,7 @@ e2e.BigNumModulus.prototype.modSubtract = function(a, b) {
 /**
  * Calculates base ^ exp mod this.
  * @param {!e2e.BigNum} base Base.
- * @param {(e2e.ByteArray|!e2e.BigNum)} exp Exponent.
+ * @param {(!e2e.ByteArray|!e2e.BigNum)} exp Exponent.
  * @return {!e2e.BigNum} Result of modular exponentiation.
  */
 e2e.BigNumModulus.prototype.modPower = function(base, exp) {
@@ -242,7 +242,7 @@ e2e.BigNumModulus.prototype.modExp3_ = function(base) {
 /**
  * Internal modular exponentiation implementation.
  * @param {!e2e.BigNum} input Input.
- * @param {e2e.ByteArray} exp Exponent.
+ * @param {!e2e.ByteArray} exp Exponent.
  * @return {!e2e.BigNum}
  * @private
  */

@@ -31,13 +31,13 @@ e2e.Algorithm = function() {};
 
 /**
  * The algorithm being implemented.
- * @type {e2e.signer.Algorithm|e2e.cipher.Algorithm}
+ * @type {!e2e.signer.Algorithm|!e2e.cipher.Algorithm}
  */
 e2e.Algorithm.prototype.algorithm;
 
 
 /**
- * @type {e2e.cipher.key.Key|e2e.signer.key.Key}
+ * @type {e2e.cipher.key.Key|e2e.signer.key.Key|null}
  * @protected
  */
 e2e.Algorithm.prototype.key;
@@ -51,14 +51,15 @@ e2e.Algorithm.prototype.keySize;
 
 /**
  * Returns a copy of the key that can be modified.
- * @return {e2e.cipher.key.Key|e2e.signer.key.Key} The key.
+ * @return {e2e.cipher.key.Key|e2e.signer.key.Key|null} The key or null if not
+ *     yet set.
  */
 e2e.Algorithm.prototype.getKey;
 
 
 /**
  * Changes the key of the algorithm.
- * @param {e2e.cipher.key.Key|e2e.signer.key.Key} key The key.
+ * @param {!e2e.cipher.key.Key|!e2e.signer.key.Key} key The key.
  * @param {number=} opt_keySize The key size in bytes.
  */
 e2e.Algorithm.prototype.setKey;
@@ -73,7 +74,7 @@ e2e.Algorithm.prototype.getWebCryptoKey;
 
 
 /**
- * @param {e2e.signer.Algorithm|e2e.cipher.Algorithm} algorithm
+ * @param {!e2e.signer.Algorithm|!e2e.cipher.Algorithm} algorithm
  * @param {e2e.signer.key.Key|e2e.cipher.key.Key=} opt_key
  * @constructor
  * @implements {e2e.Algorithm}

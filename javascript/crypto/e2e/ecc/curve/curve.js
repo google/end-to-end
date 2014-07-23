@@ -67,7 +67,7 @@ e2e.ecc.curve.Curve = function(q) {
 
 /**
  * Converts a byte array to a point on the curve.
- * @param {e2e.ByteArray} p A byte representation of a point.
+ * @param {!e2e.ByteArray} p A byte representation of a point.
  * @return {!e2e.ecc.point.Point}
  */
 e2e.ecc.curve.Curve.prototype.pointFromByteArray = goog.abstractMethod;
@@ -82,7 +82,7 @@ e2e.ecc.curve.Curve.prototype.keySizeInBits = goog.abstractMethod;
 
 /**
  * Constructs a new element from a byte array.
- * @param {e2e.ByteArray} bytes The value of the new element,
+ * @param {!e2e.ByteArray} bytes The value of the new element,
  *     represented in big-endian format.
  * @return {!e2e.ecc.Element}
  */

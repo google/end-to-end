@@ -24,6 +24,8 @@ goog.provide('e2e.openpgp.packet.Key.Usage');
 goog.require('e2e');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.Signature');
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.openpgp.types');
 goog.require('goog.array');
 goog.require('goog.crypt');
 
@@ -32,10 +34,10 @@ goog.require('goog.crypt');
  * A Key Packet that is the parent of SecretKey and PublicKey.
  * @param {number} version The version of the key. Should be 0x04.
  * @param {number} timestamp The creation time of the key.
- * @param {!e2e.cipher.Cipher|e2e.signer.Signer} cipher An
+ * @param {!e2e.cipher.Cipher|!e2e.signer.Signer} cipher An
  *     instance of the cipher used.
- * @param {e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
- * @param {e2e.ByteArray=} opt_keyId The key ID of the key. Should be
+ * @param {!e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
+ * @param {!e2e.ByteArray=} opt_keyId The key ID of the key. Should be
  *     passed in for v3 keys, but not for v4 keys.
  * @extends {e2e.openpgp.packet.Packet}
  * @constructor
@@ -57,7 +59,7 @@ e2e.openpgp.packet.Key = function(
   if (goog.isDefAndNotNull(opt_fingerprint)) {
     /**
      * The fingerprint of the key.
-     * @type {e2e.ByteArray}
+     * @type {!e2e.ByteArray}
      */
     this.fingerprint = opt_fingerprint;
 
@@ -67,7 +69,7 @@ e2e.openpgp.packet.Key = function(
   }
   /**
    * If available, the key ID of the key.
-   * @type {e2e.ByteArray|undefined}
+   * @type {!e2e.ByteArray|undefined}
    */
   this.keyId = keyId;
   /**
@@ -77,16 +79,16 @@ e2e.openpgp.packet.Key = function(
   this.timestamp = timestamp;
   /**
    * The cipher of this public key (RSA/DSA/etc..).
-   * @type {!e2e.cipher.Cipher|e2e.signer.Signer}
+   * @type {!e2e.cipher.Cipher|!e2e.signer.Signer}
    */
   this.cipher = cipher;
   /**
-   * @type {Array.<e2e.openpgp.packet.Signature>}
+   * @type {!Array.<!e2e.openpgp.packet.Signature>}
    * @private
    */
   this.certifications_ = [];
   /**
-   * @type {Array.<e2e.openpgp.packet.Signature>}
+   * @type {!Array.<!e2e.openpgp.packet.Signature>}
    * @private
    */
   this.revocations_ = [];
@@ -105,13 +107,13 @@ e2e.openpgp.packet.Key.Usage = {
 
 
 /**
- * @return {e2e.openpgp.packet.PublicKey}
+ * @return {!e2e.openpgp.packet.PublicKey}
  */
 e2e.openpgp.packet.Key.prototype.getPublicKeyPacket = goog.abstractMethod;
 
 
 /**
- * @param {e2e.openpgp.packet.Signature} signature
+ * @param {!e2e.openpgp.packet.Signature} signature
  */
 e2e.openpgp.packet.Key.prototype.addCertification = function(signature) {
   // TODO(user): Verify the signature before adding it.
@@ -120,7 +122,7 @@ e2e.openpgp.packet.Key.prototype.addCertification = function(signature) {
 
 
 /**
- * @param {e2e.openpgp.packet.Signature} signature
+ * @param {!e2e.openpgp.packet.Signature} signature
  */
 e2e.openpgp.packet.Key.prototype.addRevocation = function(signature) {
   // TODO(user): Verify the signature before adding it.
@@ -129,8 +131,8 @@ e2e.openpgp.packet.Key.prototype.addRevocation = function(signature) {
 
 
 /**
- * @param {e2e.openpgp.packet.SecretKey} key
- * @param {e2e.openpgp.packet.Signature.SignatureType} type
+ * @param {!e2e.openpgp.packet.SecretKey} key
+ * @param {!e2e.openpgp.packet.Signature.SignatureType} type
  */
 e2e.openpgp.packet.Key.prototype.certifyBy = function(key, type) {
   var signingKeyData = key.getPublicKeyPacket().serializePacketBody();
@@ -186,13 +188,13 @@ e2e.openpgp.packet.Key.prototype.can = function(use) {
  * @return {!e2e.openpgp.KeyPacketInfo}
  */
 e2e.openpgp.packet.Key.prototype.toKeyPacketInfo = function() {
-  return /** @type {e2e.openpgp.KeyPacketInfo} */ ({
+  return {
     /** @suppress {missingRequire} Only used for an instanceof check. */
     secret: this instanceof e2e.openpgp.packet.SecretKey,
     fingerprint: this.fingerprint,
     fingerprintHex: this.getFingerprintHex_(),
     algorithm: this.cipher.algorithm
-  });
+  };
 };
 
 

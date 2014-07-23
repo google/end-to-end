@@ -45,7 +45,7 @@ e2e.openpgp.block.LiteralMessage.prototype.literalData_ = null;
 
 
 /**
- * @return {e2e.ByteArray} The data encoded in the message.
+ * @return {!e2e.ByteArray} The data encoded in the message.
  */
 e2e.openpgp.block.LiteralMessage.prototype.getData = function() {
   return this.literalData_.data;
@@ -82,7 +82,7 @@ e2e.openpgp.block.LiteralMessage.prototype.getBytesToSign = function() {
   // When signing a literal message, we actually sign first literal data
   // packet body.
   if (this.packets.length == 0) {
-    return /** @type {e2e.ByteArray} */ ([]);
+    return /** @type {!e2e.ByteArray} */ ([]);
   }
   return this.literalData_.data;
 };

@@ -24,27 +24,28 @@ goog.provide('e2e.DwordArray');
 
 goog.require('e2e.async.Result');
 goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.crypt');
 
 
 /**
  * DwordArray is an array of 32 bits long big endian numbers.
- * @typedef {!Array.<number>}
+ * @typedef {Array.<number>}
  */
 e2e.DwordArray;
 
 
 /**
  * ByteArray is an array of 8 bits long numbers.
- * @typedef {!Array.<number>}
+ * @typedef {Array.<number>}
  */
 e2e.ByteArray;
 
 
 /**
  * Turns a 64-bit value into a ByteArray.
- * @param {goog.math.Long} value 64-bit value. long is a reserved word.
- * @return {e2e.ByteArray} ByteArray of 4 bytes.
+ * @param {!goog.math.Long} value 64-bit value. long is a reserved word.
+ * @return {!e2e.ByteArray} ByteArray of 4 bytes.
  */
 e2e.longToByteArray = function(value) {
   return e2e.dwordArrayToByteArray([
@@ -55,8 +56,8 @@ e2e.longToByteArray = function(value) {
 /**
  * Turns an array of big endian 32 bits numbers into a byte array.
  * @see #byteArrayToDwordArray
- * @param {e2e.DwordArray} dwords DwordArray to transform to ByteArray.
- * @return {e2e.ByteArray} ByteArray with a length divisible by 4.
+ * @param {!e2e.DwordArray} dwords DwordArray to transform to ByteArray.
+ * @return {!e2e.ByteArray} ByteArray with a length divisible by 4.
  */
 e2e.dwordArrayToByteArray = function(dwords) {
   var byteArray = [];
@@ -73,8 +74,8 @@ e2e.dwordArrayToByteArray = function(dwords) {
 /**
  * Turns an array of numbers into a big endian 32 bit numbers array.
  * @see #dwordArrayToByteArray
- * @param {e2e.ByteArray} bytes ByteArray with a length divisible by 4.
- * @return {e2e.DwordArray} The resulting dword array.
+ * @param {!e2e.ByteArray} bytes ByteArray with a length divisible by 4.
+ * @return {!e2e.DwordArray} The resulting dword array.
  */
 e2e.byteArrayToDwordArray = function(bytes) {
   var dwordArray = [];
@@ -90,7 +91,7 @@ e2e.byteArrayToDwordArray = function(bytes) {
 
 /**
  * Turns an two-octet array into a big endian 16 bit number.
- * @param {e2e.ByteArray} bytes ByteArray with a length of 2.
+ * @param {!e2e.ByteArray} bytes ByteArray with a length of 2.
  * @return {number} The resulting word.
  */
 e2e.byteArrayToWord = function(bytes) {
@@ -101,7 +102,7 @@ e2e.byteArrayToWord = function(bytes) {
 /**
  * Turns a 16-bit value into a byte array.
  * @param {number} word The 16-bit number.
- * @return {e2e.ByteArray} The resulting byte array.
+ * @return {!e2e.ByteArray} The resulting byte array.
  */
 e2e.wordToByteArray = function(word) {
   var byteArray = [];
@@ -120,7 +121,7 @@ e2e.USE_TEXT_DECODER = 'TextDecoder' in goog.global;
 
 /**
  * Converts a byte array into a JS string.
- * @param {e2e.ByteArray} bytes The bytes to convert.
+ * @param {!e2e.ByteArray} bytes The bytes to convert.
  * @param {string=} opt_charset The charset to try (defaults to UTF-8).
  * @return {string} The string representation of bytes.
  */
@@ -137,9 +138,9 @@ e2e.byteArrayToString = function(bytes, opt_charset) {
 
 /**
  * Converts a byte array into a JS string asynchronously.
- * @param {e2e.ByteArray} bytes The bytes to convert.
+ * @param {!e2e.ByteArray} bytes The bytes to convert.
  * @param {string=} opt_charset The charset to try (defaults to UTF-8).
- * @return {e2e.async.Result.<string>} The string representation of bytes.
+ * @return {!e2e.async.Result.<string>} The string representation of bytes.
  */
 e2e.byteArrayToStringAsync = function(bytes, opt_charset) {
   if (e2e.USE_TEXT_DECODER) {
@@ -164,7 +165,7 @@ e2e.byteArrayToStringAsync = function(bytes, opt_charset) {
 /**
  * Converts a string into a UTF-8 encoded byte array.
  * @param {string} stringInput The string to convert.
- * @return {e2e.ByteArray} The UTF-8 byte representation of the string.
+ * @return {!e2e.ByteArray} The UTF-8 byte representation of the string.
  */
 e2e.stringToByteArray = function(stringInput) {
   // We don't use the Closure implementation as it normalizes line ends to \n.
@@ -201,7 +202,7 @@ e2e.isByte = function(b) {
 
 /**
  * Verifies a given ByteArray is indeed made of bytes.
- * @param {e2e.ByteArray} bytes The bytearray to test.
+ * @param {!e2e.ByteArray} bytes The bytearray to test.
  * @return {boolean} If the array if a byteArray.
  */
 e2e.isByteArray = function(bytes) {
@@ -215,8 +216,8 @@ e2e.isByteArray = function(bytes) {
 
 /**
  * Does near constant time ByteArray comparison.
- * @param {e2e.ByteArray} ba1 The first bytearray to check.
- * @param {e2e.ByteArray} ba2 The second bytearray to check.
+ * @param {!e2e.ByteArray} ba1 The first bytearray to check.
+ * @param {!e2e.ByteArray} ba2 The second bytearray to check.
  * @return {boolean} If the array are equal.
  */
 e2e.compareByteArray = function(ba1, ba2) {

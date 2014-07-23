@@ -30,7 +30,7 @@ goog.require('e2e.openpgp.packet.factory');
  * @param {number} version The version of the key.
  * @param {number} timestamp The creation time of the key.
  * @param {!e2e.openpgp.EncryptedCipher} cipher The encrypted cipher.
- * @param {e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
+ * @param {!e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
  * @extends {e2e.openpgp.packet.SecretKey}
  * @constructor
  */
@@ -55,7 +55,7 @@ e2e.openpgp.packet.SecretSubkey.prototype.getPublicKeyPacket = function() {
 /**
  * Extracts a Secret Subkey Packet from the body, and returns a
  * SecretSubkey.
- * @param {e2e.ByteArray} body The body from where to extract the data.
+ * @param {!e2e.ByteArray} body The body from where to extract the data.
  * @return {!e2e.openpgp.packet.SecretSubkey} The generated subkey.
  */
 e2e.openpgp.packet.SecretSubkey.parse = function(body) {

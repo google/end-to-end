@@ -34,7 +34,7 @@ goog.require('goog.asserts');
 
 /**
  * Representation of an ElGamal public key as specified by RFC 4880.
- * @param {e2e.cipher.Algorithm} algorithm The algorithm to retrieve.
+ * @param {!e2e.cipher.Algorithm} algorithm The algorithm to retrieve.
  * @param {e2e.cipher.key.Key=} opt_key The public or private key.
  * @constructor
  * @implements {e2e.cipher.AsymmetricCipher}
@@ -47,7 +47,7 @@ goog.inherits(e2e.cipher.ElGamal, e2e.AlgorithmImpl);
 
 
 /**
- * @type {e2e.BigPrimeNum}
+ * @type {?e2e.BigPrimeNum}
  */
 e2e.cipher.ElGamal.prototype.modulus;
 
@@ -69,6 +69,7 @@ e2e.cipher.ElGamal.prototype.encrypt = function(plaintext) {
   goog.asserts.assert(
       this.modulus.compare(new e2e.BigNum(plaintext)) > 0,
       'The plaintext value should be less than the modulus.');
+  /** @type {!e2e.cipher.ciphertext.Elgamal} */
   var ciphertext = {'u': [], 'v': []};
   var oneTimeKeyLength = this.key['p'].length;
   do {
@@ -81,8 +82,7 @@ e2e.cipher.ElGamal.prototype.encrypt = function(plaintext) {
     // Clear memory.
     k[i] = Math.random();
   });
-  return /** @type {e2e.cipher.ciphertext.AsymmetricAsync} */(
-      e2e.async.Result.toResult(ciphertext));
+  return e2e.async.Result.toResult(ciphertext);
 };
 
 
@@ -103,5 +103,4 @@ e2e.cipher.ElGamal.prototype.decrypt = function(ciphertext) {
 };
 
 
-e2e.cipher.factory.add(e2e.cipher.ElGamal,
-                               e2e.cipher.Algorithm.ELGAMAL);
+e2e.cipher.factory.add(e2e.cipher.ElGamal, e2e.cipher.Algorithm.ELGAMAL);

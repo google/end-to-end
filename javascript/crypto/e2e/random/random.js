@@ -87,7 +87,7 @@ e2e.random.tryGetWebCryptoRandomInternal_ = function(size) {
  * The security of this random number is based on HMAC-SHA256 being a
  * pseudorandom function. As such, it should be impossible to guess from
  * the output of it the message that was hashed.
- * @return {e2e.ByteArray} RNG_INTERNAL_BYTES_ of random bytes.
+ * @return {!e2e.ByteArray} RNG_INTERNAL_BYTES_ of random bytes.
  * @private
  */
 e2e.random.getRandomBytesInternal_ = function() {
@@ -119,7 +119,7 @@ e2e.random.getRandomBytesInternal_ = function() {
   if (goog.isNull(res)) {
     throw new Error('HMAC returned a null result.');
   }
-  return /** @type {e2e.ByteArray} */ (res);
+  return /** @type {!e2e.ByteArray} */ (res);
 };
 
 
@@ -141,7 +141,7 @@ e2e.random.getWebCryptoObject_ = function() {
 /**
  * @param {number} size The number of bytes to generate.
  * @param {Array.<number>=} opt_blacklist A list of bytes to avoid generating.
- * @return {e2e.ByteArray} A list of size random bytes.
+ * @return {!e2e.ByteArray} A list of size random bytes.
  */
 e2e.random.getRandomBytes = function(size, opt_blacklist) {
   var random = [];

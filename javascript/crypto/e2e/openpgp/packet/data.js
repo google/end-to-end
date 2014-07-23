@@ -35,6 +35,6 @@ goog.inherits(e2e.openpgp.packet.Data,
 
 /**
  * The unencrypted data contained in the packet.
- * @type {e2e.ByteArray}
+ * @type {!e2e.ByteArray}
  */
 e2e.openpgp.packet.Data.prototype.data;

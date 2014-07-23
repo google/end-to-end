@@ -32,10 +32,10 @@ goog.require('goog.structs');
 /**
  * A LiteralData (Tag 11) RFC 4880 Section 5.9.
  * @param {!e2e.openpgp.packet.LiteralData.Format} format Data format.
- * @param {e2e.ByteArray} filename File name in UTF-8 of length no more
+ * @param {!e2e.ByteArray} filename File name in UTF-8 of length no more
  *     than 255 bytes.
  * @param {number} timestamp File or message creation unix epoch timestamp.
- * @param {e2e.ByteArray} data An array with the data to store in the
+ * @param {!e2e.ByteArray} data An array with the data to store in the
  *     packet.
  * @extends {e2e.openpgp.packet.Data}
  * @constructor
@@ -53,7 +53,7 @@ e2e.openpgp.packet.LiteralData = function(
 
   /**
    * The filename, if available of the data represented in the packet.
-   * @type {e2e.ByteArray}
+   * @type {!e2e.ByteArray}
    */
   this.filename = filename.slice(
       0, e2e.openpgp.packet.LiteralData.MAX_FILENAME_LENGTH);
@@ -110,7 +110,7 @@ e2e.openpgp.packet.LiteralData.Format = {
  * Parses and extracts the data from the body. It will consume all data from the
  * array.
  * Throws a {@code e2e.openpgp.error.ParseError} if malformed.
- * @param {e2e.ByteArray} body The data to parse.
+ * @param {!e2e.ByteArray} body The data to parse.
  * @return {e2e.openpgp.packet.LiteralData} A Literal Data Packet.
  */
 e2e.openpgp.packet.LiteralData.parse = function(body) {

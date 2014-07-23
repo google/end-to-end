@@ -44,7 +44,7 @@ e2e.openpgp.packet.Trust.prototype.serializePacketBody = function() {
 
 
 /**
- * @param {e2e.ByteArray} body
+ * @param {!e2e.ByteArray} body
  * @return {e2e.openpgp.packet.Trust}
  */
 e2e.openpgp.packet.Trust.parse = function(body) {

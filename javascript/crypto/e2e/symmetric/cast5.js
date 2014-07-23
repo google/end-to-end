@@ -33,7 +33,7 @@ goog.require('e2e.cipher.factory');
 
 /**
  * Basic implementation of CAST5 in JavaScript as specified in RFC 2144.
- * @param {e2e.cipher.Algorithm} algorithm The algorithm being
+ * @param {!e2e.cipher.Algorithm} algorithm The algorithm being
  *     implemented.
  * @param {e2e.cipher.key.Key=} opt_keyObj The key to use.
  * @implements {e2e.cipher.SymmetricCipher}
@@ -322,8 +322,8 @@ e2e.cipher.Cast5.keyScheduleB = [
 
 /**
  * Computes 16 pairs of subkeys {Kmi, Kri} from the original key (K).
- * @param {e2e.ByteArray} inputKey Original key.
- * @return {Object.<e2e.ByteArray>} Rotate and masking subkeys.
+ * @param {!e2e.ByteArray} inputKey Original key.
+ * @return {!Object.<!e2e.ByteArray>} Rotate and masking subkeys.
  * @private
  */
 e2e.cipher.Cast5.prototype.keySchedule_ = function(inputKey) {

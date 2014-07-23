@@ -22,11 +22,12 @@ goog.provide('e2e.async.Broker');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.async.Bid');
 goog.require('goog.array');
+goog.require('goog.asserts');
 
 
 /**
  * Class that provides discovery and provisioning to a group of ports.
- * @param {Array.<MessagePort>} ports Ports to broke services in.
+ * @param {!Array.<!MessagePort>} ports Ports to broke services in.
  * @constructor
  */
 e2e.async.Broker = function(ports) {
@@ -39,7 +40,7 @@ e2e.async.Broker = function(ports) {
   this.services_ = {};
   /**
    * List of ports to use for this broker.
-   * @type {Array.<MessagePort>}
+   * @type {!Array.<!MessagePort>}
    * @private
    */
   this.ports_ = [];
@@ -90,7 +91,7 @@ e2e.async.Broker.EventData;
 
 /**
  * Adds the given ports to the list of ports used by this broker.
- * @param {Array.<MessagePort>} ports Ports to broke services in.
+ * @param {!Array.<!MessagePort>} ports Ports to broke services in.
  */
 e2e.async.Broker.prototype.addPorts = function(ports) {
   goog.array.forEach(ports, goog.bind(this.addPort, this));
@@ -110,8 +111,8 @@ e2e.async.Broker.prototype.addPort = function(port) {
 /**
  * Instantiates all services registered for a specific name.
  * @param {string} name
- * @param {e2e.async.Bid} bid
- * @param {MessagePort} port
+ * @param {!e2e.async.Bid} bid
+ * @param {!MessagePort} port
  * @protected
  */
 e2e.async.Broker.prototype.createServices = function(name, bid, port) {
@@ -125,22 +126,23 @@ e2e.async.Broker.prototype.createServices = function(name, bid, port) {
 
 /**
  * Handles messages sent via the broker ports.
- * @param {MessageEvent.<e2e.async.Broker.EventData>} e The event to handle.
+ * @param {!MessageEvent.<!e2e.async.Broker.EventData>} e The event to handle.
  * @private
  */
 e2e.async.Broker.prototype.messageHandler_ = function(e) {
   if (e.data.action === e2e.async.Broker.Action.DISCOVERY) {
-    var responsePort = e.ports[0];
+    var responsePort = goog.asserts.assertObject(e.ports[0]);
     var serviceName = e.data.serviceName || '';
-    this.createServices(serviceName, e.data.bid, responsePort);
+    this.createServices(serviceName, goog.asserts.assertObject(e.data.bid),
+                        responsePort);
   }
 };
 
 
 /**
- * @param {MessagePort} responsePort The port created for the service.
- * @param {e2e.async.Bid} bid The bid sent by the service.
- * @param {function(new:e2e.async.Service, MessagePort)} service The service
+ * @param {!MessagePort} responsePort The port created for the service.
+ * @param {!e2e.async.Bid} bid The bid sent by the service.
+ * @param {function(new:e2e.async.Service, !MessagePort)} service The service
  *     constructor.
  * @private
  */
@@ -153,9 +155,9 @@ e2e.async.Broker.prototype.createService_ = function(
 
 
 /**
- * @param {MessagePort} responsePort
- * @param {e2e.async.BidResponse} bidResponse
- * @param {MessagePort} servicePort
+ * @param {!MessagePort} responsePort
+ * @param {!e2e.async.BidResponse} bidResponse
+ * @param {!MessagePort} servicePort
  * @protected
  */
 e2e.async.Broker.prototype.respondBid = function(
@@ -170,7 +172,7 @@ e2e.async.Broker.prototype.respondBid = function(
 /**
  * Registers a service on some serviceName.
  * @param {string} serviceName The name of the service in the format of a URL.
- * @param {function(new:e2e.async.Service, MessagePort)} service The service
+ * @param {function(new:e2e.async.Service, !MessagePort)} service The service
  *     to register it for.
  */
 e2e.async.Broker.prototype.registerService = function(serviceName, service) {
@@ -186,9 +188,9 @@ e2e.async.Broker.prototype.registerService = function(serviceName, service) {
 /**
  * Finds a service of a specific name and returns it's URL.
  * @param {string} serviceName The name of the service in the format of a URL.
- * @param {e2e.async.Bid} bid An object that has details specific to the
+ * @param {!e2e.async.Bid} bid An object that has details specific to the
  *     service.
- * @param {function(e2e.async.BidResponse, MessagePort)} callback Callback to
+ * @param {function(!e2e.async.BidResponse, !MessagePort)} callback Callback to
  *     return responses.
  */
 e2e.async.Broker.prototype.findService = function(
@@ -202,11 +204,11 @@ e2e.async.Broker.prototype.findService = function(
 /**
  * Finds if a specific port provides a service.
  * @param {string} serviceName The name of the service in the format of a URL.
- * @param {e2e.async.Bid} bid An object that has details specific to the
+ * @param {!e2e.async.Bid} bid An object that has details specific to the
  *     service.
- * @param {function(e2e.async.BidResponse, MessagePort)} callback Callback to
+ * @param {function(!e2e.async.BidResponse, !MessagePort)} callback Callback to
  *     return responses.
- * @param {MessagePort} port The port to search the service on.
+ * @param {!MessagePort} port The port to search the service on.
  * @private
  */
 e2e.async.Broker.prototype.findServiceInPort_ = function(
@@ -223,23 +225,23 @@ e2e.async.Broker.prototype.findServiceInPort_ = function(
 
 /**
  * Handles the response of a message sent for discovery.
- * @param {function(e2e.async.BidResponse, MessagePort)} callback Callback to
+ * @param {function(!e2e.async.BidResponse, !MessagePort)} callback Callback to
  *     return responses.
- * @param {MessageEvent.<e2e.async.Broker.EventData>} e The event sent as
+ * @param {!MessageEvent.<!e2e.async.Broker.EventData>} e The event sent as
  *     response to the request.
  * @private
  */
 e2e.async.Broker.prototype.discoveryMessageHandler_ = function(callback, e) {
   if (e.data.action === e2e.async.Broker.Action.RESPONSE) {
-    var servicePort = e.ports[0];
-    callback(e.data.response, servicePort);
+    var servicePort = goog.asserts.assertObject(e.ports[0]);
+    callback(goog.asserts.assertObject(e.data.response), servicePort);
   }
 };
 
 
 /**
  * Returns the list of ports being used by this broker.
- * @return {Array.<MessagePort>} The list of ports to use.
+ * @return {!Array.<!MessagePort>} The list of ports to use.
  */
 e2e.async.Broker.prototype.getPorts = function() {
   return this.ports_;

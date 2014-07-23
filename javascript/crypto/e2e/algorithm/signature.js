@@ -20,13 +20,13 @@ goog.provide('e2e.signer.signature.SignatureAsync');
 
 
 /**
- * @typedef {{s: e2e.ByteArray, r:(e2e.ByteArray|undefined),
- *     hashValue: (e2e.ByteArray|undefined)}}
+ * @typedef {?{s: !e2e.ByteArray, r:(!e2e.ByteArray|undefined),
+ *     hashValue: (!e2e.ByteArray|undefined)}}
  */
 e2e.signer.signature.Signature;
 
 
 /**
- * @typedef {!e2e.async.Result.<e2e.signer.signature.Signature>}
+ * @typedef {e2e.async.Result.<!e2e.signer.signature.Signature>}
  */
 e2e.signer.signature.SignatureAsync;

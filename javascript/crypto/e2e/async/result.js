@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 /**
- * @fileoverview Extension of goog.async.deferred.
+ * @fileoverview Extension of goog.async.Deferred.
  */
 
 goog.provide('e2e.async.Result');

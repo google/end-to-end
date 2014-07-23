@@ -20,6 +20,8 @@
 goog.provide('e2e.pkcs.ASN_PREFIXES');
 goog.provide('e2e.pkcs.EMSA_PKCS1_v1_5');
 
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.ByteArray');
 goog.require('e2e.hash.Algorithm');
 goog.require('e2e.pkcs.Error');
 goog.require('goog.array');
@@ -27,7 +29,7 @@ goog.require('goog.array');
 
 /**
  * List of prefixes per hash algorithm.
- * @type {Object.<e2e.hash.Algorithm, e2e.ByteArray>}
+ * @type {!Object.<e2e.hash.Algorithm, !e2e.ByteArray>}
  */
 e2e.pkcs.ASN_PREFIXES = {};
 e2e.pkcs.ASN_PREFIXES[e2e.hash.Algorithm.MD5] = [
@@ -55,11 +57,11 @@ e2e.pkcs.ASN_PREFIXES[e2e.hash.Algorithm.SHA512] = [
 
 /**
  * Encodes the message as specified in EMSA PKCS1 v1.5.
- * @param {e2e.hash.Hash} hash An instance of hash to use.
- * @param {e2e.ByteArray} m The message to encode.
+ * @param {!e2e.hash.Hash} hash An instance of hash to use.
+ * @param {!e2e.ByteArray} m The message to encode.
  * @param {number} ml The intended length of the encoded message.
  * @param {boolean=} opt_noLeadingZero Whether to strip the leading 0.
- * @return {e2e.ByteArray} The encoded message.
+ * @return {!e2e.ByteArray} The encoded message.
  */
 e2e.pkcs.EMSA_PKCS1_v1_5 = function(hash, m, ml, opt_noLeadingZero) {
   var h = hash.hash(m);

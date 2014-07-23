@@ -28,9 +28,9 @@ goog.require('e2e.openpgp.packet.factory');
  * A Public Subkey Packet (Tag 14) RFC 4880 Section 5.5.1.2.
  * @param {number} version The version of the key.
  * @param {number} timestamp The creation time of the key.
- * @param {!e2e.cipher.Cipher|e2e.signer.Signer} cipher An
+ * @param {!e2e.cipher.Cipher|!e2e.signer.Signer} cipher An
  *     instance of the cipher used.
- * @param {e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
+ * @param {!e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
  * @extends {e2e.openpgp.packet.PublicKey}
  * @constructor
  */
@@ -49,7 +49,7 @@ e2e.openpgp.packet.PublicSubkey.prototype.tag = 14;
 /**
  * Extracts a Public Subkey Packet from the body, and returns a
  * PublicSubKey.
- * @param {e2e.ByteArray} body The body from where to extract the data.
+ * @param {!e2e.ByteArray} body The body from where to extract the data.
  * @return {!e2e.openpgp.packet.PublicSubkey} The generated subkey.
  */
 e2e.openpgp.packet.PublicSubkey.parse = function(body) {

@@ -45,17 +45,16 @@ goog.require('goog.asserts');
  * and cipher).
  * @param {e2e.cipher.Algorithm|e2e.signer.Algorithm} algorithm
  *     The algorithm to retrieve.
- * @param {e2e.cipher.key.Key|e2e.signer.key.Key=} opt_key The
- *     public or private key.
+ * @param {e2e.cipher.key.Key=} opt_key The public or private key.
  * @constructor
  * @implements {e2e.cipher.AsymmetricCipher}
  * @implements {e2e.signer.Signer}
  * @extends {e2e.AlgorithmImpl}
  */
 e2e.cipher.Rsa = function(algorithm, opt_key) {
-  goog.base(this, e2e.cipher.Algorithm.RSA, opt_key);
   goog.asserts.assert(algorithm == e2e.cipher.Algorithm.RSA,
       'Algorithm should be RSA.');
+  goog.base(this, e2e.cipher.Algorithm.RSA, opt_key);
 };
 goog.inherits(e2e.cipher.Rsa, e2e.AlgorithmImpl);
 
@@ -67,7 +66,7 @@ e2e.cipher.Rsa.prototype.modulus;
 /**
  * The hash function that should be used. This is selected based on the bit
  *     length.
- * @private {e2e.hash.Hash}
+ * @private {!e2e.hash.Hash}
  */
 e2e.cipher.Rsa.prototype.hash_;
 
@@ -145,11 +144,10 @@ e2e.cipher.Rsa.prototype.setKey = function(key) {
 
 /** @inheritDoc */
 e2e.cipher.Rsa.prototype.encrypt = function(plaintext) {
-  goog.asserts.assertArray(this.key['e'],
-      'Public exponent should be defined.');
-  return /** @type {e2e.cipher.ciphertext.AsymmetricAsync} */ (
-      e2e.async.Result.toResult(
-          {c: this.modulus.pow(plaintext, this.key['e'])}));
+  goog.asserts.assertArray(this.key['e'], 'Public exponent should be defined.');
+  /** @type {!e2e.cipher.ciphertext.Rsa} */
+  var ciphertext = {c: this.modulus.pow(plaintext, this.key['e'])};
+  return e2e.async.Result.toResult(ciphertext);
 };
 
 
@@ -224,17 +222,18 @@ e2e.cipher.Rsa.prototype.decrypt = function(ciphertext) {
 
 /** @override */
 e2e.cipher.Rsa.prototype.sign = function(data) {
-  var signature = {};
   var paddedHash = e2e.pkcs.EMSA_PKCS1_v1_5(
       this.getHash(),
       data,
       this.keySize - 1,
       true);
-  signature.hashValue = this.getHash().hash(data);
-  signature.s = e2e.async.Result.getValue(
-      this.decrypt({'c': paddedHash}));
-  return /** @type {e2e.signer.signature.SignatureAsync} */ (
-      e2e.async.Result.toResult(signature));
+  /** @type {!e2e.signer.signature.Signature} */
+  var signature = {
+    'hashValue': this.getHash().hash(data),
+    'r': undefined,
+    's': e2e.async.Result.getValue(this.decrypt({'c': paddedHash}))
+  };
+  return e2e.async.Result.toResult(signature);
 };
 
 
@@ -252,7 +251,5 @@ e2e.cipher.Rsa.prototype.verify = function(data, sig) {
 };
 
 
-e2e.cipher.factory.add(e2e.cipher.Rsa,
-                               e2e.cipher.Algorithm.RSA);
-e2e.signer.factory.add(e2e.cipher.Rsa,
-                               e2e.signer.Algorithm.RSA);
+e2e.cipher.factory.add(e2e.cipher.Rsa, e2e.cipher.Algorithm.RSA);
+e2e.signer.factory.add(e2e.cipher.Rsa, e2e.signer.Algorithm.RSA);

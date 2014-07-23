@@ -116,7 +116,7 @@ e2e.openpgp.packet.SecretKey.prototype.getPublicKeyPacket = function() {
 
 /**
  * Extracts a Secret Key Packet from the body, and returns a SecretKey.
- * @param {e2e.ByteArray} body The body from where to extract the data.
+ * @param {!e2e.ByteArray} body The body from where to extract the data.
  * @return {!e2e.openpgp.packet.SecretKey} The generated packet.
  */
 e2e.openpgp.packet.SecretKey.parse = function(body) {

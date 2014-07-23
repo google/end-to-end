@@ -27,7 +27,7 @@ goog.require('e2e.openpgp.packet.factory');
  * @param {number} type
  * @param {number} hashAlgo
  * @param {number} pubkeyAlgo
- * @param {e2e.ByteArray} keyId
+ * @param {!e2e.ByteArray} keyId
  * @param {boolean} nested
  * @constructor
  * @extends {e2e.openpgp.packet.Packet}
@@ -57,7 +57,7 @@ e2e.openpgp.packet.OnePassSignature.prototype.tag = 4;
 
 
 /**
- * @type {e2e.openpgp.packet.Signature}
+ * @type {!e2e.openpgp.packet.Signature}
  */
 e2e.openpgp.packet.OnePassSignature.prototype.signature;
 
@@ -73,8 +73,8 @@ e2e.openpgp.packet.OnePassSignature.prototype.serializePacketBody =
 /**
  * Verifies that a key pair actually signed the specified data. Forwards the
  * verification to the related Signature packet.
- * @param {Array.<number> | Uint8Array } data The signed data.
- * @param {e2e.signer.Signer} signer Signer with the public key that
+ * @param {!e2e.ByteArray|!Uint8Array} data The signed data.
+ * @param {!e2e.signer.Signer} signer Signer with the public key that
  *     signed the data.
  * @param {string} opt_hashAlgo message digest algorithm declared in the message
  * @return {boolean} True if the signature correctly verifies.
@@ -115,8 +115,8 @@ e2e.openpgp.packet.OnePassSignature.prototype.getHashAlgorithm = function() {
 
 
 /**
- * @param {e2e.ByteArray} body
- * @return {e2e.openpgp.packet.OnePassSignature}
+ * @param {!e2e.ByteArray} body
+ * @return {!e2e.openpgp.packet.OnePassSignature}
  */
 e2e.openpgp.packet.OnePassSignature.parse = function(body) {
   var version = body.shift();
