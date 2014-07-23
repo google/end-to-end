@@ -18,6 +18,7 @@
 goog.provide('e2e.async.FrameSelf');
 
 goog.require('e2e.async.ChildPeer');
+goog.require('e2e.async.Peer');
 
 
 /**

@@ -18,7 +18,6 @@
 
 goog.provide('e2e.openpgp.block.TransferableKey');
 
-goog.require('e2e.openpgp.Key');
 goog.require('e2e.openpgp.block.Block');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.PublicSubkey');

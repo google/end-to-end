@@ -20,7 +20,6 @@
 goog.provide('e2e.openpgp.packet.factory');
 
 goog.require('e2e.openpgp.error.ParseError');
-goog.require('goog.crypt');
 
 
 /**

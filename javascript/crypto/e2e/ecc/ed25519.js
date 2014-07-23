@@ -18,7 +18,6 @@
 
 goog.provide('e2e.ecc.Ed25519');
 
-goog.require('e2e.BigNum');
 goog.require('e2e.ecc.PrimeCurve');
 goog.require('e2e.ecc.Protocol');
 goog.require('e2e.error.InvalidArgumentsError');

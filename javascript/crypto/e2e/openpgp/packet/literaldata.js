@@ -24,7 +24,7 @@ goog.require('e2e');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.Data');
 goog.require('e2e.openpgp.packet.factory');
-goog.require('goog.crypt');
+goog.require('goog.array');
 goog.require('goog.structs');
 
 

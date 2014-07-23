@@ -20,18 +20,18 @@
 goog.provide('e2e.cipher.Rsa');
 
 goog.require('e2e');
-goog.require('e2e.Algorithm');
+goog.require('e2e.AlgorithmImpl');
+goog.require('e2e.BigNum');
 goog.require('e2e.BigNumModulus');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.AsymmetricCipher');
+goog.require('e2e.cipher.Error');
 goog.require('e2e.cipher.factory');
-goog.require('e2e.hash.Algorithm');
 goog.require('e2e.hash.Sha1');
 goog.require('e2e.hash.Sha224');
 goog.require('e2e.hash.Sha256');
 goog.require('e2e.hash.Sha512');
-goog.require('e2e.hash.factory');
 goog.require('e2e.pkcs.EMSA_PKCS1_v1_5');
 goog.require('e2e.random');
 goog.require('e2e.signer.Algorithm');

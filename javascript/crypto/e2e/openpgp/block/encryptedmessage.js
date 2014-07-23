@@ -18,12 +18,16 @@
 
 goog.provide('e2e.openpgp.block.EncryptedMessage');
 
+goog.require('e2e');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
+goog.require('e2e.cipher.Error');
 goog.require('e2e.cipher.factory');
-goog.require('e2e.openpgp.block.LiteralMessage');
 goog.require('e2e.openpgp.block.Message');
+goog.require('e2e.openpgp.error.DecryptError');
+goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.ParseError');
+goog.require('e2e.openpgp.error.PassphraseError');
 goog.require('e2e.openpgp.packet.Compressed');
 goog.require('e2e.openpgp.packet.EncryptedData');
 goog.require('e2e.openpgp.packet.EncryptedSessionKey');
@@ -31,6 +35,7 @@ goog.require('e2e.openpgp.packet.PKEncryptedSessionKey');
 goog.require('e2e.openpgp.packet.SymmetricKey');
 goog.require('e2e.openpgp.packet.SymmetricallyEncryptedIntegrity');
 goog.require('e2e.random');
+goog.require('goog.array');
 goog.require('goog.async.DeferredList');
 
 

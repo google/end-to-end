@@ -15,7 +15,6 @@
  * @fileoverview Exposes the types used for the public API.
  */
 
-
 goog.provide('e2e.openpgp.ArmoredMessage');
 goog.provide('e2e.openpgp.DecryptResult');
 goog.provide('e2e.openpgp.EncryptOptions');
@@ -29,8 +28,9 @@ goog.provide('e2e.openpgp.KeyResult');
 goog.provide('e2e.openpgp.Keys');
 goog.provide('e2e.openpgp.VerifyDecryptResult');
 goog.provide('e2e.openpgp.VerifyResult');
+/** @suppress {extraProvide} provide the whole namespace for simplicity */
+goog.provide('e2e.openpgp.types');
 
-goog.require('e2e.async.Result');
 
 
 /**

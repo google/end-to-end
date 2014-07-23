@@ -20,11 +20,11 @@ goog.provide('e2e.openpgp.packet.SymmetricKey');
 
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
-goog.require('e2e.cipher.factory');
 goog.require('e2e.ciphermode.Cfb');
 goog.require('e2e.hash.Algorithm');
 goog.require('e2e.hash.factory');
 goog.require('e2e.openpgp.IteratedS2K');
+goog.require('e2e.openpgp.S2k');
 goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.ParseError');

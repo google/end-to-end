@@ -18,6 +18,7 @@
 goog.provide('e2e.openpgp.block.Compressed');
 
 goog.require('e2e.openpgp.block.Message');
+goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.Compressed');
 
 

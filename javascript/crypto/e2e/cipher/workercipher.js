@@ -17,7 +17,7 @@
 
 goog.provide('e2e.cipher.WorkerCipher');
 
-goog.require('e2e.Algorithm');
+goog.require('e2e.AlgorithmImpl');
 goog.require('e2e.async.Client');
 goog.require('e2e.async.Result');
 goog.require('e2e.async.Worker');

@@ -20,13 +20,12 @@
 goog.provide('e2e.cipher.Aes');
 
 goog.require('e2e');
-goog.require('e2e.Algorithm');
+goog.require('e2e.AlgorithmImpl');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.Error');
 goog.require('e2e.cipher.SymmetricCipher');
 goog.require('e2e.cipher.factory');
-goog.require('goog.asserts');
 
 
 

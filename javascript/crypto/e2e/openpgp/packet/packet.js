@@ -27,6 +27,7 @@ goog.provide('e2e.openpgp.packet');
 goog.provide('e2e.openpgp.packet.Packet');
 
 goog.require('e2e');
+goog.require('goog.array');
 
 
 

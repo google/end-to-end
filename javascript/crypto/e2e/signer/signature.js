@@ -16,6 +16,7 @@
  */
 
 goog.provide('e2e.signer.signature.Signature');
+goog.provide('e2e.signer.signature.SignatureAsync');
 
 
 /**

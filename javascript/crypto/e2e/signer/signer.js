@@ -20,11 +20,11 @@ goog.provide('e2e.signer.Error');
 goog.provide('e2e.signer.Signer');
 
 goog.require('e2e.Algorithm');
-goog.require('e2e.async.Result');
-goog.require('e2e.hash.Hash');
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.signer.key');
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.signer.signature.Signature');
 goog.require('goog.debug.Error');
-goog.require('goog.object');
 
 
 /**

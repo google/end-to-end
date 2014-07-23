@@ -17,7 +17,7 @@
  * @author thaidn@google.com (Thai Duong)
  */
 
-goog.provide('e2e.signer.dsaTestData');
+goog.provide('e2e.signer.dsaTestData.NISTVectors');
 goog.setTestOnly();
 
 

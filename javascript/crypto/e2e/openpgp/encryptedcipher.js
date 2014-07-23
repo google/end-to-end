@@ -23,24 +23,27 @@ goog.provide('e2e.openpgp.EncryptedCipher.KeyDerivationType');
 goog.provide('e2e.openpgp.EncryptedCipher.LockedKeyError');
 
 goog.require('e2e');
-goog.require('e2e.Algorithm');
+goog.require('e2e.AlgorithmImpl');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.AsymmetricCipher');
-goog.require('e2e.cipher.factory');
 goog.require('e2e.ciphermode.Cfb');
-goog.require('e2e.hash.Algorithm');
 goog.require('e2e.hash.Md5');
 goog.require('e2e.hash.Sha1');
-goog.require('e2e.hash.factory');
 goog.require('e2e.openpgp');
+goog.require('e2e.openpgp.IteratedS2K');
+goog.require('e2e.openpgp.Mpi');
 goog.require('e2e.openpgp.constants');
+goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.DecryptError');
 goog.require('e2e.openpgp.error.Error');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.MissingPassphraseError');
 goog.require('e2e.openpgp.error.WrongPassphraseError');
+goog.require('e2e.random');
 goog.require('e2e.signer.Algorithm');
+goog.require('e2e.signer.Signer');
+goog.require('goog.array');
 
 
 /**

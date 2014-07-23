@@ -17,7 +17,6 @@
 
 goog.provide('e2e.scheme.Scheme');
 
-goog.require('e2e.async.Result');
 
 
 /**

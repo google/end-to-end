@@ -18,7 +18,7 @@
  * @author thaidn@google.com (Thai Duong)
  */
 
-goog.provide('e2e.ecc.ecdhTestData');
+goog.provide('e2e.ecc.ecdhTestData.P256Vectors');
 goog.setTestOnly();
 
 goog.require('e2e.ecc.PrimeCurve');

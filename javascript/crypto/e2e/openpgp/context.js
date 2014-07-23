@@ -17,22 +17,8 @@
 
 goog.provide('e2e.openpgp.Context');
 
-goog.require('e2e');
-goog.require('e2e.async.Result');
-goog.require('e2e.cipher.Algorithm');
-goog.require('e2e.openpgp.ClearSignMessage');
-goog.require('e2e.openpgp.DecryptResult');
-goog.require('e2e.openpgp.EncryptOptions');
-goog.require('e2e.openpgp.EncryptSignResult');
-goog.require('e2e.openpgp.FileOptions');
-goog.require('e2e.openpgp.GenerateKeyResult');
-goog.require('e2e.openpgp.ImportKeyResult');
-goog.require('e2e.openpgp.Key');
-goog.require('e2e.openpgp.KeyResult');
-goog.require('e2e.openpgp.VerifyDecryptResult');
-goog.require('e2e.openpgp.VerifyResult');
-goog.require('e2e.signer.Algorithm');
-
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.openpgp.types');
 
 
 /**

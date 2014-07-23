@@ -33,7 +33,7 @@ goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.SignatureSub');
 goog.require('e2e.openpgp.packet.factory');
 goog.require('e2e.signer.Algorithm');
-goog.require('e2e.signer.Signer');
+goog.require('goog.array');
 
 
 /**

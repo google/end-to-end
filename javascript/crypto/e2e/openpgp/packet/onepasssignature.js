@@ -17,10 +17,8 @@
 
 goog.provide('e2e.openpgp.packet.OnePassSignature');
 
-goog.require('e2e.hash.Algorithm');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.factory');
-goog.require('e2e.signer.Signer');
 
 
 

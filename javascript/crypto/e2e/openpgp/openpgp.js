@@ -16,6 +16,7 @@
  */
 
 goog.provide('e2e.openpgp');
+goog.provide('e2e.openpgp.SignatureDigestAlgorithm');
 
 goog.require('e2e');
 goog.require('goog.array');

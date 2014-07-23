@@ -20,7 +20,9 @@
 goog.provide('e2e.openpgp.block.TransferableSecretKey');
 
 goog.require('e2e.openpgp.block.TransferableKey');
+goog.require('e2e.openpgp.packet.Key');
 goog.require('e2e.openpgp.packet.SecretKey');
+goog.require('goog.array');
 
 /**
  * Transferable Secret Key Block.

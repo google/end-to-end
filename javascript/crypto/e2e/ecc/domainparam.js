@@ -24,24 +24,20 @@ goog.provide('e2e.ecc.PrimeCurveOid');
 goog.require('e2e.BigNum');
 goog.require('e2e.BigPrimeNum');
 goog.require('e2e.FastModulus');
-goog.require('e2e.ecc.constant.CURVE_25519');
-goog.require('e2e.ecc.constant.P_256');
-goog.require('e2e.ecc.constant.P_384');
+goog.require('e2e.ecc.constant');
 goog.require('e2e.ecc.constant.ed_25519.G_FAST_MULTIPLY_TABLE');
 goog.require('e2e.ecc.constant.p_256.G_FAST_MULTIPLY_TABLE');
 goog.require('e2e.ecc.constant.p_384.G_FAST_MULTIPLY_TABLE');
-goog.require('e2e.ecc.curve.Curve');
 goog.require('e2e.ecc.curve.Curve25519');
 goog.require('e2e.ecc.curve.Ed25519');
 goog.require('e2e.ecc.curve.Nist');
 goog.require('e2e.ecc.fastModulus.Curve25519');
 goog.require('e2e.ecc.fastModulus.Nist');
-goog.require('e2e.ecc.fastModulus.Nist.P_256');
-goog.require('e2e.ecc.fastModulus.Nist.P_384');
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('e2e.error.UnsupportedError');
 goog.require('e2e.hash.Sha512');
 goog.require('e2e.random');
+goog.require('goog.array');
 goog.require('goog.asserts');
 
 

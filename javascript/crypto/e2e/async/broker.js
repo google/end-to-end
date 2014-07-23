@@ -19,9 +19,8 @@
 
 goog.provide('e2e.async.Broker');
 
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.async.Bid');
-goog.require('e2e.async.BidResponse');
-goog.require('e2e.async.Service');
 goog.require('goog.array');
 
 

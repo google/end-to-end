@@ -19,7 +19,7 @@
 goog.provide('e2e.cipher.ElGamal');
 
 goog.require('e2e');
-goog.require('e2e.Algorithm');
+goog.require('e2e.AlgorithmImpl');
 goog.require('e2e.BigNum');
 goog.require('e2e.BigPrimeNum');
 goog.require('e2e.async.Result');

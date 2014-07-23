@@ -21,7 +21,6 @@ goog.provide('e2e.compression.Algorithm');
 goog.provide('e2e.compression.Compression');
 goog.provide('e2e.compression.Error');
 
-goog.require('e2e.async.Result');
 goog.require('goog.debug.Error');
 
 

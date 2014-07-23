@@ -17,6 +17,9 @@
  */
 
 goog.provide('e2e.bigNumTestData');
+goog.provide('e2e.bigNumTestData.ABmodN');
+goog.provide('e2e.bigNumTestData.ABmodP_256');
+goog.provide('e2e.bigNumTestData.RRmodP_256');
 goog.setTestOnly();
 
 

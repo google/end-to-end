@@ -17,7 +17,6 @@
 
 goog.provide('e2e.openpgp.packet.PKEncryptedSessionKey');
 
-goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.factory');
 goog.require('e2e.openpgp');

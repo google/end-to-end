@@ -18,17 +18,17 @@
 
 goog.provide('e2e.cipher.Ecdh');
 
-goog.require('e2e.Algorithm');
+goog.require('e2e');
+goog.require('e2e.AlgorithmImpl');
 goog.require('e2e.async.Result');
-goog.require('e2e.cipher.Aes');
 goog.require('e2e.cipher.AesKeyWrap');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.AsymmetricCipher');
 goog.require('e2e.cipher.factory');
 goog.require('e2e.ecc.DomainParam');
 goog.require('e2e.ecc.Ecdh');
-goog.require('e2e.ecc.Protocol');
 goog.require('e2e.hash.Algorithm');
+/** @suppress {extraRequire} intentionally importing all hash functions */
 goog.require('e2e.hash.all');
 goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.constants.Type');

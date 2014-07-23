@@ -20,7 +20,6 @@
 goog.provide('e2e.BigNumModulus');
 
 goog.require('e2e.BigNum');
-goog.require('e2e.FastModulus');
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('goog.asserts');
 

@@ -18,6 +18,7 @@
 
 goog.provide('e2e.ecc.Ecdsa');
 
+goog.require('e2e');
 goog.require('e2e.BigNum');
 goog.require('e2e.ecc.PrimeCurve');
 goog.require('e2e.ecc.Protocol');

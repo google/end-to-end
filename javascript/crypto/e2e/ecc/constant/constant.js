@@ -18,10 +18,15 @@
  */
 
 goog.provide('e2e.ecc.constant');
-goog.provide('e2e.ecc.constant.CURVE_25519');
-goog.provide('e2e.ecc.constant.P_256');
-goog.provide('e2e.ecc.constant.P_384');
 
+// Define the namespaces for the subsequent constants.
+// TODO(user): Make typesafe.
+/** @type {Object} */
+e2e.ecc.constant.P_256 = {};
+/** @type {Object} */
+e2e.ecc.constant.P_384 = {};
+/** @type {Object} */
+e2e.ecc.constant.CURVE_25519 = {};
 
 /**
  * The field order, e.g., 2^224 (2^32 - 1) + 2^192 + 2^96 - 1.

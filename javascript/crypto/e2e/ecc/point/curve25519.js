@@ -23,7 +23,6 @@ goog.provide('e2e.ecc.point.Curve25519');
 
 goog.require('e2e.BigNum');
 goog.require('e2e.ecc.point.Point');
-goog.require('goog.array');
 goog.require('goog.asserts');
 
 

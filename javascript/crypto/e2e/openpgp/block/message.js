@@ -17,15 +17,16 @@
 
 goog.provide('e2e.openpgp.block.Message');
 
+goog.require('e2e');
 goog.require('e2e.hash.factory');
-goog.require('e2e.openpgp');
+goog.require('e2e.openpgp.SignatureDigestAlgorithm');
 goog.require('e2e.openpgp.block.Block');
-goog.require('e2e.openpgp.block.TransferableKey');
 goog.require('e2e.openpgp.error.UnsupportedError');
-goog.require('e2e.openpgp.packet.Key');
-goog.require('e2e.openpgp.packet.SecretKey');
+goog.require('e2e.openpgp.packet.OnePassSignature');
 goog.require('e2e.openpgp.packet.Signature');
-goog.require('e2e.signer.Signer');
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.openpgp.types');
+goog.require('goog.array');
 
 
 /**

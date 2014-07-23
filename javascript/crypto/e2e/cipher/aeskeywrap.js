@@ -21,11 +21,13 @@ goog.provide('e2e.cipher.AesKeyWrap');
 
 goog.require('e2e');
 goog.require('e2e.async.Result');
+/** @suppress {extraRequire} We need the AES algorithm to function. */
+goog.require('e2e.cipher.Aes'); // TODO(user): Remove in b/15659131
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('goog.array');
-goog.require('goog.crypt');
+goog.require('goog.asserts');
 
 
 

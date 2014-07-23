@@ -25,6 +25,7 @@ goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.packet.Data');
 goog.require('e2e.openpgp.packet.factory');
+goog.require('goog.array');
 
 
 /**

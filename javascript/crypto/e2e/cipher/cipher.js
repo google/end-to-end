@@ -17,19 +17,15 @@
  * @author evn@google.com (Eduardo Vela)
  */
 
-goog.provide('e2e.cipher');
 goog.provide('e2e.cipher.AsymmetricCipher');
 goog.provide('e2e.cipher.Cipher');
 goog.provide('e2e.cipher.Error');
 goog.provide('e2e.cipher.SymmetricCipher');
 
 goog.require('e2e.Algorithm');
-goog.require('e2e.async.Result');
-goog.require('e2e.cipher.Algorithm');
-goog.require('e2e.cipher.ciphertext.CipherText');
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.cipher.ciphertext');
 goog.require('goog.debug.Error');
-goog.require('goog.object');
-
 
 /**
  * Error class used to represent errors in the ciphers.

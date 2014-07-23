@@ -21,12 +21,9 @@ goog.provide('e2e.openpgp.ClearSignMessage');
 
 goog.require('e2e');
 goog.require('e2e.openpgp.block.LiteralMessage');
-goog.require('e2e.openpgp.block.Message');
-goog.require('e2e.openpgp.block.TransferableKey');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.Signature');
-goog.require('e2e.openpgp.packet.Signature.SignatureType');
 goog.require('e2e.openpgp.parse');
 goog.require('goog.string');
 

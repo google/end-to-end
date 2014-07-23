@@ -15,6 +15,8 @@
  * @fileoverview Provides the type definitions of ciphertext.
  */
 
+/** @suppress {extraProvide} provide the whole namespace for simplicity */
+goog.provide('e2e.cipher.ciphertext');
 goog.provide('e2e.cipher.ciphertext.Asymmetric');
 goog.provide('e2e.cipher.ciphertext.AsymmetricAsync');
 goog.provide('e2e.cipher.ciphertext.CipherText');

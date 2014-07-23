@@ -28,6 +28,8 @@ goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.ParseError');
+goog.require('goog.array');
+goog.require('goog.object');
 
 
 /**

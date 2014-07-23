@@ -17,8 +17,11 @@
 
 goog.provide('e2e.openpgp.block.LiteralMessage');
 
+goog.require('e2e');
 goog.require('e2e.openpgp.block.Message');
+goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.LiteralData');
+goog.require('goog.array');
 
 
 /**

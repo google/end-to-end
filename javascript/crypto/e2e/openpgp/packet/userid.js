@@ -22,6 +22,7 @@ goog.require('e2e.openpgp.error.SerializationError');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.openpgp.packet.factory');
+goog.require('goog.array');
 
 
 

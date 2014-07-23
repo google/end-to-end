@@ -19,14 +19,14 @@
 
 goog.provide('e2e.openpgp.block.factory');
 
-goog.require('e2e.openpgp.Keys');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.Compressed');
 goog.require('e2e.openpgp.block.EncryptedMessage');
 goog.require('e2e.openpgp.block.LiteralMessage');
+goog.require('e2e.openpgp.block.TransferableKey');
 goog.require('e2e.openpgp.block.TransferablePublicKey');
 goog.require('e2e.openpgp.block.TransferableSecretKey');
-goog.require('e2e.openpgp.error.UnsupportedError');
+goog.require('e2e.openpgp.packet.Compressed');
 goog.require('e2e.openpgp.packet.Data');
 goog.require('e2e.openpgp.packet.EncryptedData');
 goog.require('e2e.openpgp.packet.EncryptedSessionKey');
@@ -35,10 +35,8 @@ goog.require('e2e.openpgp.packet.Marker');
 goog.require('e2e.openpgp.packet.OnePassSignature');
 goog.require('e2e.openpgp.packet.PublicKey');
 goog.require('e2e.openpgp.packet.SecretKey');
-goog.require('e2e.openpgp.packet.SecretSubkey');
 goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.openpgp.parse');
-goog.require('goog.crypt');
 
 /**
  * Parses a single block out of an array of packets. Consumes packets parsed.

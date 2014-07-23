@@ -22,9 +22,9 @@ goog.provide('e2e.openpgp.packet.Key');
 goog.provide('e2e.openpgp.packet.Key.Usage');
 
 goog.require('e2e');
-goog.require('e2e.openpgp.KeyPacketInfo');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.Signature');
+goog.require('goog.array');
 goog.require('goog.crypt');
 
 

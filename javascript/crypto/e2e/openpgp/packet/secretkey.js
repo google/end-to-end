@@ -25,14 +25,13 @@ goog.require('e2e.openpgp.S2k');
 goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.SerializationError');
+goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.openpgp.packet.Key');
-goog.require('e2e.openpgp.packet.Key.Usage');
 goog.require('e2e.openpgp.packet.PublicKey');
 goog.require('e2e.openpgp.packet.factory');
 goog.require('e2e.signer.factory');
 goog.require('goog.array');
 goog.require('goog.asserts');
-goog.require('goog.structs');
 
 
 /**

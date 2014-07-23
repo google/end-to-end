@@ -15,13 +15,14 @@
  * @fileoverview Type definitions for cipher keys.
  */
 
+/** @suppress {extraProvide} provide the whole namespace for simplicity */
+goog.provide('e2e.cipher.key');
 goog.provide('e2e.cipher.key.AsymmetricKey');
 goog.provide('e2e.cipher.key.Ecdh');
 goog.provide('e2e.cipher.key.ElGamal');
 goog.provide('e2e.cipher.key.Key');
 goog.provide('e2e.cipher.key.Rsa');
 goog.provide('e2e.cipher.key.SymmetricKey');
-goog.require('e2e.ecc.PrimeCurveOid');
 
 
 

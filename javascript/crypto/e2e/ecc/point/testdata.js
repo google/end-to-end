@@ -17,6 +17,7 @@
  */
 
 goog.provide('e2e.ecc.point.testData');
+goog.provide('e2e.ecc.point.testData.P_256Vectors');
 goog.setTestOnly();
 
 

@@ -19,8 +19,6 @@
 
 goog.provide('e2e.async.Service');
 
-goog.require('e2e.async.Bid');
-goog.require('e2e.async.BidResponse');
 goog.require('e2e.async.Result');
 
 

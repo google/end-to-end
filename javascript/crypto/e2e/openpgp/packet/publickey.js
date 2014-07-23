@@ -30,7 +30,6 @@ goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.SerializationError');
 goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.openpgp.packet.Key');
-goog.require('e2e.openpgp.packet.Key.Usage');
 goog.require('e2e.openpgp.packet.factory');
 goog.require('e2e.signer.Algorithm');
 goog.require('e2e.signer.factory');

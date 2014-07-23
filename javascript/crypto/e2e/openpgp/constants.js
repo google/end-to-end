@@ -22,7 +22,6 @@ goog.provide('e2e.openpgp.constants');
 goog.provide('e2e.openpgp.constants.Algorithm');
 goog.provide('e2e.openpgp.constants.Type');
 
-goog.require('e2e.ByteArray');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.factory');
 goog.require('e2e.compression.Algorithm');

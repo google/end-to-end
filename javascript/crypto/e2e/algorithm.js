@@ -18,11 +18,9 @@
 goog.provide('e2e.Algorithm');
 goog.provide('e2e.AlgorithmImpl');
 
-
-goog.require('e2e.cipher.Algorithm');
-goog.require('e2e.cipher.key.Key');
-goog.require('e2e.signer.Algorithm');
-goog.require('e2e.signer.key.Key');
+/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.require('e2e.cipher.key');
+goog.require('goog.object');
 
 
 /**

@@ -17,9 +17,11 @@
 
 goog.provide('e2e.openpgp.keygenerator');
 
+goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.Ecdh');
-goog.require('e2e.ecc.DomainParam');
 goog.require('e2e.ecc.PrimeCurve');
+goog.require('e2e.ecc.Protocol');
+goog.require('e2e.signer.Algorithm');
 goog.require('e2e.signer.Ecdsa');
 
 

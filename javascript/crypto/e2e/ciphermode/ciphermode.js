@@ -19,7 +19,6 @@
 
 goog.provide('e2e.ciphermode.CipherMode');
 
-goog.require('e2e.async.Result');
 
 
 /**

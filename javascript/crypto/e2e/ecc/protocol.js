@@ -20,7 +20,6 @@
 goog.provide('e2e.ecc.Protocol');
 
 goog.require('e2e.ecc.DomainParam');
-goog.require('e2e.ecc.PrimeCurveOid');
 goog.require('goog.asserts');
 
 

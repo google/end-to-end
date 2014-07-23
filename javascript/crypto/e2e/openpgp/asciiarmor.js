@@ -20,7 +20,6 @@
 goog.provide('e2e.openpgp.asciiArmor');
 
 goog.require('e2e');
-goog.require('e2e.openpgp.ArmoredMessage');
 goog.require('e2e.openpgp.ClearSignMessage');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('goog.array');

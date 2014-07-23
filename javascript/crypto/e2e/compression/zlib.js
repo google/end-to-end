@@ -26,6 +26,7 @@ goog.require('e2e.async.Result');
 goog.require('e2e.compression.Algorithm');
 goog.require('e2e.compression.Compression');
 goog.require('e2e.compression.factory');
+goog.require('goog.array');
 
 
 /**

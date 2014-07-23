@@ -19,17 +19,20 @@
 goog.provide('e2e.openpgp.packet.SymmetricallyEncrypted');
 goog.provide('e2e.openpgp.packet.SymmetricallyEncryptedIntegrity');
 
+goog.require('e2e');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.factory');
 goog.require('e2e.ciphermode.Cfb');
 goog.require('e2e.hash.Sha1');
 goog.require('e2e.openpgp.Ocfb');
 goog.require('e2e.openpgp.constants');
+goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.DecryptError');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.EncryptedData');
 goog.require('e2e.openpgp.packet.factory');
 goog.require('e2e.random');
+goog.require('goog.array');
 
 
 /**

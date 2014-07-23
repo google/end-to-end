@@ -15,12 +15,13 @@
  * @fileoverview Type definitions for digital signature keys.
  */
 
+/** @suppress {extraProvide} provide the whole namespace for simplicity */
 goog.provide('e2e.signer.key');
 goog.provide('e2e.signer.key.Dsa');
 goog.provide('e2e.signer.key.Ecdsa');
 goog.provide('e2e.signer.key.Key');
+goog.provide('e2e.signer.key.Rsa');
 
-goog.require('e2e.ecc.PrimeCurveOid');
 
 
 /**
@@ -44,11 +45,11 @@ e2e.signer.key.Ecdsa;
  *     n: e2e.ByteArray, p: e2e.ByteArray,
  *     q: e2e.ByteArray}}
  */
-e2e.signer.key.RSA;
+e2e.signer.key.Rsa;
 
 
 /**
  * @typedef {e2e.signer.key.Dsa|e2e.signer.key.Ecdsa|
- *     e2e.signer.key.RSA}
+ *     e2e.signer.key.Rsa}
  */
 e2e.signer.key.Key;

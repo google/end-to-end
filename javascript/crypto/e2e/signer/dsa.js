@@ -18,7 +18,7 @@
 
 goog.provide('e2e.signer.Dsa');
 
-goog.require('e2e.Algorithm');
+goog.require('e2e.AlgorithmImpl');
 goog.require('e2e.BigNum');
 goog.require('e2e.BigPrimeNum');
 goog.require('e2e.async.Result');
@@ -30,7 +30,6 @@ goog.require('e2e.random');
 goog.require('e2e.signer.Algorithm');
 goog.require('e2e.signer.Signer');
 goog.require('e2e.signer.factory');
-goog.require('goog.array');
 goog.require('goog.asserts');
 
 

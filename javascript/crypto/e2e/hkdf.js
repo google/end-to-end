@@ -18,7 +18,6 @@
  */
 goog.provide('e2e.Hkdf');
 
-goog.require('e2e');
 goog.require('e2e.hash.Algorithm');
 goog.require('goog.array');
 goog.require('goog.asserts');

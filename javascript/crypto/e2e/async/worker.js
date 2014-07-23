@@ -20,6 +20,7 @@
 goog.provide('e2e.async.Worker');
 
 goog.require('e2e.async.ChildPeer');
+goog.require('e2e.async.Peer');
 
 
 

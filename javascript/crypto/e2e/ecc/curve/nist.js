@@ -25,7 +25,6 @@ goog.require('e2e.BigNum');
 goog.require('e2e.ecc.Element');
 goog.require('e2e.ecc.curve.Curve');
 goog.require('e2e.ecc.point.Nist');
-goog.require('e2e.ecc.point.Point');
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('goog.asserts');
 

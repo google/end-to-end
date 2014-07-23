@@ -19,7 +19,7 @@
 
 goog.provide('e2e.cipher.Idea');
 
-goog.require('e2e.Algorithm');
+goog.require('e2e.AlgorithmImpl');
 goog.require('e2e.BigNum');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
