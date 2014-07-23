@@ -48,8 +48,9 @@ actions.GetKeyDescription.prototype.execute =
       constants.ElementId.CALLBACK_DIALOG);
 
   if (!dialogContainer || !requestor) {
-    throw new utils.Error(
-        'Unable to render UI dialogs.', 'errorUnableToRenderDialog');
+    errorCallback(new utils.Error(
+        'Unable to render UI dialogs.', 'errorUnableToRenderDialog'));
+    return;
   }
 
   ctx.getKeyDescription(request.content).

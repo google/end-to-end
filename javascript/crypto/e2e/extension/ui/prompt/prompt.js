@@ -836,28 +836,21 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
       break;
     case ext.constants.Actions.IMPORT_KEY:
       this.actionExecutor_.execute({
-        action: constants.Actions.GET_KEY_DESCRIPTION,
-        content: textArea.value
-      }, this, goog.bind(function(returnValue) {
-        if (goog.isDef(returnValue)) {
-          this.pgpLauncher_.getContext().
-              importKey(
-                  goog.bind(this.renderPassphraseCallback_, this),
-                  textArea.value).
-              addCallback(goog.bind(function(res) {
-                if (res.length > 0) {
-                  // Key import successful for at least one UID.
-                  this.displaySuccess_(
-                      chrome.i18n.getMessage(
-                          'promptImportKeyNotificationLabel', res.toString()),
-                      goog.bind(this.close, this));
-                } else {
-                  this.displayFailure_(new utils.Error(
-                      'Import key error', 'promptImportKeyError'));
-                }
-                this.surfaceDismissButton_();
-              }, this));
+        action: constants.Actions.IMPORT_KEY,
+        content: textArea.value,
+        passphraseCallback: goog.bind(this.renderPassphraseCallback_, this)
+      }, this, goog.bind(function(res) {
+        if (res.length > 0) {
+          // Key import successful for at least one UID.
+          this.displaySuccess_(
+              chrome.i18n.getMessage(
+                  'promptImportKeyNotificationLabel', res.toString()),
+              goog.bind(this.close, this));
+        } else {
+          this.displayFailure_(new utils.Error(
+              'Import key error', 'promptImportKeyError'));
         }
+        this.surfaceDismissButton_();
       }, this));
       break;
   }
@@ -1019,11 +1012,9 @@ ui.Prompt.prototype.clearSavedDraft_ = function(origin) {
 
 }); // goog.scope
 
-
 // Create the settings page.
 if (Boolean(chrome.extension)) {
   /** @type {!e2e.ext.ui.Prompt} */
   window.promptPage = new e2e.ext.ui.Prompt();
   window.promptPage.decorate(document.documentElement);
 }
-

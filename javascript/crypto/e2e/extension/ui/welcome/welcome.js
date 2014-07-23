@@ -226,25 +226,17 @@ ui.Welcome.prototype.generateKey_ =
 ui.Welcome.prototype.importKeyring_ = function(file) {
   utils.readFile(file, goog.bind(function(contents) {
     this.actionExecutor_.execute({
-      action: constants.Actions.GET_KEY_DESCRIPTION,
-      content: contents
-    }, this, goog.bind(function(returnValue) {
-      if (goog.isDef(returnValue)) {
-        this.getContext_(goog.bind(function(pgpCtx) {
-          pgpCtx.importKey(
-              goog.bind(this.renderPassphraseCallback_, this), contents).
-              addCallback(goog.bind(/** @this {ui.Welcome} */ function(res) {
-                var dialog = new dialogs.Generic(
-                    chrome.i18n.getMessage('welcomeKeyImport'),
-                    this.hideKeyringSetup_,
-                    dialogs.InputType.NONE);
-                this.removeChild(this.keyringMgmt_, false);
-                this.addChild(dialog, false);
-                dialog.decorate(this.keyringMgmt_.getElement());
-              }, this)).
-              addErrback(this.displayFailure_, this);
-        }, this));
-      }
+      action: constants.Actions.IMPORT_KEY,
+      content: contents,
+      passphraseCallback: goog.bind(this.renderPassphraseCallback_, this)
+    }, this, goog.bind(function(res) {
+      var dialog = new dialogs.Generic(
+          chrome.i18n.getMessage('welcomeKeyImport'),
+          this.hideKeyringSetup_,
+          dialogs.InputType.NONE);
+      this.removeChild(this.keyringMgmt_, false);
+      this.addChild(dialog, false);
+      dialog.decorate(this.keyringMgmt_.getElement());
     }, this));
   }, this));
 };

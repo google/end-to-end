@@ -69,6 +69,7 @@ messages.GetSelectionRequest;
  *   recipients: (!Array.<string>|undefined),
  *   encryptPassphrases: (!Array.<string>|undefined),
  *   decryptPassphrase: (string|undefined),
+ *   passphraseCallback: (!function(string, function(string))|undefined),
  *   currentUser: (string|undefined),
  *   action: e2e.ext.constants.Actions
  * }}

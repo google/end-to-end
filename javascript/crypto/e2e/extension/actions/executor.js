@@ -19,6 +19,7 @@ goog.provide('e2e.ext.actions.Executor');
 
 goog.require('e2e.ext.actions.Action');
 goog.require('e2e.ext.actions.GetKeyDescription');
+goog.require('e2e.ext.actions.ImportKey');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.messages');
 goog.require('e2e.ext.utils');
@@ -53,7 +54,8 @@ actions.Executor = function(opt_errorCallback) {
  * @param {messages.ApiRequest} request The input to the action.
  * @param {!goog.ui.Component} requestor The UI component through which the
  *     action was invoked.
- * @param {!function((string|undefined))} callback The callback to invoke once
+ * @param {!function((string|!Array.<string>|undefined))} callback The callback
+ *     to invoke once
  *     the action completes.
  * @param {!function(Error)=} opt_errorCallback The callback to invoke if an
  *     error is encountered. If omitted, the default error callback will be
@@ -90,6 +92,8 @@ actions.Executor.prototype.getAction_ = function(actionType) {
   switch (actionType) {
     case constants.Actions.GET_KEY_DESCRIPTION:
       return new actions.GetKeyDescription();
+    case constants.Actions.IMPORT_KEY:
+      return new actions.ImportKey();
   }
   return null;
 };

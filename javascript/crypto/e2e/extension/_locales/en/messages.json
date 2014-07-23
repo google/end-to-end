@@ -362,5 +362,9 @@
   "errorUnsupportedAction": {
     "message": "Unsupported End-to-End action.",
     "description": "A sentence describing that the requested operation is not supported."
+  },
+  "errorUnableToImportKey": {
+    "message": "Unable to import key.",
+    "description": "A sentence describing that the extension is unable to import the provided key(s)."
   }
 }
