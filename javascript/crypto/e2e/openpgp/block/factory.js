@@ -65,11 +65,10 @@ e2e.openpgp.block.factory.parseBlock = function(packets) {
     signatures.push(packets.shift());
     firstPacket = packets[0];
   }
-  if (
-    firstPacket instanceof e2e.openpgp.packet.Data ||
-    firstPacket instanceof e2e.openpgp.packet.EncryptedSessionKey) {
+  if (firstPacket instanceof e2e.openpgp.packet.Data ||
+      firstPacket instanceof e2e.openpgp.packet.EncryptedSessionKey) {
     if (firstPacket instanceof e2e.openpgp.packet.EncryptedData ||
-       firstPacket instanceof e2e.openpgp.packet.EncryptedSessionKey) {
+        firstPacket instanceof e2e.openpgp.packet.EncryptedSessionKey) {
       block = new e2e.openpgp.block.EncryptedMessage(signatures);
       block.parse(packets);
     } else if (firstPacket instanceof e2e.openpgp.packet.LiteralData) {
@@ -80,10 +79,6 @@ e2e.openpgp.block.factory.parseBlock = function(packets) {
       block.parse(packets);
     }
     block.consumeOnePassSignatures(onepass, packets);
-  } else if (
-    firstPacket instanceof e2e.openpgp.packet.EncryptedSessionKey) {
-    block = new e2e.openpgp.block.EncryptedMessage(signatures);
-    block.parse(packets);
   } else if (firstPacket instanceof e2e.openpgp.packet.SecretKey) {
     block = new e2e.openpgp.block.TransferableSecretKey();
     block.parse(packets);
