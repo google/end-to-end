@@ -136,8 +136,7 @@ e2e.cipher.Rsa.prototype.setKey = function(key) {
   // For this we'll need new test values in rsa_test.html.
   goog.base(this, 'setKey', key, Math.ceil(this.modulus.getBitLength() / 8));
   if (this.use_blinding) { // precompute blinders
-    this.blinder_ = e2e.BigNum.ZERO.clone();
-    this.calculateBlindingNonces_();
+    this.blinder_ = e2e.BigNum.ZERO;
   }
 };
 
