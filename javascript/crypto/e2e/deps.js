@@ -52,7 +52,7 @@ goog.addDependency('../crypto/e2e/ecc/curve/curve25519.js', ['e2e.ecc.curve.Curv
 goog.addDependency('../crypto/e2e/ecc/curve/ed25519.js', ['e2e.ecc.curve.Ed25519'], ['e2e.BigNum', 'e2e.ecc.Element', 'e2e.ecc.curve.Curve', 'e2e.ecc.point.Ed25519', 'e2e.error.InvalidArgumentsError', 'goog.asserts']);
 goog.addDependency('../crypto/e2e/ecc/curve/nist.js', ['e2e.ecc.curve.Nist'], ['e2e.BigNum', 'e2e.ecc.Element', 'e2e.ecc.curve.Curve', 'e2e.ecc.point.Nist', 'e2e.error.InvalidArgumentsError', 'goog.asserts']);
 goog.addDependency('../crypto/e2e/ecc/domainparam.js', ['e2e.ecc.DomainParam', 'e2e.ecc.PrimeCurve', 'e2e.ecc.PrimeCurveOid'], ['e2e.BigNum', 'e2e.BigPrimeNum', 'e2e.FastModulus', 'e2e.ecc.constant', 'e2e.ecc.constant.ed_25519.G_FAST_MULTIPLY_TABLE', 'e2e.ecc.constant.p_256.G_FAST_MULTIPLY_TABLE', 'e2e.ecc.constant.p_384.G_FAST_MULTIPLY_TABLE', 'e2e.ecc.curve.Curve25519', 'e2e.ecc.curve.Ed25519', 'e2e.ecc.curve.Nist', 'e2e.ecc.fastModulus.Curve25519', 'e2e.ecc.fastModulus.Nist', 'e2e.error.InvalidArgumentsError', 'e2e.error.UnsupportedError', 'e2e.hash.Sha512', 'e2e.random', 'goog.array', 'goog.asserts']);
-goog.addDependency('../crypto/e2e/ecc/ecctester.js', ['e2e.ecc.eccTester'], ['e2e.ecc.DomainParam', 'e2e.ecc.Ecdsa', 'e2e.ecc.Protocol', 'goog.array', 'goog.dom', 'goog.testing.PerformanceTable', 'goog.testing.PerformanceTimer', 'goog.testing.asserts']);
+goog.addDependency('../crypto/e2e/ecc/ecctester.js', ['e2e.ecc.eccTester'], ['e2e.ecc.DomainParam', 'e2e.ecc.Ecdsa', 'e2e.ecc.Protocol', 'e2e.testing.Util', 'goog.array', 'goog.dom']);
 goog.addDependency('../crypto/e2e/ecc/ecdh.js', ['e2e.ecc.Ecdh'], ['e2e.ecc.Protocol', 'goog.asserts']);
 goog.addDependency('../crypto/e2e/ecc/ecdh_testdata.js', ['e2e.ecc.ecdhTestData.P256Vectors'], ['e2e.ecc.PrimeCurve']);
 goog.addDependency('../crypto/e2e/ecc/ecdsa.js', ['e2e.ecc.Ecdsa'], ['e2e', 'e2e.BigNum', 'e2e.ecc.PrimeCurve', 'e2e.ecc.Protocol', 'e2e.error.InvalidArgumentsError', 'e2e.hash.Sha256', 'e2e.hash.Sha384', 'e2e.hash.Sha512', 'e2e.random', 'e2e.signer.signature.Signature', 'goog.array', 'goog.asserts']);
@@ -78,6 +78,7 @@ goog.addDependency('../crypto/e2e/kdf/hkdf.js', ['e2e.Hkdf'], ['e2e.hash.Algorit
 goog.addDependency('../crypto/e2e/math/bignum.js', ['e2e.BigNum'], ['e2e', 'e2e.error.InvalidArgumentsError', 'e2e.fixedtiming', 'goog.array', 'goog.asserts']);
 goog.addDependency('../crypto/e2e/math/bignum_testdata.js', ['e2e.bigNumTestData', 'e2e.bigNumTestData.ABmodN', 'e2e.bigNumTestData.ABmodP_256', 'e2e.bigNumTestData.RRmodP_256'], []);
 goog.addDependency('../crypto/e2e/math/bignummodulus.js', ['e2e.BigNumModulus'], ['e2e.BigNum', 'e2e.error.InvalidArgumentsError', 'goog.asserts']);
+goog.addDependency('../crypto/e2e/math/bignumtester.js', ['e2e.BigNumTester'], ['e2e.BigNum', 'e2e.BigPrimeNum', 'e2e.FastModulus', 'e2e.bigNumTestData', 'e2e.ecc.DomainParam', 'e2e.ecc.PrimeCurve', 'e2e.testing.Util']);
 goog.addDependency('../crypto/e2e/math/bigprimenum.js', ['e2e.BigPrimeNum'], ['e2e.BigNum', 'e2e.BigNumModulus', 'e2e.openpgp.error.InvalidArgumentsError']);
 goog.addDependency('../crypto/e2e/math/fastmodulus.js', ['e2e.FastModulus', 'e2e.FastModulus.FFFFFF', 'e2e.FastModulus.Ox1000000'], ['e2e.BigNum', 'e2e.openpgp.error.InvalidArgumentsError', 'goog.asserts']);
 goog.addDependency('../crypto/e2e/math/fixedtiming.js', ['e2e.fixedtiming'], ['goog.asserts']);
@@ -146,3 +147,4 @@ goog.addDependency('../crypto/e2e/symmetric/blowfish.js', ['e2e.cipher.Blowfish'
 goog.addDependency('../crypto/e2e/symmetric/cast5.js', ['e2e.cipher.Cast5'], ['e2e', 'e2e.AlgorithmImpl', 'e2e.async.Result', 'e2e.cipher.Algorithm', 'e2e.cipher.Error', 'e2e.cipher.SymmetricCipher', 'e2e.cipher.factory']);
 goog.addDependency('../crypto/e2e/symmetric/des.js', ['e2e.cipher.Des', 'e2e.cipher.TripleDes'], ['e2e', 'e2e.AlgorithmImpl', 'e2e.async.Result', 'e2e.cipher.Algorithm', 'e2e.cipher.SymmetricCipher', 'e2e.cipher.factory', 'goog.math.Long']);
 goog.addDependency('../crypto/e2e/symmetric/idea.js', ['e2e.cipher.Idea'], ['e2e.AlgorithmImpl', 'e2e.BigNum', 'e2e.async.Result', 'e2e.cipher.Algorithm', 'e2e.cipher.SymmetricCipher', 'e2e.cipher.factory', 'e2e.fixedtiming']);
+goog.addDependency('../crypto/e2e/testing/util.js', ['e2e.testing.Util'], ['goog.array', 'goog.dom', 'goog.testing.PerformanceTable', 'goog.testing.PerformanceTimer', 'goog.testing.asserts']);

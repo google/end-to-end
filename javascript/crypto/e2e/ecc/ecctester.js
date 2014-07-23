@@ -22,39 +22,17 @@ goog.provide('e2e.ecc.eccTester');
 goog.require('e2e.ecc.DomainParam');
 goog.require('e2e.ecc.Ecdsa');
 goog.require('e2e.ecc.Protocol');
+goog.require('e2e.testing.Util');
 goog.require('goog.array');
 goog.require('goog.dom');
-goog.require('goog.testing.PerformanceTable');
-goog.require('goog.testing.PerformanceTimer');
-goog.require('goog.testing.asserts');
 goog.setTestOnly('eccTester');
-
-
-/**
- * Runs performance tests.
- *
- * The argument to this method should be an array of benchmark tests.  Each
- * element of the array is of the form {benchmark: <function>, label:name}
- *
- * @param {!Array.<{benchmark:!function():*, label:string}>} benchmarks
- *     An array consisting of things we want to time, and the name to show
- *     for it in the performance table.
- */
-e2e.ecc.eccTester.runPerfTest = function(benchmarks) {
-  var timer = new goog.testing.PerformanceTimer(10, 10000);
-  var body = goog.dom.getDocument().body;
-  var perfTable = goog.dom.createElement('div');
-  goog.dom.appendChild(body, perfTable);
-  var table = new goog.testing.PerformanceTable(perfTable, timer);
-  goog.array.forEach(benchmarks, function(benchmark) {
-    table.run(benchmark.benchmark, benchmark.label);
-  });
-};
 
 
 /**
  * Benchmarks for a given curve.
  * @param {!e2e.ecc.PrimeCurve.<string>} curve The curve
+ * @return {!Object.<string,Object>} Performance stats (object is filled only
+ *     when tests are run outside browser).
  */
 e2e.ecc.eccTester.runBenchmarkForCurve = function(curve) {
   var message = 'Whisky bueno: ¡excitad mi frágil pequeña vejez!';
@@ -62,27 +40,21 @@ e2e.ecc.eccTester.runBenchmarkForCurve = function(curve) {
   var keypair = e2e.ecc.Protocol.generateKeyPair(curve);
   var ecdsa = new e2e.ecc.Ecdsa(curve, keypair);
   var signature = ecdsa.sign(message);
-  var tests = [
-    {
-      benchmark: function() { params.g.multiply(params.n); },
-      label: curve + ' Fast Multiply'
-    },
-    {
-      benchmark: function() { params.g.negate().multiply(params.n); },
-      label: curve + ' Slow Multiply'
-    },
-    {
-      benchmark: function() { params.n.modInverse(params.curve.B.toBigNum()); },
-      label: curve + ' Bignum modInverse'
-    },
-    {
-      benchmark: function() { ecdsa.sign(message); },
-      label: curve + ' Sign'
-    },
-    {
-      benchmark: function() {ecdsa.verify(message, signature); },
-      label: curve + ' Verify'
-    }
-  ];
-  e2e.ecc.eccTester.runPerfTest(tests);
+  var tests = [];
+  e2e.testing.Util.addBenchmark(tests,
+      function() { params.g.multiply(params.n); },
+      curve + ' Fast Multiply');
+  e2e.testing.Util.addBenchmark(tests,
+      function() { params.g.negate().multiply(params.n); },
+      curve + ' Slow Multiply');
+  e2e.testing.Util.addBenchmark(tests,
+      function() { params.n.modInverse(params.curve.B.toBigNum()); },
+      curve + ' Bignum modInverse');
+  e2e.testing.Util.addBenchmark(tests,
+      function() { ecdsa.sign(message); },
+      curve + ' Sign');
+  e2e.testing.Util.addBenchmark(tests,
+      function() { ecdsa.verify(message, signature); },
+      curve + ' Verify');
+  return e2e.testing.Util.runPerfTests(tests, 10, 10000);
 };
