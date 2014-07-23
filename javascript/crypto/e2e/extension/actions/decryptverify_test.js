@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 /**
- * @fileoverview Tests for the LIST_KEYS action.
+ * @fileoverview Tests for the DECRYPT_VERIFY action.
  */
 
-goog.provide('e2e.ext.actions.ListKeysTest');
+goog.provide('e2e.ext.actions.DecryptVerifyTest');
 
-goog.require('e2e.ext.actions.ListKeys');
+goog.require('e2e.ext.actions.DecryptVerify');
+goog.require('e2e.ext.constants');
 goog.require('e2e.openpgp.ContextImpl');
+goog.require('e2e.openpgp.asciiArmor');
+goog.require('e2e.openpgp.block.factory');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
@@ -28,11 +31,33 @@ goog.require('goog.testing.mockmatchers');
 goog.setTestOnly();
 
 var actions = e2e.ext.actions;
+var constants = e2e.ext.constants;
 var mockControl = null;
 var stubs = new goog.testing.PropertyReplacer();
-var testCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
+var testCase = goog.testing.AsyncTestCase.createAndInstall();
+testCase.stepTimeout = 2000;
+goog.testing.TestCase.maxRunTime = 2000;
 
-var USER_ID = 'test 4';
+var PUBLIC_KEY_ASCII =
+    '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
+    'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
+    '\n' +
+    'mI0EUcy6DgEEAJb0T7gQlfKQWmR0dLUrueRMVy8UemcmxsdIH30/HqJvqO6xU0lK\n' +
+    'NaFtaVxBdenAMpEooi1EcTi/bOKfz36FY/FARTiXv1LXuLzFJdPyjTYjh7tw+uOP\n' +
+    'UlLJCTZikgrnM07txTUiVVEetOa+unyKn17EX0PlSpAbGZedyO0nGwXzABEBAAG0\n' +
+    'BnRlc3QgNIi4BBMBAgAiBQJRzLoOAhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIX\n' +
+    'gAAKCRAG/5ysCS2oCL2SA/9EV9j3T/TM3VRD0NvNySHodcxCP1BF0zm/M84I/WHQ\n' +
+    'sGKmHStfCqqEGruB8E6NHQMJwNp1TzcswuxE0wiTJiXKe3w3+GZhPHdW5zcgiMKK\n' +
+    'YLn80Tk6fUMx1zVZtXlSBYCN5Op/axjQRyb+fGnXOhmboqQodYaWS7qhJWQJilH6\n' +
+    'iriNBFHMug4BBADDTMshHtyYhLmWC7793FlOFl5tkcEfdFKJRm30k/9yky4cuz//\n' +
+    'Xe4uXM72SaTI1Dfi6UIz5ZuFTxw3bnAXav+SV4Q4dZo0hb4jU8YaQfDL4TsRp7uO\n' +
+    '6iqxd8nlsh9JnBKE6Fk/CW5FoMZZ3/yEm3pq924Uv2AZlO6dafgXecyqNQARAQAB\n' +
+    'iJ8EGAECAAkFAlHMug4CGwwACgkQBv+crAktqAhENwQAkMY/nds36KgzwfMPpxtB\n' +
+    'aq8GbrUqY1r8lBl6a/bi8qeOuEgQmIxM2OpVPtL04c1c1hLflPCi1SQUlCIh3DkE\n' +
+    'GQIcy0/wxUZdCvZK0mF5nZSq6tez3CwqbeOA4nBOLwbxho50VqxBpR4qypYrB2ip\n' +
+    'ykxlwiqudEe0sE2b1KwNtVw=\n' +
+    '=nHBL\n' +
+    '-----END PGP PUBLIC KEY BLOCK-----';
 
 var PRIVATE_KEY_ASCII =
     '-----BEGIN PGP PRIVATE KEY BLOCK-----\n' +
@@ -71,34 +96,15 @@ var PRIVATE_KEY_ASCII =
     '=wHzz\n' +
     '-----END PGP PRIVATE KEY BLOCK-----';
 
-var PUBLIC_KEY_ASCII =
-    '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
-    'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
-    '\n' +
-    'mI0EUcy6DgEEAJb0T7gQlfKQWmR0dLUrueRMVy8UemcmxsdIH30/HqJvqO6xU0lK\n' +
-    'NaFtaVxBdenAMpEooi1EcTi/bOKfz36FY/FARTiXv1LXuLzFJdPyjTYjh7tw+uOP\n' +
-    'UlLJCTZikgrnM07txTUiVVEetOa+unyKn17EX0PlSpAbGZedyO0nGwXzABEBAAG0\n' +
-    'BnRlc3QgNIi4BBMBAgAiBQJRzLoOAhsDBgsJCAcDAgYVCAIJCgsEFgIDAQIeAQIX\n' +
-    'gAAKCRAG/5ysCS2oCL2SA/9EV9j3T/TM3VRD0NvNySHodcxCP1BF0zm/M84I/WHQ\n' +
-    'sGKmHStfCqqEGruB8E6NHQMJwNp1TzcswuxE0wiTJiXKe3w3+GZhPHdW5zcgiMKK\n' +
-    'YLn80Tk6fUMx1zVZtXlSBYCN5Op/axjQRyb+fGnXOhmboqQodYaWS7qhJWQJilH6\n' +
-    'iriNBFHMug4BBADDTMshHtyYhLmWC7793FlOFl5tkcEfdFKJRm30k/9yky4cuz//\n' +
-    'Xe4uXM72SaTI1Dfi6UIz5ZuFTxw3bnAXav+SV4Q4dZo0hb4jU8YaQfDL4TsRp7uO\n' +
-    '6iqxd8nlsh9JnBKE6Fk/CW5FoMZZ3/yEm3pq924Uv2AZlO6dafgXecyqNQARAQAB\n' +
-    'iJ8EGAECAAkFAlHMug4CGwwACgkQBv+crAktqAhENwQAkMY/nds36KgzwfMPpxtB\n' +
-    'aq8GbrUqY1r8lBl6a/bi8qeOuEgQmIxM2OpVPtL04c1c1hLflPCi1SQUlCIh3DkE\n' +
-    'GQIcy0/wxUZdCvZK0mF5nZSq6tez3CwqbeOA4nBOLwbxho50VqxBpR4qypYrB2ip\n' +
-    'ykxlwiqudEe0sE2b1KwNtVw=\n' +
-    '=nHBL\n' +
-    '-----END PGP PUBLIC KEY BLOCK-----';
+var USER_ID = 'test 4';
 
 
 function setUp() {
   window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
 
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
+  stubs.setPath('chrome.i18n.getMessage', function() {
+    return [].join.call(arguments);
   });
 }
 
@@ -109,75 +115,60 @@ function tearDown() {
 }
 
 
-function testExecuteEmpty() {
+function testExecute() {
   var pgpContext = new e2e.openpgp.ContextImpl();
   pgpContext.setKeyRingPassphrase(''); // No passphrase.
 
-  var errorCallback = mockControl.createFunctionMock('errorCallback');
-  errorCallback(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    assertTrue(arg instanceof Error);
-    return true;
-  }));
-
-  var callback = mockControl.createFunctionMock('callback');
-  callback(goog.testing.mockmatchers.ignoreArgument);
-
-  var action = new actions.ListKeys();
-
-  mockControl.$replayAll();
-  action.execute(pgpContext, {
-    content: 'private'
-  }, null, callback, errorCallback);
-  mockControl.$verifyAll();
-}
-
-
-function testExecutePublicKeys() {
-  var pgpContext = new e2e.openpgp.ContextImpl();
-  pgpContext.setKeyRingPassphrase(''); // No passphrase.
-
-  var errorCallback = mockControl.createFunctionMock('errorCallback');
-  var callback = mockControl.createFunctionMock('callback');
-  callback(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    return USER_ID in arg;
-  }));
-
-  var action = new actions.ListKeys();
-
-  mockControl.$replayAll();
-  testCase.waitForAsync('Waiting for keys to be populated.');
-  pgpContext.importKey(goog.nullFunction, PUBLIC_KEY_ASCII).
-      addCallback(function() {
-        action.execute(pgpContext, {
-          content: 'public'
-        }, null, callback, errorCallback);
-        mockControl.$verifyAll();
-        testCase.continueTesting();
-      });
-}
-
-
-function testExecutePrivateKeys() {
-  var pgpContext = new e2e.openpgp.ContextImpl();
-  pgpContext.setKeyRingPassphrase(''); // No passphrase.
-
-  var errorCallback = mockControl.createFunctionMock('errorCallback');
-  var callback = mockControl.createFunctionMock('callback');
-  callback(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    return USER_ID in arg;
-  }));
-
-  var action = new actions.ListKeys();
-
-  mockControl.$replayAll();
-  testCase.waitForAsync('Waiting for keys to be populated.');
-  pgpContext.importKey(function(uid, callback) {
+  var pwdCallback = function(uid, callback) {
     callback('test');
-  }, PRIVATE_KEY_ASCII).addCallback(function() {
-    action.execute(pgpContext, {
-      content: 'private'
-    }, null, callback, errorCallback);
-    mockControl.$verifyAll();
-    testCase.continueTesting();
-  });
+  };
+  var plaintext = 'some secret message.';
+
+  var errorCallback = mockControl.createFunctionMock('errorCallback');
+  var callback = mockControl.createFunctionMock('callback');
+  callback(plaintext);
+
+  var action = new actions.DecryptVerify();
+  var encryptionKey = e2e.openpgp.block.factory.parseByteArrayMulti(
+      e2e.openpgp.asciiArmor.parse(PUBLIC_KEY_ASCII).data)[0];
+
+  // Ensure that the signers of the message are verified.
+  stubs.setPath('e2e.ext.utils.showNotification',
+      mockControl.createFunctionMock('showNotification'));
+  e2e.ext.utils.showNotification(
+      new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+        assertContains('promptDecryptionSuccessMsg', arg);
+        assertContains(USER_ID, arg);
+        return true;
+      }), goog.nullFunction);
+
+  mockControl.$replayAll();
+
+  testCase.waitForAsync('Importing private key.');
+  pgpContext.importKey(pwdCallback, PRIVATE_KEY_ASCII).addCallback(function() {
+    testCase.waitForAsync('Importing public key.');
+    pgpContext.importKey(pwdCallback, PUBLIC_KEY_ASCII).addCallback(function() {
+      testCase.waitForAsync('Fetching encryption keys.');
+      pgpContext.searchPublicKey(USER_ID).addCallback(function(encryptionKeys) {
+        testCase.waitForAsync('Fetching signing keys.');
+        pgpContext.searchPrivateKey(USER_ID).addCallback(function(signingKeys) {
+          testCase.waitForAsync('Encrypting message.');
+          pgpContext.encryptSign(
+              plaintext, [], encryptionKeys, [], signingKeys[0]).
+              addCallback(function(result) {
+                testCase.waitForAsync('Decrypting message.');
+                action.execute(pgpContext, {
+                  content: result,
+                  passphraseCallback: pwdCallback
+                }, null, function(result) {
+                  callback(result);
+                  mockControl.$verifyAll();
+                  testCase.continueTesting();
+                }, errorCallback);
+              }).addErrback(fail);
+        }).addErrback(fail);
+      }).addErrback(fail);
+    }).addErrback(fail);
+  }).addErrback(fail);
 }
+

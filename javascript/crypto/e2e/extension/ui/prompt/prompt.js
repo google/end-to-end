@@ -19,7 +19,6 @@
 
 goog.provide('e2e.ext.ui.Prompt');
 
-goog.require('e2e');
 goog.require('e2e.ext.Chip');
 goog.require('e2e.ext.ChipHolder');
 goog.require('e2e.ext.actions.Executor');
@@ -188,25 +187,19 @@ ui.Prompt.prototype.processSelectedContent_ =
       var sniffedAction = utils.text.getPgpAction(
           content, preferences.isActionSniffingEnabled());
       if (sniffedAction == constants.Actions.DECRYPT_VERIFY) {
-        this.runWrappedProcessor_(/** @this ui.Prompt */ function() {
-          this.pgpLauncher_.getContext()
-              .verifyDecrypt(
-                  goog.bind(this.renderPassphraseCallback_, this), content)
-              .addCallback(function(res) {
-                var textArea = /** @type {HTMLTextAreaElement} */
-                    (elem.querySelector('textarea'));
-                return e2e.byteArrayToStringAsync(
-                    res.decrypt.data,
-                    res.decrypt.options.charset).addCallback(
-                    function(decrypted) {
-                      if (e2e.openpgp.asciiArmor.isDraft(content)) {
-                        textArea.value = decrypted;
-                      } else {
-                        this.renderReply_(textArea, decrypted);
-                      }
-                    }, this);
-              }, this).addErrback(this.displayFailure_, this);
-        });
+        this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
+          action: constants.Actions.DECRYPT_VERIFY,
+          content: content,
+          passphraseCallback: goog.bind(this.renderPassphraseCallback_, this)
+        }), this, goog.bind(function(decrypted) {
+          var textArea = /** @type {HTMLTextAreaElement} */
+              (elem.querySelector('textarea'));
+          if (e2e.openpgp.asciiArmor.isDraft(content)) {
+            textArea.value = decrypted;
+          } else {
+            this.renderReply_(textArea, decrypted);
+          }
+        }, this));
       }
 
       break;
@@ -404,16 +397,16 @@ ui.Prompt.prototype.renderEncrypt_ =
                 // A passed object signals that the user has clicked the
                 // 'OK' button.
                 var draft = drafts.getDraft(origin);
-                this.pgpLauncher_.getContext().verifyDecrypt(
-                    goog.bind(this.renderPassphraseCallback_, this), draft).
-                    addCallback(goog.bind(function(res) {
-                      return e2e.byteArrayToStringAsync(res.decrypt.data,
-                          res.decrypt.options.charset).addCallback(
-                              function(dec) {
-                                textArea.value = dec;
-                              });
-                    }, this)).
-                    addErrback(this.displayFailure_, this);
+                this.actionExecutor_.execute(
+                    /** @type {!messages.ApiRequest} */ ({
+                      action: constants.Actions.DECRYPT_VERIFY,
+                      content: draft,
+                      passphraseCallback: goog.bind(
+                          this.renderPassphraseCallback_, this)
+                    }), this, goog.bind(function(decrypted) {
+                      textArea.value = decrypted;
+                      this.surfaceDismissButton_();
+                    }, this));
               } else {
                 drafts.clearDraft(origin);
               }
@@ -795,39 +788,14 @@ ui.Prompt.prototype.executeAction_ = function(action, elem, origin) {
       });
       break;
     case constants.Actions.DECRYPT_VERIFY:
-      this.runWrappedProcessor_(/** @this ui.Prompt */ function() {
-        this.pgpLauncher_.getContext()
-            .verifyDecrypt(
-                goog.bind(this.renderPassphraseCallback_, this),
-                textArea.value)
-            .addCallback( /** @this ui.Prompt */ goog.bind(function(res) {
-              return e2e.byteArrayToStringAsync(
-                  res.decrypt.data, res.decrypt.options.charset).addCallback(
-                  function(str) {
-                    textArea.value = str;
-                    var successMessage = chrome.i18n.getMessage(
-                        'promptDecryptionSuccessMsg');
-                    if (goog.isDef(res.verify) &&
-                        res.verify.failure.length > 0) {
-                      this.displayFailure_(
-                          new Error(chrome.i18n.getMessage(
-                              'promptVerificationFailureMsg',
-                              utils.action.extractUserIds(res.verify.failure)
-                      )));
-                    }
-                    if (goog.isDef(res.verify) &&
-                        res.verify.success.length > 0) {
-                      successMessage += '\n\n' +
-                          chrome.i18n.getMessage(
-                              'promptVerificationSuccessMsg',
-                              utils.action.extractUserIds(res.verify.success)
-                      );
-                    }
-                    utils.showNotification(successMessage, goog.nullFunction);
-                    this.surfaceDismissButton_();
-                  }, this);
-            }, this)).addErrback(this.displayFailure_, this);
-      });
+      this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
+        action: constants.Actions.DECRYPT_VERIFY,
+        content: textArea.value,
+        passphraseCallback: goog.bind(this.renderPassphraseCallback_, this)
+      }), this, goog.bind(function(decrypted) {
+        textArea.value = decrypted;
+        this.surfaceDismissButton_();
+      }, this));
       break;
     case ext.constants.Actions.IMPORT_KEY:
       this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({

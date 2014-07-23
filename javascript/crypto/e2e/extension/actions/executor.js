@@ -17,6 +17,7 @@
 
 goog.provide('e2e.ext.actions.Executor');
 
+goog.require('e2e.ext.actions.DecryptVerify');
 goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.actions.GetKeyringBackupData');
 goog.require('e2e.ext.actions.ImportKey');
@@ -90,6 +91,8 @@ actions.Executor.prototype.execute =
  */
 actions.Executor.prototype.getAction_ = function(actionType) {
   switch (actionType) {
+    case constants.Actions.DECRYPT_VERIFY:
+      return new actions.DecryptVerify();
     case constants.Actions.GET_KEY_DESCRIPTION:
       return new actions.GetKeyDescription();
     case constants.Actions.GET_KEYRING_BACKUP_DATA:
