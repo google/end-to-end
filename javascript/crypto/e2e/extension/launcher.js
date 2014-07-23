@@ -169,6 +169,7 @@ ext.Launcher.prototype.getActiveTab_ = function(callback) {
  * Asks for the keyring passphrase and start the launcher. Will throw an
  * exception if the password is wrong.
  * @param {string=} opt_passphrase The passphrase of the keyring.
+ * @expose
  */
 ext.Launcher.prototype.start = function(opt_passphrase) {
   this.start_(opt_passphrase || '');

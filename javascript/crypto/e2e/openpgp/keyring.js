@@ -820,9 +820,14 @@ e2e.openpgp.KeyRing.prototype.readKeyData_ = function() {
     var isEncrypted =
         (serialized.charAt(0) == e2e.openpgp.KeyRing.ENCRYPTED_);
     serialized = serialized.substr(1);
+    var hasPassphrase = Boolean(this.passphrase_);
     if (isEncrypted) {
-      serialized = this.decrypt_(serialized);
-      this.deserialize_(serialized);
+      if (hasPassphrase) { //Decrypt only if passphrase was given.
+        serialized = this.decrypt_(serialized);
+        this.deserialize_(serialized);
+      } else {
+        throw new Error('No passphrase was given to decrypt the KeyRing.');
+      }
     } else {
       // TODO(user) Inform user that the keyring was not encrypted.
       this.deserialize_(serialized);
