@@ -101,7 +101,7 @@ e2e.openpgp.asciiArmor.parse = function(text) {
   }
   var start = text.indexOf('-----BEGIN PGP ');
   var armor, newLine = e2e.openpgp.asciiArmor.NEW_LINE_;
-  // TODO(adhintz) Switch away from regex to line-by-line parsing.
+  // TODO(user) Switch away from regex to line-by-line parsing.
   if (start > -1) {
     armor = text.substr(start).match(new RegExp(
       '^-----BEGIN PGP ([^-]+)-----' + newLine +

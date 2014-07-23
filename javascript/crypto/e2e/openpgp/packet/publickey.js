@@ -121,7 +121,7 @@ e2e.openpgp.packet.PublicKey.prototype.serializePacketBody =
     return goog.array.flatten(
         this.version,
         e2e.dwordArrayToByteArray([this.timestamp]),
-        0, 0, // TODO(adhintz) days until expiration
+        0, 0, // TODO(user) days until expiration
         cipherId,
         keyData);
   } else {

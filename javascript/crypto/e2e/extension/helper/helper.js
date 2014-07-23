@@ -218,7 +218,7 @@ ext.Helper.prototype.runOnce = function() {
  * @private
  */
 ext.Helper.prototype.getSelectedContent_ = function(req, sender, callback) {
-  // TODO(radi): Split into smaller methods.
+  // TODO(user): Split into smaller methods.
   if (this.executed_) {
     goog.dispose(this);
     return;

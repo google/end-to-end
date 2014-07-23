@@ -53,7 +53,7 @@ function testInvokeCallback() {
   };
 
   document.querySelector('input').value = 'returnValue';
-  dialog.invokeCallback_(false);
+  dialog.invokeCallback(false);
   assertTrue(calledCallback);
 }
 

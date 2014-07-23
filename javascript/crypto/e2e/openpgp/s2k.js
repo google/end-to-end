@@ -126,7 +126,7 @@ e2e.openpgp.S2k.parse = function(bytes) {
   } else if (type === e2e.openpgp.S2k.Type.SIMPLE) {
     return new e2e.openpgp.SimpleS2K(hash);
   }
-  // TODO(evn): Implement a scrypt KDF as a new S2K type.
+  // TODO(user): Implement a scrypt KDF as a new S2K type.
   throw new e2e.openpgp.error.ParseError('Invalid S2K type.');
 };
 
@@ -217,7 +217,7 @@ e2e.openpgp.SaltedS2K.prototype.serialize = function() {
  */
 e2e.openpgp.IteratedS2K = function(hash, salt, encodedCount) {
   goog.base(this, hash);
-  // TODO(adhintz) See if salt length should be required to be 8. The RFC
+  // TODO(user) See if salt length should be required to be 8. The RFC
   // specifies 8 bytes, but golang's tests use 4 byte salts.
   if (!e2e.isByteArray(salt)) {
     throw new e2e.openpgp.error.InvalidArgumentsError('Invalid salt.');

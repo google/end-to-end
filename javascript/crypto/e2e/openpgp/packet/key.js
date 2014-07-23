@@ -114,7 +114,7 @@ e2e.openpgp.packet.Key.prototype.getPublicKeyPacket = goog.abstractMethod;
  * @param {e2e.openpgp.packet.Signature} signature
  */
 e2e.openpgp.packet.Key.prototype.addCertification = function(signature) {
-  // TODO(evn): Verify the signature before adding it.
+  // TODO(user): Verify the signature before adding it.
   this.certifications_.push(signature);
 };
 
@@ -123,7 +123,7 @@ e2e.openpgp.packet.Key.prototype.addCertification = function(signature) {
  * @param {e2e.openpgp.packet.Signature} signature
  */
 e2e.openpgp.packet.Key.prototype.addRevocation = function(signature) {
-  // TODO(evn): Verify the signature before adding it.
+  // TODO(user): Verify the signature before adding it.
   this.revocations_.push(signature);
 };
 

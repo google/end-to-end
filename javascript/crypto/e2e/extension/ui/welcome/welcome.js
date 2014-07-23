@@ -21,6 +21,7 @@ goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.messages');
 goog.require('e2e.ext.ui.Dialog');
+goog.require('e2e.ext.ui.dialogs.ImportConfirmation');
 goog.require('e2e.ext.ui.panels.GenerateKey');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
 goog.require('e2e.ext.ui.preferences');
@@ -40,6 +41,7 @@ goog.require('soy');
 goog.scope(function() {
 var ui = e2e.ext.ui;
 var constants = e2e.ext.constants;
+var dialogs = e2e.ext.ui.dialogs;
 var preferences = ui.preferences;
 var templates = ui.templates.welcome;
 var utils = e2e.ext.utils;
@@ -217,20 +219,8 @@ ui.Welcome.prototype.importKeyring_ = function(file) {
       var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
       pgpCtx.getKeyDescription(contents)
         .addCallback(/** @this {ui.Welcome} */ function(keyDescription) {
-          var dialog = new ui.Dialog(
-              ui.templates.ImportKeyConfirm({
-                promptImportKeyConfirmLabel: chrome.i18n.getMessage(
-                    'promptImportKeyConfirmLabel'),
-                keys: keyDescription,
-                secretKeyDescription: chrome.i18n.getMessage(
-                    'secretKeyDescription'),
-                publicKeyDescription: chrome.i18n.getMessage(
-                    'publicKeyDescription'),
-                secretSubKeyDescription: chrome.i18n.getMessage(
-                    'secretSubKeyDescription'),
-                publicSubKeyDescription: chrome.i18n.getMessage(
-                    'publicSubKeyDescription')
-              }),
+          var dialog = new dialogs.ImportConfirmation(
+              keyDescription,
               /** @type {function(string=)} */
               (goog.bind(/** @this {ui.Welcome} */ function(returnValue) {
                 goog.dispose(dialog);
@@ -249,11 +239,7 @@ ui.Welcome.prototype.importKeyring_ = function(file) {
                       }, this))
                       .addErrback(this.displayFailure_, this);
                 }
-              }, this)),
-              ui.Dialog.InputType.NONE,
-              '',
-              chrome.i18n.getMessage('promptOkActionLabel'),
-              chrome.i18n.getMessage('actionCancelPgpAction'));
+              }, this)));
           this.addChild(dialog, false);
           dialog.render(popupElem);
       }, this).addErrback(this.displayFailure_, this);

@@ -87,6 +87,10 @@
     "message": "Do you want to import the following keys?",
     "description": "A sentence asking the user to confirm the key import."
   },
+  "promptImportKeyVerifyLabel": {
+    "message": "Please verify all keys!",
+    "description": "A sentence asking the user to verify all keys to import."
+  },
   "promptImportKeyNotificationLabel": {
     "message": "The key for $1 has been imported successfully.",
     "description": "A sentence confirming that the key import has completed successfully."

@@ -79,7 +79,7 @@ drafts.getAllDrafts_ = function() {
   var serialized = window.localStorage.getItem(
       constants.StorageKey.LAST_SAVED_DRAFT) || '{}';
 
-  // NOTE(radi): Wrapping in try/catch for backwards compatibility.
+  // NOTE(user): Wrapping in try/catch for backwards compatibility.
   var allDrafts = {};
   try {
     allDrafts = window.JSON.parse(serialized);

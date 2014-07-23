@@ -90,7 +90,7 @@ e2e.cipher.Aes.prototype.setKey = function(keyObj) {
 
   /**
    * Words per block.
-   * TODO(evn): This probably should be a constant.
+   * TODO(user): This probably should be a constant.
    * @type {number}
    * @private
    */

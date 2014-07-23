@@ -26,6 +26,7 @@ goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.messages');
 goog.require('e2e.ext.ui.Dialog');
+goog.require('e2e.ext.ui.dialogs.ImportConfirmation');
 goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.ui.templates');
@@ -50,6 +51,7 @@ goog.require('soy');
 
 goog.scope(function() {
 var constants = e2e.ext.constants;
+var dialogs = e2e.ext.ui.dialogs;
 var drafts = e2e.ext.ui.draftmanager;
 var ext = e2e.ext;
 var messages = e2e.ext.messages;
@@ -70,7 +72,7 @@ ui.Prompt = function() {
 
   /**
    * A timer to automatically save drafts.
-   * TODO(radi): Optimize the frequency of which auto-save triggers as it will
+   * TODO(user): Optimize the frequency of which auto-save triggers as it will
    * cause additional CPU (and possibly network) utilization.
    * @type {!goog.Timer}
    * @private
@@ -678,7 +680,7 @@ ui.Prompt.prototype.getEncryptKeys_ = function(userIds) {
   for (var i = 0; i < userIds.length; i++) {
     var userId = goog.string.trim(userIds[i]);
     if (userId) {
-      // TODO(evn): This will break as soon as searchKey becomes really async.
+      // TODO(user): This will break as soon as searchKey becomes really async.
       this.pgpLauncher_.getContext().searchPublicKey(userId).addCallback(
           goog.bind(function(found) {
             if (found) {
@@ -823,20 +825,8 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
       this.runWrappedProcessor_(function() {
         this.pgpLauncher_.getContext().getKeyDescription(textArea.value)
           .addCallback(function(keyDescription) {
-            var dialog = new ui.Dialog(
-                e2e.ext.ui.templates.ImportKeyConfirm({
-                  promptImportKeyConfirmLabel: chrome.i18n.getMessage(
-                      'promptImportKeyConfirmLabel'),
-                  keys: keyDescription,
-                  secretKeyDescription: chrome.i18n.getMessage(
-                      'secretKeyDescription'),
-                  publicKeyDescription: chrome.i18n.getMessage(
-                      'publicKeyDescription'),
-                  secretSubKeyDescription: chrome.i18n.getMessage(
-                      'secretSubKeyDescription'),
-                  publicSubKeyDescription: chrome.i18n.getMessage(
-                      'publicSubKeyDescription')
-                }),
+            var dialog = new dialogs.ImportConfirmation(
+                keyDescription,
                 goog.bind(function(returnValue) {
                   goog.dispose(dialog);
 
@@ -860,11 +850,7 @@ ui.Prompt.prototype.executeAction_ = function(action, textArea, origin) {
                           this.surfaceDismissButton_();
                         }, this));
                   }
-                }, this),
-                ui.Dialog.InputType.NONE,
-                '',
-                chrome.i18n.getMessage('promptOkActionLabel'),
-                chrome.i18n.getMessage('actionCancelPgpAction'));
+                }, this));
             this.addChild(dialog, false);
             dialog.render(goog.dom.getElement(
                 constants.ElementId.CALLBACK_DIALOG));

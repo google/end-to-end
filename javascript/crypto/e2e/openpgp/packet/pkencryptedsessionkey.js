@@ -64,7 +64,7 @@ e2e.openpgp.packet.PKEncryptedSessionKey.prototype.decryptSessionKey =
         /** @type {e2e.cipher.Rsa} */(cipher)).decrypt(
         this.encryptedKey);
   } else if (this.algorithm == e2e.cipher.Algorithm.ECDH) {
-    // TODO(thaidn): Use WebCrypto for ECDH.
+    // TODO(user): Use WebCrypto for ECDH.
     res = cipher.decrypt(this.encryptedKey).addCallback(
         this.removeEccPadding_, this);
   } else {

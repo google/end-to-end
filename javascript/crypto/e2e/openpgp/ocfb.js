@@ -48,7 +48,7 @@ e2e.openpgp.Ocfb = function(cipher, resync) {
 goog.inherits(e2e.openpgp.Ocfb, e2e.ciphermode.CipherMode);
 
 
-// TODO(adhintz) Is there a way to actually make these IV arguments optional
+// TODO(user) Is there a way to actually make these IV arguments optional
 // so that there are no compiler warnings?
 /** @inheritDoc */
 e2e.openpgp.Ocfb.prototype.encrypt = function(data, opt_unused_iv) {

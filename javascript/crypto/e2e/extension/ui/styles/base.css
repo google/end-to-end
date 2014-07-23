@@ -153,13 +153,21 @@ input:focus {
   visibility: hidden;
 }
 
-.keyTypeDescription {
-  min-width: 130px;
+.key-meta > * {
   display: inline-block;
 }
 
-.keyFingerprint {
-  white-space: pre;
-  font-family: monospace;
+.key-meta > input[type="checkbox"] {
+  margin-right: 10px;
+  vertical-align: middle;
+}
 
+.key-type-description {
+  display: inline-block;
+  min-width: 140px;
+}
+
+.key-fingerprint {
+  font-family: monospace;
+  white-space: pre;
 }

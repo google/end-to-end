@@ -150,7 +150,7 @@ ext.Launcher.prototype.getActiveTab_ = function(callback) {
   }, goog.bind(function(tabs) {
     var tab = tabs[0];
     if (!goog.isDef(tab)) {
-      // NOTE(radi): In some operating systems (OSX, CrOS), the query will be
+      // NOTE(user): In some operating systems (OSX, CrOS), the query will be
       // executed against the window holding the browser action. In such
       // situations we'll provide the last used tab.
       callback(this.lastTabId_);

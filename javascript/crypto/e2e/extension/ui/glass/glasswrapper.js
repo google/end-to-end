@@ -79,7 +79,7 @@ ui.GlassWrapper.prototype.installGlass = function() {
 
   var pgpMessage = this.targetElem_.innerText;
   this.targetElem_.textContent = '';
-  // TODO(radi): Render in a shadow DOM.
+  // TODO(user): Render in a shadow DOM.
   this.targetElem_.appendChild(glassFrame);
 
   glassFrame.addEventListener('load', goog.bind(function() {

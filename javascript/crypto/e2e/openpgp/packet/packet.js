@@ -82,7 +82,7 @@ e2e.openpgp.packet.Packet.prototype.serialize = function() {
   var length = '';
   if (packet.length > e2e.openpgp.packet.MAXIMUM_PACKET_SIZE) {
     // We are required to use partial body lengths in this case.
-    return [];  // TODO(adhintz) Throw an unimplemented error in this case?
+    return [];  // TODO(user) Throw an unimplemented error in this case?
   }
   // We always use five octet lengths since they will work in most cases.
   return goog.array.concat(

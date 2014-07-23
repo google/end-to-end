@@ -21,6 +21,7 @@ goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.Dialog');
+goog.require('e2e.ext.ui.dialogs.ImportConfirmation');
 goog.require('e2e.ext.ui.panels.GenerateKey');
 goog.require('e2e.ext.ui.panels.KeyringMgmtFull');
 goog.require('e2e.ext.ui.panels.PreferencesPanel');
@@ -39,6 +40,7 @@ goog.require('soy');
 goog.scope(function() {
 var ext = e2e.ext;
 var constants = e2e.ext.constants;
+var dialogs = e2e.ext.ui.dialogs;
 var panels = e2e.ext.ui.panels;
 var preferences = e2e.ext.ui.preferences;
 var templates = e2e.ext.ui.templates;
@@ -185,7 +187,7 @@ ui.Settings.prototype.removeKey_ = function(keyUid) {
   this.pgpContext_
       .searchPrivateKey(keyUid)
       .addCallback(function(privateKeys) {
-        // TODO(evn): This message should be localized.
+        // TODO(user): This message should be localized.
         var prompt = 'Deleting all keys for ' + keyUid;
         if (privateKeys && privateKeys.length > 0) {
           prompt += '\n\nWARNING: This will delete some private keys!';
@@ -249,20 +251,8 @@ ui.Settings.prototype.importKeyring_ = function(file) {
   utils.readFile(file, goog.bind(function(contents) {
     this.pgpLauncher_.getContext().getKeyDescription(contents)
         .addCallback(function(keyDescription) {
-          var dialog = new ui.Dialog(
-              templates.ImportKeyConfirm({
-                promptImportKeyConfirmLabel: chrome.i18n.getMessage(
-                    'promptImportKeyConfirmLabel'),
-                keys: keyDescription,
-                secretKeyDescription: chrome.i18n.getMessage(
-                    'secretKeyDescription'),
-                publicKeyDescription: chrome.i18n.getMessage(
-                    'publicKeyDescription'),
-                secretSubKeyDescription: chrome.i18n.getMessage(
-                    'secretSubKeyDescription'),
-                publicSubKeyDescription: chrome.i18n.getMessage(
-                    'publicSubKeyDescription')
-              }),
+          var dialog = new dialogs.ImportConfirmation(
+              keyDescription,
               goog.bind(function(returnValue) {
                 goog.dispose(dialog);
                 if (goog.isDef(returnValue)) {
@@ -288,11 +278,7 @@ ui.Settings.prototype.importKeyring_ = function(file) {
                         }
                       }, this).addErrback(this.displayFailure_, this);
                 }
-              }, this),
-              ui.Dialog.InputType.NONE,
-              '',
-              chrome.i18n.getMessage('promptOkActionLabel'),
-              chrome.i18n.getMessage('actionCancelPgpAction'));
+              }, this));
           this.addChild(dialog, false);
           dialog.render(goog.dom.getElement(
               constants.ElementId.CALLBACK_DIALOG));

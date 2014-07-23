@@ -78,7 +78,7 @@ goog.inherits(e2e.ecc.curve.Curve25519, e2e.ecc.curve.Curve);
 
 /** @override */
 e2e.ecc.curve.Curve25519.prototype.pointFromByteArray = function(p) {
-  // TODO(fy): Apparently DJB's reference implementation accepted
+  // TODO(user): Apparently DJB's reference implementation accepted
   // any 256-bit representation of an integer, and just used its value mod q.
   // The following code will give an error if value >= q, and in particular if
   // the high bit of p[31] is set.

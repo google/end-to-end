@@ -145,7 +145,7 @@ e2e.openpgp.packet.SignatureSub.parse = function(data) {
  */
 e2e.openpgp.packet.SignatureSub.populateAttribute = function(
     attributes, subpacket, hashed) {
-  // TODO(adhintz) Checks for which subpackets are fine for unhashed and
+  // TODO(user) Checks for which subpackets are fine for unhashed and
   //   different signature types.
   switch (subpacket.type) {
     case e2e.openpgp.packet.SignatureSub.Type.SIGNATURE_CREATION_TIME:
@@ -189,7 +189,7 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       } else {
         attributes.KEY_FLAGS = subpacket.body[0];
       }
-      // TODO(adhintz) Implement functions to access bit fields as described in
+      // TODO(user) Implement functions to access bit fields as described in
       // RFC 4880 section 5.2.3.21.
       break;
     case e2e.openpgp.packet.SignatureSub.Type.FEATURES:
@@ -201,7 +201,7 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       break;
     default:
       if (subpacket.critical) {
-        // TODO(adhintz): Treat the signature as invalid instead of throwing.
+        // TODO(user): Treat the signature as invalid instead of throwing.
         throw new Error(
             'Critical signature subpacket not recognized: ' + subpacket.type);
       }

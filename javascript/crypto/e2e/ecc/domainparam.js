@@ -122,7 +122,7 @@ e2e.ecc.DomainParam.curveOidFromCurveName = function(curveName) {
   } else if (curveName == e2e.ecc.PrimeCurve.P_521) {
     return e2e.ecc.PrimeCurveOid.P_521;
   }
-  // TODO(thaidn): figure out the curve OID for Curve25519 and Ed25519.
+  // TODO(user): figure out the curve OID for Curve25519 and Ed25519.
   return null;
 };
 

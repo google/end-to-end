@@ -77,7 +77,7 @@ e2e.openpgp.packet.Compressed.prototype.decompress = function() {
  * @return {e2e.openpgp.packet.Compressed} packet.
  */
 e2e.openpgp.packet.Compressed.construct = function(data) {
-  // TODO(adhintz) Add optional parameter specifying the compression algorithm.
+  // TODO(user) Add optional parameter specifying the compression algorithm.
   var algorithm = e2e.compression.factory.require(
       e2e.compression.Algorithm.ZLIB);
   var compressedData = /** @type {e2e.ByteArray} */ (

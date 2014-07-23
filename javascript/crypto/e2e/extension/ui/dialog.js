@@ -184,19 +184,19 @@ ui.Dialog.prototype.enterDocument = function() {
     this.getHandler().listenOnce(
         this.keyboardHandler_,
         goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
-        goog.partial(this.invokeCallback_, false));
+        goog.partial(this.invokeCallback, false));
   }
 
   this.getHandler().listen(
       this.getElementByClass(constants.CssClass.ACTION),
       goog.events.EventType.CLICK,
-      goog.partial(this.invokeCallback_, false));
+      goog.partial(this.invokeCallback, false));
 
   if (this.cancelButtonTitle_) {
     this.getHandler().listen(
         this.getElementByClass(constants.CssClass.CANCEL),
         goog.events.EventType.CLICK,
-        goog.partial(this.invokeCallback_, true));
+        goog.partial(this.invokeCallback, true));
   }
 };
 
@@ -216,9 +216,9 @@ ui.Dialog.prototype.exitDocument = function() {
  * Restores the UI prior to the display of the dialog and invokes the callback.
  * @param {boolean} sendBlank If true, the callback will be called with an empty
  *     value.
- * @private
+ * @protected
  */
-ui.Dialog.prototype.invokeCallback_ = function(sendBlank) {
+ui.Dialog.prototype.invokeCallback = function(sendBlank) {
   if (this.inputElem_) {
     var returnValue = sendBlank ? '' : this.inputElem_.value;
     this.inputElem_.value = '';

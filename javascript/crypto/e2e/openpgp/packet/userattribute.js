@@ -56,7 +56,7 @@ e2e.openpgp.packet.UserAttribute.prototype.addCertification =
  * @return {e2e.openpgp.packet.UserAttribute}
  */
 e2e.openpgp.packet.UserAttribute.parse = function(body) {
-  // TODO(evn): Implement parsing.
+  // TODO(user): Implement parsing.
   return new e2e.openpgp.packet.UserAttribute;
 };
 
