@@ -41,6 +41,7 @@ goog.require('goog.crypt.Sha512');
 e2e.hash.Sha224 = function() {
   e2e.hash.Sha224.base(this, 'constructor');
   this.inst_ = new goog.crypt.Sha224();
+  this.blockSize = this.inst_.blockSize;
 };
 goog.inherits(e2e.hash.Sha224, e2e.hash.Hash);
 
@@ -60,6 +61,7 @@ e2e.hash.factory.add(e2e.hash.Sha224);
 e2e.hash.Sha256 = function() {
   e2e.hash.Sha256.base(this, 'constructor');
   this.inst_ = new goog.crypt.Sha256();
+  this.blockSize = this.inst_.blockSize;
 };
 goog.inherits(e2e.hash.Sha256, e2e.hash.Hash);
 
@@ -79,6 +81,7 @@ e2e.hash.factory.add(e2e.hash.Sha256);
 e2e.hash.Sha384 = function() {
   e2e.hash.Sha384.base(this, 'constructor');
   this.inst_ = new goog.crypt.Sha384();
+  this.blockSize = this.inst_.blockSize;
 };
 goog.inherits(e2e.hash.Sha384, e2e.hash.Hash);
 
@@ -98,6 +101,7 @@ e2e.hash.factory.add(e2e.hash.Sha384);
 e2e.hash.Sha512 = function() {
   e2e.hash.Sha512.base(this, 'constructor');
   this.inst_ = new goog.crypt.Sha512();
+  this.blockSize = this.inst_.blockSize;
 };
 goog.inherits(e2e.hash.Sha512, e2e.hash.Hash);
 

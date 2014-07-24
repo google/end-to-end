@@ -34,6 +34,7 @@ goog.require('goog.crypt.Sha1');
 e2e.hash.Sha1 = function() {
   goog.base(this);
   this.inst_ = new goog.crypt.Sha1();
+  this.blockSize = this.inst_.blockSize;
 };
 goog.inherits(e2e.hash.Sha1, e2e.hash.Hash);
 

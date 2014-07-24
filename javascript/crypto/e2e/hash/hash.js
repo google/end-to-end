@@ -81,6 +81,10 @@ e2e.hash.Hash.prototype.inst_;
 
 
 /** @inheritDoc */
+e2e.hash.Hash.prototype.blockSize;
+
+
+/** @inheritDoc */
 e2e.hash.Hash.prototype.reset = function() {
   this.inst_.reset();
 };

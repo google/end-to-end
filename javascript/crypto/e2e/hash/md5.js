@@ -34,6 +34,7 @@ goog.require('goog.crypt.Md5');
 e2e.hash.Md5 = function() {
   goog.base(this);
   this.inst_ = new goog.crypt.Md5();
+  this.blockSize = this.inst_.blockSize;
 };
 goog.inherits(e2e.hash.Md5, e2e.hash.Hash);
 

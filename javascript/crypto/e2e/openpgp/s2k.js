@@ -15,6 +15,8 @@
 /**
  * @fileoverview Implements RFC 4880 String to Key specification.
  * @author evn@google.com (Eduardo Vela)
+ * @author adhintz@google.com (Drew Hintz)
+ * @author coruus@gmail.com (David Leon Gil)
  */
 
 goog.provide('e2e.openpgp.DummyS2k');
@@ -32,6 +34,7 @@ goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.math');
 goog.require('goog.object');
 
 
@@ -369,17 +372,25 @@ e2e.openpgp.IteratedS2K.prototype.getKey = function(passphrase, length) {
     count = salted_passphrase.length;
   }
 
+  // Construct an array with multiple copies of salted_passphrase. This enables
+  // us to pass block_size chunks of salted_passphrase into the hash function.
+  // This runs twice as fast as the naive approach.
+  var block_size = this.hash.blockSize;
+  var reps = goog.math.safeCeil(block_size / salted_passphrase.length) + 1;
+  var repeated = goog.array.flatten(goog.array.repeat(salted_passphrase, reps));
+
   var num_zero_prepend = 0;
   var hashed = [], original_length = length;
   while (length > 0) { // Loop to handle when checksum len < length requested.
-    var iterated_passphrase_length = 0;
     this.hash.reset();
+    // TODO(user) If num_zero_prepend > 0, align hash input to block_size.
     this.hash.update(goog.array.repeat(0, num_zero_prepend));
-    while (iterated_passphrase_length < count) {
-      this.hash.update(
-          salted_passphrase.slice(0, count - iterated_passphrase_length));
-      // Might have added fewer bytes, but it's just an exit condition.
-      iterated_passphrase_length += salted_passphrase.length;
+    var i = 0;
+    while (i + num_zero_prepend < count) {
+      var offset = goog.math.modulo(i, salted_passphrase.length);
+      var size = (block_size < count) ? block_size : count;
+      this.hash.update(repeated.slice(offset, offset + size));
+      i = i + size;
     }
     var checksum = this.hash.digest();
     length -= checksum.length;
