@@ -753,8 +753,17 @@ ui.Prompt.prototype.executeAction_ = function(action, elem, origin) {
               if (keys.length > 0 || passphrases.length > 0) {
                 // If encrypting the message, always add the sender key for him
                 // to be able to decrypt.
-                goog.array.extend(keys, this.getEncryptKeys_(
-                    [signerSelect.value]));
+                var senderKeys = this.getEncryptKeys_([signerSelect.value]);
+                goog.array.forEach(senderKeys, function(senderKey) {
+                  var found = goog.array.some(keys, function(key) {
+                    return goog.array.equals(key.key.fingerprint,
+                                             senderKey.key.fingerprint);
+                  });
+                  // Do not add this sender key if it is already present.
+                  if (!found) {
+                    goog.array.extend(keys, senderKey);
+                  }
+                });
               }
               this.pgpLauncher_.getContext()
                 .encryptSign(
