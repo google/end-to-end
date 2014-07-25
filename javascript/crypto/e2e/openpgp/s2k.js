@@ -378,6 +378,10 @@ e2e.openpgp.IteratedS2K.prototype.getKey = function(passphrase, length) {
   var block_size = this.hash.blockSize;
   var reps = goog.math.safeCeil(block_size / salted_passphrase.length) + 1;
   var repeated = goog.array.flatten(goog.array.repeat(salted_passphrase, reps));
+  var slices = [];
+  for (var i = 0; i < salted_passphrase.length; i++) {
+    slices.push(repeated.slice(i, i + block_size));
+  }
 
   var num_zero_prepend = 0;
   var hashed = [], original_length = length;
@@ -402,7 +406,11 @@ e2e.openpgp.IteratedS2K.prototype.getKey = function(passphrase, length) {
     while (remaining > 0) {
       var offset = (count - remaining) % salted_passphrase.length;
       var size = (block_size < remaining) ? block_size : remaining;
-      this.hash.update(repeated.slice(offset, offset + size));
+      if (size == block_size) {
+        this.hash.update(slices[offset]);
+      } else {
+       this.hash.update(repeated.slice(offset, offset + size));
+      }
       remaining -= size;
     }
     var checksum = this.hash.digest();
