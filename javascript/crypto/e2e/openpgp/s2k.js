@@ -383,14 +383,27 @@ e2e.openpgp.IteratedS2K.prototype.getKey = function(passphrase, length) {
   var hashed = [], original_length = length;
   while (length > 0) { // Loop to handle when checksum len < length requested.
     this.hash.reset();
-    // TODO(user) If num_zero_prepend > 0, align hash input to block_size.
-    this.hash.update(goog.array.repeat(0, num_zero_prepend));
-    var i = 0;
-    while (i + num_zero_prepend < count) {
-      var offset = goog.math.modulo(i, salted_passphrase.length);
-      var size = (block_size < count) ? block_size : count;
+    var remaining = count;  // Number of input bytes we still want.
+    if (num_zero_prepend > 0) {
+      if (num_zero_prepend > remaining) {
+        num_zero_prepend = remaining;
+      }
+      var firstRound = goog.array.repeat(0, num_zero_prepend);
+      // Align initial hash input size to block size.
+      var size = (block_size < remaining) ? block_size : remaining;
+      size -= num_zero_prepend;
+      if (size < 0) {
+        size = 0;
+      }
+      goog.array.extend(firstRound, repeated.slice(0, size));
+      this.hash.update(firstRound);
+      remaining -= size;
+    }
+    while (remaining > 0) {
+      var offset = (count - remaining) % salted_passphrase.length;
+      var size = (block_size < remaining) ? block_size : remaining;
       this.hash.update(repeated.slice(offset, offset + size));
-      i = i + size;
+      remaining -= size;
     }
     var checksum = this.hash.digest();
     length -= checksum.length;
