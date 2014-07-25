@@ -1,4 +1,4 @@
-<!-- Copyright 2012 Google Inc. All rights reserved.
+<!-- Copyright 2014 Google Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -13,27 +13,48 @@
 // limitations under the License.
 // -->
 <!DOCTYPE html>
-<title>Unit Test of e2e.CipherMode.CFB</title>
+<title>Unit Test of e2e.CipherMode.CTR</title>
 <script src="../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
   goog.require('e2e.cipher.Aes');
-  goog.require('e2e.ciphermode.Cfb');
+  goog.require('e2e.ciphermode.Ctr');
+  goog.require('e2e.error.UnsupportedError');
   goog.require('goog.array');
   goog.require('goog.testing.jsunit');
 </script>
 <script>
+  function testIncrement() {
+    var x = [0, 0, 0, 0];
+    e2e.ciphermode.Ctr.increment_(x);
+    assertArrayEquals([0, 0, 0, 1], x);
+    e2e.ciphermode.Ctr.increment_(x);
+    assertArrayEquals([0, 0, 0, 2], x);
+    x = [1, 2, 3, 4];
+    e2e.ciphermode.Ctr.increment_(x);
+    assertArrayEquals([1, 2, 3, 5], x);
+    x = [1, 2, 3, 255];
+    e2e.ciphermode.Ctr.increment_(x);
+    assertArrayEquals([1, 2, 4, 0], x);
+    e2e.ciphermode.Ctr.increment_(x);
+    assertArrayEquals([1, 2, 4, 1], x);
+    x = [7, 255, 255, 255];
+    e2e.ciphermode.Ctr.increment_(x);
+    assertArrayEquals([8, 0, 0, 0], x);
+    x = [255, 255, 255, 255];
+    var err = assertThrows(goog.partial(e2e.ciphermode.Ctr.increment_, x));
+    assertTrue(err instanceof e2e.error.UnsupportedError);
+  }
+
   function testConsistency() {
     var aes = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128,
-                                         {key:goog.array.repeat(0x77, 16)});
-    var aescfb = new e2e.ciphermode.Cfb(aes);
+                                         { key:goog.array.repeat(0x77, 16) });
+    var aesctr = new e2e.ciphermode.Ctr(aes);
     var iv = goog.array.repeat(0x77, aes.blockSize);
     var plaintext = goog.array.repeat(0x22, 75);
-    var ciphertext = e2e.async.Result.getValue(aescfb.encrypt(plaintext, iv));
-    assertEquals("Size of ciphertext is same as plaintext.",
-                 plaintext.length,
-                 ciphertext.length);
-    var deciphered = e2e.async.Result.getValue(aescfb.decrypt(ciphertext, iv));
+    var ciphertext = e2e.async.Result.getValue(aesctr.encrypt(plaintext, iv));
+    var deciphered =
+        e2e.async.Result.getValue(aesctr.decrypt(ciphertext, iv));
     assertArrayEquals("Consistency on encryption/decryption.",
                       plaintext,
                       deciphered);
@@ -49,10 +70,10 @@
             0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c
           ]
         });
-    var aesctr = new e2e.ciphermode.Cfb(aes);
+    var aesctr = new e2e.ciphermode.Ctr(aes);
     var iv = [
-        0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-        0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F
+        0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7,
+        0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF
     ];
     var testvector = [
         0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
@@ -66,14 +87,14 @@
     ];
 
     var expectedCipherText = [
-        0x3B, 0x3F, 0xD9, 0x2E, 0xB7, 0x2D, 0xAD, 0x20,
-        0x33, 0x34, 0x49, 0xF8, 0xE8, 0x3C, 0xFB, 0x4A,
-        0xC8, 0xA6, 0x45, 0x37, 0xA0, 0xB3, 0xA9, 0x3F,
-        0xCD, 0xE3, 0xCD, 0xAD, 0x9F, 0x1C, 0xE5, 0x8B,
-        0x26, 0x75, 0x1F, 0x67, 0xA3, 0xCB, 0xB1, 0x40,
-        0xB1, 0x80, 0x8C, 0xF1, 0x87, 0xA4, 0xF4, 0xDF,
-        0xC0, 0x4B, 0x05, 0x35, 0x7C, 0x5D, 0x1C, 0x0E,
-        0xEA, 0xC4, 0xC6, 0x6F, 0x9F, 0xF7, 0xF2, 0xE6
+        0x87, 0x4d, 0x61, 0x91, 0xb6, 0x20, 0xe3, 0x26,
+        0x1b, 0xef, 0x68, 0x64, 0x99, 0x0d, 0xb6, 0xce,
+        0x98, 0x06, 0xf6, 0x6b, 0x79, 0x70, 0xfd, 0xff,
+        0x86, 0x17, 0x18, 0x7b, 0xb9, 0xff, 0xfd, 0xff,
+        0x5a, 0xe4, 0xdf, 0x3e, 0xdb, 0xd5, 0xd3, 0x5e,
+        0x5b, 0x4f, 0x09, 0x02, 0x0d, 0xb0, 0x3e, 0xab,
+        0x1e, 0x03, 0x1d, 0xda, 0x2f, 0xbe, 0x03, 0xd1,
+        0x79, 0x21, 0x70, 0xa0, 0xf3, 0x00, 0x9c, 0xee
     ];
     var cipherText = e2e.async.Result.getValue(aesctr.encrypt(testvector, iv))
     assertArrayEquals(expectedCipherText, cipherText);

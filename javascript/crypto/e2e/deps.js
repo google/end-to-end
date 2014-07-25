@@ -36,6 +36,7 @@ goog.addDependency('../crypto/e2e/async/workerself.js', ['e2e.async.WorkerSelf']
 goog.addDependency('../crypto/e2e/ciphermode/cbc.js', ['e2e.ciphermode.Cbc'], ['e2e.async.Result', 'e2e.ciphermode.CipherMode', 'e2e.ciphermode.Pkcs7', 'goog.array', 'goog.asserts', 'goog.crypt']);
 goog.addDependency('../crypto/e2e/ciphermode/cfb.js', ['e2e.ciphermode.Cfb'], ['e2e.async.Result', 'e2e.ciphermode.CipherMode', 'goog.array']);
 goog.addDependency('../crypto/e2e/ciphermode/ciphermode.js', ['e2e.ciphermode.CipherMode'], ['e2e.ByteArray', 'e2e.cipher.ciphertext']);
+goog.addDependency('../crypto/e2e/ciphermode/ctr.js', ['e2e.ciphermode.Ctr'], ['e2e.async.Result', 'e2e.ciphermode.CipherMode', 'e2e.error.InvalidArgumentsError', 'e2e.error.UnsupportedError', 'goog.asserts', 'goog.crypt']);
 goog.addDependency('../crypto/e2e/ciphermode/pkcs7.js', ['e2e.ciphermode.Pkcs7'], ['e2e', 'goog.array']);
 goog.addDependency('../crypto/e2e/compression/all.js', ['e2e.compression.all'], ['e2e.compression.Zip', 'e2e.compression.Zlib']);
 goog.addDependency('../crypto/e2e/compression/compression.js', ['e2e.compression.Algorithm', 'e2e.compression.Compression', 'e2e.compression.Error'], ['goog.debug.Error']);

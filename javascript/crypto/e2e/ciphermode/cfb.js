@@ -43,18 +43,11 @@ e2e.ciphermode.Cfb.prototype.encrypt = function(data, iv) {
   var fre = e2e.async.Result.getValue(this.cipher.encrypt(iv));
   /** @type {!e2e.cipher.ciphertext.Symmetric} */
   var c = [];
+
   for (var i = 0; i < data.length; i += this.cipher.blockSize) {
     var fr = goog.array.slice(data, i, i + this.cipher.blockSize);
-    goog.array.forEach(
-        fr,
-        /**
-         * Calculates the ciphertext for the current block.
-         * @param {number} b The byte at position index.
-         * @param {number} index The current position of the loop.
-         */
-        function(b, index) {
-          c.push(fre[index] ^ b);
-        });
+    Array.prototype.push.apply(c,
+        goog.crypt.xorByteArray(fr, fre.slice(0, data.length - i)));
     fre = e2e.async.Result.getValue(
         this.cipher.encrypt(c.slice(-this.cipher.blockSize)));
   }
@@ -68,14 +61,8 @@ e2e.ciphermode.Cfb.prototype.decrypt = function(data, iv) {
   var p = [];
   for (var i = 0; i < data.length; i += this.cipher.blockSize) {
     var fr = goog.array.slice(data, i, i + this.cipher.blockSize);
-    /**
-     * Calculates the plaintext for the current block.
-     * @param {number} b The byte at position index.
-     * @param {number} index The current position of the loop.
-     */
-    goog.array.forEach(fr, function(b, index) {
-      p.push(fre[index] ^ b);
-    });
+    Array.prototype.push.apply(p,
+        goog.crypt.xorByteArray(fr, fre.slice(0, data.length - i)));
     fre = e2e.async.Result.getValue(this.cipher.encrypt(fr));
   }
   return e2e.async.Result.toResult(p);
