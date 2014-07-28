@@ -190,12 +190,13 @@ e2e.openpgp.ContextImpl.prototype.generateKey = function(
     }
     description += '<' + email + '>';
   }
-  var res = this.keyRing_.generateKey(
-      description, keyAlgo, keyLength, subkeyAlgo, subkeyLength);
-  return e2e.async.Result.toResult(
-      goog.array.map(res, function(keyBlock) {
-        return keyBlock.toKeyObject();
-      }));
+  return this.keyRing_.generateKey(
+      description, keyAlgo, keyLength, subkeyAlgo, subkeyLength).addCallback(
+        function(res) {
+          return goog.array.map(res, function(keyBlock) {
+            return keyBlock.toKeyObject();
+          });
+        });
 };
 
 

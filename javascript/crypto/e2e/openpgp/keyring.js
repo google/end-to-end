@@ -262,8 +262,8 @@ e2e.openpgp.KeyRing.prototype.importKey = function(
  * Generates and imports to the key ring a master ECDSA key pair and a
  * subordinate ECDH key pair.
  * @param {string} email The email to associate the key to.
- * @return {!Array.<!e2e.openpgp.block.TransferableKey>} The generated
- *     public key and secret key in an array.
+ * @return {e2e.async.Result.<!Array.<!e2e.openpgp.block.TransferableKey>>}
+ * The generated public key and secret key in an array.
  */
 e2e.openpgp.KeyRing.prototype.generateECKey = function(email) {
   return this.generateKey(email, e2e.signer.Algorithm.ECDSA, 256,
@@ -309,14 +309,17 @@ e2e.openpgp.KeyRing.prototype.getNextKey_ = function(keyLength) {
  * @param {e2e.cipher.Algorithm} subkeyAlgo Algorithm of the subkey.
  *     It must be one of the cipher algorithms.
  * @param {number} subkeyLength Length in bits of the subkey.
- * @return {!Array.<!e2e.openpgp.block.TransferableKey>} The generated
- *     public key and secret key in an array.
+ * @param {!e2e.algorithm.KeyLocations=} keyLocation Where should the key be
+ *     stored? (default to JS)
+ * @return {e2e.async.Result.<!Array.<!e2e.openpgp.block.TransferableKey>>}
+ * The generated public key and secret key in an array.
  */
 e2e.openpgp.KeyRing.prototype.generateKey = function(email,
                                                      keyAlgo,
                                                      keyLength,
                                                      subkeyAlgo,
-                                                     subkeyLength) {
+                                                     subkeyLength,
+                                                     keyLocation) {
   var keyData = {
     'pubKey': new Array(),
     'privKey': new Array()
@@ -362,7 +365,7 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(email,
     if (this.keyClient_ != null) {
       this.keyClient_.importPublicKey(pubKeyBlock);
     }
-    return [pubKeyBlock, privKeyBlock];
+    return e2e.async.Result.toResult([pubKeyBlock, privKeyBlock]);
   }
 
   // Should never happen.
