@@ -34,7 +34,6 @@ goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('goog.array');
 goog.require('goog.asserts');
-goog.require('goog.math');
 goog.require('goog.object');
 
 
@@ -376,7 +375,7 @@ e2e.openpgp.IteratedS2K.prototype.getKey = function(passphrase, length) {
   // us to pass block_size chunks of salted_passphrase into the hash function.
   // This runs twice as fast as the naive approach.
   var block_size = this.hash.blockSize;
-  var reps = goog.math.safeCeil(block_size / salted_passphrase.length) + 1;
+  var reps = Math.ceil(block_size / salted_passphrase.length) + 1;
   var repeated = goog.array.flatten(goog.array.repeat(salted_passphrase, reps));
   var slices = [];
   for (var i = 0; i < salted_passphrase.length; i++) {
@@ -389,9 +388,6 @@ e2e.openpgp.IteratedS2K.prototype.getKey = function(passphrase, length) {
     this.hash.reset();
     var remaining = count;  // Number of input bytes we still want.
     if (num_zero_prepend > 0) {
-      if (num_zero_prepend > remaining) {
-        num_zero_prepend = remaining;
-      }
       var firstRound = goog.array.repeat(0, num_zero_prepend);
       // Align initial hash input size to block size.
       var size = (block_size < remaining) ? block_size : remaining;
