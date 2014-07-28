@@ -20,7 +20,7 @@
  * @param? opt_caption The caption for the table
  * @param content The content to be rendered in the grid.
  */
-{template .Grid}
+{template .grid}
   <table>
     {if $opt_caption}<caption>{$opt_caption}</caption>{/if}
     <tbody>
@@ -31,12 +31,12 @@
 
 
 /**
- * A single cell in a .Grid.  Only to be called as a param to .Grid.
+ * A single cell in a .grid.  Only to be called as a param to .grid.
  * @param length Th length of the data.
  * @param i The index of the cell being rendered.
  * @param content The content to be rendered in the cell.
  */
-{template .GridCell}
+{template .gridCell}
   {let $dimension: e2e.ext.constants.BackupCode /}
   {let $rowstart: $length / $dimension.ROWS /}
   {let $colstart: $rowstart / $dimension.COLS /}
@@ -61,12 +61,12 @@
  * @param key The key to be displayed.
  * @param caseSensitiveText Reminder text that codes are case sensitive.
  */
-{template .BackupKey}
+{template .backupKey}
   <div class="{e2e.ext.constants.CssClass.KEYRING_BACKUP_WINDOW}">
-    {call .Grid}
+    {call .grid}
       {param content kind="html"}
         {foreach $i in $key}
-          {call .GridCell}
+          {call .gridCell}
             {param length: $key.length /}
             {param i: index($i) /}
             {param content: $i /}
@@ -84,7 +84,7 @@
  * @param emailLabel The label for the email input.
  * @param backupCodeLabel The label for the backup code input.
  */
-{template .RestoreKey}
+{template .restoreKey}
   /* TODO(rcc): Remove when we can use keyserver for lookups */
   <div>
     <label>
@@ -94,14 +94,14 @@
   </div>
 
   <div class="{e2e.ext.constants.CssClass.KEYRING_BACKUP_WINDOW}">
-    {call .Grid}
+    {call .grid}
       {param opt_caption: $backupCodeLabel /}
       {param content kind="html"}
         {let $dimension: e2e.ext.constants.BackupCode /}
         {let $length: $dimension.ROWS * $dimension.COLS /}
         {let $celllength: ceiling(e2e.ext.constants.BACKUP_CODE_LENGTH / $length) /}
         {for $i in range($length)}
-          {call .GridCell}
+          {call .gridCell}
             {param length: $length /}
             {param i: $i /}
             {param content kind="html"}

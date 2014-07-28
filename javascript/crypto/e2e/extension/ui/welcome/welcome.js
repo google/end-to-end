@@ -29,7 +29,7 @@ goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.panels.GenerateKey');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
 goog.require('e2e.ext.ui.preferences');
-goog.require('e2e.ext.ui.templates.welcome.Welcome');
+goog.require('e2e.ext.ui.templates.welcome');
 goog.require('e2e.ext.utils');
 goog.require('e2e.signer.Algorithm');
 goog.require('goog.array');
@@ -118,7 +118,7 @@ ui.Welcome.prototype.decorateInternal = function(elem) {
     subsections: []
   };
 
-  soy.renderElement(elem, templates.Welcome, {
+  soy.renderElement(elem, templates.welcome, {
     headerText: chrome.i18n.getMessage('welcomeHeader'),
     basicsSection: basicsSection,
     noviceSection: noviceSection,

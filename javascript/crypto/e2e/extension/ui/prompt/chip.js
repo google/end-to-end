@@ -19,7 +19,7 @@
 goog.provide('e2e.ext.Chip');
 
 goog.require('e2e.ext.constants.CssClass');
-goog.require('e2e.ext.ui.templates.prompt.RenderChip');
+goog.require('e2e.ext.ui.templates.prompt');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
@@ -81,7 +81,7 @@ ext.Chip.prototype.decorateInternal = function(elem) {
 
   var displayValue = this.isPassphrase() ?
       chrome.i18n.getMessage('promptPassphraseMask') : this.value_;
-  soy.renderElement(elem, templates.RenderChip, {
+  soy.renderElement(elem, templates.renderChip, {
     value: displayValue
   });
 };

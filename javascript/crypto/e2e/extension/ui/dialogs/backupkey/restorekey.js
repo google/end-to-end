@@ -22,7 +22,7 @@ goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.messages.ApiRequest');
 goog.require('e2e.ext.ui.dialogs.Overlay');
-goog.require('e2e.ext.ui.templates.dialogs.backupkey.RestoreKey');
+goog.require('e2e.ext.ui.templates.dialogs.backupkey');
 goog.require('goog.ui.Dialog');
 goog.require('soy');
 
@@ -57,7 +57,7 @@ dialogs.RestoreKey.prototype.createDom = function() {
 dialogs.RestoreKey.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
   this.setTitle(chrome.i18n.getMessage('keyMgmtRestoreKeyringLabel'));
-  soy.renderElement(this.getContentElement(), templates.RestoreKey, {
+  soy.renderElement(this.getContentElement(), templates.restoreKey, {
     emailLabel: chrome.i18n.getMessage('keyMgmtRestoreKeyringEmailLabel'),
     backupCodeLabel:
         chrome.i18n.getMessage('keyMgmtRestoreKeyringBackupCodeLabel')

@@ -19,7 +19,7 @@
  * Renders the base layout for the Prompt UI.
  * @param extName The name of the extension.
  */
-{template .Main}
+{template .main}
   <html>
     <head>
       <title>{$extName}</title>
@@ -43,7 +43,7 @@
  * Renders the required UI elements for PGP encryption.
  * @param possibleActions The list of possible actions that can be performed.
  */
-{template .RenderMenu}
+{template .renderMenu}
   <ul>
     {foreach $action in $possibleActions}
       <li action="{$action.value}">{$action.title}</li>
@@ -68,7 +68,7 @@
  * @param optionsButtonTitle The title of the options button.
  * @param cancelButtonTitle The title of the cancel button.
  */
-{template .RenderEncrypt}
+{template .renderEncrypt}
   <div id="{e2e.ext.constants.ElementId.FROM_HOLDER}">
     <div>{$fromLabel}</div>
     <select id="{e2e.ext.constants.ElementId.SIGNER_SELECT}"
@@ -119,7 +119,7 @@
  * @param actionButtonTitle The title of the prompt button.
  * @param cancelButtonTitle The title of the cancel button.
  */
-{template .RenderGenericForm}
+{template .renderGenericForm}
   <textarea placeholder="{$textAreaPlaceholder}"></textarea>
   <button class="{e2e.ext.constants.CssClass.BACK}">
     <img src="images/back.png" title="{$backButtonTitle}"/>
@@ -133,7 +133,7 @@
  * Renders the chip holder.
  * @param recipientsTitle The placeholder text for the recipients field.
  */
-{template .RenderChipHolder}
+{template .renderChipHolder}
   <div id="{e2e.ext.constants.ElementId.KEY_SELECT_FORM}">
     <div class="{e2e.ext.constants.CssClass.CHIPS}">
       <span>{$recipientsTitle}</span>
@@ -147,7 +147,7 @@
  * Renders a chip that represents a PGP UID or passphrase.
  * @param value The UID or passphrase to render.
  */
-{template .RenderChip}
+{template .renderChip}
   <div class="{e2e.ext.constants.CssClass.CHIP}">
     <div>{$value}</div>
     <img src="images/close.png">

@@ -21,7 +21,7 @@ goog.provide('e2e.ext.ui.Glass');
 goog.require('e2e.ext.constants.Actions');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.ext.messages.ApiRequest');
-goog.require('e2e.ext.ui.templates.glass.ContentFrame');
+goog.require('e2e.ext.ui.templates.glass');
 goog.require('e2e.random');
 goog.require('goog.events.MouseWheelHandler');
 goog.require('goog.style');
@@ -127,7 +127,7 @@ ui.Glass.prototype.decorateInternal = function(elem) {
  */
 ui.Glass.prototype.renderContents_ = function(response) {
   var elem = this.getElement();
-  soy.renderElement(elem, templates.ContentFrame, {
+  soy.renderElement(elem, templates.contentFrame, {
     label: chrome.i18n.getMessage('extName'),
     content: response.content || this.pgpMessage_,
     error: response.error

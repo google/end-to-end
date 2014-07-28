@@ -23,7 +23,7 @@ goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.dialogs.BackupKey');
 goog.require('e2e.ext.ui.dialogs.RestoreKey');
-goog.require('e2e.ext.ui.templates.panels.keyringmgmt.ManageKeyring');
+goog.require('e2e.ext.ui.templates.panels.keyringmgmt');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
@@ -125,7 +125,7 @@ panels.KeyringMgmtMini.prototype.createDom = function() {
 panels.KeyringMgmtMini.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
 
-  soy.renderElement(elem, templates.ManageKeyring, {
+  soy.renderElement(elem, templates.manageKeyring, {
     importKeyringLabel: chrome.i18n.getMessage('keyMgmtImportKeyringLabel'),
     exportKeyringLabel: chrome.i18n.getMessage('keyMgmtExportKeyringLabel'),
     backupKeyringLabel: chrome.i18n.getMessage('keyMgmtBackupKeyringLabel'),

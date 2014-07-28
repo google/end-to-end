@@ -31,10 +31,7 @@ goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.ui.preferences');
-goog.require('e2e.ext.ui.templates.prompt.Main');
-goog.require('e2e.ext.ui.templates.prompt.RenderEncrypt');
-goog.require('e2e.ext.ui.templates.prompt.RenderGenericForm');
-goog.require('e2e.ext.ui.templates.prompt.RenderMenu');
+goog.require('e2e.ext.ui.templates.prompt');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.Error');
 goog.require('e2e.ext.utils.action');
@@ -114,7 +111,7 @@ ui.Prompt.prototype.chipHolder_ = null;
 ui.Prompt.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
 
-  soy.renderElement(elem, templates.Main, {
+  soy.renderElement(elem, templates.main, {
     extName: chrome.i18n.getMessage('extName')
   });
 
@@ -278,7 +275,7 @@ ui.Prompt.prototype.buttonClick_ = function(
  * @private
  */
 ui.Prompt.prototype.renderMenu_ = function(elem, contentBlob) {
-  soy.renderElement(elem, templates.RenderMenu, {
+  soy.renderElement(elem, templates.renderMenu, {
     possibleActions: [
       {
         value: constants.Actions.ENCRYPT_SIGN,
@@ -368,7 +365,7 @@ ui.Prompt.prototype.renderEncrypt_ =
           chrome.i18n.getMessage('promptEncryptSignInsertIntoGmailLabel') :
           chrome.i18n.getMessage('promptEncryptSignInsertLabel');
 
-      soy.renderElement(elem, templates.RenderEncrypt, {
+      soy.renderElement(elem, templates.renderEncrypt, {
         insertCheckboxEnabled: canInject,
         signerCheckboxTitle: chrome.i18n.getMessage('promptSignMessageAs'),
         fromLabel: chrome.i18n.getMessage('promptFromLabel'),
@@ -468,7 +465,7 @@ ui.Prompt.prototype.renderEncrypt_ =
  */
 ui.Prompt.prototype.renderGenericForm_ =
     function(elem, actionButtonTitle, opt_textAreaPlaceholder) {
-  soy.renderElement(elem, templates.RenderGenericForm, {
+  soy.renderElement(elem, templates.renderGenericForm, {
     textAreaPlaceholder: opt_textAreaPlaceholder || '',
     actionButtonTitle: actionButtonTitle,
     cancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction'),

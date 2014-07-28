@@ -17,7 +17,7 @@
 
 goog.provide('e2e.ext.ui.panels.PreferenceEntry');
 
-goog.require('e2e.ext.ui.templates.panels.preferences.PreferenceEntry');
+goog.require('e2e.ext.ui.templates.panels.preferences');
 goog.require('goog.events.EventType');
 goog.require('goog.ui.Component');
 goog.require('soy');
@@ -85,7 +85,7 @@ panels.PreferenceEntry.prototype.createDom = function() {
 panels.PreferenceEntry.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
 
-  soy.renderElement(elem, templates.PreferenceEntry, {
+  soy.renderElement(elem, templates.preferenceEntry, {
     name: this.name_,
     description: this.description_,
     checked: this.isSet_

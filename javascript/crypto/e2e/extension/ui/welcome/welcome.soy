@@ -24,7 +24,7 @@
  * @param preferenceLabel The label to apply to the welcome page preference checkbox.
  * @param actionButtonTitle The title of the submit button.
  */
-{template .Welcome}
+{template .welcome}
 <html>
   <head>
     <title>{$headerText}</title>
@@ -34,17 +34,17 @@
     <div id="{e2e.ext.constants.ElementId.WELCOME_BODY}">
       <h1>{$headerText}</h1>
       <div id="{e2e.ext.constants.ElementId.WELCOME_MENU}">
-        {call .WelcomeSection}
+        {call .welcomeSection}
           {param sectionText: $noviceSection /}
           {param headerId: e2e.ext.constants.ElementId.WELCOME_MENU_NOVICE /}
           {param contentId: e2e.ext.constants.ElementId.WELCOME_CONTENT_NOVICE /}
         {/call}
-        {call .WelcomeSection}
+        {call .welcomeSection}
           {param sectionText: $advancedSection /}
           {param headerId: e2e.ext.constants.ElementId.WELCOME_MENU_ADVANCED /}
           {param contentId: e2e.ext.constants.ElementId.WELCOME_CONTENT_ADVANCED /}
         {/call}
-        {call .WelcomeSection}
+        {call .welcomeSection}
           {param sectionText: $basicsSection /}
           {param headerId: e2e.ext.constants.ElementId.WELCOME_MENU_BASICS /}
           {param contentId: e2e.ext.constants.ElementId.WELCOME_CONTENT_BASICS /}
@@ -70,7 +70,7 @@
  * @param headerId The HTML ID of the section header.
  * @param contentId The HTML ID of the section content.
  */
-{template .WelcomeSection}
+{template .welcomeSection}
   <div id="{$headerId}">
     <fieldset>
       <legend>

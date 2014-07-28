@@ -18,7 +18,7 @@
 goog.provide('e2e.ext.ui.panels.GenerateKey');
 
 goog.require('e2e.ext.constants.CssClass');
-goog.require('e2e.ext.ui.templates.panels.generatekey.GenerateKeyForm');
+goog.require('e2e.ext.ui.templates.panels.generatekey');
 goog.require('goog.array');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
@@ -86,7 +86,7 @@ panels.GenerateKey.prototype.createDom = function() {
 panels.GenerateKey.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
 
-  soy.renderElement(elem, templates.GenerateKeyForm, {
+  soy.renderElement(elem, templates.generateKeyForm, {
     sectionTitle: this.sectionTitle_,
     emailLabel: chrome.i18n.getMessage('genKeyEmailLabel'),
     commentsLabel: chrome.i18n.getMessage('genKeyCommentsLabel'),

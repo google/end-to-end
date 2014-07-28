@@ -25,7 +25,7 @@
  * @param secretSubKeyDescription Text describing a secret subkey.
  * @param publicSubKeyDescription Text describing a public subkey.
  */
-{template .ImportKeyConfirm}
+{template .importKeyConfirm}
   <p>{$promptImportKeyConfirmLabel} (
     <a class="{e2e.ext.constants.CssClass.SELECT_ALL_LINK}">{$selectAllLabel}</a>)
   </p>
@@ -43,7 +43,7 @@
         {let $keyId kind="text"}key-{index($key)}{/let}
         <br><input id="{$keyId}" type="checkbox" data-mainkey="{index($key)}">
         <label for="{$keyId}">
-          {call .KeyPacketInfo}
+          {call .keyPacketInfo}
             {param keyPacketInfo: $key.key /}
             {param secretKeyDescription: $secretKeyDescription /}
             {param publicKeyDescription: $publicKeyDescription /}
@@ -55,7 +55,7 @@
                      data-mainkey="{index($key)}" data-subkey="yes"
                      class="{e2e.ext.constants.CssClass.KEY_SUBKEY}">
           <label for="{$subKeyId}">
-            {call .KeyPacketInfo}
+            {call .keyPacketInfo}
               {param keyPacketInfo: $subKeyInfo /}
               {param secretKeyDescription: $secretSubKeyDescription /}
               {param publicKeyDescription: $publicSubKeyDescription /}
@@ -74,7 +74,7 @@
  * @param secretKeyDescription Text to display if the key is secret.
  * @param publicKeyDescription Text to display if the key is public.
  */
-{template .KeyPacketInfo}
+{template .keyPacketInfo}
   <div>
     <span class="{e2e.ext.constants.CssClass.KEY_TYPE_DESC}">
       {if $keyPacketInfo.secret}

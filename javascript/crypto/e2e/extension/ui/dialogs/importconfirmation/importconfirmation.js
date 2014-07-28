@@ -20,7 +20,7 @@ goog.provide('e2e.ext.ui.dialogs.ImportConfirmation');
 goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
-goog.require('e2e.ext.ui.templates.dialogs.importconfirmation.ImportKeyConfirm');
+goog.require('e2e.ext.ui.templates.dialogs.importconfirmation');
 goog.require('goog.array');
 goog.require('goog.events.EventType');
 goog.require('goog.string.format');
@@ -44,7 +44,7 @@ var templates = e2e.ext.ui.templates.dialogs.importconfirmation;
 dialogs.ImportConfirmation = function(keys, callback) {
   goog.base(
       this,
-      templates.ImportKeyConfirm({
+      templates.importKeyConfirm({
         promptImportKeyConfirmLabel: chrome.i18n.getMessage(
             'promptImportKeyConfirmLabel'),
         selectAllLabel: chrome.i18n.getMessage('dialogSelectAll'),

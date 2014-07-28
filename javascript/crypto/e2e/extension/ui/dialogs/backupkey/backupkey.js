@@ -57,7 +57,7 @@ dialogs.BackupKey.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
   this.setTitle(chrome.i18n.getMessage('keyMgmtBackupKeyringLabel'));
   this.getBackupCode_().addCallback(goog.bind(function(key) {
-    soy.renderElement(this.getContentElement(), templates.BackupKey, {
+    soy.renderElement(this.getContentElement(), templates.backupKey, {
       key: key,
       caseSensitiveText:
           chrome.i18n.getMessage('keyMgmtBackupKeyringCaseSensitive')

@@ -20,7 +20,7 @@ goog.provide('e2e.ext.ui.dialogs.Generic');
 
 goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
-goog.require('e2e.ext.ui.templates.dialogs.generic.Dialog');
+goog.require('e2e.ext.ui.templates.dialogs.generic');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
@@ -135,7 +135,7 @@ dialogs.Generic.prototype.createDom = function() {
 dialogs.Generic.prototype.decorateInternal = function(elem) {
   this.setElementInternal(elem);
 
-  soy.renderElement(elem, templates.Dialog, {
+  soy.renderElement(elem, templates.dialog, {
     message: this.message_,
     inputFieldType: this.inputType_,
     inputPlaceholder: this.placeholder_,

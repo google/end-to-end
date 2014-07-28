@@ -28,7 +28,7 @@ goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.panels.GenerateKey');
 goog.require('e2e.ext.ui.panels.KeyringMgmtFull');
 goog.require('e2e.ext.ui.panels.PreferencesPanel');
-goog.require('e2e.ext.ui.templates.Settings');
+goog.require('e2e.ext.ui.templates');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.Error');
 goog.require('e2e.openpgp.asciiArmor');
@@ -133,7 +133,7 @@ ui.Settings.prototype.decorateInternal = function(elem) {
 ui.Settings.prototype.renderTemplate_ = function(pgpKeys) {
   var elem = this.getElement();
 
-  soy.renderElement(elem, templates.Settings, {
+  soy.renderElement(elem, templates.settings, {
     pageTitle: chrome.i18n.getMessage('settingsTitle')
   });
 

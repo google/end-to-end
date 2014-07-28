@@ -23,19 +23,19 @@
  * @param removeLabel The label to use for the remove link.
  * @param noneLabel The label to display when there are no keys.
  */
-{template .ListKeys}
+{template .listKeys}
   <h1>{$sectionTitle}</h1>
   <table>
     {foreach $keyMeta in $storedKeys}
       <tr data-user-id="{$keyMeta.userId}">
-        {call .KeyEntry}
+        {call .keyEntry}
           {param keyMeta: $keyMeta /}
           {param exportLabel: $exportLabel /}
           {param removeLabel: $removeLabel /}
         {/call}
       </tr>
     {ifempty}
-      {call .NoneEntry data="all"}{/call}
+      {call .noneEntry data="all"}{/call}
     {/foreach}
   </table>
 {/template}
@@ -45,7 +45,7 @@
  * Displays "None" for when no PGP keys are present
  * @param noneLabel The label to display when there are no keys.
  */
-{template .NoneEntry}
+{template .noneEntry}
   <tr><td><i>{$noneLabel}</i></td></tr>
 {/template}
 
@@ -56,7 +56,7 @@
  * @param exportLabel The label to use for the export link.
  * @param removeLabel The label to use for the remove link.
  */
-{template .KeyEntry}
+{template .keyEntry}
   <td>
     <div class="{e2e.ext.constants.CssClass.KEY_UID}">{$keyMeta.userId}</div>
     {foreach $key in $keyMeta.keys}
@@ -89,7 +89,7 @@
  * @param passphraseConfirmActionButtonTitle The title for the passphrase confirm submit button.
  * @param passphraseChangeCancelButtonTitle The title for the passphrase change cancel button.
  */
-{template .ManageKeyring}
+{template .manageKeyring}
   <div id="{e2e.ext.constants.ElementId.KEYRING_IMPORT_DIV}"
        class="{e2e.ext.constants.CssClass.HIDDEN}">
     <input type="file" class="{e2e.ext.constants.CssClass.ACTION}"/>

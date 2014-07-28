@@ -18,7 +18,7 @@
  * Enables the user to set preferences.
  * @param sectionTitle The title for the current section.
  */
-{template .ListPreferences}
+{template .listPreferences}
   <h1>{$sectionTitle}</h1>
 {/template}
 
@@ -29,7 +29,7 @@
  * @param description The description of the preference.
  * @param checked True if the preference is set. Otherwise false.
  */
-{template .PreferenceEntry}
+{template .preferenceEntry}
   <div  class="{e2e.ext.constants.CssClass.PREFERENCE_DIV}">
      <input type="checkbox" id="preference-{$name}" {if $checked}checked{/if} />
      <label for="preference-{$name}">{$description}</label>

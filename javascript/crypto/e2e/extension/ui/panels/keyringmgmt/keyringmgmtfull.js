@@ -20,9 +20,7 @@ goog.provide('e2e.ext.ui.panels.KeyringMgmtFull');
 goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
-goog.require('e2e.ext.ui.templates.panels.keyringmgmt.KeyEntry');
-goog.require('e2e.ext.ui.templates.panels.keyringmgmt.ListKeys');
-goog.require('e2e.ext.ui.templates.panels.keyringmgmt.NoneEntry');
+goog.require('e2e.ext.ui.templates.panels.keyringmgmt');
 goog.require('goog.array');
 goog.require('goog.crypt');
 goog.require('goog.dom');
@@ -122,7 +120,7 @@ panels.KeyringMgmtFull.prototype.decorateInternal = function(elem) {
       keys: this.getKeysDescription_(this.pgpKeys_.get(userId))
     };
   }, this);
-  soy.renderElement(elem, templates.ListKeys, {
+  soy.renderElement(elem, templates.listKeys, {
     storedKeys: storedKeys,
     sectionTitle: chrome.i18n.getMessage('keyMgmtTitle'),
     exportLabel: chrome.i18n.getMessage('keyMgmtExportLabel'),
@@ -168,7 +166,7 @@ panels.KeyringMgmtFull.prototype.addNewKey = function(userId, pgpKeys) {
 
   var tr = document.createElement(goog.dom.TagName.TR);
   tr.dataset.userId = userId;
-  soy.renderElement(tr, templates.KeyEntry, {
+  soy.renderElement(tr, templates.keyEntry, {
     keyMeta: {
       'userId': userId,
       'keys': this.getKeysDescription_(pgpKeys)
@@ -204,7 +202,7 @@ panels.KeyringMgmtFull.prototype.removeKey = function(userId) {
 
   if (this.getElement().querySelectorAll('tr').length == 0) {
     soy.renderElement(this.getElement().querySelector('table'),
-        templates.NoneEntry, {
+        templates.noneEntry, {
           'noneLabel': chrome.i18n.getMessage('keyMgmtNoneLabel')
         });
     this.keyringMgmtControls_.refreshOptions(false);

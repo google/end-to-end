@@ -19,7 +19,7 @@ goog.provide('e2e.ext.ChipHolder');
 
 goog.require('e2e.ext.Chip');
 goog.require('e2e.ext.constants.CssClass');
-goog.require('e2e.ext.ui.templates.prompt.RenderChipHolder');
+goog.require('e2e.ext.ui.templates.prompt');
 goog.require('goog.array');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
@@ -105,7 +105,7 @@ ext.ChipHolder.prototype.decorateInternal = function(elem) {
   this.setElementInternal(elem);
   this.keyHandler_ = new goog.events.KeyHandler(elem, true);
 
-  soy.renderElement(elem, templates.RenderChipHolder, {
+  soy.renderElement(elem, templates.renderChipHolder, {
     recipientsTitle: chrome.i18n.getMessage('promptRecipientsPlaceholder')
   });
 
