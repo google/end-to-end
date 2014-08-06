@@ -173,6 +173,8 @@ e2e.openpgp.ContextImpl.prototype.tryToImportKey_ = function(
             block.getUserIds().join('\n'),
             goog.bind(this.tryToImportKey_, this, callback, block, result));
       }
+    } else {
+      result.errback(e);
     }
   }
   return result;

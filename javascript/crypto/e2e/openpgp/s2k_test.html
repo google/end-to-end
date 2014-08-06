@@ -62,6 +62,21 @@
     });
   }
 
+  function testS2KDummySmartCardStubMode() {
+    assertNotThrows('E2E Dummy S2k is parsed correctly.', function() {
+      var dummy = [0x65 /* type value for dummy */, 0x00 /* empty hash algo*/,
+        0x47 /* 'G' */, 0x4e /* 'N' */, 0x55 /* U */, 0x2 /* smartcard */,
+        0xFF, 0xBB];
+      var dummys2k = e2e.openpgp.S2k.parse(dummy);
+      assertArrayEquals('Dummy only consumed 5 bytes', [0xFF, 0xBB], dummy);
+      assert('Dummy is instance of DummyS2k',
+        dummys2k instanceof e2e.openpgp.DummyS2k);
+        assert
+      assertArrayEquals([0x65, 0x00, 0x47, 0x4e, 0x55, 0x02],
+          dummys2k.serialize());
+    });
+  }
+
 
   function testS2KInvalid() {
     assertThrows('Invalid S2K type throws errors', function() {

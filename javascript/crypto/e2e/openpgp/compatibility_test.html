@@ -732,6 +732,39 @@ UOmPAQP8h8OVluq3C7U=
 -----END PGP SIGNATURE-----
 </textarea>
 <!--
+  InboundKeyGnuPg1_DummyS2k:
+  Test for keys exported with --export-secret-subkeys
+  gnu-dummy S2K, algo: 3, SHA1 protection, hash: 2
+-->
+<textarea id="InboundKeyGnuPg1_DummyS2k">
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+lQGqBFOMvH0RBADh/AeQ4Bod62WW2pLdBHf4spl3cIIuI+N1RowhtjjHchn/IUWH
+v5U3bn3/WgtkxlCczyJkAkyZd0RihEG27S6rTCGRIROobIMkEiCjjoD3gIETh73S
+ZSjaVPi6DZmLj59evOmQttuFRrWdFjioK+GHkH0++M3Z6SSl44RGAFG63wCgjka8
+KaN2QVol4YiZsrsQGM0Dfw8D/iLyzJ8xOPVL6MpPbAlil19DanotBardRItq0dNB
+VVWPZnOSqJsQPrsJ8ucHpP6bglTw8JWcotC/td4ZCwTsItsBRpQO4ww0DOxsB1J1
+mUFuljvELDREKY+hktssA0kgI99pR7fxoBqH9jT9J0+nIkrshHzzi63sUB6dD79W
+Du5hA/0Vt5IBzCR+slpDOQdgTYjP8zlc7zaBdx00nqqWwaESvpLlrWTsKHEy9Aos
+UjUEzteJaTeVjWhePxML+BYw0NQGlhegJyaJ5DjkR123DjMzzqhDKf9nyTsz0hC/
+eedaY8xA9+dPQ7HARw3ctFwt1GU3ruHgBYzteIlsKhND+Jvr0/4DZQJHTlUBtBtk
+c2Fkc2EgPGRzYWRzYUBleGFtcGxlLmNvbT6IYgQTEQIAIgUCU4y8fQIbAwYLCQgH
+AwIGFQgCCQoLBBYCAwECHgECF4AACgkQqk68WrT5VLLcJgCgjQa04buMNNWrSlCF
+xjooQCelAVEAnjocTLHS3qNdN1FhrXZ3TSGzP0a7nQFYBFOMvH0QBADbPhobFxoU
+wBmlU78ayj+1STMGqlOYLkEuDxhhnB9lRdaPiojaxd5rDbhMiM/wECcIgcr8xva8
+WYhj3ltNQav3l2/3nZvU1luAUoEqkHC/ysNnAaQXlLhhmYHngHghRJnu+IuiRZR4
+LCQas1L1+EwH4797C8dxAFB1YVBj3epBewADBQP8DEiLjdFF8ODCh9g7QL0w8Q3l
+6stuQvGMGcF5IFaLsCr7Qyr4zmN+DcrainlCxYDO1YrWbFtNpRT1w6e2svb7Nh62
+OfvnMO2hJ4npLOI1+PUsp1bQasdpJBLtR9C4SkSzAbpDqZujM5IdryWJ/WxnaXd6
+MG2AuCVrtgdxVrHe+pz+AwMC0849ONfn6/Bgv9+9V5JBrCcZURzrJjIC+D9itak0
+6K2wW4s5/JR6UFVOtbUg/ZY6t+sBghVvdnETgiVUehdDir1Ro8HCavOISQQYEQIA
+CQUCU4y8fQIbDAAKCRCqTrxatPlUsg+iAJ9FmhN3L7OEvgp1eFsNZqB6eIKyHwCf
+eBWY3NDypeD5aoV6x2db2M3X5Ro=
+=aQLB
+-----END PGP PRIVATE KEY BLOCK-----
+</textarea>
+<!--
 Test for https://code.google.com/p/end-to-end/issues/detail?id=60
 GnuPG places subkey revocation signature packet right after subkey
 packet.
@@ -968,8 +1001,21 @@ VbjYFJxk9Uhl17tfTMSJFTnwB4pouBtUa2+7hRyx9/Tdc04fJDJHzhwz1lZWLg/+
     context.importKey(function(uid, cb) {
       fail("Should not call callback");
     }, key).addCallback(function(importedUids) {
-        asyncTest.continueTesting();
         assertEquals(importedUids.length, 2);
+        asyncTest.continueTesting();
+    });
+  }
+
+  function testInboundDummyS2k() {
+    var key = document.getElementById('InboundKeyGnuPg1_DummyS2k').value;
+    asyncTest.waitForAsync('Waiting for import.');
+    context.importKey(function(uid, cb) {
+      cb('a')
+    }, key).addCallback(function(_) {
+        fail('should not import the key');
+    }).addErrback(function (e) {
+        assertTrue(e instanceof e2e.openpgp.error.UnsupportedError);
+        asyncTest.continueTesting();
     });
   }
 

@@ -98,7 +98,7 @@ e2e.openpgp.S2k.prototype.getKey = goog.abstractMethod;
 e2e.openpgp.S2k.prototype.serialize = function() {
   return goog.array.concat(
       this.type,
-      e2e.openpgp.constants.getId(this.hash.algorithm));
+      this.hash ? e2e.openpgp.constants.getId(this.hash.algorithm) : 0);
 };
 
 
@@ -115,8 +115,14 @@ e2e.openpgp.S2k.parse = function(bytes) {
   }
   type = /** @type {e2e.openpgp.S2k.Type} */ (type);
   var hid = bytes.shift();
-  var hash = e2e.openpgp.constants.getInstance(
-      e2e.openpgp.constants.Type.HASH, hid);
+  var hash;
+  if (type == e2e.openpgp.S2k.Type.DUMMY && !hid) {
+    // Allow empty hash algo for dummy s2k.
+    hash = null;
+  } else {
+    hash = e2e.openpgp.constants.getInstance(
+        e2e.openpgp.constants.Type.HASH, hid);
+  }
   hash = /** @type {e2e.hash.Hash} */ (hash);
   var salt, encodedCount;
   if (type === e2e.openpgp.S2k.Type.SALTED ||
