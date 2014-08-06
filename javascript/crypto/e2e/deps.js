@@ -142,14 +142,14 @@ goog.addDependency('../crypto/e2e/otr/data.js', ['e2e.otr.Data'], ['e2e', 'e2e.o
 goog.addDependency('../crypto/e2e/otr/error.js', ['e2e.otr.error.Error', 'e2e.otr.error.InvalidArgumentsError', 'e2e.otr.error.NotImplementedError', 'e2e.otr.error.ParseError'], ['goog.debug.Error'], false);
 goog.addDependency('../crypto/e2e/otr/message/handler.js', ['e2e.otr.message.handler'], ['e2e.error.UnsupportedError'], false);
 goog.addDependency('../crypto/e2e/otr/message/message.js', ['e2e.otr.message.Message'], ['e2e', 'e2e.otr', 'e2e.otr.constants', 'e2e.otr.message.handler', 'goog.asserts'], false);
-goog.addDependency('../crypto/e2e/otr/message/query.js', ['e2e.otr.message.Query'], ['e2e.otr.constants', 'e2e.otr.error.ParseError', 'e2e.otr.util.StringIterator'], false);
+goog.addDependency('../crypto/e2e/otr/message/query.js', ['e2e.otr.message.Query'], ['e2e.otr.constants', 'e2e.otr.error.ParseError', 'e2e.otr.util.Iterator'], false);
 goog.addDependency('../crypto/e2e/otr/mpi.js', ['e2e.otr.Mpi'], ['e2e', 'e2e.otr', 'e2e.otr.error.ParseError'], false);
 goog.addDependency('../crypto/e2e/otr/otr.js', ['e2e.otr'], ['e2e', 'e2e.otr.Serializable', 'e2e.otr.error.InvalidArgumentsError'], false);
 goog.addDependency('../crypto/e2e/otr/serializable.js', ['e2e.otr.Serializable'], [], false);
 goog.addDependency('../crypto/e2e/otr/session.js', ['e2e.otr.Session'], ['e2e.otr.constants'], false);
 goog.addDependency('../crypto/e2e/otr/testing.js', ['e2e.otr.testing'], ['goog.array', 'goog.testing.asserts'], false);
 goog.addDependency('../crypto/e2e/otr/types.js', ['e2e.otr.Byte', 'e2e.otr.Ctr', 'e2e.otr.Int', 'e2e.otr.Mac', 'e2e.otr.Short'], [], false);
-goog.addDependency('../crypto/e2e/otr/util/stringiterator.js', ['e2e.otr.util.StringIterator'], [], false);
+goog.addDependency('../crypto/e2e/otr/util/iterator.js', ['e2e.otr.util.Iterator'], ['e2e.otr.error.InvalidArgumentsError'], false);
 goog.addDependency('../crypto/e2e/pkcs/eme.js', ['e2e.pkcs.eme.Oaep', 'e2e.pkcs.eme.Pkcs1'], ['e2e', 'e2e.hash.Sha1', 'e2e.pkcs.Error', 'e2e.random', 'goog.array', 'goog.asserts', 'goog.crypt', 'goog.object'], false);
 goog.addDependency('../crypto/e2e/pkcs/emsa.js', ['e2e.pkcs.ASN_PREFIXES', 'e2e.pkcs.EMSA_PKCS1_v1_5'], ['e2e.ByteArray', 'e2e.hash.Algorithm', 'e2e.pkcs.Error', 'goog.array'], false);
 goog.addDependency('../crypto/e2e/pkcs/pkcs.js', ['e2e.pkcs.Error'], ['goog.debug.Error'], false);

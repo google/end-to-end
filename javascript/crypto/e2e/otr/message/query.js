@@ -22,7 +22,7 @@ goog.provide('e2e.otr.message.Query');
 
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.ParseError');
-goog.require('e2e.otr.util.StringIterator');
+goog.require('e2e.otr.util.Iterator');
 
 
 goog.scope(function() {
@@ -57,7 +57,7 @@ e2e.otr.message.Query.fromVersion = function(version) {
  */
 e2e.otr.message.Query.parse = function(str) {
   var ret = 0;
-  var s = new e2e.otr.util.StringIterator(str);
+  var s = new e2e.otr.util.Iterator(str);
 
   if (s.next(4) != OTR_PREFIX) {
     throw new e2e.otr.error.ParseError('Invalid Query Message: ?OTR not found');
