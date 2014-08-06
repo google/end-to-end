@@ -108,8 +108,7 @@ function testSerialize() {
 
 function testProcess() {
   var process = e2e.otr.message.Message.process;
-  assertTrue(assertThrows(goog.partial(process, null, [1])) instanceof
-      error.ParseError);
+  assertThrows(goog.partial(process, null, [1]));
   assertTrue(assertThrows(goog.partial(process, null, new Uint8Array(
       [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]))) instanceof error.ParseError);
 

@@ -23,6 +23,7 @@ goog.require('e2e');
 goog.require('e2e.otr');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.message.handler');
+goog.require('e2e.otr.util.Iterator');
 goog.require('goog.asserts');
 
 
@@ -98,26 +99,24 @@ e2e.otr.message.Message.prototype.serialize = function() {
  * @param {!Uint8Array} serialized The serialized data.
  */
 e2e.otr.message.Message.process = function(session, serialized) {
-  // Message header length: ver (2) + type (1) + sender (4) + receiver (4)
-  if (serialized.length < 11) {
-    throw new e2e.otr.error.ParseError('Invalid message header.');
-  }
+  var iter = new e2e.otr.util.Iterator(serialized);
 
   // TODO(user): allow other versions.
-  if (!goog.array.equals(serialized.subarray(0, 2), [0x00, 0x03])) {
+  if (e2e.otr.shortToNum(iter.next(2)) != 3) {
     throw new e2e.otr.error.ParseError('Invalid message version.');
   }
 
-  if (e2e.otr.intToNum(serialized.subarray(3, 7)) < 0x100) {
-    return null;
+  var type = iter.next();
+
+  if (e2e.otr.intToNum(iter.next(4)) < 0x100) {
+    return; // ignore invalid sender tag.
   }
 
-  var recipient_tag = e2e.otr.intToNum(serialized.subarray(7, 11));
+  var recipient_tag = e2e.otr.intToNum(iter.next(4))[0];
   if (recipient_tag && recipient_tag < 0x100) {
-    return null;
+    return; // ignore invalid recipient tag.
   }
 
-  e2e.otr.message.handler.process(session, serialized.subarray(2, 3),
-      serialized.subarray(11));
+  e2e.otr.message.handler.process(session, type, iter.rest());
 };
 });
