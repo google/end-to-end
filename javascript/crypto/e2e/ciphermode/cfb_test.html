@@ -39,6 +39,22 @@
                       deciphered);
   }
 
+  function testSmallPlaintext() {
+    var aes = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128,
+                                         {key:goog.array.repeat(0x77, 16)});
+    var aescfb = new e2e.ciphermode.Cfb(aes);
+    var iv = goog.array.repeat(0x77, aes.blockSize);
+    var plaintext = goog.array.repeat(0x22, 1);
+    var ciphertext = e2e.async.Result.getValue(aescfb.encrypt(plaintext, iv));
+    assertEquals("Size of ciphertext is same as plaintext.",
+                 plaintext.length,
+                 ciphertext.length);
+    var deciphered = e2e.async.Result.getValue(aescfb.decrypt(ciphertext, iv));
+    assertArrayEquals("Consistency on encryption/decryption.",
+                      plaintext,
+                      deciphered);
+  }
+
   function testTestVectors() {
     // NIST SP 800-38A test vectors
     var aes = new e2e.cipher.Aes(

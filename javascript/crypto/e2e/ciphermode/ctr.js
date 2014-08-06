@@ -69,14 +69,16 @@ e2e.ciphermode.Ctr.prototype.encrypt = function(data, iv) {
   /** @type {!e2e.cipher.ciphertext.Symmetric} */
   var ciphertext = [];
   var encKey = [];
+  var block = [];
   var ctr = goog.array.clone(iv);
 
   for (var i = 0; i < data.length; i += this.cipher.blockSize) {
     encKey = e2e.async.Result.getValue(this.cipher.encrypt(ctr));
     e2e.ciphermode.Ctr.increment_(ctr);
+    block = data.slice(i, i + this.cipher.blockSize);
     Array.prototype.push.apply(ciphertext, goog.crypt.xorByteArray(
-        data.slice(i, i + this.cipher.blockSize),
-        encKey.slice(0, data.length - i)));
+        block,
+        encKey.slice(0, block.length)));
   }
   return e2e.async.Result.toResult(ciphertext);
 };

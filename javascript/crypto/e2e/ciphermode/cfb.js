@@ -47,7 +47,7 @@ e2e.ciphermode.Cfb.prototype.encrypt = function(data, iv) {
   for (var i = 0; i < data.length; i += this.cipher.blockSize) {
     var fr = goog.array.slice(data, i, i + this.cipher.blockSize);
     Array.prototype.push.apply(c,
-        goog.crypt.xorByteArray(fr, fre.slice(0, data.length - i)));
+        goog.crypt.xorByteArray(fr, fre.slice(0, fr.length)));
     fre = e2e.async.Result.getValue(
         this.cipher.encrypt(c.slice(-this.cipher.blockSize)));
   }
@@ -62,7 +62,7 @@ e2e.ciphermode.Cfb.prototype.decrypt = function(data, iv) {
   for (var i = 0; i < data.length; i += this.cipher.blockSize) {
     var fr = goog.array.slice(data, i, i + this.cipher.blockSize);
     Array.prototype.push.apply(p,
-        goog.crypt.xorByteArray(fr, fre.slice(0, data.length - i)));
+        goog.crypt.xorByteArray(fr, fre.slice(0, fr.length)));
     fre = e2e.async.Result.getValue(this.cipher.encrypt(fr));
   }
   return e2e.async.Result.toResult(p);
