@@ -16,6 +16,22 @@
 <title>Compatibility Tests</title>
 <script src="../../../closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
+<textarea id="InboundRsaEncryptOpenpgpjs0_7_2">
+-----BEGIN PGP MESSAGE-----
+Version: OpenPGP.js v0.7.2
+Comment: http://openpgpjs.org
+
+wcBMAyMlJx+Vv4ahAQf8CXpvMByJWLVwCvI3Ng4+OzDoQwByMebsrI6adKJp
+glmvgZovYVryvNwKYRTjXaPmhjfEV1HeicNDPKdEauX5p2TCjExioW4sCxtR
+YkAIqIxznesK+6fOvs3kFhlwkKRGkMPDBigIdX6n9yOg1fd9kZaj4ieS886c
+wDV7OTwTizftwjAToiuCGYLI/urTTYhR34ilhX34BZanx89O2WXgPnUcnr97
+X2pINGtOpCwrdq3xLsWW7UT5ezQhtSYVwDiN9IzPfZZtnczFLsQmYPPyK7ie
+4ETOzTD+6NfbjkkhnD6ALU9mkYXtz4Okdik4+eOHxHsgOsehrxrt1yWN3iq6
+B9JBAf0tB+echPkUTiQARrDQW8mo4rGDwMysNuzhL0ydCHekTd0xtxAHOaJP
+QtApAcRrYGCNb8hkdBi66h8fxsEAEjo=
+=ZEjt
+-----END PGP MESSAGE-----
+</textarea>
 <!--
   InboundRsaEncryptPgp10_0_0_674 Tests for:
     3des.sha384.zlib.asc
@@ -944,8 +960,8 @@ VbjYFJxk9Uhl17tfTMSJFTnwB4pouBtUa2+7hRyx9/Tdc04fJDJHzhwz1lZWLg/+
       cb('test');
     }, RSA_PRIVATE_KEY);
 
-    var assertDecrypts = function(encryptedMsgs, all) {
-      var plaintext = e2e.stringToByteArray('susheep\n');
+    var assertDecrypts = function(encryptedMsgs, all, opt_plaintext) {
+      var plaintext = e2e.stringToByteArray(opt_plaintext || 'susheep\n');
       goog.array.forEach(all, function(r) {
         assertArrayEquals(plaintext, r.decrypt.data);
       });
@@ -953,11 +969,15 @@ VbjYFJxk9Uhl17tfTMSJFTnwB4pouBtUa2+7hRyx9/Tdc04fJDJHzhwz1lZWLg/+
       assert(all.length > 0);
       asyncTest.continueTesting();
     };
+    var assertDecryptsCr = function(encryptedMsgs, all) {
+      assertDecrypts(encryptedMsgs, all, 'susheep\r\n');  // \r added by openpgpjs.
+    };
     var msgRegex = /-----BEGIN[\s\S]*?END PGP MESSAGE-----/g;
     runTestFor('InboundRsaEncryptGnupg1_4_11', assertDecrypts, msgRegex);
     runTestFor('InboundRsaEncryptGnupg2_0_17', assertDecrypts, msgRegex);
     runTestFor('InboundRsaEncryptGnupg2_1_0beta3', assertDecrypts, msgRegex);
     runTestFor('InboundRsaEncryptPgp10_0_0_674', assertDecrypts, msgRegex);
+    runTestFor('InboundRsaEncryptOpenpgpjs0_7_2', assertDecryptsCr, msgRegex);
   }
 
   function testInboundPlaintext() {
