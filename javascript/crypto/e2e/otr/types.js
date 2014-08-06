@@ -60,6 +60,18 @@ e2e.otr.Short;
 
 
 /**
+ * OTR policy configuration.
+ * TODO: Clean up the typedef when closure-compiler #126 is resolved.
+ * @typedef {{ALLOW_V1: (boolean|undefined), ALLOW_V2: (boolean|undefined),
+ *     ALLOW_V3: (boolean|undefined), REQUIRE_ENCRYPTION: (boolean|undefined),
+ *     SEND_WHITESPACE_TAG: (boolean|undefined),
+ *     WHITESPACE_START_AKE: (boolean|undefined),
+ *     ERROR_START_AKE: (boolean|undefined)}}
+ */
+e2e.otr.Policy;
+
+
+/**
  * OTR protocol type Pubkey.
  * @typedef {{type: !e2e.otr.Short, p: !e2e.otr.Mpi, q: !e2e.otr.Mpi,
  *     g: !e2e.otr.Mpi, y: !e2e.otr.Mpi}}

@@ -110,6 +110,7 @@ e2e.otr.constants.AUTHSTATE = {
 /**
  * Default session policy.
  * @const
+ * @type {e2e.otr.Policy}
  */
 e2e.otr.constants.DEFAULT_POLICY = {
   ALLOW_V1: false,
