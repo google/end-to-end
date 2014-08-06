@@ -22,11 +22,15 @@ goog.provide('e2e.openpgp.packet.Key');
 goog.provide('e2e.openpgp.packet.Key.Usage');
 
 goog.require('e2e');
+goog.require('e2e.openpgp.EncryptedCipher');
+goog.require('e2e.openpgp.error.ParseError');
+goog.require('e2e.openpgp.error.SerializationError');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.Signature');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.openpgp.types');
 goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.crypt');
 
 
@@ -86,7 +90,7 @@ e2e.openpgp.packet.Key = function(
    * @type {!Array.<!e2e.openpgp.packet.Signature>}
    * @private
    */
-  this.certifications_ = [];
+  this.bindingSignatures_ = [];
   /**
    * @type {!Array.<!e2e.openpgp.packet.Signature>}
    * @private
@@ -113,11 +117,25 @@ e2e.openpgp.packet.Key.prototype.getPublicKeyPacket = goog.abstractMethod;
 
 
 /**
+ * Verifies and adds the key binding signature.
  * @param {!e2e.openpgp.packet.Signature} signature
+ * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
+ *     verify the signature.
  */
-e2e.openpgp.packet.Key.prototype.addCertification = function(signature) {
-  // TODO(user): Verify the signature before adding it.
-  this.certifications_.push(signature);
+e2e.openpgp.packet.Key.prototype.addBindingSignature = function(signature,
+    verifyingKey) {
+  var signer = /** @type {!e2e.signer.Signer} */ (verifyingKey.cipher);
+  var signedData = this.getKeyBindingSignatureData_(verifyingKey);
+  if (signer instanceof e2e.openpgp.EncryptedCipher && signer.isLocked()) {
+    // TODO(user): Fix that. Key is locked, so the hashed data will be wrong.
+    this.bindingSignatures_.push(signature);
+    return;
+  }
+  if (!signature.verify(signedData, goog.asserts.assertObject(signer))) {
+    throw new e2e.openpgp.error.ParseError(
+        'Binding signature verification failed.');
+  }
+  this.bindingSignatures_.push(signature);
 };
 
 
@@ -131,42 +149,46 @@ e2e.openpgp.packet.Key.prototype.addRevocation = function(signature) {
 
 
 /**
- * @param {!e2e.openpgp.packet.SecretKey} key
+ * Creates and attaches a SubKey Binding Signature, issued by the specified key
+ *     packet.
+ * @param {!e2e.openpgp.packet.SecretKey} bindingKey
  * @param {!e2e.openpgp.packet.Signature.SignatureType} type
  */
-e2e.openpgp.packet.Key.prototype.certifyBy = function(key, type) {
-  var signingKeyData = key.getPublicKeyPacket().serializePacketBody();
-  var signedKeyData = this.getPublicKeyPacket().serializePacketBody();
-  if (signingKeyData.length > 0xFFFF || signedKeyData.length > 0xFFFF) {
-    throw new Error();
-  }
-  var data = [];
-  data = data.concat([0x99]);
-  data = data.concat(
-      e2e.dwordArrayToByteArray([signingKeyData.length]).slice(2));
-  data = data.concat(signingKeyData);
-  data = data.concat([0x99]);
-  data = data.concat(
-      e2e.dwordArrayToByteArray([signedKeyData.length]).slice(2));
-  data = data.concat(signedKeyData);
+e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type) {
+  var data = this.getKeyBindingSignatureData_(bindingKey.getPublicKeyPacket());
+
   var sig = e2e.openpgp.packet.Signature.construct(
-      key,
+      bindingKey,
       data,
       type,
       {
         'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
           [Math.floor(new Date().getTime() / 1e3)]),
-        'ISSUER': key.keyId
+        'ISSUER': bindingKey.keyId
       });
-  this.addCertification(sig);
+  this.bindingSignatures_.push(sig);
 };
 
+
+/**
+ * Returns data for creating a subkey binding signature between this (bound key)
+ *     and a given binding key.
+ * @param  {!e2e.openpgp.packet.Key} bindingKey Key to bind to
+ * @return {!e2e.ByteArray} Signature data.
+ * @private
+ */
+e2e.openpgp.packet.Key.prototype.getKeyBindingSignatureData_ = function(
+    bindingKey) {
+  return goog.array.flatten(
+      bindingKey.getBytesToSign(),
+      this.getBytesToSign());
+};
 
 /** @override */
 e2e.openpgp.packet.Key.prototype.serialize = function() {
   var serialized = goog.base(this, 'serialize');
   goog.array.forEach(
-    this.certifications_.concat(this.revocations_),
+    this.bindingSignatures_.concat(this.revocations_),
     function(sig) {
       goog.array.extend(serialized, sig.serialize());
     });
@@ -209,4 +231,25 @@ e2e.openpgp.packet.Key.prototype.getFingerprintHex_ = function() {
   hex = hex.replace(/([0-9A-F]{4})/g, '$1 '); // Group by 4 digits.
   hex = hex.replace(/(([0-9A-F]{4} ){5})/g, '$1 '); // Space after 5 groups.
   return hex.trim();
+};
+
+
+/**
+ * Gets a byte array representing the key data to create the signature over.
+ * See RFC 4880 5.2.4 for details.
+ * @return {!e2e.ByteArray} The serialization of the key packet.
+ */
+e2e.openpgp.packet.Key.prototype.getBytesToSign = function() {
+  var serialized = this.serializePacketBody(); // goog.base(this, 'serialize');
+  if (serialized.length > 0xFFFF) {
+    throw new e2e.openpgp.error.SerializationError(
+        'Key packet length is too big.');
+  }
+  var length = e2e.dwordArrayToByteArray(
+      [serialized.length]).slice(2);
+  return goog.array.flatten(
+      0x99,
+      length,
+      serialized
+  );
 };

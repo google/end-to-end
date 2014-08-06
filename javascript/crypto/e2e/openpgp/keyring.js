@@ -343,9 +343,9 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(email,
     var primaryKey = keyData['privKey'][0];
     var uid = new e2e.openpgp.packet.UserId(email);
     uid.certifyBy(primaryKey);
-    keyData['privKey'][1].certifyBy(
+    keyData['privKey'][1].bindTo(
         primaryKey, e2e.openpgp.packet.Signature.SignatureType.SUBKEY);
-    keyData['pubKey'][1].certifyBy(
+    keyData['pubKey'][1].bindTo(
         primaryKey, e2e.openpgp.packet.Signature.SignatureType.SUBKEY);
 
     var privKeyBlock = new e2e.openpgp.block.TransferableSecretKey();

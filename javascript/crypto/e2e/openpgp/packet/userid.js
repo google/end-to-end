@@ -114,24 +114,10 @@ e2e.openpgp.packet.UserId.prototype.getCertifications = function() {
  * @param {e2e.openpgp.packet.SecretKey} key
  */
 e2e.openpgp.packet.UserId.prototype.certifyBy = function(key) {
-  var keyData = key.getPublicKeyPacket().serializePacketBody();
-  if (keyData.length > 0xFFFF) {
-    throw new e2e.openpgp.error.SerializationError(
-        'Key data is too long to serialize.');
-  }
-  var data = [];
-  // Signature prefix.
-  goog.array.extend(data, [0x99]);
-  goog.array.extend(
-      data,
-      e2e.dwordArrayToByteArray([keyData.length]).slice(2));
-  // Public Key data (without packet tag header).
-  goog.array.extend(data, keyData);
-  goog.array.extend(data, [0xB4]);
-  goog.array.extend(data,
-      e2e.dwordArrayToByteArray([this.userId.length]));
-  goog.array.extend(data,
-      e2e.stringToByteArray(this.userId));
+  var data = goog.array.flatten(
+    key.getBytesToSign(),
+    this.getBytesToSign()
+  );
   var sig = e2e.openpgp.packet.Signature.construct(
       key,
       data,
@@ -177,5 +163,22 @@ e2e.openpgp.packet.UserId.prototype.getSignatureAttributes_ = function(key) {
         'FEATURES': [0x01] // Modification detection. See RFC 4880 5.2.3.24.
       };
 };
+
+
+/**
+ * Gets a byte array representing the User ID data to create the signature over.
+ * This is intended for signatures of type 0x10 through 0x13.
+ * See RFC 4880 5.2.4 for details.
+ * @return {!e2e.ByteArray} The serialization of the key packet.
+ * @protected
+ */
+e2e.openpgp.packet.UserId.prototype.getBytesToSign = function() {
+  return goog.array.flatten(
+      0xB4,
+      e2e.dwordArrayToByteArray([this.userId.length]),
+      e2e.stringToByteArray(this.userId)
+  );
+};
+
 
 e2e.openpgp.packet.factory.add(e2e.openpgp.packet.UserId);

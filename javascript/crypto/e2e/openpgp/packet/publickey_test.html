@@ -80,6 +80,45 @@ function testECC() {
     subKey.cipher.getKey()['pubKey']);
 }
 
+
+function testSignatureVerification() {
+  var validKeyAscii =
+    '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
+    'Version: GnuPG v2.1.0-ecc (GNU/Linux)\n' +
+    '\n' +
+    'mFIEUh5AoBMIKoZIzj0DAQcCAwT68182duSEJFXKa+qkBa0Vgeswnv8GP8tKYiU/\n' +
+    'MCZd6dGTvrtf2gSjyAsVkB0V0idW7i8yW1wfh3y2AbGWDr/dtB9lY2MgcmVhbCBu\n' +
+    'YW1lIDxlY2NAZXhhbXBsZS5jb20+iHoEExMIACIFAlIeQKACGwMGCwkIBwMCBhUI\n' +
+    'AgkKCwQWAgMBAh4BAheAAAoJEOrrinav6MhnxtcA/iAteDFo/P5SU5XV/8/4BN9x\n' +
+    'f28SuvwFipnjjyOmvB0eAP4kPM5LAp2EW+QIyG6+CJP1No9uWyZTdLPkTRgLtYhi\n' +
+    'GLhWBFIeQKASCCqGSM49AwEHAgMEgk1dVpgPCM38NBNoBcvehm7mt6aUmK8mDb/M\n' +
+    'SHo2/NlwfTh+BDCoVX5asSetzuW2RbnP6sCBwfsuLSrSWUVauwMBCAeIYQQYEwgA\n' +
+    'CQUCUh5AoAIbDAAKCRDq64p2r+jIZzqQAQCcv0VOQFiNOM6JNdLHTqlCYxeoz09d\n' +
+    'UP3LdgcnLED/YwD9FqcNrkok9BuXJ9+rXTSu+uqdWB7gpMO9mfk65d5IQ+s=\n' +
+    '=xRCj\n' +
+    '-----END PGP PUBLIC KEY BLOCK-----';
+    var keyBlock = e2e.openpgp.block.factory.parseAscii(validKeyAscii);
+    assertEquals(1, keyBlock.subKeys[0].bindingSignatures_.length);
+    assertEquals(
+        e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
+        keyBlock.subKeys[0].bindingSignatures_[0].signatureType);
+    assertArrayEquals(
+        keyBlock.subKeys[0].bindingSignatures_[0].untrustedAttributes.ISSUER,
+        keyBlock.keyPacket.keyId);
+    // Modify the signature.
+    keyBlock.subKeys[0].bindingSignatures_[0].signature.s = 0x01;
+
+    var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
+        keyBlock.serialize());
+
+    var error = assertThrows(function() {
+        e2e.openpgp.block.factory.parseAscii(tamperedAscii);
+    });
+    assertTrue(error instanceof e2e.openpgp.error.ParseError);
+    assertEquals('Binding signature verification failed.', error.message);
+}
+
+
 function testV3() {
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(nielsKey1);
   assertArrayEquals([54, 124, 22, 166, 10, 47, 135, 229], publicKeyBlock.keyPacket.keyId);
@@ -138,7 +177,7 @@ function testGnupgRevokedSubkey() {
   assertEquals(1, publicKeyBlock.subKeys.length);
   var revokedSubkey = publicKeyBlock.subKeys[0];
   assertEquals(1, revokedSubkey.revocations_.length);
-  assertEquals(1, revokedSubkey.certifications_.length);
+  assertEquals(1, revokedSubkey.bindingSignatures_.length);
 }
 
 

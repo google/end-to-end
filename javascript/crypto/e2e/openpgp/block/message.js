@@ -18,10 +18,7 @@
 goog.provide('e2e.openpgp.block.Message');
 
 goog.require('e2e');
-goog.require('e2e.hash.factory');
-goog.require('e2e.openpgp.SignatureDigestAlgorithm');
 goog.require('e2e.openpgp.block.Block');
-goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.openpgp.packet.OnePassSignature');
 goog.require('e2e.openpgp.packet.Signature');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
@@ -163,7 +160,7 @@ e2e.openpgp.block.Message.prototype.constructSignature = function(key,
     opt_signatureType) {
   return e2e.openpgp.packet.Signature.construct(
     key, this.getBytesToSign(),
-    opt_signatureType ||  e2e.openpgp.packet.Signature.SignatureType.BINARY,
+    opt_signatureType || e2e.openpgp.packet.Signature.SignatureType.BINARY,
     {
       'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
         [Math.floor(new Date().getTime() / 1e3)]),
@@ -219,17 +216,6 @@ e2e.openpgp.block.Message.prototype.verify = function(keys) {
     if (!verifyingKey) { // Key not found, ignore signature.
       return;
     }
-    // Hash algorithm declared in signature may differ from the one used
-    // when instantiating cipher. Use the one declared in signature
-    // (if it's allowed).
-    var allowedAlgo = e2e.openpgp.SignatureDigestAlgorithm[
-        signature.getHashAlgorithm()];
-    if (!allowedAlgo) {
-      throw new e2e.openpgp.error.UnsupportedError(
-          'Specified hash algorithm is not allowed for signatures.');
-    }
-    var digestAlgo = e2e.hash.factory.require(allowedAlgo);
-    signer.setHash(digestAlgo);
     if (signature.verify(signedData, goog.asserts.assertObject(signer))) {
       result.success.push(verifyingKey);
     } else {

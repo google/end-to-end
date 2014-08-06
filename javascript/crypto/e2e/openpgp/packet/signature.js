@@ -21,7 +21,11 @@ goog.provide('e2e.openpgp.packet.Signature.SignatureType');
 goog.require('e2e');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
+/** @suppress {extraRequire} force loading of all hash functions */
+goog.require('e2e.hash.all');
+goog.require('e2e.hash.factory');
 goog.require('e2e.openpgp.Mpi');
+goog.require('e2e.openpgp.SignatureDigestAlgorithm');
 goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
@@ -335,7 +339,8 @@ e2e.openpgp.packet.Signature.prototype.constructOnePassSignaturePacket =
  * @param {!e2e.ByteArray|!Uint8Array} data The signed data.
  * @param {!e2e.signer.Signer} signer Signer with the public key that
  *     signed the data.
- * @param {string=} opt_hashAlgo message digest algorithm declared in the message
+ * @param {string=} opt_hashAlgo message digest algorithm declared in the
+ *     message.
  * @return {boolean} True if the signature correctly verifies.
  */
 e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
@@ -343,8 +348,22 @@ e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
   if (this.pubKeyAlgorithm != signer.algorithm) {
     return false;
   }
+
+  // Hash algorithm declared in signature may differ from the one used
+  // when instantiating the signer. Use the one declared in signature
+  // (if it's allowed).
+  var allowedAlgo = e2e.openpgp.SignatureDigestAlgorithm[
+      this.getHashAlgorithm()];
+  if (!allowedAlgo) {
+    throw new e2e.openpgp.error.UnsupportedError(
+        'Specified hash algorithm is not allowed for signatures.');
+  }
+  if (allowedAlgo !== signer.getHash().algorithm) {
+    signer.setHash(e2e.hash.factory.require(allowedAlgo));
+  }
+
   if (goog.isDef(opt_hashAlgo) && opt_hashAlgo !== signer.getHash().algorithm) {
-    // different hash algorithm
+    // Hash algorithm mismatch.
     return false;
   }
   if (this.version != 0x04) {

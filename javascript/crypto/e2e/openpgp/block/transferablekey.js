@@ -27,6 +27,7 @@ goog.require('e2e.openpgp.packet.Trust');
 goog.require('e2e.openpgp.packet.UserAttribute');
 goog.require('e2e.openpgp.packet.UserId');
 goog.require('goog.array');
+goog.require('goog.asserts');
 
 
 /**
@@ -162,7 +163,8 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
       // Process subkey signatures.
       if (packet.signatureType ==
           e2e.openpgp.packet.Signature.SignatureType.SUBKEY) {
-        subKey.addCertification(packet);
+        // TODO(user): Add support for signing key not being the main key.
+        subKey.addBindingSignature(packet, this.keyPacket);
         this.packets.push(packets.shift());
         // Ignore trust packets.
         while (packets[0] instanceof e2e.openpgp.packet.Trust) {

@@ -462,6 +462,14 @@ e2e.openpgp.EncryptedCipher.prototype.setHash = function(hash) {
 
 
 /**
+ * @return {boolean} True iff the cipher is locked.
+ */
+e2e.openpgp.EncryptedCipher.prototype.isLocked = function() {
+  return Boolean(this.locked_);
+};
+
+
+/**
  * Defines the different types of key derivation to decrypt the key material.
  * It is defined in RFC 4880 Section 5.5.3. as string-to-key usage conventions.
  * @enum {number}
