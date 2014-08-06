@@ -20,6 +20,7 @@
   goog.require('goog.testing.AsyncTestCase');
   goog.require('goog.testing.jsunit');
   goog.require('e2e');
+  goog.require('e2e.error.InvalidArgumentsError');
   goog.require('goog.math.Long');
 </script>
 <script>
@@ -57,6 +58,25 @@
         assertArrayEquals([0x12, 0x34, 0x56, 0x78, 0x9a, 0x00, 0x00, 0x00],
             e2e.longToByteArray(
                 goog.math.Long.fromString("123456789a000000", 16)));
+      }
+
+      /**
+       * Tests that conversion from a big-endian byte array to the corresponding number is correct.
+       */
+      function testByteArrayToNumber() {
+        // Check that error is thrown for byte arrays exceeding 4 bytes.
+        try {
+          assertThrows(e2e.byteArrayToNumber([0x01, 0x01, 0x01, 0x01, 0x01]));
+        }
+        catch (e) {
+          if (!(e instanceof e2e.error.InvalidArgumentsError)) {
+            throw e;
+          }
+        }
+
+        // Test conversion on a few examples.
+        assertEquals(e2e.byteArrayToNumber([0x00, 0x00, 0x00, 0x00]), 0);
+        assertEquals(e2e.byteArrayToNumber([0x01, 0x02, 0x03, 0x04]), 16909060);
       }
 
       function testMojibakeNotTextDecoder() {

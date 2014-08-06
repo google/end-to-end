@@ -23,6 +23,7 @@ goog.provide('e2e.ByteArray');
 goog.provide('e2e.DwordArray');
 
 goog.require('e2e.async.Result');
+goog.require('e2e.error.InvalidArgumentsError');
 goog.require('goog.array');
 goog.require('goog.crypt');
 
@@ -95,6 +96,27 @@ e2e.byteArrayToDwordArray = function(bytes) {
  */
 e2e.byteArrayToWord = function(bytes) {
   return (bytes[0] << 8 | bytes[1]);
+};
+
+
+/**
+ * Converts a big-endian byte array into a number. Due to memory limits of the
+ * bitwise operators and number type, the byte array should be at most 4 bytes.
+ * @param {!e2e.ByteArray} bytes A big-endian byte array.
+ * @return {number} The resulting number.
+ */
+e2e.byteArrayToNumber = function(bytes) {
+  if (bytes.length > 4) {
+    throw new e2e.error.InvalidArgumentsError(
+        'Cannot convert byte array exceeding 4 bytes to a number.');
+  }
+
+  var result = 0;
+  for (var i = 0; i < bytes.length; i++) {
+    result <<= 8;
+    result |= bytes[i];
+  }
+  return result;
 };
 
 

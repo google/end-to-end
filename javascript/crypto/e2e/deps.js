@@ -43,7 +43,7 @@ goog.addDependency('../crypto/e2e/compression/compression.js', ['e2e.compression
 goog.addDependency('../crypto/e2e/compression/factory.js', ['e2e.compression.factory'], ['e2e.compression.Error'], false);
 goog.addDependency('../crypto/e2e/compression/zip.js', ['e2e.compression.Zip'], ['Zlib.RawDeflate', 'Zlib.RawInflate', 'e2e.async.Result', 'e2e.compression.Algorithm', 'e2e.compression.Compression', 'e2e.compression.factory', 'goog.array'], false);
 goog.addDependency('../crypto/e2e/compression/zlib.js', ['e2e.compression.Zlib'], ['Zlib', 'Zlib.Deflate', 'Zlib.Inflate', 'e2e.async.Result', 'e2e.compression.Algorithm', 'e2e.compression.Compression', 'e2e.compression.factory', 'goog.array'], false);
-goog.addDependency('../crypto/e2e/e2e.js', ['e2e', 'e2e.ByteArray', 'e2e.DwordArray'], ['e2e.async.Result', 'goog.array', 'goog.crypt'], false);
+goog.addDependency('../crypto/e2e/e2e.js', ['e2e', 'e2e.ByteArray', 'e2e.DwordArray'], ['e2e.async.Result', 'e2e.error.InvalidArgumentsError', 'goog.array', 'goog.crypt'], false);
 goog.addDependency('../crypto/e2e/ecc/constant/constant.js', ['e2e.ecc.constant'], [], false);
 goog.addDependency('../crypto/e2e/ecc/constant/fast_multiply_table_ed25519.js', ['e2e.ecc.constant.ed_25519.G_FAST_MULTIPLY_TABLE'], [], false);
 goog.addDependency('../crypto/e2e/ecc/constant/fast_multiply_table_p256.js', ['e2e.ecc.constant.p_256.G_FAST_MULTIPLY_TABLE'], [], false);
