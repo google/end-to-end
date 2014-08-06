@@ -25,6 +25,8 @@ goog.require('goog.array');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 
+goog.setTestOnly();
+
 
 var SerializableArrayImpl = null;
 var testInterfaceParent = null;

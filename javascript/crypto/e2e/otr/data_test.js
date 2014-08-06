@@ -23,6 +23,8 @@ goog.require('e2e.otr.testing');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 
+goog.setTestOnly();
+
 
 var Data = e2e.otr.Data;
 
