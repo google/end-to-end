@@ -137,6 +137,14 @@ goog.addDependency('../crypto/e2e/openpgp/packet/userid.js', ['e2e.openpgp.packe
 goog.addDependency('../crypto/e2e/openpgp/parse.js', ['e2e.openpgp.parse'], ['e2e.openpgp.error.ParseError', 'e2e.openpgp.packet.factory', 'goog.array']);
 goog.addDependency('../crypto/e2e/openpgp/s2k.js', ['e2e.openpgp.DummyS2k', 'e2e.openpgp.IteratedS2K', 'e2e.openpgp.S2k', 'e2e.openpgp.SaltedS2K', 'e2e.openpgp.SimpleS2K'], ['e2e', 'e2e.openpgp.constants', 'e2e.openpgp.constants.Type', 'e2e.openpgp.error.InvalidArgumentsError', 'e2e.openpgp.error.ParseError', 'e2e.openpgp.error.UnsupportedError', 'goog.array', 'goog.asserts', 'goog.object']);
 goog.addDependency('../crypto/e2e/openpgp/types.js', ['e2e.openpgp.ArmoredMessage', 'e2e.openpgp.DecryptResult', 'e2e.openpgp.EncryptOptions', 'e2e.openpgp.EncryptSignResult', 'e2e.openpgp.FileOptions', 'e2e.openpgp.GenerateKeyResult', 'e2e.openpgp.ImportKeyResult', 'e2e.openpgp.Key', 'e2e.openpgp.KeyPacketInfo', 'e2e.openpgp.KeyResult', 'e2e.openpgp.KeyRingMap', 'e2e.openpgp.KeyRingType', 'e2e.openpgp.KeyringBackupInfo', 'e2e.openpgp.Keys', 'e2e.openpgp.SerializedKeyRing', 'e2e.openpgp.VerifiedDecrypt', 'e2e.openpgp.VerifyDecryptResult', 'e2e.openpgp.VerifyResult', 'e2e.openpgp.types'], ['e2e.ByteArray']);
+goog.addDependency('../crypto/e2e/otr/constants.js', ['e2e.otr.constants'], []);
+goog.addDependency('../crypto/e2e/otr/data.js', ['e2e.otr.Data'], ['e2e', 'e2e.otr', 'e2e.otr.error.ParseError']);
+goog.addDependency('../crypto/e2e/otr/error.js', ['e2e.otr.error.Error', 'e2e.otr.error.InvalidArgumentsError', 'e2e.otr.error.NotImplementedError', 'e2e.otr.error.ParseError'], ['goog.debug.Error']);
+goog.addDependency('../crypto/e2e/otr/mpi.js', ['e2e.otr.Mpi'], ['e2e', 'e2e.otr', 'e2e.otr.error.ParseError']);
+goog.addDependency('../crypto/e2e/otr/otr.js', ['e2e.otr'], ['e2e', 'e2e.otr.Serializable', 'e2e.otr.error.InvalidArgumentsError']);
+goog.addDependency('../crypto/e2e/otr/serializable.js', ['e2e.otr.Serializable'], []);
+goog.addDependency('../crypto/e2e/otr/testing.js', ['e2e.otr.testing'], ['goog.array', 'goog.testing.asserts']);
+goog.addDependency('../crypto/e2e/otr/types.js', ['e2e.otr.Byte', 'e2e.otr.Ctr', 'e2e.otr.Int', 'e2e.otr.Mac', 'e2e.otr.Short'], []);
 goog.addDependency('../crypto/e2e/pkcs/eme.js', ['e2e.pkcs.eme.Oaep', 'e2e.pkcs.eme.Pkcs1'], ['e2e', 'e2e.hash.Sha1', 'e2e.pkcs.Error', 'e2e.random', 'goog.array', 'goog.asserts', 'goog.crypt', 'goog.object']);
 goog.addDependency('../crypto/e2e/pkcs/emsa.js', ['e2e.pkcs.ASN_PREFIXES', 'e2e.pkcs.EMSA_PKCS1_v1_5'], ['e2e.ByteArray', 'e2e.hash.Algorithm', 'e2e.pkcs.Error', 'goog.array']);
 goog.addDependency('../crypto/e2e/pkcs/pkcs.js', ['e2e.pkcs.Error'], ['goog.debug.Error']);
