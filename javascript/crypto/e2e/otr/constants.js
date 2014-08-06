@@ -81,3 +81,42 @@ e2e.otr.constants.DH_MODULUS = new Uint8Array([
  * @type {number}
  */
 e2e.otr.constants.DH_GENERATOR = 2;
+
+
+/**
+ * Message states. See spec: "The protocol state machine."
+ * @enum {number}
+ */
+e2e.otr.constants.MSGSTATE = {
+  PLAINTEXT: 0,
+  ENCRYPTED: 1,
+  FINISHED: 2
+};
+
+
+/**
+ * Authentication states. See spec: "The protocol state machine."
+ * @enum {number}
+ */
+e2e.otr.constants.AUTHSTATE = {
+  NONE: 0,
+  AWAITING_DHKEY: 1,
+  AWAITING_REVEALSIG: 2,
+  AWAITING_SIG: 3,
+  V1_SETUP: 4
+};
+
+
+/**
+ * Default session policy.
+ * @const
+ */
+e2e.otr.constants.DEFAULT_POLICY = {
+  ALLOW_V1: false,
+  ALLOW_V2: false,
+  ALLOW_V3: true,
+  REQUIRE_ENCRYPTION: false,
+  SEND_WHITESPACE_TAG: false,
+  WHITESPACE_START_AKE: false,
+  ERROR_START_AKE: false
+};
