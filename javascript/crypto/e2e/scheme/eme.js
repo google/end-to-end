@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 /**
  * @fileoverview Simple wrapper for a cipher and EME PKCS1 v1.5.
  */
@@ -21,17 +22,18 @@ goog.require('e2e.scheme.Scheme');
 goog.provide('e2e.scheme.Eme');
 
 
+
 /**
  * JavaScript implementation of EME PKCS1 v1.5.
  * @param {e2e.cipher.Cipher} cipher
  * @constructor
- * @extends {e2e.scheme.Scheme}
+ * @extends {e2e.scheme.EncryptionScheme}
  */
 e2e.scheme.Eme = function(cipher) {
-  goog.base(this);
+  goog.base(this, cipher);
   this.cipher = cipher;
 };
-goog.inherits(e2e.scheme.Eme, e2e.scheme.Scheme);
+goog.inherits(e2e.scheme.Eme, e2e.scheme.EncryptionScheme);
 
 
 /** @override */

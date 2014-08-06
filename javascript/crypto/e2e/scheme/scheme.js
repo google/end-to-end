@@ -11,12 +11,14 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 /**
  * @fileoverview Defines an encryption or signing scheme.
  */
 
+goog.provide('e2e.scheme.EncryptionScheme');
 goog.provide('e2e.scheme.Scheme');
-
+goog.provide('e2e.scheme.SignatureScheme');
 
 
 /**
@@ -27,14 +29,16 @@ goog.provide('e2e.scheme.Scheme');
 e2e.scheme.CryptoPromise_;
 
 
+
 /**
  * Crypto scheme for encryption or signing.
+ * @param {e2e.cipher.Cipher|e2e.signer.Signer} cipher
  * @constructor
  */
-e2e.scheme.Scheme = function() {
+e2e.scheme.Scheme = function(cipher) {
   this.useWebCrypto = this.useWebCrypto && e2e.scheme.Scheme.USE_WEB_CRYPTO;
   this.useHardwareCrypto = this.useHardwareCrypto &&
-    e2e.scheme.Scheme.USE_HARDWARE_CRYPTO;
+      e2e.scheme.Scheme.USE_HARDWARE_CRYPTO;
   if (this.useWebCrypto && 'crypto' in goog.global) {
     this.crypto = goog.global.crypto;
     if ('subtle' in this.crypto) {
@@ -44,15 +48,18 @@ e2e.scheme.Scheme = function() {
   }
 };
 
+
 /**
  * @define {boolean} Whether to use webcrypto when available.
  */
 e2e.scheme.Scheme.USE_WEB_CRYPTO = true;
 
+
 /**
  * @define {boolean} Whether to use a hardware device for crypto when available.
  */
 e2e.scheme.Scheme.USE_HARDWARE_CRYPTO = false;
+
 
 /**
  * Crypto object as used by the Scheme.
@@ -62,11 +69,23 @@ e2e.scheme.Scheme.USE_HARDWARE_CRYPTO = false;
 e2e.scheme.Scheme.prototype.crypto;
 
 
+
+/** Crypto scheme for encryption.
+ * @param {e2e.cipher.Cipher} cipher
+ * @constructor
+ * @extends {e2e.scheme.Scheme}
+ */
+e2e.scheme.EncryptionScheme = function(cipher) {
+  goog.base(this, cipher);
+};
+goog.inherits(e2e.scheme.EncryptionScheme, e2e.scheme.Scheme);
+
+
 /**
  * @param {!e2e.ByteArray} plaintext
  * @return {!e2e.async.Result.<e2e.cipher.ciphertext.CipherText>}
  */
-e2e.scheme.Scheme.prototype.encrypt = function(plaintext) {
+e2e.scheme.EncryptionScheme.prototype.encrypt = function(plaintext) {
   if (this.useWebCrypto) {
     return this.encryptWebCrypto(plaintext);
   } else {
@@ -79,7 +98,7 @@ e2e.scheme.Scheme.prototype.encrypt = function(plaintext) {
  * @param {e2e.cipher.ciphertext.CipherText} ciphertext
  * @return {!e2e.async.Result.<!e2e.ByteArray>}
  */
-e2e.scheme.Scheme.prototype.decrypt = function(ciphertext) {
+e2e.scheme.EncryptionScheme.prototype.decrypt = function(ciphertext) {
   if (this.useWebCrypto) {
     return this.decryptWebCrypto(ciphertext);
   } else {
@@ -93,7 +112,7 @@ e2e.scheme.Scheme.prototype.decrypt = function(ciphertext) {
  * @param {!e2e.ByteArray} plaintext
  * @return {!e2e.async.Result.<e2e.cipher.ciphertext.CipherText>}
  */
-e2e.scheme.Scheme.prototype.encryptJavaScript;
+e2e.scheme.EncryptionScheme.prototype.encryptJavaScript;
 
 
 /**
@@ -101,7 +120,7 @@ e2e.scheme.Scheme.prototype.encryptJavaScript;
  * @param {!e2e.ByteArray} plaintext
  * @return {!e2e.async.Result.<e2e.cipher.ciphertext.CipherText>}
  */
-e2e.scheme.Scheme.prototype.encryptWebCrypto;
+e2e.scheme.EncryptionScheme.prototype.encryptWebCrypto;
 
 
 /**
@@ -109,7 +128,7 @@ e2e.scheme.Scheme.prototype.encryptWebCrypto;
  * @param {e2e.cipher.ciphertext.CipherText} ciphertext
  * @return {!e2e.async.Result.<!e2e.ByteArray>}
  */
-e2e.scheme.Scheme.prototype.decryptJavaScript;
+e2e.scheme.EncryptionScheme.prototype.decryptJavaScript;
 
 
 /**
@@ -117,4 +136,83 @@ e2e.scheme.Scheme.prototype.decryptJavaScript;
  * @param {e2e.cipher.ciphertext.CipherText} ciphertext
  * @return {!e2e.async.Result.<!e2e.ByteArray>}
  */
-e2e.scheme.Scheme.prototype.decryptWebCrypto;
+e2e.scheme.EncryptionScheme.prototype.decryptWebCrypto;
+
+
+
+/** Crypto scheme for signing.
+ * @param {e2e.signer.Signer} signer
+ * @constructor
+ * @extends {e2e.scheme.Scheme}
+ */
+e2e.scheme.SignatureScheme = function(signer) {
+  goog.base(this, signer);
+};
+goog.inherits(e2e.scheme.SignatureScheme, e2e.scheme.Scheme);
+
+
+/**
+ * Applies the signing algorithm to the data.
+ * @param {e2e.ByteArray} data The data to sign.
+ * @return {!e2e.async.Result.<!e2e.signer.signature.Signature>} The
+ *     result of signing.
+ */
+e2e.scheme.SignatureScheme.prototype.sign = function(data) {
+  if (this.useWebCrypto) {
+    return this.signWebCrypto(data);
+  } else {
+    return this.signJavaScript(data);
+  }
+};
+
+
+/**
+ * Applies the verification algorithm to the data.
+ * @param {e2e.ByteArray} m The data to verify.
+ * @param {e2e.signer.signature.Signature} sig The signature to check.
+ * @return {!e2e.async.Result.<boolean>} The result of verification.
+ */
+e2e.scheme.SignatureScheme.prototype.verify = function(m, sig) {
+  if (!(goog.isDefAndNotNull(m) && goog.isDefAndNotNull(sig))) {
+    return e2e.async.Result.toResult(false);
+  }
+  if (this.useWebCrypto) {
+    return this.verifyWebCrypto(m, sig);
+  } else {
+    return this.verifyJavaScript(m, sig);
+  }
+};
+
+
+/**
+ * JavaScript implementation of the scheme.
+ * @param {e2e.ByteArray} data
+ * @return {!e2e.async.Result.<!e2e.signer.signature.Signature>}
+ */
+e2e.scheme.SignatureScheme.prototype.signJavaScript;
+
+
+/**
+ * WebCrypto implementation of the scheme.
+ * @param {e2e.ByteArray} data
+ * @return {!e2e.async.Result.<!e2e.signer.signature.Signature>}
+ */
+e2e.scheme.SignatureScheme.prototype.signWebCrypto;
+
+
+/**
+ * JavaScript implementation of the scheme.
+ * @param {!e2e.ByteArray} data The data to verify.
+ * @param {!e2e.signer.signature.Signature} sig The signature to check.
+ * @return {!e2e.async.Result.<boolean>}
+ */
+e2e.scheme.SignatureScheme.prototype.verifyJavaScript;
+
+
+/**
+ * WebCrypto implementation of the scheme.
+ * @param {!e2e.ByteArray} data The data to verify.
+ * @param {!e2e.signer.signature.Signature} sig The signature to check.
+ * @return {!e2e.async.Result.<boolean>}
+ */
+e2e.scheme.SignatureScheme.prototype.verifyWebCrypto;
