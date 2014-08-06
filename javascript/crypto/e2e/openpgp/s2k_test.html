@@ -20,6 +20,7 @@
 <script>
   goog.require('e2e.openpgp.S2k');
   goog.require('e2e.hash.Sha1');
+  goog.require('e2e.hash.Sha256');
   goog.require('goog.array');
   goog.require('goog.testing.jsunit');
 </script>
@@ -96,38 +97,36 @@
 
   // Test values from https://code.google.com/p/go/source/browse/openpgp/s2k/s2k_test.go?repo=crypto
   function testSalted() {
-    var expected = [
-      ["hello", "10295ac1"],
-      ["world", "ac587a5e"],
-      ["foo", "4dda8077"],
-      ["bar", "bd8aac6b9ea9cae04eae6a91c6133b58b5d9a61c14f355516ed9370456"],
-      ["x", "f1d3f289"],
-      ["xxxxxxxxxxxxxxxxxxxxxxx", "e00d7b45"],
+    var expected = [  // passphrase, hashFunction, salt, expectedKey
+      ["hello", new e2e.hash.Sha1, [1, 2, 3, 4, 5, 6, 7, 8], "f4f7d67e"],
+      ["world", new e2e.hash.Sha256, [1, 2, 3, 4, 5, 6, 7, 8], "d139e512"],
+      ["foo", new e2e.hash.Sha1, [0x00, 0xff, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0x00], "21d985b9"],
+      ["bar", new e2e.hash.Sha1, [1, 2, 3, 4, 5, 6, 7, 8],
+       "06a55f98905d7f533c3b38de977740029111d52f624b696f854333cf46"],
+      ["x", new e2e.hash.Sha1, [1, 2, 3, 4, 5, 6, 7, 8], "96307961"],
+      ["xxxxxxxxxxxxxxxxxxxxxxx", new e2e.hash.Sha1, [1, 2, 3, 4, 5, 6, 7, 8], "dc357273"],
     ];
     goog.array.forEach(expected, function(row) {
-      var s = new e2e.openpgp.SaltedS2K(
-          new e2e.hash.Sha1, [1, 2, 3, 4]);
-      var expectedKey = goog.crypt.hexToByteArray(row[1])
+      var s = new e2e.openpgp.SaltedS2K(row[1], row[2]);
+      var expectedKey = goog.crypt.hexToByteArray(row[3]);
       var key = s.getKey(goog.crypt.stringToByteArray(row[0]),
                          expectedKey.length);
       assertArrayEquals(expectedKey, key);
     });
   }
   function testIterated() {
-    var expected = [
-      ["hello", "83126105"],
-      ["world", "6fa317f9"],
-      ["foo", "8fbc35b9"],
-      ["bar", "2af5a99b54f093789fd657f19bd245af7604d0f6ae06f66602a46a08ae"],
-      ["x", "5a684dfe"],
-      ["xxxxxxxxxxxxxxxxxxxxxxx", "18955174"],
+    var expected = [  // passphrase, hashFunction, salt, expectedKey
+      ["hello", new e2e.hash.Sha1, [1, 2, 3, 4, 5, 6, 7, 8], "e10a93e4"],
+      ["world", new e2e.hash.Sha256, [1, 2, 3, 4, 5, 6, 7, 8], "53989b95"],
+      ["foo", new e2e.hash.Sha1, [0x00, 0xff, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0x00], "c3dc5ada"],
+      ["bar", new e2e.hash.Sha1, [1, 2, 3, 4, 5, 6, 7, 8],
+       "225fcfeb478ee1d3beeb50e7215ae5d4941033358f7ad7aa1db81d74c1"],
+      ["x", new e2e.hash.Sha1, [1, 2, 3, 4, 5, 6, 7, 8], "0597ff19"],
+      ["xxxxxxxxxxxxxxxxxxxxxxx", new e2e.hash.Sha1, [1, 2, 3, 4, 5, 6, 7, 8], "8cabcc9b"],
     ];
     goog.array.forEach(expected, function(row) {
-      var s = new e2e.openpgp.IteratedS2K(
-          new e2e.hash.Sha1, [4, 3, 2, 1], 31);  // 31 is overwritten.
-      s.count_ = 31;  // Set unencoded count. The 31 previously passed in is
-                      // treated as an encoded count, so overwrite it.
-      var expectedKey = goog.crypt.hexToByteArray(row[1])
+      var s = new e2e.openpgp.IteratedS2K(row[1], row[2], 1);  // Count of 1 decoded is 1088.
+      var expectedKey = goog.crypt.hexToByteArray(row[3])
       var key = s.getKey(goog.crypt.stringToByteArray(row[0]),
                          expectedKey.length);
       assertArrayEquals(expectedKey, key);

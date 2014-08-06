@@ -289,7 +289,7 @@ e2e.openpgp.SimpleS2K.prototype.getKey = function(passphrase, length) {
  */
 e2e.openpgp.SaltedS2K = function(hash, salt) {
   goog.base(this, hash);
-  if (!e2e.isByteArray(salt)) {
+  if (salt.length != 8 || !e2e.isByteArray(salt)) {
     throw new e2e.openpgp.error.InvalidArgumentsError('Invalid salt.');
   }
   /**
@@ -333,9 +333,7 @@ e2e.openpgp.SaltedS2K.prototype.serialize = function() {
  */
 e2e.openpgp.IteratedS2K = function(hash, salt, encodedCount) {
   goog.base(this, hash);
-  // TODO(user) See if salt length should be required to be 8. The RFC
-  // specifies 8 bytes, but golang's tests use 4 byte salts.
-  if (!e2e.isByteArray(salt)) {
+  if (salt.length != 8 || !e2e.isByteArray(salt)) {
     throw new e2e.openpgp.error.InvalidArgumentsError('Invalid salt.');
   }
   if (!e2e.isByte(encodedCount)) {
