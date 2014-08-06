@@ -31,9 +31,12 @@ goog.require('e2e.otr.error.InvalidArgumentsError');
  * @param {T} iterable The iterable to iterate
  */
 e2e.otr.util.Iterator = function(iterable) {
+  this.sliceFn_ = iterable &&
+      (goog.isFunction(iterable.slice) ? iterable.slice : iterable.subarray);
+
   // Duck-typed sanity checking.
   if (!iterable || typeof iterable.length != 'number' ||
-      !goog.isFunction(iterable.slice)) {
+      !goog.isFunction(this.sliceFn_)) {
     throw new e2e.otr.error.InvalidArgumentsError('Iterable not supported.');
   }
 
@@ -57,7 +60,8 @@ e2e.otr.util.Iterator.prototype.hasNext = function() {
  * @return {T} Up to the next opt_howMany elements from the iterator.
  */
 e2e.otr.util.Iterator.prototype.next = function(opt_howMany) {
-  return this.iterable_.slice(this.index_, this.index_ += (opt_howMany || 1));
+  return this.sliceFn_.call(this.iterable_, this.index_,
+      this.index_ += (opt_howMany || 1));
 };
 
 
@@ -67,5 +71,15 @@ e2e.otr.util.Iterator.prototype.next = function(opt_howMany) {
  * @return {T} Up to the next opt_howMany elements from the iterator.
  */
 e2e.otr.util.Iterator.prototype.peek = function(opt_howMany) {
-  return this.iterable_.slice(this.index_, this.index_ + (opt_howMany || 1));
+  return this.sliceFn_.call(this.iterable_, this.index_,
+      this.index_ + (opt_howMany || 1));
+};
+
+
+/**
+ * Gets the rest of the iterator.
+ * @return {T} The remainder of the elements.
+ */
+e2e.otr.util.Iterator.prototype.rest = function() {
+  return this.next(this.iterable_.length);
 };
