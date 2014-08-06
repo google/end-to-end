@@ -102,6 +102,12 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
   }
   packet = packets[0];
   while (packet instanceof e2e.openpgp.packet.Signature) {
+    if (packet.signatureType !==
+        e2e.openpgp.packet.Signature.SignatureType.KEY_REVOCATION) {
+      throw new e2e.openpgp.error.ParseError(
+          'Invalid block. Only key revocation signatures are allowed after ' +
+          'key packets.');
+    }
     this.keyPacket.addRevocation(packet);
     this.packets.push(packets.shift());
     packet = packets[0];
@@ -150,22 +156,26 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
     // RFC4880 requires a signature for subkeys, however some clients, such as
     // PGP 8.0.3, do not include signatures on secretsubkeys.
     // Some keys apparently have more than one signature per subkey.
-    while (packet instanceof e2e.openpgp.packet.Signature &&
-          packet.signatureType ==
-           e2e.openpgp.packet.Signature.SignatureType.SUBKEY) {
-      subKey.addCertification(packet);
-      this.packets.push(packets.shift());
-      while (packets[0] instanceof e2e.openpgp.packet.Trust) {
-        packets.shift();
-      }
-      packet = packets[0];
-      while (
-          packet instanceof e2e.openpgp.packet.Signature &&
-          packet.signatureType ==
-           e2e.openpgp.packet.Signature.SignatureType.SUBKEY_REVOCATION) {
+    // GnuPG puts subkey revocation signatures before subkey signatures, and it
+    // does not contradict RFC 4880.
+    while (packet instanceof e2e.openpgp.packet.Signature) {
+      // Process subkey signatures.
+      if (packet.signatureType ==
+          e2e.openpgp.packet.Signature.SignatureType.SUBKEY) {
+        subKey.addCertification(packet);
+        this.packets.push(packets.shift());
+        // Ignore trust packets.
+        while (packets[0] instanceof e2e.openpgp.packet.Trust) {
+          packets.shift();
+        }
+        packet = packets[0];
+      } else if (packet.signatureType ==
+                 e2e.openpgp.packet.Signature.SignatureType.SUBKEY_REVOCATION) {
         subKey.addRevocation(packet);
         this.packets.push(packets.shift());
         packet = packets[0];
+      } else {
+        break;
       }
     }
   }

@@ -92,6 +92,56 @@ function testV3() {
                     publicKeyParsed.keyId);
 }
 
+function testGnupgRevokedSubkey() {
+  // Test for https://code.google.com/p/end-to-end/issues/detail?id=60
+  // GnuPG places subkey revocation signature packet right after subkey
+  // packet.
+  var revokedSubKeyAscii =
+        '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
+        'Version: GnuPG v1\n' +
+        '\n' +
+        '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\n'+
+        '=80Vy\n' +
+        '-----END PGP PUBLIC KEY BLOCK-----\n';
+
+  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(revokedSubKeyAscii);
+  assertEquals(1, publicKeyBlock.subKeys.length);
+  var revokedSubkey = publicKeyBlock.subKeys[0];
+  assertEquals(1, revokedSubkey.revocations_.length);
+  assertEquals(1, revokedSubkey.certifications_.length);
+}
+
+
 var nielsKey1 =  // version 3 key, key ID 0A2F87E5
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
     'Version: 2.6.3ia\n' +
