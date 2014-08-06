@@ -28,7 +28,7 @@ goog.require('goog.asserts');
 /**
  * BigNumModuluses are odd BigNums that could be used as the modulus in modular
  * arithmetic operations in crypto schemes such as RSA.
- * @param {!e2e.ByteArray} modulus The value of the BigNum in big
+ * @param {(!e2e.ByteArray|!Uint8Array)} modulus The value of the BigNum in big
  *     endian.
  * @param {!e2e.ByteArray=} opt_RR The precomputed Montgomery constant.
  *     RR is usually (1 << 2|N|) mod N, where N is the modulus and |N| is its

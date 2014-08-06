@@ -28,7 +28,8 @@ goog.require('goog.asserts');
 
 /**
  * Non-negative arbitrary-precision integers.
- * @param {!e2e.ByteArray=} opt_value The value of the BigNum in big endian.
+ * @param {(!e2e.ByteArray|!Uint8Array)=} opt_value The value of the BigNum in
+ *     big endian.
  * @constructor
  */
 e2e.BigNum = function(opt_value) {
@@ -39,7 +40,10 @@ e2e.BigNum = function(opt_value) {
    */
   this.n = [];
   if (goog.isDef(opt_value)) {
-    if (!e2e.isByteArray(opt_value)) {
+    if (!(
+          goog.isFunction(goog.global.Uint8Array) &&
+          opt_value instanceof Uint8Array
+        ) && !e2e.isByteArray(/** @type {!e2e.ByteArray} */ (opt_value))) {
       throw new e2e.error.InvalidArgumentsError(
           'Input should be a byte array.');
     }
@@ -119,7 +123,7 @@ e2e.BigNum.fromInteger = function(value) {
 
 /**
  * Converts big endian byte array to internal format.
- * @param {!e2e.ByteArray} input The big endian number.
+ * @param {(!e2e.ByteArray|!Uint8Array)} input The big endian number.
  * @return {!Array.<number>}
  * @private
  */
