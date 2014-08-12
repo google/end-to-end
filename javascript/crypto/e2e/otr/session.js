@@ -185,4 +185,13 @@ e2e.otr.Session.prototype.getValidMsgStateTransitions_ = function() {
       throw new e2e.otr.error.IllegalStateError('Unknown message state.');
   }
 };
+
+
+/**
+ * Sends a message to the remote party.
+ * @param {string|!e2e.otr.message.Message} data The message to send.
+ */
+e2e.otr.Session.prototype.send = function(data) {
+  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+};
 });
