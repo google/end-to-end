@@ -20,7 +20,9 @@
 
 goog.provide('e2e.otr.Session');
 
+goog.require('e2e.hash.Sha256');
 goog.require('e2e.otr');
+goog.require('e2e.otr.Mpi');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.IllegalStateError');
 goog.require('e2e.otr.error.NotImplementedError');
@@ -49,7 +51,7 @@ e2e.otr.Session = function(instanceTag, opt_policy) {
   assert(e2e.otr.intToNum(this.instanceTag) >= 0x100);
 
   this.authState_ = constants.AUTHSTATE.NONE;
-  this.authData = {r: null, dh: null, gx: null};
+  this.authData = {r: null, dh: null, gx: null, s: null};
 };
 
 
@@ -67,7 +69,8 @@ e2e.otr.Session.prototype.processMessage = function(serialized) {
  * @type {{
  *   r: e2e.ByteArray,
  *   dh: e2e.cipher.DiffieHellman,
- *   gx: e2e.ByteArray
+ *   gx: e2e.ByteArray,
+ *   s: e2e.ByteArray
  * }}
  */
 e2e.otr.Session.prototype.authData;
@@ -198,4 +201,39 @@ e2e.otr.Session.prototype.send = function(data) {
   }
   throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
 };
+
+
+/**
+ * Computes c, c', m1, m2, m1', m2' and session id from shared secret s.
+ * @return {!{c: !e2e.ByteArray, cprime: !e2e.ByteArray, m1: !e2e.ByteArray,
+ *     m2: !e2e.ByteArray, m1prime: !e2e.ByteArray, m2prime: !e2e.ByteArray,
+ *     ssid: !e2e.ByteArray}}
+ */
+e2e.otr.Session.prototype.deriveKeyValues = function() {
+  assert(this.authData.s);
+  var secbytes = new e2e.otr.Mpi(new Uint8Array(this.authData.s));
+
+  /**
+   * h2 function as defined in OTR spec.
+   * @param {number} b The input byte.
+   * @return {!e2e.ByteArray} The 256-bit output of the SHA256 hash of the
+   *     (5+len) bytes consisting of the byte b followed by secbytes.
+   */
+  var h2 = function(b) {
+    return new e2e.hash.Sha256().hash([b].concat(secbytes.serialize()));
+  };
+
+  var h20x01 = h2(0x01);
+
+  return {
+    ssid: h2(0x00).slice(0, 64 / 8),
+    c: h20x01.slice(0, 128 / 8),
+    cprime: h20x01.slice(128 / 8),
+    m1: h2(0x02),
+    m2: h2(0x03),
+    m1prime: h2(0x04),
+    m2prime: h2(0x05)
+  };
+};
+
 });
