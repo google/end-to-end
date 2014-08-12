@@ -20,7 +20,6 @@
 goog.provide('e2e.otr.message.DhCommit');
 
 goog.require('e2e');
-goog.require('e2e.BigNumModulus');
 goog.require('e2e.cipher.Aes');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.DiffieHellman');
