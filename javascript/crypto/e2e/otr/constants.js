@@ -121,3 +121,25 @@ e2e.otr.constants.DEFAULT_POLICY = {
   WHITESPACE_START_AKE: false,
   ERROR_START_AKE: false
 };
+
+
+/**
+ * Message prefixes.
+ * @enum {string}
+ */
+e2e.otr.constants.MESSAGE_PREFIX = {
+  ENCODED: '?OTR:',
+  ERROR: '?OTR Error:',
+  QUERY: '?OTR',
+  WHITESPACE: ' \t  \t\t\t\t \t \t \t  ',
+  WHITESPACE_V1: ' \t \t  \t ',
+  WHITESPACE_V2: '  \t\t  \t ',
+  WHITESPACE_V3: '  \t\t  \t\t'
+};
+
+
+/**
+ * Encoded message suffix.
+ * @const
+ */
+e2e.otr.constants.MESSAGE_SUFFIX_ENCODED = '.';

@@ -21,6 +21,7 @@
 goog.provide('e2e.otr.message.Query');
 
 goog.require('e2e.otr.constants');
+goog.require('e2e.otr.error.NotImplementedError');
 goog.require('e2e.otr.error.ParseError');
 goog.require('e2e.otr.util.Iterator');
 
@@ -29,11 +30,6 @@ goog.scope(function() {
 var constants = e2e.otr.constants;
 var versions = constants.Version;
 
-/**
- * The prefix for OTR query messages.
- * @const
- */
-var OTR_PREFIX = '?OTR';
 
 /**
  * Generates a Query Message from version flags.
@@ -41,7 +37,7 @@ var OTR_PREFIX = '?OTR';
  * @return {string} An OTR Query Message string specifying supported versions.
  */
 e2e.otr.message.Query.fromVersion = function(version) {
-  return OTR_PREFIX +
+  return constants.MESSAGE_PREFIX.QUERY +
       (version & versions.V1 ? '?' : '') +
       (version & ~versions.V1 ? 'v' : '') +
       (version & versions.V2 ? '2' : '') +
@@ -59,7 +55,7 @@ e2e.otr.message.Query.parse = function(str) {
   var ret = 0;
   var s = new e2e.otr.util.Iterator(str);
 
-  if (s.next(4) != OTR_PREFIX) {
+  if (s.next(4) != constants.MESSAGE_PREFIX.QUERY) {
     throw new e2e.otr.error.ParseError('Invalid Query Message: ?OTR not found');
   }
 
@@ -115,5 +111,15 @@ e2e.otr.message.Query.parseEmbedded = function(str) {
 
   // no valid OTR query messages found.
   return 0;
+};
+
+
+/**
+ * Processes an incoming Query Message.
+ * @param {!e2e.otr.Session} session The enclosing session.
+ * @param {string} data The data to be processed.
+ */
+e2e.otr.message.Query.process = function(session, data) {
+  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
 };
 });

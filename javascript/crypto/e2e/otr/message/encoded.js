@@ -22,9 +22,11 @@ goog.provide('e2e.otr.message.Encoded');
 goog.require('e2e');
 goog.require('e2e.otr');
 goog.require('e2e.otr.constants');
+goog.require('e2e.otr.message.Message');
 goog.require('e2e.otr.message.handler');
 goog.require('e2e.otr.util.Iterator');
 goog.require('goog.asserts');
+goog.require('goog.crypt.base64');
 
 
 goog.scope(function() {
@@ -41,14 +43,16 @@ var MESSAGE_TYPE_VALUES = Object.keys(e2e.otr.constants.MessageType).map(
  * An OTRv3 encoded message.
  * @constructor
  * @implements {e2e.otr.Serializable}
+ * @extends {e2e.otr.message.Message}
  * @param {!e2e.otr.Session} session The enclosing session.
  */
 e2e.otr.message.Encoded = function(session) {
+  goog.base(this, session);
+
   //TODO(user): Remove when closure compiler issue #104 (@abstract) is resolved.
   assert(this.constructor != e2e.otr.message.Encoded);
 
   assert(goog.isDefAndNotNull(this.constructor.MESSAGE_TYPE));
-  assert(goog.isFunction(this.constructor.process));
   assert(MESSAGE_TYPE_VALUES.indexOf(
       e2e.otr.byteToNum(this.constructor.MESSAGE_TYPE)) != -1);
 
@@ -59,9 +63,8 @@ e2e.otr.message.Encoded = function(session) {
 
   var receiverAsNum = e2e.otr.intToNum(this.receiver_);
   assert(!receiverAsNum || receiverAsNum >= 0x100);
-
-  e2e.otr.implements(e2e.otr.message.Encoded, e2e.otr.Serializable);
 };
+goog.inherits(e2e.otr.message.Encoded, e2e.otr.message.Message);
 
 
 /**
@@ -79,10 +82,7 @@ e2e.otr.message.Encoded.prototype.serializeMessageContent =
     goog.abstractMethod;
 
 
-/**
- * Wrapper for message serialization with version and message type.
- * @return {!Uint8Array} The serialized message.
- */
+/** @inheritDoc */
 e2e.otr.message.Encoded.prototype.serialize = function() {
   return e2e.otr.serializeBytes([
     [0x00, 0x03], // protocol version TODO(user): allow other versions.
@@ -94,13 +94,26 @@ e2e.otr.message.Encoded.prototype.serialize = function() {
 };
 
 
+/** @inheritDoc */
+e2e.otr.message.Encoded.prototype.toString = function() {
+  return constants.MESSAGE_PREFIX.ENCODED +
+      goog.crypt.base64.encodeByteArray(this.serialize()) +
+      constants.MESSAGE_SUFFIX_ENCODED;
+};
+
+
 /**
  * Processes a serialized message.
  * @param {!e2e.otr.Session} session The enclosing session.
- * @param {!Uint8Array} data The data to be processed.
+ * @param {string} data The data to be processed.
  */
 e2e.otr.message.Encoded.process = function(session, data) {
-  var iter = new e2e.otr.util.Iterator(data);
+  // Remove prefix and trailing period.
+  data = data.slice(constants.MESSAGE_PREFIX.ENCODED.length,
+      -constants.MESSAGE_SUFFIX_ENCODED.length);
+
+  var iter = new e2e.otr.util.Iterator(
+      new Uint8Array(goog.crypt.base64.decodeStringToByteArray(data)));
 
   // TODO(user): allow other versions.
   if (e2e.otr.shortToNum(iter.next(2)) != 3) {
