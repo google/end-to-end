@@ -70,14 +70,6 @@ e2e.otr.Policy;
 
 
 /**
- * OTR protocol type Pubkey.
- * @typedef {{type: !e2e.otr.Short, p: !e2e.otr.Mpi, q: !e2e.otr.Mpi,
- *     g: !e2e.otr.Mpi, y: !e2e.otr.Mpi}}
- */
-e2e.otr.Pubkey;
-
-
-/**
  * OTR protocol type Sig.
  * @typedef {{r: !Uint8Array, s: !Uint8Array}}
  */
