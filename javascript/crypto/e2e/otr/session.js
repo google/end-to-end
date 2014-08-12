@@ -42,8 +42,7 @@ e2e.otr.Session = function(instanceTag, opt_policy) {
   this.policy_ = goog.object.clone(constants.DEFAULT_POLICY);
   this.updatePolicy(opt_policy || {});
 
-  this.messageState_ = constants.MSGSTATE.PLAINTEXT;
-
+  this.msgState_ = constants.MSGSTATE.PLAINTEXT;
   this.remoteInstanceTag = new Uint8Array([0, 0, 0, 0]);
 
   this.instanceTag = instanceTag;
@@ -124,7 +123,7 @@ e2e.otr.Session.prototype.isValidAuthStateTransition_ = function(nextState) {
 
 
 /**
- * Gets a list of valid state transitions.
+ * Gets a list of valid auth state transitions.
  * @private
  * @return {Array.<e2e.otr.constants.AUTHSTATE>}
  */
@@ -155,6 +154,54 @@ e2e.otr.Session.prototype.getValidAuthStateTransitions_ = function() {
       return [constants.AUTHSTATE.AWAITING_REVEALSIG];
     default:
       throw new e2e.otr.error.IllegalStateError('Unknown auth state.');
+  }
+};
+
+
+/**
+ * Gets the session's message state.
+ * @return {!e2e.otr.constants.MSGSTATE} The message state.
+ */
+e2e.otr.Session.prototype.getMsgState = function() { return this.msgState_; };
+
+
+/**
+ * Sets the session's message state.
+ * @param {!e2e.otr.constants.MSGSTATE} nextState The new message state.
+ */
+e2e.otr.Session.prototype.setMsgState = function(nextState) {
+  assert(this.isValidMsgStateTransition_(nextState));
+  this.msgState_ = nextState;
+};
+
+
+/**
+ * Determines whether or not a messageState transition is valid.
+ * @private
+ * @param {!e2e.otr.constants.MSGSTATE} nextState The next messageState.
+ * @return {boolean}
+ */
+e2e.otr.Session.prototype.isValidMsgStateTransition_ = function(nextState) {
+  return this.msgState_ == nextState ||
+      goog.array.contains(this.getValidMsgStateTransitions_(), nextState);
+};
+
+
+/**
+ * Gets a list of valid message state transitions.
+ * @private
+ * @return {Array.<!e2e.otr.constants.MSGSTATE>}
+ */
+e2e.otr.Session.prototype.getValidMsgStateTransitions_ = function() {
+  switch (this.msgState_) {
+    case constants.MSGSTATE.PLAINTEXT:
+      return [constants.MSGSTATE.ENCRYPTED];
+    case constants.MSGSTATE.ENCRYPTED:
+      return [constants.MSGSTATE.PLAINTEXT, constants.MSGSTATE.FINISHED];
+    case constants.MSGSTATE.FINISHED:
+      return [constants.MSGSTATE.ENCRYPTED];
+    default:
+      throw new e2e.otr.error.IllegalStateError('Unknown message state.');
   }
 };
 });

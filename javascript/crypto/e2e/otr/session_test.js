@@ -31,7 +31,7 @@ var tag = new Uint8Array([1, 2, 3, 4]);
 function testConstructor() {
   var s = new e2e.otr.Session(tag);
   assertObjectEquals(constants.DEFAULT_POLICY, s.policy_);
-  assertEquals(constants.MSGSTATE.PLAINTEXT, s.messageState_);
+  assertEquals(constants.MSGSTATE.PLAINTEXT, s.msgState_);
   assertEquals(constants.AUTHSTATE.NONE, s.authState_);
   assertUint8ArrayEquals(tag, s.instanceTag);
   assertUint8ArrayEquals([0, 0, 0, 0], s.remoteInstanceTag);
