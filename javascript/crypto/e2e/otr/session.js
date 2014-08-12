@@ -51,7 +51,7 @@ e2e.otr.Session = function(instanceTag, opt_policy) {
   assert(e2e.otr.intToNum(this.instanceTag) >= 0x100);
 
   this.authState_ = constants.AUTHSTATE.NONE;
-  this.authData = {r: null, dh: null, gx: null, s: null};
+  this.authData = {r: null, dh: null, gx: null, gy: null, s: null};
 };
 
 
@@ -70,6 +70,7 @@ e2e.otr.Session.prototype.processMessage = function(serialized) {
  *   r: e2e.ByteArray,
  *   dh: e2e.cipher.DiffieHellman,
  *   gx: e2e.ByteArray,
+ *   gy: e2e.ByteArray,
  *   s: e2e.ByteArray
  * }}
  */
