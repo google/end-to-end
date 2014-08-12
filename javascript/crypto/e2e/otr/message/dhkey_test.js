@@ -27,27 +27,31 @@ goog.require('goog.testing.jsunit');
 goog.setTestOnly();
 
 
-var stubs = new goog.testing.PropertyReplacer();
-var commit = null;
 var sender = new Uint8Array([0x00, 0x00, 0x01, 0x00]);
 var receiver = new Uint8Array([0x00, 0x00, 0x02, 0x00]);
 
-function setUp() {
-  commit = new e2e.otr.message.DhKey({
+function testDhKey() {
+  var stubs = new goog.testing.PropertyReplacer();
+
+  // /lib/ake.js in handleAKE, case '\x02', type = '\x0a'
+  // this.our_dh.publicKey
+  // BigInt.bigInt2str(this.our_dh.privateKey, 16)
+  var y = goog.crypt.hexToByteArray(
+      'B1F9A3F247536F980550E544A41D6679A178EA16048AEFDC7734BD0B9B26EAA27A2FE5E8F97B236B');
+  stubs.setPath('e2e.cipher.DiffieHellman.prototype.generateExponent_',
+      function() {return y;});
+  var dhkey = new e2e.otr.message.DhKey({
     instanceTag: sender,
     remoteInstanceTag: receiver
   });
-  stubs.setPath('e2e.random.getRandomBytes', goog.array.range);
-}
 
-function tearDown() {
-  stubs.reset();
-  commit = null;
-}
-
-function testSerializeMessageContent() {
-  var out = commit.serializeMessageContent();
+  var out = dhkey.serializeMessageContent();
   assertEquals(196, out.length);
 
-  // TODO(user): More tests, check against reference implementation.
+  // BigInt.bigInt2str(this.our_dh.publicKey, 16)
+  assertArrayEquals(goog.crypt.hexToByteArray(
+      'CF62D4A59A9FA6FF9B5202878FB99849A042C0A0405A878ADCA3080E0529F8B4E1918F5387E5B8926BFECD19507B15F9D9CFDEDD0EEE90BEA05B547FA13C66B6C0C763B745622CCF02BCFDF9020ABABDAD4A0B5DDC2883326CF32FAEEC7FCEB1EBF892CF5FCAFF3BA0583729BAD5E78DB309AEBABEB132A5AF0A00AF416D9E3731B241DE498E6387838854D44099648153D47E11C827C9532AF03AA3620610F619135517298D4ED6DBC22375A03B08274E04E6DC3B41AC07C34078929B872891'),
+      dhkey.gy_);
+
+  stubs.reset();
 }

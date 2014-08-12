@@ -43,6 +43,7 @@ e2e.otr.message.DhKey = function(session) {
   goog.base(this, session);
   this.dh = new e2e.cipher.DiffieHellman(constants.DH_MODULUS,
       [constants.DH_GENERATOR]);
+  this.gy_ = this.dh.generate();
 };
 goog.inherits(e2e.otr.message.DhKey, e2e.otr.message.Encoded);
 
@@ -59,7 +60,7 @@ e2e.otr.message.DhKey.MESSAGE_TYPE = constants.MessageType.DH_KEY;
  * @return {!Uint8Array} The serialized DH KEY.
  */
 e2e.otr.message.DhKey.prototype.serializeMessageContent = function() {
-  return new e2e.otr.Mpi(new Uint8Array(this.dh.generate())).serialize();
+  return new e2e.otr.Mpi(new Uint8Array(this.gy_)).serialize();
 };
 
 
