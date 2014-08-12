@@ -38,11 +38,10 @@ var constants = e2e.otr.constants;
  * An OTRv3 DH KEY.
  * @constructor
  * @extends {e2e.otr.message.Message}
- * @param {e2e.otr.Int} sender The sender's instance tag.
- * @param {e2e.otr.Int} receiver The receiver's instance tag.
+ * @param {!e2e.otr.Session} session The enclosing session.
  */
-e2e.otr.message.DhKey = function(sender, receiver) {
-  goog.base(this, sender, receiver);
+e2e.otr.message.DhKey = function(session) {
+  goog.base(this, session);
   this.dh = new e2e.cipher.DiffieHellman(constants.DH_MODULUS,
       [constants.DH_GENERATOR]);
 };

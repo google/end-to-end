@@ -36,8 +36,8 @@ var stubs = null;
 var error = e2e.otr.error;
 
 
-var msgImpl = function(sender, receiver, content) {
-  goog.base(this, sender, receiver);
+var msgImpl = function(session, content) {
+  goog.base(this, session);
   this.content_ = content;
 };
 goog.inherits(msgImpl, e2e.otr.message.Message);
@@ -65,9 +65,10 @@ function tearDown() {
 function testConstructor() {
   var construct = function(opt_sender, opt_receiver, opt_data) {
     return function() {
-      new msgImpl(opt_sender || new Uint8Array([1, 2, 3, 4]),
-          opt_receiver || new Uint8Array([5, 6, 7, 8]),
-          opt_data || new Uint8Array([9, 10]));
+      new msgImpl({
+        instanceTag: opt_sender || new Uint8Array([1, 2, 3, 4]),
+        remoteInstanceTag: opt_receiver || new Uint8Array([5, 6, 7, 8])
+      }, opt_data || new Uint8Array([9, 10]));
     };
   };
 
@@ -100,8 +101,10 @@ function testConstructor() {
 
 function testSerialize() {
   // TODO(user): allow other versions.
-  var msg = new msgImpl(new Uint8Array([1, 2, 3, 4]),
-      new Uint8Array([5, 6, 7, 8]), new Uint8Array([9, 10]));
+  var msg = new msgImpl({
+    instanceTag: new Uint8Array([1, 2, 3, 4]),
+    remoteInstanceTag: new Uint8Array([5, 6, 7, 8])
+  }, new Uint8Array([9, 10]));
   assertUint8ArrayEquals([0x00, 0x03, msgImpl.MESSAGE_TYPE[0],
       1, 2, 3, 4, 5, 6, 7, 8, 2, 9, 10], msg.serialize());
 }

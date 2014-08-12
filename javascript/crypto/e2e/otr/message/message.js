@@ -41,10 +41,9 @@ var MESSAGE_TYPE_VALUES = Object.keys(e2e.otr.constants.MessageType).map(
  * An OTRv3 message.
  * @constructor
  * @implements {e2e.otr.Serializable}
- * @param {e2e.otr.Int} sender The sender instance tag.
- * @param {e2e.otr.Int} receiver The receiver instance tag.
+ * @param {!e2e.otr.Session} session The enclosing session.
  */
-e2e.otr.message.Message = function(sender, receiver) {
+e2e.otr.message.Message = function(session) {
   //TODO(user): Remove when closure compiler issue #104 (@abstract) is resolved.
   assert(this.constructor != e2e.otr.message.Message);
 
@@ -52,13 +51,14 @@ e2e.otr.message.Message = function(sender, receiver) {
   assert(goog.isFunction(this.constructor.process));
   assert(MESSAGE_TYPE_VALUES.indexOf(
       e2e.otr.byteToNum(this.constructor.MESSAGE_TYPE)) != -1);
-  assert(e2e.otr.intToNum(sender) >= 0x100);
 
-  var receiverAsNum = e2e.otr.intToNum(receiver);
+  this.sender_ = session.instanceTag;
+  this.receiver_ = session.remoteInstanceTag;
+
+  assert(e2e.otr.intToNum(this.sender_) >= 0x100);
+
+  var receiverAsNum = e2e.otr.intToNum(this.receiver_);
   assert(!receiverAsNum || receiverAsNum >= 0x100);
-
-  this.sender_ = sender;
-  this.receiver_ = receiver;
 
   e2e.otr.implements(e2e.otr.message.Message, e2e.otr.Serializable);
 };

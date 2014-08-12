@@ -33,7 +33,10 @@ var sender = new Uint8Array([0x00, 0x00, 0x01, 0x00]);
 var receiver = new Uint8Array([0x00, 0x00, 0x02, 0x00]);
 
 function setUp() {
-  commit = new e2e.otr.message.DhCommit(sender, receiver);
+  commit = new e2e.otr.message.DhCommit({
+    instanceTag: sender,
+    remoteInstanceTag: receiver
+  });
   stubs.setPath('e2e.random.getRandomBytes', goog.array.range);
 }
 
