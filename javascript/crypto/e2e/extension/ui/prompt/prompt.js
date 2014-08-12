@@ -667,30 +667,6 @@ ui.Prompt.prototype.getTitle_ = function(action) {
 
 
 /**
- * Parses string and looks up keys for encrypting objects in keyring.
- * @param {!Array.<string>} userIds A list of user IDs to get keys for.
- * @return {!Array.<e2e.openpgp.Key>} Array of key objects.
- * @private
- */
-ui.Prompt.prototype.getEncryptKeys_ = function(userIds) {
-  var keys = [];
-  for (var i = 0; i < userIds.length; i++) {
-    var userId = goog.string.trim(userIds[i]);
-    if (userId) {
-      // TODO(user): This will break as soon as searchKey becomes really async.
-      this.pgpLauncher_.getContext().searchPublicKey(userId).addCallback(
-          goog.bind(function(found) {
-            if (found) {
-              goog.array.extend(keys, found);
-            }
-          }, this));
-    }
-  }
-  return keys;
-};
-
-
-/**
  * Enables the user to select the PGP action they'd like to execute.
  * @param {?messages.BridgeMessageRequest} contentBlob The content that the user
  *     has selected.
@@ -787,21 +763,6 @@ ui.Prompt.prototype.executeAction_ = function(action, elem, origin) {
         this.surfaceDismissButton_();
       }, this));
       break;
-  }
-};
-
-
-/**
- * Executes the provided processor function into a try/catch block and displays
- * error messages to the user if needed.
- * @param {!function()} processorFunc The processor function to execute.
- * @private
- */
-ui.Prompt.prototype.runWrappedProcessor_ = function(processorFunc) {
-  try {
-    processorFunc.call(this);
-  } catch (error) {
-    this.displayFailure_(error);
   }
 };
 

@@ -170,16 +170,6 @@ function testGetTitle() {
 }
 
 
-function testGetEncryptKeys() {
-  stubs.replace(window, 'close', function(arg) {});
-  prompt.pgpLauncher_.getContext().importKey(function() {}, PUBLIC_KEY_ASCII);
-  var keys = prompt.getEncryptKeys_([USER_ID]);
-  assertEquals(1, keys.length);
-  keys = prompt.getEncryptKeys_([USER_ID, USER_ID, 'Does not exist']);
-  assertEquals(2, keys.length);
-}
-
-
 var PRIVATE_KEY_ASCII =
     '-----BEGIN PGP PRIVATE KEY BLOCK-----\n' +
     'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
@@ -425,12 +415,12 @@ function testContentInsertedOnEncrypt() {
 
     asyncTestCase.waitForAsync('Waiting for message to be encrypted.');
     window.setTimeout(function() {
-      asyncTestCase.continueTesting();
       var insertBtn = document.querySelector('button.insert');
       insertBtn.click();
 
       assertContains('-----BEGIN PGP MESSAGE-----', encryptedMsg.arg);
       mockControl.$verifyAll();
+      asyncTestCase.continueTesting();
     }, 500);
   }, 500);
 }
