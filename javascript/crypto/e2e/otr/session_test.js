@@ -31,8 +31,8 @@ var tag = new Uint8Array([1, 2, 3, 4]);
 function testConstructor() {
   var s = new e2e.otr.Session(tag);
   assertObjectEquals(constants.DEFAULT_POLICY, s.policy_);
-  assertEquals(constants.MSGSTATE.PLAINTEXT, s.messageState);
-  assertEquals(constants.AUTHSTATE.NONE, s.authState);
+  assertEquals(constants.MSGSTATE.PLAINTEXT, s.messageState_);
+  assertEquals(constants.AUTHSTATE.NONE, s.authState_);
   assertUint8ArrayEquals(tag, s.instanceTag);
   assertUint8ArrayEquals([0, 0, 0, 0], s.remoteInstanceTag);
 
@@ -61,4 +61,14 @@ function testGetPolicy() {
   var s = new e2e.otr.Session(tag);
   assertObjectEquals(constants.DEFAULT_POLICY, s.getPolicy());
   assertObjectEquals(constants.DEFAULT_POLICY, s.getPolicy(''));
+}
+
+function testUpdateAuthState() {
+  var s = new e2e.otr.Session(tag);
+  assertEquals(constants.AUTHSTATE.NONE, s.authState_);
+  assertThrows(function() {
+    s.setAuthState(constants.AUTHSTATE.AWAITING_SIG);
+  });
+  s.setAuthState(constants.AUTHSTATE.AWAITING_DHKEY);
+  assertEquals(constants.AUTHSTATE.AWAITING_DHKEY, s.authState_);
 }

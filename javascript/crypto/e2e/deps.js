@@ -140,7 +140,7 @@ goog.addDependency('../crypto/e2e/openpgp/s2k.js', ['e2e.openpgp.DummyS2k', 'e2e
 goog.addDependency('../crypto/e2e/openpgp/types.js', ['e2e.openpgp.ArmoredMessage', 'e2e.openpgp.DecryptResult', 'e2e.openpgp.EncryptOptions', 'e2e.openpgp.EncryptSignResult', 'e2e.openpgp.FileOptions', 'e2e.openpgp.GenerateKeyResult', 'e2e.openpgp.ImportKeyResult', 'e2e.openpgp.Key', 'e2e.openpgp.KeyPacketInfo', 'e2e.openpgp.KeyResult', 'e2e.openpgp.KeyRingMap', 'e2e.openpgp.KeyRingType', 'e2e.openpgp.KeyringBackupInfo', 'e2e.openpgp.Keys', 'e2e.openpgp.SerializedKeyRing', 'e2e.openpgp.VerifiedDecrypt', 'e2e.openpgp.VerifyDecryptResult', 'e2e.openpgp.VerifyResult', 'e2e.openpgp.types'], ['e2e.ByteArray'], false);
 goog.addDependency('../crypto/e2e/otr/constants.js', ['e2e.otr.constants'], [], false);
 goog.addDependency('../crypto/e2e/otr/data.js', ['e2e.otr.Data'], ['e2e', 'e2e.otr', 'e2e.otr.error.ParseError'], false);
-goog.addDependency('../crypto/e2e/otr/error.js', ['e2e.otr.error.Error', 'e2e.otr.error.InvalidArgumentsError', 'e2e.otr.error.NotImplementedError', 'e2e.otr.error.ParseError'], ['goog.debug.Error'], false);
+goog.addDependency('../crypto/e2e/otr/error.js', ['e2e.otr.error.Error', 'e2e.otr.error.IllegalStateError', 'e2e.otr.error.InvalidArgumentsError', 'e2e.otr.error.NotImplementedError', 'e2e.otr.error.ParseError'], ['goog.debug.Error'], false);
 goog.addDependency('../crypto/e2e/otr/message/dhcommit.js', ['e2e.otr.message.DhCommit'], ['e2e', 'e2e.cipher.Aes', 'e2e.cipher.Algorithm', 'e2e.cipher.DiffieHellman', 'e2e.ciphermode.Ctr', 'e2e.hash.Sha256', 'e2e.otr', 'e2e.otr.Data', 'e2e.otr.Mpi', 'e2e.otr.constants', 'e2e.otr.error.NotImplementedError', 'e2e.otr.error.ParseError', 'e2e.otr.message.Message', 'e2e.random'], false);
 goog.addDependency('../crypto/e2e/otr/message/dhkey.js', ['e2e.otr.message.DhKey'], ['e2e', 'e2e.cipher.DiffieHellman', 'e2e.otr.Mpi', 'e2e.otr.constants', 'e2e.otr.error.NotImplementedError', 'e2e.otr.message.Message', 'e2e.random'], false);
 goog.addDependency('../crypto/e2e/otr/message/handler.js', ['e2e.otr.message.handler'], ['e2e.error.UnsupportedError'], false);
@@ -149,7 +149,7 @@ goog.addDependency('../crypto/e2e/otr/message/query.js', ['e2e.otr.message.Query
 goog.addDependency('../crypto/e2e/otr/mpi.js', ['e2e.otr.Mpi'], ['e2e', 'e2e.otr', 'e2e.otr.error.ParseError'], false);
 goog.addDependency('../crypto/e2e/otr/otr.js', ['e2e.otr'], ['e2e', 'e2e.otr.Serializable', 'e2e.otr.error.InvalidArgumentsError'], false);
 goog.addDependency('../crypto/e2e/otr/serializable.js', ['e2e.otr.Serializable'], [], false);
-goog.addDependency('../crypto/e2e/otr/session.js', ['e2e.otr.Session'], ['e2e.otr', 'e2e.otr.constants'], false);
+goog.addDependency('../crypto/e2e/otr/session.js', ['e2e.otr.Session'], ['e2e.otr', 'e2e.otr.constants', 'e2e.otr.error.IllegalStateError', 'e2e.otr.error.NotImplementedError', 'goog.asserts'], false);
 goog.addDependency('../crypto/e2e/otr/testing.js', ['e2e.otr.testing'], ['goog.array', 'goog.testing.asserts'], false);
 goog.addDependency('../crypto/e2e/otr/types.js', ['e2e.otr.Byte', 'e2e.otr.Ctr', 'e2e.otr.Int', 'e2e.otr.Mac', 'e2e.otr.Short'], [], false);
 goog.addDependency('../crypto/e2e/otr/util/iterator.js', ['e2e.otr.util.Iterator'], ['e2e.otr.error.InvalidArgumentsError'], false);

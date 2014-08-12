@@ -19,6 +19,7 @@
  */
 
 goog.provide('e2e.otr.error.Error');
+goog.provide('e2e.otr.error.IllegalStateError');
 goog.provide('e2e.otr.error.InvalidArgumentsError');
 goog.provide('e2e.otr.error.NotImplementedError');
 goog.provide('e2e.otr.error.ParseError');
@@ -72,3 +73,15 @@ e2e.otr.error.ParseError = function(message) {
   goog.base(this, message);
 };
 goog.inherits(e2e.otr.error.ParseError, e2e.otr.error.Error);
+
+
+/**
+ * Class to represent errors where the state machine is in an invalid state.
+ * @param {string} message The message with the error details.
+ * @constructor
+ * @extends {e2e.otr.error.Error}
+ */
+e2e.otr.error.IllegalStateError = function(message) {
+  goog.base(this, message);
+};
+goog.inherits(e2e.otr.error.IllegalStateError, e2e.otr.error.Error);

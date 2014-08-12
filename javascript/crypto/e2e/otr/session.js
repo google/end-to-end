@@ -22,6 +22,9 @@ goog.provide('e2e.otr.Session');
 
 goog.require('e2e.otr');
 goog.require('e2e.otr.constants');
+goog.require('e2e.otr.error.IllegalStateError');
+goog.require('e2e.otr.error.NotImplementedError');
+goog.require('goog.asserts');
 
 
 goog.scope(function() {
@@ -39,12 +42,15 @@ e2e.otr.Session = function(instanceTag, opt_policy) {
   this.policy_ = goog.object.clone(constants.DEFAULT_POLICY);
   this.updatePolicy(opt_policy || {});
 
-  this.messageState = constants.MSGSTATE.PLAINTEXT;
-  this.authState = constants.AUTHSTATE.NONE;
+  this.messageState_ = constants.MSGSTATE.PLAINTEXT;
+
   this.remoteInstanceTag = new Uint8Array([0, 0, 0, 0]);
 
   this.instanceTag = instanceTag;
   assert(e2e.otr.intToNum(this.instanceTag) >= 0x100);
+
+  this.authState_ = constants.AUTHSTATE.NONE;
+  this.authData = {r: null, dh: null};
 };
 
 
@@ -73,5 +79,82 @@ e2e.otr.Session.prototype.getPolicy = function(opt_name) {
  */
 e2e.otr.Session.prototype.processMessage = function(serialized) {
   throw new Error('Not yet implemented.');
+};
+
+
+/**
+ * Stores AKE information.
+ * @type {{
+ *   r: e2e.ByteArray,
+ *   dh: e2e.cipher.DiffieHellman
+ * }}
+ */
+e2e.otr.Session.prototype.authData;
+
+
+/**
+ * Gets the current auth state.
+ * @return {!e2e.otr.constants.AUTHSTATE}
+ */
+e2e.otr.Session.prototype.getAuthState = function() { return this.authState_; };
+
+
+/**
+ * Sets the auth state.
+ * @param {!e2e.otr.constants.AUTHSTATE} nextState The new auth state.
+ */
+e2e.otr.Session.prototype.setAuthState = function(nextState) {
+  if (nextState) {
+    assert(this.isValidAuthStateTransition_(nextState));
+    this.authState_ = nextState;
+  }
+};
+
+
+/**
+ * Determines whether or not an authState transition is valid.
+ * @private
+ * @param {e2e.otr.constants.AUTHSTATE} nextState The next authState.
+ * @return {boolean}
+ */
+e2e.otr.Session.prototype.isValidAuthStateTransition_ = function(nextState) {
+  return this.authState_ == nextState ||
+      goog.array.contains(this.getValidAuthStateTransitions_(), nextState);
+};
+
+
+/**
+ * Gets a list of valid state transitions.
+ * @private
+ * @return {Array.<e2e.otr.constants.AUTHSTATE>}
+ */
+e2e.otr.Session.prototype.getValidAuthStateTransitions_ = function() {
+  switch (this.authState_) {
+    case constants.AUTHSTATE.NONE:
+      return [
+        constants.AUTHSTATE.AWAITING_DHKEY,
+        constants.AUTHSTATE.AWAITING_REVEALSIG
+      ];
+    case constants.AUTHSTATE.AWAITING_DHKEY:
+      return [
+        constants.AUTHSTATE.AWAITING_REVEALSIG,
+        constants.AUTHSTATE.AWAITING_SIG
+      ];
+    case constants.AUTHSTATE.AWAITING_REVEALSIG:
+      return [
+        constants.AUTHSTATE.NONE,
+        constants.AUTHSTATE.AWAITING_DHKEY
+      ];
+    case constants.AUTHSTATE.AWAITING_SIG:
+      return [
+        constants.AUTHSTATE.NONE,
+        constants.AUTHSTATE.AWAITING_DHKEY,
+        constants.AUTHSTATE.AWAITING_REVEALSIG
+      ];
+    case constants.AUTHSTATE.V1_SETUP:
+      return [constants.AUTHSTATE.AWAITING_REVEALSIG];
+    default:
+      throw new e2e.otr.error.IllegalStateError('Unknown auth state.');
+  }
 };
 });
