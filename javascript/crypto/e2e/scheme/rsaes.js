@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 /**
  * @fileoverview Implementation of RSAES-PKCS1-v1_5 as defined in RFC 3447.
  */
@@ -29,17 +30,13 @@ goog.provide('e2e.scheme.Rsaes');
  * @extends {e2e.scheme.Eme}
  */
 e2e.scheme.Rsaes = function(cipher) {
-  this.useWebCrypto = false;
-  this.useHardwareCrypto = false;
   this.algorithmIdentifier = {
     'name': 'RSAES-PKCS1-v1_5',
     'modulusLength': cipher.keySize,
     'publicExponent': new Uint8Array(cipher.getKey()['e'])
   };
-  if (this.key = cipher.getWebCryptoKey()) {
-    this.useWebCrypto = true;
-  }
   goog.base(this, cipher);
+  this.key = cipher.getKey();
 };
 goog.inherits(e2e.scheme.Rsaes, e2e.scheme.Eme);
 
@@ -68,7 +65,7 @@ e2e.scheme.Rsaes.prototype.decryptWebCrypto = function(ciphertext) {
       this.algorithmIdentifier,
       this.key,
       new Uint8Array(ciphertext['c'])
-      ).then(
+  ).then(
       goog.bind(result.callback, result)).catch (
       goog.bind(result.errback, result));
   return result.addCallback(function(p) {

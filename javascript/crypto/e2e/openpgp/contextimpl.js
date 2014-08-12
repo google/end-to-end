@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 /**
  * @fileoverview Internal implementation of Context.
  */
@@ -43,7 +44,6 @@ goog.require('goog.asserts');
 goog.require('goog.async.DeferredList');
 goog.require('goog.structs');
 goog.require('goog.structs.Map');
-
 
 
 
@@ -138,10 +138,11 @@ e2e.openpgp.ContextImpl.prototype.importKey = function(
       /** @type {!goog.async.Deferred.<!Array.<!string>>} */ (
           goog.async.DeferredList.gatherResults(importedBlocksResult)
               .addCallback(function(importedBlocks) {
-    return goog.array.flatten(goog.array.map(importedBlocks, function(block) {
-      return block ? block.getUserIds() : [];
-    }));
-  }));
+        return goog.array.flatten(goog.array.map(importedBlocks,
+            function(block) {
+              return block ? block.getUserIds() : [];
+            }));
+      }));
   return allResults;
 };
 
@@ -194,11 +195,11 @@ e2e.openpgp.ContextImpl.prototype.generateKey = function(
   }
   return this.keyRing_.generateKey(
       description, keyAlgo, keyLength, subkeyAlgo, subkeyLength).addCallback(
-        function(res) {
-          return goog.array.map(res, function(keyBlock) {
-            return keyBlock.toKeyObject();
-          });
+      function(res) {
+        return goog.array.map(res, function(keyBlock) {
+          return keyBlock.toKeyObject();
         });
+      });
 };
 
 
@@ -214,7 +215,7 @@ e2e.openpgp.ContextImpl.prototype.verifyClearSign_ = function(
   try {
     if (typeof clearSignMessage == 'string') {
       clearSignMessage = e2e.openpgp.asciiArmor.parseClearSign(
-        clearSignMessage);
+          clearSignMessage);
     }
     return this.processLiteralMessage_(clearSignMessage.toLiteralMessage());
   } catch (e) {
@@ -311,14 +312,14 @@ e2e.openpgp.ContextImpl.prototype.verifyMessage_ = function(
     message) {
   // Get keys matching key IDs declared in signatures.
   var keyBlocks = goog.array.map(message.getSignatureKeyIds(), goog.bind(
-    function(keyId) {
-      return this.keyRing_.getKeyBlockById(keyId);
-    }, this));
+      function(keyId) {
+        return this.keyRing_.getKeyBlockById(keyId);
+      }, this));
   // Verify not empty key blocks only
   var verifyResult = message.verify(goog.array.filter(keyBlocks,
-    function(block) {
-      return !goog.isNull(block);
-    }));
+      function(block) {
+        return !goog.isNull(block);
+      }));
   return {
     success: goog.array.map(verifyResult.success, function(key) {
       return key.toKeyObject();
@@ -338,7 +339,7 @@ e2e.openpgp.ContextImpl.prototype.encryptSign = function(
     signatureKeyBlock = this.keyRing_.getKeyBlock(opt_signatureKey);
   }
   if (encryptionKeys.length == 0 && passphrases.length == 0 &&
-     signatureKeyBlock) {
+      signatureKeyBlock) {
     return this.clearSignInternal(plaintext, signatureKeyBlock);
   }
   var encryptSignResult = this.encryptSignInternal(
@@ -368,10 +369,10 @@ e2e.openpgp.ContextImpl.prototype.encryptSign = function(
  */
 e2e.openpgp.ContextImpl.prototype.clearSignInternal = function(
     plaintext, key) {
-  var message = e2e.openpgp.ClearSignMessage.construct(plaintext, key);
-  var cleartext = e2e.openpgp.asciiArmor.encodeClearSign(message,
-      this.armorHeaders_);
-  return e2e.async.Result.toResult(cleartext);
+  var messageRes = e2e.openpgp.ClearSignMessage.construct(plaintext, key);
+  return messageRes.addCallback(function(message) {
+    return e2e.openpgp.asciiArmor.encodeClearSign(message, this.armorHeaders_);
+  });
 };
 
 
@@ -422,9 +423,9 @@ e2e.openpgp.ContextImpl.prototype.searchKey_ = function(uid, type) {
   var keyBlocks = this.keyRing_.searchKey(uid, type) || [];
   /** @type {!e2e.openpgp.Keys} */
   var keys = goog.array.map(keyBlocks,
-    function(keyBlock) {
-    return keyBlock.toKeyObject();
-  });
+      function(keyBlock) {
+        return keyBlock.toKeyObject();
+      });
   return e2e.async.Result.toResult(keys);
 };
 
@@ -491,19 +492,19 @@ e2e.openpgp.ContextImpl.prototype.getPassphrase_ =
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.exportKeyring = function(armored) {
   return this.getAllKeys().addCallback(
-    function(keys) {
-      keys = new goog.structs.Map(keys);
-      var serialized = goog.array.flatten(goog.array.map(
-          goog.array.flatten(keys.getValues()),
-          function(keyInfo) {
-            return this.keyRing_.getKeyBlock(keyInfo).serialize();
-          }, this));
-      if (armored) {
-        return e2e.openpgp.asciiArmor.encode(
-            'PRIVATE KEY BLOCK', serialized, this.armorHeaders_);
-      }
-      return serialized;
-    }, this);
+      function(keys) {
+        keys = new goog.structs.Map(keys);
+        var serialized = goog.array.flatten(goog.array.map(
+            goog.array.flatten(keys.getValues()),
+            function(keyInfo) {
+              return this.keyRing_.getKeyBlock(keyInfo).serialize();
+            }, this));
+        if (armored) {
+          return e2e.openpgp.asciiArmor.encode(
+              'PRIVATE KEY BLOCK', serialized, this.armorHeaders_);
+        }
+        return serialized;
+      }, this);
 };
 
 

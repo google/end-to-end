@@ -19,6 +19,7 @@
 <script>
   goog.require('goog.array');
   goog.require('goog.crypt');
+  goog.require('goog.testing.AsyncTestCase');
   goog.require('goog.testing.jsunit');
   goog.require('e2e.cipher.all');
   goog.require('e2e.cipher.factory');
@@ -32,6 +33,8 @@
   goog.require('e2e.signer.factory');
 </script>
 <script>
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
+asyncTestCase.stepTimeout = 10000;
 
 function testSignDSA() {
   var publicKeyAscii =  // 1024bit DSA key
@@ -78,23 +81,39 @@ function testSignDSA() {
   privateKeyBlock.keyPacket.cipher.unlockKey(passphrase);  // DSA
 
   var data = e2e.stringToByteArray('hello world dsa');
-  var sigPacket = e2e.openpgp.packet.Signature.construct(
-    privateKeyBlock.keyPacket, data, e2e.openpgp.packet.Signature.SignatureType.TEXT);
-  assertTrue('Verify success', sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
-  assertFalse('Verify should fail', sigPacket.verify(
-    e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
 
-  var sigBytes = sigPacket.serializePacketBody();
-  var sigParsed = e2e.openpgp.packet.Signature.parse(sigBytes);
-  assertTrue('Verify success', sigParsed.verify(data, publicKeyBlock.keyPacket.cipher));
-  assertFalse('Verify should fail', sigParsed.verify(
-    e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+  // Wait for both to finish before proceeding.
+  asyncTestCase.waitForSignals(2, "Waiting for DSA signatures");
+
+  e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
+      e2e.openpgp.packet.Signature.SignatureType.TEXT).addCallback(
+    function(sigPacket) {
+      assertTrue('Verify success',
+                 sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
+      assertFalse('Verify should fail', sigPacket.verify(
+          e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+
+      var sigBytes = sigPacket.serializePacketBody();
+      var sigParsed = e2e.openpgp.packet.Signature.parse(sigBytes);
+      assertTrue('Verify success',
+                 sigParsed.verify(data, publicKeyBlock.keyPacket.cipher));
+      assertFalse('Verify should fail', sigParsed.verify(
+          e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+
+      asyncTestCase.signal();
+  });
 
   var data = [0, 1, 2, 3];
-  var sigPacket = e2e.openpgp.packet.Signature.construct(
-    privateKeyBlock.keyPacket, data, e2e.openpgp.packet.Signature.SignatureType.BINARY);
-  assertTrue('Verify success', sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
-  assertFalse('Verify should fail', sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher));
+  e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
+      e2e.openpgp.packet.Signature.SignatureType.BINARY).addCallback(
+    function(sigPacket) {
+        assertTrue('Verify success',
+            sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
+        assertFalse('Verify should fail',
+            sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher));
+
+        asyncTestCase.signal();
+  });
 }
 
 function testSignECDSA() {
@@ -139,24 +158,36 @@ function testSignECDSA() {
   privateKeyBlock.keyPacket.cipher.unlockKey(passphrase);
 
   var data = e2e.stringToByteArray('hello world ecdsa');
-  var sigPacket = e2e.openpgp.packet.Signature.construct(
-    privateKeyBlock.keyPacket, data, e2e.openpgp.packet.Signature.SignatureType.TEXT);
-  assertTrue('Verify success', sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
-  assertFalse('Verify should fail', sigPacket.verify(
-    e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+  asyncTestCase.waitForSignals(2, "Waiting for ECDSA signatures");
+  e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
+      e2e.openpgp.packet.Signature.SignatureType.TEXT).addCallback(
+    function(sigPacket) {
+      assertTrue('Verify success',
+                 sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
+      assertFalse('Verify should fail', sigPacket.verify(
+          e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
 
-  var sigBytes = sigPacket.serializePacketBody();
-  var sigParsed = e2e.openpgp.packet.Signature.parse(sigBytes);
-  assertTrue('Verify success', sigParsed.verify(data, publicKeyBlock.keyPacket.cipher));
-  assertFalse('Verify should fail', sigParsed.verify(
-    e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+      var sigBytes = sigPacket.serializePacketBody();
+      var sigParsed = e2e.openpgp.packet.Signature.parse(sigBytes);
+      assertTrue('Verify success',
+                 sigParsed.verify(data, publicKeyBlock.keyPacket.cipher));
+      assertFalse('Verify should fail', sigParsed.verify(
+          e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+
+      asyncTestCase.signal();
+  });
 
   var data = [0, 1, 2, 3];
-  var sigPacket = e2e.openpgp.packet.Signature.construct(
-    privateKeyBlock.keyPacket, data, e2e.openpgp.packet.Signature.SignatureType.TEXT);
-  assertTrue('Verify success', sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
-  assertFalse('Verify should fail', sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher));
+  e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
+      e2e.openpgp.packet.Signature.SignatureType.TEXT).addCallback(
+    function(sigPacket) {
+      assertTrue('Verify success',
+                  sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
+      assertFalse('Verify should fail',
+                  sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher));
 
+      asyncTestCase.signal();
+  });
 }
 
 function testSignRSA() {
@@ -223,22 +254,35 @@ function testSignRSA() {
   privateKeyBlock.keyPacket.cipher.unlockKey(passphrase);  // RSA
 
   var data = e2e.stringToByteArray('hello world rsa');
-  var sigPacket = e2e.openpgp.packet.Signature.construct(
-    privateKeyBlock.keyPacket, data, e2e.openpgp.packet.Signature.SignatureType.TEXT);
-  assertTrue('Verify success', sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
-  assertFalse('Verify should fail', sigPacket.verify(
-    e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+  asyncTestCase.waitForSignals(2, "Waiting for RSA signatures");
+  e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
+      e2e.openpgp.packet.Signature.SignatureType.TEXT).addCallback(
+    function(sigPacket) {
+      assertTrue('Verify success',
+          sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
+      assertFalse('Verify should fail', sigPacket.verify(
+          e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
 
-  var sigBytes = sigPacket.serializePacketBody();
-  var sigParsed = e2e.openpgp.packet.Signature.parse(sigBytes);
-  assertTrue('Verify success', sigParsed.verify(data, publicKeyBlock.keyPacket.cipher));
-  assertFalse('Verify should fail', sigParsed.verify(
-    e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+      var sigBytes = sigPacket.serializePacketBody();
+      var sigParsed = e2e.openpgp.packet.Signature.parse(sigBytes);
+      assertTrue('Verify success',
+        sigParsed.verify(data, publicKeyBlock.keyPacket.cipher));
+      assertFalse('Verify should fail', sigParsed.verify(
+        e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
+
+      asyncTestCase.signal();
+  });
 
   var data = [0, 1, 2, 3];
-  var sigPacket = e2e.openpgp.packet.Signature.construct(
-    privateKeyBlock.keyPacket, data, e2e.openpgp.packet.Signature.SignatureType.TEXT);
-  assertTrue('Verify success', sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
-  assertFalse('Verify should fail', sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher));
+  e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
+      e2e.openpgp.packet.Signature.SignatureType.TEXT).addCallback(
+    function(sigPacket) {
+      assertTrue('Verify success',
+                 sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
+      assertFalse('Verify should fail',
+                  sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher));
+
+      asyncTestCase.signal();
+  });
 }
 </script>

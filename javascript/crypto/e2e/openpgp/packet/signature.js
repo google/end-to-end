@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 /**
  * @fileoverview Definition of a signature packet.
  */
@@ -21,6 +22,7 @@ goog.provide('e2e.openpgp.packet.Signature.SignatureType');
 goog.require('e2e');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
+goog.require('e2e.cipher.Rsa');
 /** @suppress {extraRequire} force loading of all hash functions */
 goog.require('e2e.hash.all');
 goog.require('e2e.hash.factory');
@@ -36,9 +38,13 @@ goog.require('e2e.openpgp.packet.OnePassSignature');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.SignatureSub');
 goog.require('e2e.openpgp.packet.factory');
+goog.require('e2e.scheme.Ecdsa');
+goog.require('e2e.scheme.Rsassa');
 goog.require('e2e.signer.Algorithm');
+goog.require('e2e.signer.Ecdsa');
 goog.require('goog.array');
 goog.require('goog.asserts');
+
 
 
 /**
@@ -79,7 +85,7 @@ e2e.openpgp.packet.Signature = function(
     this.attributes = {};
     goog.array.forEach(this.hashedSubpackets, function(subpacket) {
       e2e.openpgp.packet.SignatureSub.populateAttribute(
-        this.attributes, subpacket, false);
+          this.attributes, subpacket, false);
     }, this);
     /**
      * Non hashed signature subpackets.
@@ -92,7 +98,7 @@ e2e.openpgp.packet.Signature = function(
     this.untrustedAttributes = {};
     goog.array.forEach(this.unhashedSubpackets, function(subpacket) {
       e2e.openpgp.packet.SignatureSub.populateAttribute(
-        this.untrustedAttributes, subpacket, false);
+          this.untrustedAttributes, subpacket, false);
     }, this);
   } else if (version == 0x03 || version == 0x02) {
     if (!goog.isDef(opt_signerKeyId) ||
@@ -242,10 +248,10 @@ e2e.openpgp.packet.Signature.parse = function(data) {
     var signerKeyId = data.splice(0, 8);
     var pubKeyAlgorithm = /** @type {e2e.cipher.Algorithm} */ (
         e2e.openpgp.constants.getAlgorithm(
-          e2e.openpgp.constants.Type.PUBLIC_KEY, data.shift()));
+        e2e.openpgp.constants.Type.PUBLIC_KEY, data.shift()));
     var hashAlgorithm = /** @type {e2e.hash.Algorithm} */ (
         e2e.openpgp.constants.getAlgorithm(
-          e2e.openpgp.constants.Type.HASH, data.shift()));
+        e2e.openpgp.constants.Type.HASH, data.shift()));
   } else if (version == 0x04) {
     var signatureType =
         /** @type {e2e.openpgp.packet.Signature.SignatureType} */(
@@ -255,7 +261,7 @@ e2e.openpgp.packet.Signature.parse = function(data) {
             e2e.openpgp.constants.Type.PUBLIC_KEY, data.shift()));
     var hashAlgorithm = /** @type {e2e.hash.Algorithm} */ (
         e2e.openpgp.constants.getAlgorithm(
-          e2e.openpgp.constants.Type.HASH, data.shift()));
+        e2e.openpgp.constants.Type.HASH, data.shift()));
     var hashedSubpacketLength = e2e.byteArrayToWord(
         data.splice(0, 2));
     var hashedSubpackets = e2e.openpgp.packet.SignatureSub.parse(
@@ -273,16 +279,16 @@ e2e.openpgp.packet.Signature.parse = function(data) {
     's': []
   };
   switch (pubKeyAlgorithm) {
-      case e2e.signer.Algorithm.RSA:
-        signature['s'] = e2e.openpgp.Mpi.parse(data);
-        break;
-      case e2e.signer.Algorithm.DSA:
-      case e2e.signer.Algorithm.ECDSA:
-        signature['r'] = e2e.openpgp.Mpi.parse(data);
-        signature['s'] = e2e.openpgp.Mpi.parse(data);
-        break;
-      default:  // Unsupported signature algorithm.
-        return null;
+    case e2e.signer.Algorithm.RSA:
+      signature['s'] = e2e.openpgp.Mpi.parse(data);
+      break;
+    case e2e.signer.Algorithm.DSA:
+    case e2e.signer.Algorithm.ECDSA:
+      signature['r'] = e2e.openpgp.Mpi.parse(data);
+      signature['s'] = e2e.openpgp.Mpi.parse(data);
+      break;
+    default:  // Unsupported signature algorithm.
+      return null;
   }
   return new e2e.openpgp.packet.Signature(
       version, signatureType,
@@ -304,12 +310,12 @@ e2e.openpgp.packet.Signature.prototype.getSignerKeyId = function() {
   }
   if (this.version == 0x04) {
     if (this.attributes.hasOwnProperty('ISSUER')) {
-      return /** @type !e2e.ByteArray */ (this.attributes['ISSUER']);
+      return /** @type {!e2e.ByteArray} */ (this.attributes['ISSUER']);
     }
     if (this.untrustedAttributes.hasOwnProperty('ISSUER')) {
       // GnuPG puts Key ID in unhashed subpacket.
-      return /** @type !e2e.ByteArray */ (
-        this.untrustedAttributes['ISSUER']);
+      return /** @type {!e2e.ByteArray} */ (
+          this.untrustedAttributes['ISSUER']);
     }
   }
   return e2e.openpgp.constants.EMPTY_KEY_ID;
@@ -372,9 +378,9 @@ e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
   }
   return e2e.async.Result.getValue(
       signer.verify(e2e.openpgp.packet.Signature.getDataToHash(
-                        data,
-                        this.signatureType, this.pubKeyAlgorithm,
-                        this.hashAlgorithm, this.hashedSubpackets),
+      data,
+      this.signatureType, this.pubKeyAlgorithm,
+      this.hashAlgorithm, this.hashedSubpackets),
                     this.signature));
 };
 
@@ -388,7 +394,7 @@ e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
  *     The signature attributes.
  * @param {Object.<string, number|!e2e.ByteArray>=}
  *     opt_untrustedAttributes The signature untrusted attributes.
- * @return {!e2e.openpgp.packet.Signature} The signature packet.
+ * @return {!e2e.async.Result.<!e2e.openpgp.packet.Signature>} Signature packet.
  */
 e2e.openpgp.packet.Signature.construct = function(
     key, data, signatureType, opt_attributes, opt_untrustedAttributes) {
@@ -408,16 +414,26 @@ e2e.openpgp.packet.Signature.construct = function(
       algorithm,
       signer.getHash().algorithm,
       hashedSubpackets);
-  var signature = e2e.async.Result.getValue(signer.sign(plaintext));
-  return new e2e.openpgp.packet.Signature(
-      4, // version
-      signatureType,
-      algorithm,
-      signer.getHash().algorithm,
-      signature,
-      signature['hashValue'].slice(0, 2),
-      hashedSubpackets,
-      unhashedSubpackets);
+  var resultSig;
+  if (signer instanceof e2e.cipher.Rsa) {
+    resultSig = (new e2e.scheme.Rsassa(signer)).sign(plaintext);
+  } else if (signer instanceof e2e.signer.Ecdsa) {
+    resultSig = (new e2e.scheme.Ecdsa(signer)).sign(plaintext);
+  } else {
+    // DSA, always in JS. TODO(user): make DSA a scheme too.
+    resultSig = signer.sign(plaintext);
+  }
+  return resultSig.addCallback(function(signature) {
+    return new e2e.openpgp.packet.Signature(
+        4, // version
+        signatureType,
+        algorithm,
+        signer.getHash().algorithm,
+        signature,
+        signature['hashValue'].slice(0, 2),
+        hashedSubpackets,
+        unhashedSubpackets);
+  });
 };
 
 
@@ -462,9 +478,9 @@ e2e.openpgp.packet.Signature.serializeSubpackets =
     function(subpackets) {
   var serialized = goog.array.flatten(
       goog.array.map(subpackets,
-        function(packet) {
-          return packet.serialize();
-        }));
+      function(packet) {
+        return packet.serialize();
+      }));
   if (serialized.length > 0xFFFF) {
     throw new e2e.openpgp.error.SerializationError(
         'Subpacket length is too long.');

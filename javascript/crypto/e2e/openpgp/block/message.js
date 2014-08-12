@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 /**
  * @fileoverview Base class for OpenPGP message blocks.
  */
@@ -25,6 +26,7 @@ goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.openpgp.types');
 goog.require('goog.array');
 goog.require('goog.asserts');
+
 
 
 /**
@@ -116,9 +118,13 @@ e2e.openpgp.block.Message.prototype.consumeOnePassSignatures = function(
  * @param {!e2e.openpgp.packet.SecretKey} key
  * @param {e2e.openpgp.packet.Signature.SignatureType=} opt_signatureType Type
  *    of signature to generate (defaults to BINARY)
+ * @return {!e2e.async.Result.<undefined>}
  */
 e2e.openpgp.block.Message.prototype.sign = function(key, opt_signatureType) {
-  this.addSignature(this.constructSignature(key, opt_signatureType));
+  return this.constructSignature(key, opt_signatureType).addCallback(
+      function(sig) {
+        this.addSignature(sig);
+      }, this);
 };
 
 
@@ -128,14 +134,17 @@ e2e.openpgp.block.Message.prototype.sign = function(key, opt_signatureType) {
  * @param {!e2e.openpgp.packet.SecretKey} key
  * @param {e2e.openpgp.packet.Signature.SignatureType=} opt_signatureType Type
  *    of signature to generate (defaults to BINARY)
+ * @return {!e2e.async.Result.<undefined>}
  */
 e2e.openpgp.block.Message.prototype.signWithOnePass = function(key,
     opt_signatureType) {
-  var realSignature = this.constructSignature(key, opt_signatureType);
-  var onePass = realSignature.constructOnePassSignaturePacket(
-    this.signatures.length > 0);
-  onePass.signature = realSignature;
-  this.signatures.unshift(onePass);
+  var realSignatureRes = this.constructSignature(key, opt_signatureType);
+  return realSignatureRes.addCallback(function(realSignature) {
+    var onePass = realSignature.constructOnePassSignaturePacket(
+        this.signatures.length > 0);
+    onePass.signature = realSignature;
+    this.signatures.unshift(onePass);
+  }, this);
 };
 
 
@@ -154,18 +163,18 @@ e2e.openpgp.block.Message.prototype.addSignature = function(signature) {
  * @param  {!e2e.openpgp.packet.SecretKey} key
  * @param  {e2e.openpgp.packet.Signature.SignatureType=} opt_signatureType Type
  *     of signature to generate (defaults to BINARY)
- * @return {e2e.openpgp.packet.Signature} signature
+ * @return {!e2e.async.Result.<!e2e.openpgp.packet.Signature>} signature
  */
 e2e.openpgp.block.Message.prototype.constructSignature = function(key,
     opt_signatureType) {
   return e2e.openpgp.packet.Signature.construct(
-    key, this.getBytesToSign(),
-    opt_signatureType || e2e.openpgp.packet.Signature.SignatureType.BINARY,
-    {
-      'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
-        [Math.floor(new Date().getTime() / 1e3)]),
-      'ISSUER': key.keyId
-    });
+      key, this.getBytesToSign(),
+      opt_signatureType || e2e.openpgp.packet.Signature.SignatureType.BINARY,
+      {
+        'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
+            [Math.floor(new Date().getTime() / 1e3)]),
+        'ISSUER': key.keyId
+      });
 };
 
 
@@ -224,6 +233,7 @@ e2e.openpgp.block.Message.prototype.verify = function(keys) {
   });
   return result;
 };
+
 
 /**
  * Result of a verification operation.

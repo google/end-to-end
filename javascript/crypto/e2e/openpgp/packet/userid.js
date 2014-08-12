@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 /**
  * @fileoverview User ID packet.
  */
@@ -25,7 +26,6 @@ goog.require('e2e.hash.Algorithm');
 /** @suppress {extraRequire} intentional import */
 goog.require('e2e.hash.all');
 goog.require('e2e.openpgp.constants');
-goog.require('e2e.openpgp.error.SerializationError');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.openpgp.packet.factory');
@@ -115,17 +115,20 @@ e2e.openpgp.packet.UserId.prototype.getCertifications = function() {
  */
 e2e.openpgp.packet.UserId.prototype.certifyBy = function(key) {
   var data = goog.array.flatten(
-    key.getBytesToSign(),
-    this.getBytesToSign()
-  );
-  var sig = e2e.openpgp.packet.Signature.construct(
+      key.getBytesToSign(),
+      this.getBytesToSign()
+      );
+  var sigResult = e2e.openpgp.packet.Signature.construct(
       key,
       data,
       e2e.openpgp.packet.Signature.SignatureType.GENERIC_USER_ID,
       this.getSignatureAttributes_(key));
 
-  this.addCertification(sig);
+  sigResult.addCallback(function(sig) {
+    this.addCertification(sig);
+  }, this);
 };
+
 
 /**
  * Returns key certification signature attributes, including End-to-End
@@ -137,10 +140,10 @@ e2e.openpgp.packet.UserId.prototype.certifyBy = function(key) {
 e2e.openpgp.packet.UserId.prototype.getSignatureAttributes_ = function(key) {
   // Prefer only SHA-2 family.
   var hashAlgos = [
-      e2e.hash.Algorithm.SHA256,
-      e2e.hash.Algorithm.SHA384,
-      e2e.hash.Algorithm.SHA512,
-      e2e.hash.Algorithm.SHA224
+    e2e.hash.Algorithm.SHA256,
+    e2e.hash.Algorithm.SHA384,
+    e2e.hash.Algorithm.SHA512,
+    e2e.hash.Algorithm.SHA224
   ];
   var hashIds = goog.array.map(hashAlgos, e2e.openpgp.constants.getId);
   // Prefer all available compression mechanisms.
@@ -154,14 +157,14 @@ e2e.openpgp.packet.UserId.prototype.getSignatureAttributes_ = function(key) {
   var symIds = goog.array.map(symAlgos, e2e.openpgp.constants.getId);
 
   return {
-        'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
-          [Math.floor(new Date().getTime() / 1e3)]),
-        'ISSUER': key.keyId,
-        'PREFERRED_SYMMETRIC_ALGORITHMS': symIds,
-        'PREFERRED_HASH_ALGORITHMS': hashIds,
-        'PREFERRED_COMPRESSION_ALGORITHMS': compressionIds,
-        'FEATURES': [0x01] // Modification detection. See RFC 4880 5.2.3.24.
-      };
+    'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
+        [Math.floor(new Date().getTime() / 1e3)]),
+    'ISSUER': key.keyId,
+    'PREFERRED_SYMMETRIC_ALGORITHMS': symIds,
+    'PREFERRED_HASH_ALGORITHMS': hashIds,
+    'PREFERRED_COMPRESSION_ALGORITHMS': compressionIds,
+    'FEATURES': [0x01] // Modification detection. See RFC 4880 5.2.3.24.
+  };
 };
 
 

@@ -34,6 +34,7 @@ goog.require('goog.asserts');
 goog.require('goog.crypt');
 
 
+
 /**
  * A Key Packet that is the parent of SecretKey and PublicKey.
  * @param {number} version The version of the key. Should be 0x04.
@@ -153,20 +154,23 @@ e2e.openpgp.packet.Key.prototype.addRevocation = function(signature) {
  *     packet.
  * @param {!e2e.openpgp.packet.SecretKey} bindingKey
  * @param {!e2e.openpgp.packet.Signature.SignatureType} type
+ * @return {!e2e.async.Result.<undefined>}
  */
 e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type) {
   var data = this.getKeyBindingSignatureData_(bindingKey.getPublicKeyPacket());
 
-  var sig = e2e.openpgp.packet.Signature.construct(
+  var sigRes = e2e.openpgp.packet.Signature.construct(
       bindingKey,
       data,
       type,
       {
         'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
-          [Math.floor(new Date().getTime() / 1e3)]),
+            [Math.floor(new Date().getTime() / 1e3)]),
         'ISSUER': bindingKey.keyId
       });
-  this.bindingSignatures_.push(sig);
+  return sigRes.addCallback(function(sig) {
+    this.bindingSignatures_.push(sig);
+  }, this);
 };
 
 
@@ -184,14 +188,15 @@ e2e.openpgp.packet.Key.prototype.getKeyBindingSignatureData_ = function(
       this.getBytesToSign());
 };
 
+
 /** @override */
 e2e.openpgp.packet.Key.prototype.serialize = function() {
   var serialized = goog.base(this, 'serialize');
   goog.array.forEach(
-    this.bindingSignatures_.concat(this.revocations_),
-    function(sig) {
-      goog.array.extend(serialized, sig.serialize());
-    });
+      this.bindingSignatures_.concat(this.revocations_),
+      function(sig) {
+        goog.array.extend(serialized, sig.serialize());
+      });
   return serialized;
 };
 
@@ -204,6 +209,7 @@ e2e.openpgp.packet.Key.prototype.serialize = function() {
 e2e.openpgp.packet.Key.prototype.can = function(use) {
   return false;
 };
+
 
 /**
  * Converts a key packet to KeyPacketInfo.

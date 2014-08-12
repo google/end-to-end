@@ -14,61 +14,64 @@
 
 /**
  * @fileoverview A scheme for using different sources (e.g., webcrypto, JS) to
- * encrypt with ecdh.
+ * sign with ecdsa.
  */
 goog.require('e2e.openpgp.error.UnsupportedError');
-goog.require('e2e.scheme.EncryptionScheme');
+goog.require('e2e.scheme.SignatureScheme');
 
-goog.provide('e2e.scheme.Ecdh');
+goog.provide('e2e.scheme.Ecdsa');
 
 
 
 /**
  * Provides functions that e2e.scheme.Scheme will call.
- * @param {e2e.cipher.Cipher} cipher
+ * @param {e2e.signer.Signer} signer
  * @constructor
- * @extends {e2e.scheme.EncryptionScheme}
+ * @extends {e2e.scheme.SignatureScheme}
  */
-e2e.scheme.Ecdh = function(cipher) {
+e2e.scheme.Ecdsa = function(signer) {
+  this.signer = signer;
   // This isn't actually implemented in Chrome yet...
   this.algorithmIdentifier = {
-    'name': 'ECDH',
-    'namedCurve': 'P-256'
+    'name': 'ECDSA',
+    'namedCurve': 'P-256',
+    'hash': { 'name' : 'SHA-256' }
   };
-  goog.base(this, cipher);
+  goog.base(this, signer);
 };
-goog.inherits(e2e.scheme.Ecdh, e2e.scheme.EncryptionScheme);
+goog.inherits(e2e.scheme.Ecdsa, e2e.scheme.SignatureScheme);
 
 
 /** @override */
-e2e.scheme.Ecdh.prototype.encryptWebCrypto = function(plaintext) {
+e2e.scheme.Ecdsa.prototype.verifyWebCrypto = function(m, sig) {
   throw new e2e.openpgp.error.UnsupportedError(
-      "Chrome doesn't support ecdh yet!");
+      "Chrome doesn't support ecdsa yet!");
 };
 
 
 /** @override */
-e2e.scheme.Ecdh.prototype.decryptWebCrypto = function(ciphertext) {
+e2e.scheme.Ecdsa.prototype.signWebCrypto = function(data) {
   throw new e2e.openpgp.error.UnsupportedError(
-      "Chrome doesn't support ecdh yet!");
+      "Chrome doesn't support ecdsa yet!");
 };
 
 
 /** @override */
-e2e.scheme.Ecdh.prototype.encryptJavaScript = function(plaintext) {
-  return this.cipher.encrypt(plaintext);
+e2e.scheme.Ecdsa.prototype.verifyJavaScript = function(m, sig) {
+  return this.signer.verify(m, sig);
 };
 
 
 /** @override */
-e2e.scheme.Ecdh.prototype.decryptJavaScript = function(ciphertext) {
-  return this.cipher.decrypt(ciphertext);
+e2e.scheme.Ecdsa.prototype.signJavaScript = function(data) {
+  return this.signer.sign(data);
 };
 
 
 /** @override */
-e2e.scheme.Ecdh.prototype.decryptHardware = function(ciphertext) {
+e2e.scheme.Ecdsa.prototype.signHardware = function(data) {
   throw new e2e.openpgp.error.UnsupportedError(
       "Hardware API doesn't exist yet");
 };
+
 

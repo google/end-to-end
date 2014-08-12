@@ -28,6 +28,7 @@ goog.require('e2e.openpgp.parse');
 goog.require('goog.string');
 
 
+
 /**
  * Representation of a clearsign message.
  * @param {string} body The body
@@ -82,7 +83,7 @@ e2e.openpgp.ClearSignMessage.prototype.literal_;
  * @param  {e2e.openpgp.block.TransferableKey} key Signer key.
  *   Will throw {e2e.openpgp.error.InvalidArgumentsError} if the key has no
  *   signing capability.
- * @return {e2e.openpgp.ClearSignMessage} Created message.
+ * @return {!e2e.async.Result.<!e2e.openpgp.ClearSignMessage>} Created message.
  */
 e2e.openpgp.ClearSignMessage.construct = function(plaintext, key) {
   plaintext = e2e.openpgp.ClearSignMessage.canonicalize(plaintext);
@@ -90,13 +91,17 @@ e2e.openpgp.ClearSignMessage.construct = function(plaintext, key) {
   if (!keyPacket) {
     // No provided key can sign.
     throw new e2e.openpgp.error.InvalidArgumentsError(
-      'Provided key does not have a signing capability.');
+        'Provided key does not have a signing capability.');
   }
   var message = e2e.openpgp.block.LiteralMessage.fromText(plaintext);
-  message.sign(keyPacket, e2e.openpgp.packet.Signature.SignatureType.TEXT);
-  return new e2e.openpgp.ClearSignMessage(plaintext,
-      message.signatures[0].serialize(),
-      message.signatures[0].hashAlgorithm);
+  var sigRes = message.sign(
+      keyPacket, e2e.openpgp.packet.Signature.SignatureType.TEXT);
+  return sigRes.addCallback(
+      function() {
+        return new e2e.openpgp.ClearSignMessage(plaintext,
+            message.signatures[0].serialize(),
+            message.signatures[0].hashAlgorithm);
+      });
 };
 
 

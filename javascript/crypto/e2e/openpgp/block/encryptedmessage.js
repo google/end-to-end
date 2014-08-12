@@ -11,6 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+
 /**
  * @fileoverview Encrypted Message block.
  * @author adhintz@google.com (Drew Hintz)
@@ -38,6 +39,7 @@ goog.require('e2e.random');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.async.DeferredList');
+
 
 
 /**
@@ -224,7 +226,6 @@ e2e.openpgp.block.EncryptedMessage.prototype.decryptWithPassphrase_ = function(
 };
 
 
-
 /**
  * Tries to decrypt the ESK packets with a given passphrase.
  * @param {function(string, function(string))} passphraseCallback A callback to
@@ -282,7 +283,6 @@ e2e.openpgp.block.EncryptedMessage.prototype.testPassphraseKey_ = function(
 };
 
 
-
 /**
  * Decrypts the encrypted data packet with the session key.
  * @param {!e2e.openpgp.packet.EncryptedSessionKey} eskPacket The unlocked
@@ -312,7 +312,6 @@ e2e.openpgp.block.EncryptedMessage.prototype.decryptMessage_ = function(
 };
 
 
-
 /** @inheritDoc */
 e2e.openpgp.block.EncryptedMessage.prototype.parse = function(packets) {
   var eskPackets = [];
@@ -321,7 +320,7 @@ e2e.openpgp.block.EncryptedMessage.prototype.parse = function(packets) {
     eskPackets.push(packets.shift());
   }
   if (packets[0] instanceof
-         e2e.openpgp.packet.EncryptedData) {
+      e2e.openpgp.packet.EncryptedData) {
     var encryptedData = packets.shift();
   } else {
     throw new e2e.openpgp.error.ParseError(
@@ -351,9 +350,9 @@ e2e.openpgp.block.EncryptedMessage.prototype.serializeMessage = function() {
  * the public keys passed in.
  * @param {!e2e.openpgp.block.LiteralMessage} literalMessage
  *   Data to encrypt.
- * @param {!Array.<!e2e.openpgp.block.TransferableKey>} opt_publicKeys
+ * @param {!Array.<!e2e.openpgp.block.TransferableKey>=} opt_publicKeys
  *   Keys to encrypt to.
- * @param {!Array.<string>} opt_passphrases Symmetrically encrypt
+ * @param {!Array.<string>=} opt_passphrases Symmetrically encrypt
  *   session key with each of these passphrases. Either opt_publicKeys or
  *   opt_passphrases must be provided or
  *   {e2e.openpgp.error.InvalidArgumentsError} will be thrown.
@@ -371,40 +370,45 @@ e2e.openpgp.block.EncryptedMessage.construct = function(
     passphrases[i] = e2e.stringToByteArray(passphrase);
   });
   publicKeys = goog.array.filter(goog.array.map(
-    publicKeys,
-    function(keyBlock) {
-      return keyBlock.getKeyToEncrypt();
-    }), goog.isDefAndNotNull);
+      publicKeys,
+      function(keyBlock) {
+        return keyBlock.getKeyToEncrypt();
+      }), goog.isDefAndNotNull);
   if (publicKeys.length == 0 && passphrases.length == 0) {
     throw new e2e.openpgp.error.InvalidArgumentsError(
-      'No public key nor passphrase was provided, encryption is impossible.');
+        'No public key nor passphrase was provided, encryption is impossible.');
   }
   // Optionally sign the message.
   var sigKeyPacket = opt_signatureKey && opt_signatureKey.getKeyToSign();
   if (opt_signatureKey && !sigKeyPacket) {
     // Signature was requested, but no provided key can sign.
     throw new e2e.openpgp.error.InvalidArgumentsError(
-      'Provided key does not have a signing capability.');
+        'Provided key does not have a signing capability.');
   }
+  /** @type {!e2e.async.Result.<undefined>} */
+  var signResult = new e2e.async.Result;
   if (sigKeyPacket) {
     // Creates OnePassSignature + LiteralData + Signature sequence.
     // That sequence will be later compressed and encrypted.
     // This allows e.g. GnuPG to verify the signature.
-    literalMessage.signWithOnePass(sigKeyPacket);
+    signResult = literalMessage.signWithOnePass(sigKeyPacket);
+  } else {
+    signResult.callback();
   }
-  var cipher = /** @type {e2e.cipher.SymmetricCipher} */ (
+  var cipher = /** @type {!e2e.cipher.SymmetricCipher} */ (
       e2e.cipher.factory.require(
           e2e.openpgp.constants.DEFAULT_SYMMETRIC_CIPHER));
   var sessionKey = e2e.random.getRandomBytes(cipher.keySize);
   cipher.setKey({key: sessionKey});
 
-  var compressedPacket = e2e.openpgp.packet.Compressed.construct(
-      literalMessage.serialize());
+  var encryptedResult = signResult.addCallback(function() {
+    var compressedPacket = e2e.openpgp.packet.Compressed.construct(
+        literalMessage.serialize());
 
-  var encryptedData =
-    e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.construct(
+    return e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.construct(
         compressedPacket.serialize(),
         cipher);
+  });
 
   var encryptedSessions = [];
   goog.array.forEach(passphrases, function(passphrase) {
@@ -422,18 +426,24 @@ e2e.openpgp.block.EncryptedMessage.construct = function(
       encryptedSessions.push(packet);
       pending.splice(pending.indexOf(publicKey), 1);
       if (pending.length == 0) {
-        blockResult.callback();
+        encryptedResult.addCallback(function(encrypted) {
+          // Make sure that blockresult won't finish until encryptedResult does.
+          blockResult.callback(encrypted);
+        });
       }
     });
   });
   if (publicKeys.length == 0) {
-    blockResult.callback();
+    encryptedResult.addCallback(function(encrypted) {
+      // Make sure that blockresult won't finish until encryptedResult does.
+      blockResult.callback(encrypted);
+    });
   }
 
-  blockResult.addCallback(function() {
+  blockResult.addCallback(function(encryptedData) {
     var block = new e2e.openpgp.block.EncryptedMessage(
-      encryptedSessions,
-      encryptedData);
+        encryptedSessions,
+        encryptedData);
     return block;
   });
   return blockResult;
