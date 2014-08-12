@@ -36,11 +36,11 @@ var constants = e2e.otr.constants;
  * A session maintaining the state and configuration of an OTR conversation.
  * @constructor
  * @param {!e2e.otr.Int} instanceTag The client's instance tag.
- * @param {!e2e.otr.Policy} opt_policy Policy params to be set on the session.
+ * @param {!e2e.otr.Policy=} opt_policy Policy params to be set on the session.
  */
 e2e.otr.Session = function(instanceTag, opt_policy) {
-  this.policy_ = goog.object.clone(constants.DEFAULT_POLICY);
-  this.updatePolicy(opt_policy || {});
+  this.policy = goog.object.clone(constants.DEFAULT_POLICY);
+  goog.object.extend(this.policy, opt_policy || {});
 
   this.msgState_ = constants.MSGSTATE.PLAINTEXT;
   this.remoteInstanceTag = new Uint8Array([0, 0, 0, 0]);
@@ -50,25 +50,6 @@ e2e.otr.Session = function(instanceTag, opt_policy) {
 
   this.authState_ = constants.AUTHSTATE.NONE;
   this.authData = {r: null, dh: null};
-};
-
-
-/**
- * Updates the session policies.
- * @param {!e2e.otr.Policy} policy Policy params to be set on the session.
- */
-e2e.otr.Session.prototype.updatePolicy = function(policy) {
-  goog.object.extend(this.policy_, policy);
-};
-
-
-/**
- * Gets one or all policy settings.
- * @param {string=} opt_name Policy value to return.  Omitted or '' returns all.
- * @return {boolean|!e2e.otr.Policy|undefined}
- */
-e2e.otr.Session.prototype.getPolicy = function(opt_name) {
-  return opt_name ? this.policy_[opt_name] : goog.object.clone(this.policy_);
 };
 
 

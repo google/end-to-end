@@ -30,37 +30,18 @@ var tag = new Uint8Array([1, 2, 3, 4]);
 
 function testConstructor() {
   var s = new e2e.otr.Session(tag);
-  assertObjectEquals(constants.DEFAULT_POLICY, s.policy_);
+  assertObjectEquals(constants.DEFAULT_POLICY, s.policy);
   assertEquals(constants.MSGSTATE.PLAINTEXT, s.msgState_);
   assertEquals(constants.AUTHSTATE.NONE, s.authState_);
   assertUint8ArrayEquals(tag, s.instanceTag);
   assertUint8ArrayEquals([0, 0, 0, 0], s.remoteInstanceTag);
 
   s = new e2e.otr.Session(tag, {testProperty: 123});
-  assertEquals(123, s.policy_.testProperty);
+  assertEquals(123, s.policy.testProperty);
 
   assertThrows(function() {
     new e2e.otr.Session(new Uint8Array([0, 0, 0, 0]));
   });
-}
-
-function testUpdatePolicy() {
-  var s = new e2e.otr.Session(tag);
-  assertUndefined(s.policy_.testProperty);
-  s.updatePolicy({testProperty: 123});
-  assertEquals(123, s.policy_.testProperty);
-  s.updatePolicy({testProperty: 456});
-  assertEquals(456, s.policy_.testProperty);
-}
-
-function testGetPolicy() {
-  var s = new e2e.otr.Session(tag, {a: 1, b: 2});
-  assertEquals(1, s.getPolicy('a'));
-  assertEquals(2, s.getPolicy('b'));
-  assertUndefined(s.getPolicy('c'));
-  var s = new e2e.otr.Session(tag);
-  assertObjectEquals(constants.DEFAULT_POLICY, s.getPolicy());
-  assertObjectEquals(constants.DEFAULT_POLICY, s.getPolicy(''));
 }
 
 function testUpdateAuthState() {

@@ -62,11 +62,9 @@ e2e.otr.Short;
 /**
  * OTR policy configuration.
  * TODO: Clean up the typedef when closure-compiler #126 is resolved.
- * @typedef {{ALLOW_V1: (boolean|undefined), ALLOW_V2: (boolean|undefined),
- *     ALLOW_V3: (boolean|undefined), REQUIRE_ENCRYPTION: (boolean|undefined),
- *     SEND_WHITESPACE_TAG: (boolean|undefined),
- *     WHITESPACE_START_AKE: (boolean|undefined),
- *     ERROR_START_AKE: (boolean|undefined)}}
+ * @typedef {{ALLOW_V1: boolean, ALLOW_V2: boolean, ALLOW_V3: boolean,
+ *     REQUIRE_ENCRYPTION: boolean, SEND_WHITESPACE_TAG: boolean,
+ *     WHITESPACE_START_AKE: boolean, ERROR_START_AKE: boolean}}
  */
 e2e.otr.Policy;
 
