@@ -21,7 +21,6 @@ goog.provide('e2e.otr.pubkey.Pubkey');
 
 goog.require('e2e.otr');
 goog.require('e2e.otr.constants');
-goog.require('e2e.otr.error.NotImplementedError');
 goog.require('e2e.otr.error.ParseError');
 
 
@@ -77,6 +76,24 @@ e2e.otr.pubkey.Pubkey.prototype.serializePubkey = goog.abstractMethod;
 
 
 /**
+ * Object that keeps track of key types available.
+ * @private
+ * @type {!Object.<number, function(!Uint8Array):!e2e.otr.pubkey.Pubkey>}
+ */
+e2e.otr.pubkey.Pubkey.registeredKeyTypes_ = {};
+
+
+/**
+ * Registers a key type for parsing.
+ * @param {!function(new: e2e.otr.pubkey.Pubkey,...)} key The key constructor.
+ */
+e2e.otr.pubkey.Pubkey.add = function(key) {
+  e2e.otr.pubkey.Pubkey.registeredKeyTypes_[
+      e2e.otr.shortToNum(key.PUBKEY_TYPE)] = key.parse;
+};
+
+
+/**
  * Extracts a PUBKEY from the body, and returns the PUBKEY.
  * @param {!Uint8Array} body The body from where to extract the data.
  * @return {!e2e.otr.pubkey.Pubkey} The generated packet.
@@ -86,10 +103,12 @@ e2e.otr.pubkey.Pubkey.parse = function(body) {
     throw new e2e.otr.error.ParseError('Invalid pubkey header.');
   }
 
-  if (!goog.array.equals(body.subarray(0, 2), [0x00, 0x00])) {
+  var type = e2e.otr.shortToNum(body.subarray(0, 2));
+  var parser = e2e.otr.pubkey.Pubkey.registeredKeyTypes_[type];
+  if (!parser) {
     throw new e2e.error.UnsupportedError('Pubkey type not supported.');
   }
 
-  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+  return parser(body.subarray(2));
 };
 });
