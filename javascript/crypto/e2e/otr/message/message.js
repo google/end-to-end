@@ -96,10 +96,10 @@ e2e.otr.message.Message.prototype.serialize = function() {
 /**
  * Processes a serialized message.
  * @param {!e2e.otr.Session} session The enclosing session.
- * @param {!Uint8Array} serialized The serialized data.
+ * @param {!Uint8Array} data The data to be processed.
  */
-e2e.otr.message.Message.process = function(session, serialized) {
-  var iter = new e2e.otr.util.Iterator(serialized);
+e2e.otr.message.Message.process = function(session, data) {
+  var iter = new e2e.otr.util.Iterator(data);
 
   // TODO(user): allow other versions.
   if (e2e.otr.shortToNum(iter.next(2)) != 3) {
