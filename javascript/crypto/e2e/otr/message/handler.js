@@ -32,7 +32,7 @@ e2e.otr.message.handler.handlers_ = {};
 
 /**
  * Registers a message parsing function for a given message type.
- * @param {!function(new:e2e.otr.message.Message)} message The message
+ * @param {!function(new:e2e.otr.message.Encoded)} message The message
  *     constructor.
  * @suppress {missingProperties}
  */

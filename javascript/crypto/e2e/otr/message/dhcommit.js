@@ -31,7 +31,7 @@ goog.require('e2e.otr.Mpi');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.NotImplementedError');
 goog.require('e2e.otr.error.ParseError');
-goog.require('e2e.otr.message.Message');
+goog.require('e2e.otr.message.Encoded');
 goog.require('e2e.random');
 
 
@@ -43,7 +43,7 @@ var constants = e2e.otr.constants;
 /**
  * An OTRv3 DH COMMIT.
  * @constructor
- * @extends {e2e.otr.message.Message}
+ * @extends {e2e.otr.message.Encoded}
  * @param {!e2e.otr.Session} session The enclosing session.
  */
 e2e.otr.message.DhCommit = function(session) {
@@ -63,7 +63,7 @@ e2e.otr.message.DhCommit = function(session) {
   this.encryptedGxmpi_ = e2e.async.Result.getValue(encryptedGxmpi);
   this.gxmpiHash_ = new e2e.hash.Sha256().hash(gxmpi);
 };
-goog.inherits(e2e.otr.message.DhCommit, e2e.otr.message.Message);
+goog.inherits(e2e.otr.message.DhCommit, e2e.otr.message.Encoded);
 
 
 /**

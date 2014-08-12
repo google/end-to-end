@@ -21,7 +21,7 @@ goog.require('e2e.otr');
 goog.require('e2e.otr.Serializable');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.ParseError');
-goog.require('e2e.otr.message.Message');
+goog.require('e2e.otr.message.Encoded');
 goog.require('e2e.otr.testing');
 goog.require('goog.crypt.base64');
 goog.require('goog.testing.PropertyReplacer');
@@ -40,7 +40,7 @@ var msgImpl = function(session, content) {
   goog.base(this, session);
   this.content_ = content;
 };
-goog.inherits(msgImpl, e2e.otr.message.Message);
+goog.inherits(msgImpl, e2e.otr.message.Encoded);
 
 /** set type */
 msgImpl.MESSAGE_TYPE = e2e.otr.constants.MessageType.DATA;
@@ -110,7 +110,7 @@ function testSerialize() {
 }
 
 function testProcess() {
-  var process = e2e.otr.message.Message.process;
+  var process = e2e.otr.message.Encoded.process;
   assertThrows(goog.partial(process, null, [1]));
   assertTrue(assertThrows(goog.partial(process, null, new Uint8Array(
       [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]))) instanceof error.ParseError);

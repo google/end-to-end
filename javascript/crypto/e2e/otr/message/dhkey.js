@@ -24,7 +24,7 @@ goog.require('e2e.cipher.DiffieHellman');
 goog.require('e2e.otr.Mpi');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.NotImplementedError');
-goog.require('e2e.otr.message.Message');
+goog.require('e2e.otr.message.Encoded');
 goog.require('e2e.random');
 
 
@@ -36,7 +36,7 @@ var constants = e2e.otr.constants;
 /**
  * An OTRv3 DH KEY.
  * @constructor
- * @extends {e2e.otr.message.Message}
+ * @extends {e2e.otr.message.Encoded}
  * @param {!e2e.otr.Session} session The enclosing session.
  */
 e2e.otr.message.DhKey = function(session) {
@@ -44,7 +44,7 @@ e2e.otr.message.DhKey = function(session) {
   this.dh = new e2e.cipher.DiffieHellman(constants.DH_MODULUS,
       [constants.DH_GENERATOR]);
 };
-goog.inherits(e2e.otr.message.DhKey, e2e.otr.message.Message);
+goog.inherits(e2e.otr.message.DhKey, e2e.otr.message.Encoded);
 
 
 /**

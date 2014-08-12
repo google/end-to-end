@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 /**
- * @fileoverview Defines the Message interface.
+ * @fileoverview Defines the Encoded Message interface.
  *
  * @author rcc@google.com (Ryan Chan)
  */
 
-goog.provide('e2e.otr.message.Message');
+goog.provide('e2e.otr.message.Encoded');
 
 goog.require('e2e');
 goog.require('e2e.otr');
@@ -38,14 +38,14 @@ var MESSAGE_TYPE_VALUES = Object.keys(e2e.otr.constants.MessageType).map(
 
 
 /**
- * An OTRv3 message.
+ * An OTRv3 encoded message.
  * @constructor
  * @implements {e2e.otr.Serializable}
  * @param {!e2e.otr.Session} session The enclosing session.
  */
-e2e.otr.message.Message = function(session) {
+e2e.otr.message.Encoded = function(session) {
   //TODO(user): Remove when closure compiler issue #104 (@abstract) is resolved.
-  assert(this.constructor != e2e.otr.message.Message);
+  assert(this.constructor != e2e.otr.message.Encoded);
 
   assert(goog.isDefAndNotNull(this.constructor.MESSAGE_TYPE));
   assert(goog.isFunction(this.constructor.process));
@@ -60,7 +60,7 @@ e2e.otr.message.Message = function(session) {
   var receiverAsNum = e2e.otr.intToNum(this.receiver_);
   assert(!receiverAsNum || receiverAsNum >= 0x100);
 
-  e2e.otr.implements(e2e.otr.message.Message, e2e.otr.Serializable);
+  e2e.otr.implements(e2e.otr.message.Encoded, e2e.otr.Serializable);
 };
 
 
@@ -68,21 +68,22 @@ e2e.otr.message.Message = function(session) {
  * Specifies the type of the message.
  * @type {!e2e.otr.Byte}
  */
-e2e.otr.message.Message.MESSAGE_TYPE;
+e2e.otr.message.Encoded.MESSAGE_TYPE;
 
 
 /**
  * Serializes data to be contained in the message.
  * @return {!Uint8Array}
  */
-e2e.otr.message.Message.prototype.serializeMessageContent = goog.abstractMethod;
+e2e.otr.message.Encoded.prototype.serializeMessageContent =
+    goog.abstractMethod;
 
 
 /**
  * Wrapper for message serialization with version and message type.
  * @return {!Uint8Array} The serialized message.
  */
-e2e.otr.message.Message.prototype.serialize = function() {
+e2e.otr.message.Encoded.prototype.serialize = function() {
   return e2e.otr.serializeBytes([
     [0x00, 0x03], // protocol version TODO(user): allow other versions.
     this.constructor.MESSAGE_TYPE,
@@ -98,7 +99,7 @@ e2e.otr.message.Message.prototype.serialize = function() {
  * @param {!e2e.otr.Session} session The enclosing session.
  * @param {!Uint8Array} data The data to be processed.
  */
-e2e.otr.message.Message.process = function(session, data) {
+e2e.otr.message.Encoded.process = function(session, data) {
   var iter = new e2e.otr.util.Iterator(data);
 
   // TODO(user): allow other versions.
