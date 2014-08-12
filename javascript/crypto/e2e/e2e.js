@@ -54,6 +54,26 @@ e2e.longToByteArray = function(value) {
 
 
 /**
+ * Converts a non-negative number into a big-endian ByteArray.
+ * @param {!number} value The number to convert.
+ * @return {!e2e.ByteArray} The number as a big-endian ByteArray.
+ */
+e2e.numberToByteArray = function(value) {
+  if (value < 0) {
+    throw new e2e.error.InvalidArgumentsError(
+        'Cannot convert negative number to a byte array.');
+  }
+
+  var byteArray = [];
+  do {
+    byteArray.unshift(value & 0xff);
+    value >>>= 8;
+  } while (value > 0);
+  return byteArray;
+};
+
+
+/**
  * Turns an array of big endian 32 bits numbers into a byte array.
  * @see #byteArrayToDwordArray
  * @param {!e2e.DwordArray} dwords DwordArray to transform to ByteArray.

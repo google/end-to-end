@@ -40,6 +40,25 @@
 
 
       /**
+       * Tests that non-negative numbers are properly converted to big-endian byte arrays.
+       */
+      function testNumberToByteArray() {
+        // Check that error is thrown when converting negative numbers.
+        try {
+          assertThrows(e2e.numberToByteArray(-1));
+        }
+        catch (e) {
+          if (!(e instanceof e2e.error.InvalidArgumentsError)) {
+            throw e;
+          }
+        }
+
+        assertArrayEquals(e2e.numberToByteArray(0), [0x00]);
+        assertArrayEquals(e2e.numberToByteArray(10000), [0x27, 0x10]);
+        assertArrayEquals(e2e.numberToByteArray(16909060), [0x01, 0x02, 0x03, 0x04]);
+      }
+
+      /**
        * Tests that conversion from 8 bits array to 32 bits arrays is correct.
        */
       function testByteArrayToDwordArray() {
