@@ -84,19 +84,26 @@ function testConstructor() {
   assertThrows(construct());
   stubs.reset();
 
-  assertThrows(construct([0, 0, 0, 0]));
-
-  assertThrows(construct([0, 0, 0, 0xFF]));
-
-  assertNotThrows(construct([0, 0, 1, 0]));
-
-  assertNotThrows(construct(null, [0, 0, 0, 0]));
-
-  assertThrows(construct(null, [0, 0, 0, 0xFF]));
-
-  assertNotThrows(construct(null, [0, 0, 1, 0]));
-
   assertTrue(e2e.otr.implementationof(msgImpl, e2e.otr.Serializable));
+}
+
+function testPrepareSend() {
+  var makeSend = function(opt_sender, opt_receiver) {
+    return function() {
+      new msgImpl({
+        send: goog.nullFunction,
+        instanceTag: opt_sender || new Uint8Array([1, 2, 3, 4]),
+        remoteInstanceTag: opt_receiver || new Uint8Array([5, 6, 7, 8])
+      }, new Uint8Array()).prepareSend();
+    };
+  };
+
+  assertThrows(makeSend([0, 0, 0, 0]));
+  assertThrows(makeSend([0, 0, 0, 0xFF]));
+  assertNotThrows(makeSend([0, 0, 1, 0]));
+  assertNotThrows(makeSend(null, [0, 0, 0, 0]));
+  assertThrows(makeSend(null, [0, 0, 0, 0xFF]));
+  assertNotThrows(makeSend(null, [0, 0, 1, 0]));
 }
 
 function testSerialize() {

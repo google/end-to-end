@@ -41,9 +41,9 @@ var constants = e2e.otr.constants;
  */
 e2e.otr.message.DhKey = function(session) {
   goog.base(this, session);
-  this.dh = new e2e.cipher.DiffieHellman(constants.DH_MODULUS,
+  this.dh_ = new e2e.cipher.DiffieHellman(constants.DH_MODULUS,
       [constants.DH_GENERATOR]);
-  this.gy_ = this.dh.generate();
+  this.gy_ = this.dh_.generate();
 };
 goog.inherits(e2e.otr.message.DhKey, e2e.otr.message.Encoded);
 
@@ -53,6 +53,14 @@ goog.inherits(e2e.otr.message.DhKey, e2e.otr.message.Encoded);
  * @type {!e2e.otr.Byte}
  */
 e2e.otr.message.DhKey.MESSAGE_TYPE = constants.MessageType.DH_KEY;
+
+
+/** @inheritDoc */
+e2e.otr.message.DhKey.prototype.prepareSend = function() {
+  this.session_.authData.r = null;
+  this.session_.authData.dh = this.dh_;
+  return goog.base(this, 'prepareSend');
+};
 
 
 /**

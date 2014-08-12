@@ -48,15 +48,16 @@ var constants = e2e.otr.constants;
  */
 e2e.otr.message.DhCommit = function(session) {
   goog.base(this, session);
-  this.r = e2e.random.getRandomBytes(128 / 8);
-  this.dh = new e2e.cipher.DiffieHellman(constants.DH_MODULUS,
+  this.r_ = e2e.random.getRandomBytes(128 / 8);
+  this.dh_ = new e2e.cipher.DiffieHellman(constants.DH_MODULUS,
       [constants.DH_GENERATOR]);
-  var gxmpi = new e2e.otr.Mpi(new Uint8Array(this.dh.generate())).serialize();
+  this.gx_ = this.dh_.generate();
+  var gxmpi = new e2e.otr.Mpi(new Uint8Array(this.gx_)).serialize();
 
   // TODO(user): Remove when e2e supports TypedArrays
   gxmpi = Array.apply([], gxmpi);
 
-  var aes128 = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128, {key: this.r});
+  var aes128 = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128, {key: this.r_});
 
   var encryptedGxmpi = new e2e.ciphermode.Ctr(aes128)
       .encrypt(gxmpi, goog.array.repeat(0, aes128.blockSize));
@@ -71,6 +72,15 @@ goog.inherits(e2e.otr.message.DhCommit, e2e.otr.message.Encoded);
  * @type {!e2e.otr.Byte}
  */
 e2e.otr.message.DhCommit.MESSAGE_TYPE = constants.MessageType.DH_COMMIT;
+
+
+/** @inheritDoc */
+e2e.otr.message.DhCommit.prototype.prepareSend = function() {
+  this.session_.authData.r = this.r_;
+  this.session_.authData.dh = this.dh_;
+  this.session_.authData.gx = this.gx_;
+  return goog.base(this, 'prepareSend');
+};
 
 
 /**

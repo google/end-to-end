@@ -42,7 +42,18 @@ e2e.otr.message.Message = function(session) {
   assert(this.constructor != e2e.otr.message.Message);
   assert(goog.isFunction(this.constructor.process));
 
+  this.session_ = session;
+
   e2e.otr.implements(e2e.otr.message.Message, e2e.otr.Serializable);
+};
+
+
+/**
+ * Method called by session to prepare for sending.
+ * @return {string} The message being sent.
+ */
+e2e.otr.message.Message.prototype.prepareSend = function() {
+  return this.toString();
 };
 
 

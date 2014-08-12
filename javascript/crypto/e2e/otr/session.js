@@ -49,7 +49,7 @@ e2e.otr.Session = function(instanceTag, opt_policy) {
   assert(e2e.otr.intToNum(this.instanceTag) >= 0x100);
 
   this.authState_ = constants.AUTHSTATE.NONE;
-  this.authData = {r: null, dh: null};
+  this.authData = {r: null, dh: null, gx: null};
 };
 
 
@@ -66,7 +66,8 @@ e2e.otr.Session.prototype.processMessage = function(serialized) {
  * Stores AKE information.
  * @type {{
  *   r: e2e.ByteArray,
- *   dh: e2e.cipher.DiffieHellman
+ *   dh: e2e.cipher.DiffieHellman,
+ *   gx: e2e.ByteArray
  * }}
  */
 e2e.otr.Session.prototype.authData;
@@ -192,6 +193,9 @@ e2e.otr.Session.prototype.getValidMsgStateTransitions_ = function() {
  * @param {string|!e2e.otr.message.Message} data The message to send.
  */
 e2e.otr.Session.prototype.send = function(data) {
+  if (data instanceof e2e.otr.message.Message) {
+    data = data.prepareSend();
+  }
   throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
 };
 });

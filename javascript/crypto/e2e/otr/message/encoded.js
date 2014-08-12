@@ -55,14 +55,6 @@ e2e.otr.message.Encoded = function(session) {
   assert(goog.isDefAndNotNull(this.constructor.MESSAGE_TYPE));
   assert(MESSAGE_TYPE_VALUES.indexOf(
       e2e.otr.byteToNum(this.constructor.MESSAGE_TYPE)) != -1);
-
-  this.sender_ = session.instanceTag;
-  this.receiver_ = session.remoteInstanceTag;
-
-  assert(e2e.otr.intToNum(this.sender_) >= 0x100);
-
-  var receiverAsNum = e2e.otr.intToNum(this.receiver_);
-  assert(!receiverAsNum || receiverAsNum >= 0x100);
 };
 goog.inherits(e2e.otr.message.Encoded, e2e.otr.message.Message);
 
@@ -72,6 +64,17 @@ goog.inherits(e2e.otr.message.Encoded, e2e.otr.message.Message);
  * @type {!e2e.otr.Byte}
  */
 e2e.otr.message.Encoded.MESSAGE_TYPE;
+
+
+/** @inheritDoc */
+e2e.otr.message.Encoded.prototype.prepareSend = function() {
+  assert(e2e.otr.intToNum(this.session_.instanceTag) >= 0x100);
+
+  var receiverAsNum = e2e.otr.intToNum(this.session_.remoteInstanceTag);
+  assert(!receiverAsNum || receiverAsNum >= 0x100);
+
+  return goog.base(this, 'prepareSend');
+};
 
 
 /**
@@ -87,8 +90,8 @@ e2e.otr.message.Encoded.prototype.serialize = function() {
   return e2e.otr.serializeBytes([
     [0x00, 0x03], // protocol version TODO(user): allow other versions.
     this.constructor.MESSAGE_TYPE,
-    this.sender_,
-    this.receiver_,
+    this.session_.instanceTag,
+    this.session_.remoteInstanceTag,
     this.serializeMessageContent()
   ]);
 };
