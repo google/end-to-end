@@ -85,6 +85,8 @@ messages.ApiRequest.prototype.decryptPassphrase;
 messages.ApiRequest.prototype.passphraseCallback;
 /** @type {string|undefined} */
 messages.ApiRequest.prototype.currentUser;
+/** @type {boolean|undefined} */
+messages.ApiRequest.prototype.signMessage;
 /** @type {e2e.ext.constants.Actions} */
 messages.ApiRequest.prototype.action;
 

@@ -720,78 +720,43 @@ ui.Prompt.prototype.executeAction_ = function(action, elem, origin) {
   this.clearFailure_();
   switch (action) {
     case ext.constants.Actions.ENCRYPT_SIGN:
-      this.runWrappedProcessor_(/** @this ui.Prompt */ function() {
-        var selectedUids = this.chipHolder_ ?
-            this.chipHolder_.getSelectedUids() : [];
-        var keys = this.getEncryptKeys_(selectedUids);
-        var passphrases = this.chipHolder_ ?
-            this.chipHolder_.getProvidedPassphrases() : [];
-
-        var signerSelect =
-            goog.dom.getElement(constants.ElementId.SIGNER_SELECT);
-        var signerCheck =
-            goog.dom.getElement(constants.ElementId.SIGN_MESSAGE_CHECK);
-        var signMessage = signerCheck && signerCheck.checked;
-        if ((passphrases.length == 0 && keys.length == 0) &&
-            (!signMessage || selectedUids.length > 0)) {
-          this.displayFailure_(new utils.Error(
-              'No pasphrases nor keys available to encrypt.',
-              'promptNoEncryptionTarget'));
-          return;
-        }
-        this.pgpLauncher_.getContext()
-            .searchPrivateKey(signerSelect.value)
-            .addCallback(goog.bind(function(privateKeys) {
-              var signingKey = null;
-              if (signMessage && privateKeys && privateKeys.length > 0) {
-                // Just choose one private key for now.
-                signingKey = privateKeys[0];
-              }
-              if (keys.length > 0 || passphrases.length > 0) {
-                // If encrypting the message, always add the sender key for him
-                // to be able to decrypt.
-                var senderKeys = this.getEncryptKeys_([signerSelect.value]);
-                goog.array.forEach(senderKeys, function(senderKey) {
-                  var found = goog.array.some(keys, function(key) {
-                    return goog.array.equals(key.key.fingerprint,
-                                             senderKey.key.fingerprint);
-                  });
-                  // Do not add this sender key if it is already present.
-                  if (!found) {
-                    goog.array.extend(keys, senderKey);
-                  }
-                });
-              }
-              this.pgpLauncher_.getContext()
-                .encryptSign(
-                    textArea.value,
-                    [], // Options.
-                    keys, // Keys to encrypt to.
-                    passphrases, // For symmetrically-encrypted session keys.
-                    signingKey) // Key to sign with.
-                .addCallback(goog.bind(function(res) {
-                  textArea.disabled = true;
-                  textArea.value = res;
-                  this.chipHolder_.lock();
-                  var passphraseEncryptionLink = goog.dom.getElement(
-                    constants.ElementId.PASSPHRASE_ENCRYPTION_LINK);
-                  goog.dom.classlist.add(passphraseEncryptionLink,
-                      constants.CssClass.INVISIBLE);
-                  var signCheckbox = goog.dom.getElement(
-                    constants.ElementId.SIGN_MESSAGE_CHECK);
-                  signCheckbox.disabled = true;
-                  this.clearSavedDraft_(origin);
-                  this.surfaceDismissButton_();
-                  var insertButton =
-                      this.getElementByClass(constants.CssClass.INSERT);
-                  if (insertButton) {
-                    goog.dom.classlist.remove(
-                        insertButton, constants.CssClass.HIDDEN);
-                  }
-                }, this))
-                .addErrback(this.displayFailure_, this);
-            }, this));
+      var request = /** @type {!messages.ApiRequest} */ ({
+        action: constants.Actions.ENCRYPT_SIGN,
+        content: textArea.value,
+        currentUser:
+            goog.dom.getElement(constants.ElementId.SIGNER_SELECT).value
       });
+
+      if (this.chipHolder_) {
+        request.recipients = this.chipHolder_.getSelectedUids();
+        request.encryptPassphrases = this.chipHolder_.getProvidedPassphrases();
+      }
+
+      var signerCheck =
+          goog.dom.getElement(constants.ElementId.SIGN_MESSAGE_CHECK);
+      request.signMessage = signerCheck && signerCheck.checked;
+
+      this.actionExecutor_.execute(
+          request, this, goog.bind(function(encrypted) {
+            textArea.disabled = true;
+            textArea.value = encrypted;
+            this.chipHolder_.lock();
+            var passphraseEncryptionLink = goog.dom.getElement(
+                constants.ElementId.PASSPHRASE_ENCRYPTION_LINK);
+            goog.dom.classlist.add(passphraseEncryptionLink,
+                constants.CssClass.INVISIBLE);
+            var signCheckbox = goog.dom.getElement(
+              constants.ElementId.SIGN_MESSAGE_CHECK);
+            signCheckbox.disabled = true;
+            this.clearSavedDraft_(origin);
+            this.surfaceDismissButton_();
+            var insertButton =
+                this.getElementByClass(constants.CssClass.INSERT);
+            if (insertButton) {
+              goog.dom.classlist.remove(
+                  insertButton, constants.CssClass.HIDDEN);
+            }
+          }, this));
       break;
     case constants.Actions.DECRYPT_VERIFY:
       this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
@@ -907,11 +872,21 @@ ui.Prompt.prototype.insertMessageIntoPage_ = function(origin) {
 ui.Prompt.prototype.saveDraft_ = function(origin, evt) {
   var formText = this.getElement().querySelector('textarea');
 
-  this.runWrappedProcessor_(/** @this ui.Prompt */ function() {
-    var signerSelect = goog.dom.getElement(constants.ElementId.SIGNER_SELECT);
-    var encryptionKeys = this.getEncryptKeys_([signerSelect.value]);
-
-    if (encryptionKeys.length == 0 && evt.type == goog.events.EventType.CLICK) {
+  this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
+    action: constants.Actions.ENCRYPT_SIGN,
+    content: formText.value,
+    currentUser: goog.dom.getElement(constants.ElementId.SIGNER_SELECT).value
+  }), this, goog.bind(function(encrypted) {
+    var draft = e2e.openpgp.asciiArmor.markAsDraft(encrypted);
+    if (evt.type == goog.events.EventType.CLICK) {
+      this.pgpLauncher_.updateSelectedContent(
+          draft, [], origin, true, goog.nullFunction);
+    } else {
+      drafts.saveDraft(draft, origin);
+    }
+  }, this), goog.bind(function(error) {
+    if (evt.type == goog.events.EventType.CLICK &&
+        error.messageId == 'promptNoEncryptionTarget') {
       var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
       var dialog = new dialogs.Generic(
           chrome.i18n.getMessage('promptNoEncryptionKeysFound'),
@@ -922,24 +897,10 @@ ui.Prompt.prototype.saveDraft_ = function(origin, evt) {
 
       this.addChild(dialog, false);
       dialog.render(popupElem);
-
-    } else if (encryptionKeys.length > 0) {
-      this.pgpLauncher_.getContext().encryptSign(
-          formText.value,
-          [], // Options.
-          encryptionKeys, // Keys to encrypt to.
-          [] // For symmetrically-encrypted session keys.
-      ).addCallback(goog.bind(function(res) {
-        var draft = e2e.openpgp.asciiArmor.markAsDraft(res);
-        if (evt.type == goog.events.EventType.CLICK) {
-          this.pgpLauncher_.updateSelectedContent(
-              draft, [], origin, true, function() {});
-        } else {
-          drafts.saveDraft(draft, origin);
-        }
-      }, this)).addErrback(this.displayFailure_, this);
+    } else {
+      this.displayFailure_(error);
     }
-  });
+  }, this));
 };
 
 
