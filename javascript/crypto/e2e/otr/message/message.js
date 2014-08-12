@@ -65,12 +65,14 @@ e2e.otr.message.Message.process = function(session, data) {
   } else if (goog.string.startsWith(data, constants.MESSAGE_PREFIX.ERROR)) {
     throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
 
-  } else if (e2e.otr.message.Query.parseEmbedded(data)) {
-    e2e.otr.message.Query.process(session, data);
-
   } else {
-    // TODO(user): Support for non-OTR messages, tagged plaintext messages.
-    throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+    var versionBits = e2e.otr.message.Query.parseEmbedded(data);
+    if (versionBits) {
+      e2e.otr.message.Query.process(session, versionBits);
+    } else {
+      // TODO(user): Support for non-OTR messages, tagged plaintext messages.
+      throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+    }
   }
 };
 });

@@ -32,13 +32,17 @@ var versions = constants.Version;
 
 
 function testFromVersion() {
-  assertEquals(query.fromVersion(versions.V1), '?OTR?');
-  assertEquals(query.fromVersion(versions.V2), '?OTRv2?');
-  assertEquals(query.fromVersion(versions.V3), '?OTRv3?');
-  assertEquals(query.fromVersion(versions.V1 | versions.V2), '?OTR?v2?');
-  assertEquals(query.fromVersion(versions.V1 | versions.V3), '?OTR?v3?');
-  assertEquals(query.fromVersion(versions.V2 | versions.V3), '?OTRv23?');
-  assertEquals(query.fromVersion(versions.V1 | versions.V2 | versions.V3),
+  assertEquals(new query(null, versions.V1).toString(), '?OTR?');
+  assertEquals(new query(null, versions.V2).toString(), '?OTRv2?');
+  assertEquals(new query(null, versions.V3).toString(), '?OTRv3?');
+  assertEquals(new query(null, versions.V1 | versions.V2).toString(),
+      '?OTR?v2?');
+  assertEquals(new query(null, versions.V1 | versions.V3).toString(),
+      '?OTR?v3?');
+  assertEquals(new query(null, versions.V2 | versions.V3).toString(),
+      '?OTRv23?');
+  assertEquals(
+      new query(null, versions.V1 | versions.V2 | versions.V3).toString(),
       '?OTR?v23?');
 }
 

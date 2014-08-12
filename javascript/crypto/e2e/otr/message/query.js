@@ -23,6 +23,7 @@ goog.provide('e2e.otr.message.Query');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.NotImplementedError');
 goog.require('e2e.otr.error.ParseError');
+goog.require('e2e.otr.message.Message');
 goog.require('e2e.otr.util.Iterator');
 
 
@@ -32,17 +33,30 @@ var versions = constants.Version;
 
 
 /**
- * Generates a Query Message from version flags.
+ * OTR query message
+ * @constructor
+ * @param {!e2e.otr.Session} session The enclosing session.
  * @param {number} version A bit array specifying the versions supported.
+ * @extends {e2e.otr.message.Message}
+ */
+e2e.otr.message.Query = function(session, version) {
+  this.version_ = version;
+  goog.base(this, session);
+};
+goog.inherits(e2e.otr.message.Query, e2e.otr.message.Message);
+
+
+/**
+ * Generates a Query Message from version flags.
  * @return {string} An OTR Query Message string specifying supported versions.
  */
-e2e.otr.message.Query.fromVersion = function(version) {
+e2e.otr.message.Query.prototype.toString = function() {
   return constants.MESSAGE_PREFIX.QUERY +
-      (version & versions.V1 ? '?' : '') +
-      (version & ~versions.V1 ? 'v' : '') +
-      (version & versions.V2 ? '2' : '') +
-      (version & versions.V3 ? '3' : '') +
-      (version & ~versions.V1 ? '?' : '');
+      (this.version_ & versions.V1 ? '?' : '') +
+      (this.version_ & ~versions.V1 ? 'v' : '') +
+      (this.version_ & versions.V2 ? '2' : '') +
+      (this.version_ & versions.V3 ? '3' : '') +
+      (this.version_ & ~versions.V1 ? '?' : '');
 };
 
 
@@ -117,9 +131,12 @@ e2e.otr.message.Query.parseEmbedded = function(str) {
 /**
  * Processes an incoming Query Message.
  * @param {!e2e.otr.Session} session The enclosing session.
- * @param {string} data The data to be processed.
+ * @param {number} version A bit array specifying the versions supported.
  */
-e2e.otr.message.Query.process = function(session, data) {
-  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+e2e.otr.message.Query.process = function(session, version) {
+  if (version & versions.V3 && session.policy.ALLOW_V3) {
+    session.send(new e2e.otr.message.DhCommit(session));
+    session.setAuthState(constants.AUTHSTATE.AWAITING_DHKEY);
+  }
 };
 });
