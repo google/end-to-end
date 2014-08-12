@@ -20,6 +20,7 @@
 
 goog.provide('e2e.otr.Session');
 
+goog.require('e2e.otr');
 goog.require('e2e.otr.constants');
 
 
@@ -31,14 +32,19 @@ var constants = e2e.otr.constants;
 /**
  * A session maintaining the state and configuration of an OTR conversation.
  * @constructor
+ * @param {!e2e.otr.Int} instanceTag The client's instance tag.
  * @param {!e2e.otr.Policy} opt_policy Policy params to be set on the session.
  */
-e2e.otr.Session = function(opt_policy) {
+e2e.otr.Session = function(instanceTag, opt_policy) {
   this.policy_ = goog.object.clone(constants.DEFAULT_POLICY);
   this.updatePolicy(opt_policy || {});
 
   this.messageState = constants.MSGSTATE.PLAINTEXT;
   this.authState = constants.AUTHSTATE.NONE;
+  this.remoteInstanceTag = new Uint8Array([0, 0, 0, 0]);
+
+  this.instanceTag = instanceTag;
+  assert(e2e.otr.intToNum(this.instanceTag) >= 0x100);
 };
 
 

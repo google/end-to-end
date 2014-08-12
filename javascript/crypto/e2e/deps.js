@@ -149,7 +149,7 @@ goog.addDependency('../crypto/e2e/otr/message/query.js', ['e2e.otr.message.Query
 goog.addDependency('../crypto/e2e/otr/mpi.js', ['e2e.otr.Mpi'], ['e2e', 'e2e.otr', 'e2e.otr.error.ParseError'], false);
 goog.addDependency('../crypto/e2e/otr/otr.js', ['e2e.otr'], ['e2e', 'e2e.otr.Serializable', 'e2e.otr.error.InvalidArgumentsError'], false);
 goog.addDependency('../crypto/e2e/otr/serializable.js', ['e2e.otr.Serializable'], [], false);
-goog.addDependency('../crypto/e2e/otr/session.js', ['e2e.otr.Session'], ['e2e.otr.constants'], false);
+goog.addDependency('../crypto/e2e/otr/session.js', ['e2e.otr.Session'], ['e2e.otr', 'e2e.otr.constants'], false);
 goog.addDependency('../crypto/e2e/otr/testing.js', ['e2e.otr.testing'], ['goog.array', 'goog.testing.asserts'], false);
 goog.addDependency('../crypto/e2e/otr/types.js', ['e2e.otr.Byte', 'e2e.otr.Ctr', 'e2e.otr.Int', 'e2e.otr.Mac', 'e2e.otr.Short'], [], false);
 goog.addDependency('../crypto/e2e/otr/util/iterator.js', ['e2e.otr.util.Iterator'], ['e2e.otr.error.InvalidArgumentsError'], false);

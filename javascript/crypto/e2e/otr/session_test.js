@@ -19,25 +19,33 @@
 
 goog.require('e2e.otr.Session');
 goog.require('e2e.otr.constants');
+goog.require('e2e.otr.testing');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 
 goog.setTestOnly();
 
 var constants = e2e.otr.constants;
+var tag = new Uint8Array([1, 2, 3, 4]);
 
 function testConstructor() {
-  var s = new e2e.otr.Session();
+  var s = new e2e.otr.Session(tag);
   assertObjectEquals(constants.DEFAULT_POLICY, s.policy_);
   assertEquals(constants.MSGSTATE.PLAINTEXT, s.messageState);
   assertEquals(constants.AUTHSTATE.NONE, s.authState);
+  assertUint8ArrayEquals(tag, s.instanceTag);
+  assertUint8ArrayEquals([0, 0, 0, 0], s.remoteInstanceTag);
 
-  s = new e2e.otr.Session({testProperty: 123});
+  s = new e2e.otr.Session(tag, {testProperty: 123});
   assertEquals(123, s.policy_.testProperty);
+
+  assertThrows(function() {
+    new e2e.otr.Session(new Uint8Array([0, 0, 0, 0]));
+  });
 }
 
 function testUpdatePolicy() {
-  var s = new e2e.otr.Session();
+  var s = new e2e.otr.Session(tag);
   assertUndefined(s.policy_.testProperty);
   s.updatePolicy({testProperty: 123});
   assertEquals(123, s.policy_.testProperty);
@@ -46,11 +54,11 @@ function testUpdatePolicy() {
 }
 
 function testGetPolicy() {
-  var s = new e2e.otr.Session({a: 1, b: 2});
+  var s = new e2e.otr.Session(tag, {a: 1, b: 2});
   assertEquals(1, s.getPolicy('a'));
   assertEquals(2, s.getPolicy('b'));
   assertUndefined(s.getPolicy('c'));
-  var s = new e2e.otr.Session();
+  var s = new e2e.otr.Session(tag);
   assertObjectEquals(constants.DEFAULT_POLICY, s.getPolicy());
   assertObjectEquals(constants.DEFAULT_POLICY, s.getPolicy(''));
 }
