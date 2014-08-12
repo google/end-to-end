@@ -67,10 +67,3 @@ e2e.otr.Short;
  *     WHITESPACE_START_AKE: boolean, ERROR_START_AKE: boolean}}
  */
 e2e.otr.Policy;
-
-
-/**
- * OTR protocol type Sig.
- * @typedef {{r: !Uint8Array, s: !Uint8Array}}
- */
-e2e.otr.Sig;
