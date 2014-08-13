@@ -127,29 +127,3 @@
   <button class="{e2e.ext.constants.CssClass.ACTION}">{$actionButtonTitle}</button>
   <button class="{e2e.ext.constants.CssClass.CANCEL}">{$cancelButtonTitle}</button>
 {/template}
-
-
-/**
- * Renders the chip holder.
- * @param recipientsTitle The placeholder text for the recipients field.
- */
-{template .renderChipHolder}
-  <div id="{e2e.ext.constants.ElementId.KEY_SELECT_FORM}">
-    <div class="{e2e.ext.constants.CssClass.CHIPS}">
-      <span>{$recipientsTitle}</span>
-      <input type="text">
-    </div>
-  </div>
-{/template}
-
-
-/**
- * Renders a chip that represents a PGP UID or passphrase.
- * @param value The UID or passphrase to render.
- */
-{template .renderChip}
-  <div class="{e2e.ext.constants.CssClass.CHIP}">
-    <div>{$value}</div>
-    <img src="images/close.png">
-  </div>
-{/template}

@@ -16,10 +16,10 @@
  * in the UI.
  */
 
-goog.provide('e2e.ext.Chip');
+goog.provide('e2e.ext.ui.panels.Chip');
 
 goog.require('e2e.ext.constants.CssClass');
-goog.require('e2e.ext.ui.templates.prompt');
+goog.require('e2e.ext.ui.templates.panels.chipholder');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
@@ -28,8 +28,8 @@ goog.require('goog.ui.Component');
 goog.require('soy');
 
 goog.scope(function() {
-var ext = e2e.ext;
-var templates = e2e.ext.ui.templates.prompt;
+var panels = e2e.ext.ui.panels;
+var templates = e2e.ext.ui.templates.panels.chipholder;
 var constants = e2e.ext.constants;
 
 
@@ -41,7 +41,7 @@ var constants = e2e.ext.constants;
  * @constructor
  * @extends {goog.ui.Component}
  */
-ext.Chip = function(value, opt_isPassphrase) {
+panels.Chip = function(value, opt_isPassphrase) {
   goog.base(this);
 
   /**
@@ -66,17 +66,17 @@ ext.Chip = function(value, opt_isPassphrase) {
    */
   this.isPassphrase_ = Boolean(opt_isPassphrase);
 };
-goog.inherits(ext.Chip, goog.ui.Component);
+goog.inherits(panels.Chip, goog.ui.Component);
 
 
 /** @override */
-ext.Chip.prototype.createDom = function() {
+panels.Chip.prototype.createDom = function() {
   this.decorateInternal(goog.dom.createElement(goog.dom.TagName.DIV));
 };
 
 
 /** @override */
-ext.Chip.prototype.decorateInternal = function(elem) {
+panels.Chip.prototype.decorateInternal = function(elem) {
   this.setElementInternal(elem);
 
   var displayValue = this.isPassphrase() ?
@@ -88,7 +88,7 @@ ext.Chip.prototype.decorateInternal = function(elem) {
 
 
 /** @override */
-ext.Chip.prototype.enterDocument = function() {
+panels.Chip.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
   this.getHandler().listen(
@@ -102,7 +102,7 @@ ext.Chip.prototype.enterDocument = function() {
  * Returns the enclosed UID or passphrase.
  * @return {string} The enclosed UID or passphrase.
  */
-ext.Chip.prototype.getValue = function() {
+panels.Chip.prototype.getValue = function() {
   return this.value_;
 };
 
@@ -111,7 +111,7 @@ ext.Chip.prototype.getValue = function() {
  * Removes the current chip from the UI, if it's not locked.
  * @return {boolean} Value indicating if the chip was removed.
  */
-ext.Chip.prototype.remove = function() {
+panels.Chip.prototype.remove = function() {
   if (this.isLocked_) {
     return false;
   }
@@ -123,7 +123,7 @@ ext.Chip.prototype.remove = function() {
 /**
  * Hides UI element that enables users to remove a chip.
  */
-ext.Chip.prototype.lock = function() {
+panels.Chip.prototype.lock = function() {
   this.isLocked_ = true;
   var img = this.getElement().querySelector('img');
   goog.dom.classlist.add(img, constants.CssClass.INVISIBLE);
@@ -134,7 +134,7 @@ ext.Chip.prototype.lock = function() {
  * Returns true, if chip is locked and cannot be removed or changed.
  * @return {boolean} is chip locked
  */
-ext.Chip.prototype.isLocked = function() {
+panels.Chip.prototype.isLocked = function() {
   return this.isLocked_;
 };
 
@@ -142,7 +142,7 @@ ext.Chip.prototype.isLocked = function() {
 /**
  * @return {boolean} True if the value of this chip is a passphrase.
  */
-ext.Chip.prototype.isPassphrase = function() {
+panels.Chip.prototype.isPassphrase = function() {
   return this.isPassphrase_;
 };
 

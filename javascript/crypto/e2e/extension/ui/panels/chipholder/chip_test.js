@@ -15,10 +15,10 @@
  * @fileoverview Tests for the UI chips.
  */
 
-goog.provide('e2e.ext.ChipTest');
+goog.provide('e2e.ext.ui.panels.ChipTest');
 
-goog.require('e2e.ext.Chip');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.ui.panels.Chip');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
@@ -42,7 +42,7 @@ function tearDown() {
 
 function testRenderUid() {
   var uid = 'test uid';
-  var chip = new e2e.ext.Chip(uid);
+  var chip = new e2e.ext.ui.panels.Chip(uid);
   chip.render(document.body);
 
   assertContains(uid, document.body.textContent);
@@ -52,7 +52,7 @@ function testRenderUid() {
 
 function testRenderPassphrase() {
   var pass = 'secret';
-  var chip = new e2e.ext.Chip(pass, true);
+  var chip = new e2e.ext.ui.panels.Chip(pass, true);
   chip.render(document.body);
 
   assertContains('promptPassphraseMask', document.body.textContent);
@@ -62,7 +62,7 @@ function testRenderPassphrase() {
 
 function testRemove() {
   var parent = new goog.ui.Component();
-  var chip = new e2e.ext.Chip('irrelevant', true);
+  var chip = new e2e.ext.ui.panels.Chip('irrelevant', true);
 
   parent.addChild(chip, true);
   assertTrue(chip.remove());
@@ -73,7 +73,7 @@ function testRemove() {
 
 function testLock() {
   var parent = new goog.ui.Component();
-  var chip = new e2e.ext.Chip('irrelevant', true);
+  var chip = new e2e.ext.ui.panels.Chip('irrelevant', true);
   parent.addChild(chip, true);
   assertFalse(chip.isLocked());
   chip.lock();

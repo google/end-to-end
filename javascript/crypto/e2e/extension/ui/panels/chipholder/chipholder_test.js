@@ -15,10 +15,10 @@
  * @fileoverview Tests for the UI chip holder.
  */
 
-goog.provide('e2e.ext.ChipHolderTest');
+goog.provide('e2e.ext.ui.panels.ChipHolderTest');
 
-goog.require('e2e.ext.ChipHolder');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.ui.panels.ChipHolder');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.style');
@@ -37,7 +37,7 @@ function setUp() {
     return msg;
   });
 
-  chipHolder = new e2e.ext.ChipHolder(['1'], ['1', '2', '3']);
+  chipHolder = new e2e.ext.ui.panels.ChipHolder(['1'], ['1', '2', '3']);
   chipHolder.decorate(document.body);
 }
 
@@ -55,7 +55,7 @@ function testRender() {
 
 function testAddChip() {
   chipHolder.addChip('2');
-  chipHolder.addChip(new e2e.ext.Chip('5', true));
+  chipHolder.addChip(new e2e.ext.ui.panels.Chip('5', true));
   assertEquals('1,2', chipHolder.getSelectedUids().join(','));
   assertEquals('5', chipHolder.getProvidedPassphrases().join(','));
 }

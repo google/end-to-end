@@ -15,11 +15,11 @@
  * @fileoverview Holds one to many UI chips.
  */
 
-goog.provide('e2e.ext.ChipHolder');
+goog.provide('e2e.ext.ui.panels.ChipHolder');
 
-goog.require('e2e.ext.Chip');
 goog.require('e2e.ext.constants.CssClass');
-goog.require('e2e.ext.ui.templates.prompt');
+goog.require('e2e.ext.ui.panels.Chip');
+goog.require('e2e.ext.ui.templates.panels.chipholder');
 goog.require('goog.array');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
@@ -34,9 +34,9 @@ goog.require('goog.ui.ac.AutoComplete');
 goog.require('soy');
 
 goog.scope(function() {
-var ext = e2e.ext;
 var constants = e2e.ext.constants;
-var templates = e2e.ext.ui.templates.prompt;
+var panels = e2e.ext.ui.panels;
+var templates = e2e.ext.ui.templates.panels.chipholder;
 
 
 
@@ -48,7 +48,7 @@ var templates = e2e.ext.ui.templates.prompt;
  * @constructor
  * @extends {goog.ui.Component}
  */
-ext.ChipHolder = function(selectedUids, allUids) {
+panels.ChipHolder = function(selectedUids, allUids) {
   goog.base(this);
 
   /**
@@ -73,7 +73,7 @@ ext.ChipHolder = function(selectedUids, allUids) {
   this.isLocked_ = false;
 
 };
-goog.inherits(ext.ChipHolder, goog.ui.Component);
+goog.inherits(panels.ChipHolder, goog.ui.Component);
 
 
 /**
@@ -81,7 +81,7 @@ goog.inherits(ext.ChipHolder, goog.ui.Component);
  * @type {Element}
  * @private
  */
-ext.ChipHolder.prototype.shadowInputElem_ = null;
+panels.ChipHolder.prototype.shadowInputElem_ = null;
 
 
 /**
@@ -89,7 +89,7 @@ ext.ChipHolder.prototype.shadowInputElem_ = null;
  * @type {goog.ui.ac.AutoComplete}
  * @private
  */
-ext.ChipHolder.prototype.autoComplete_ = null;
+panels.ChipHolder.prototype.autoComplete_ = null;
 
 
 /**
@@ -97,11 +97,11 @@ ext.ChipHolder.prototype.autoComplete_ = null;
  * @type {goog.events.KeyHandler}
  * @private
  */
-ext.ChipHolder.prototype.keyHandler_ = null;
+panels.ChipHolder.prototype.keyHandler_ = null;
 
 
 /** @override */
-ext.ChipHolder.prototype.decorateInternal = function(elem) {
+panels.ChipHolder.prototype.decorateInternal = function(elem) {
   this.setElementInternal(elem);
   this.keyHandler_ = new goog.events.KeyHandler(elem, true);
 
@@ -114,7 +114,7 @@ ext.ChipHolder.prototype.decorateInternal = function(elem) {
 
 
 /** @override */
-ext.ChipHolder.prototype.enterDocument = function() {
+panels.ChipHolder.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
   goog.array.forEach(this.selectedUids_, this.addChip, this);
@@ -152,20 +152,20 @@ ext.ChipHolder.prototype.enterDocument = function() {
 /**
  * Adds a new chip to the chip holder using the selection in the input field.
  * Aborts if ChipHolder is locked.
- * @param {ext.Chip|string=} opt_chip The chip or UID to render.
+ * @param {panels.Chip|string=} opt_chip The chip or UID to render.
  */
-ext.ChipHolder.prototype.addChip = function(opt_chip) {
+panels.ChipHolder.prototype.addChip = function(opt_chip) {
   if (this.isLocked_) {
     return;
   }
 
   var chip = null;
-  if (opt_chip && opt_chip instanceof ext.Chip) {
-    chip = /** @type {ext.Chip} */ (opt_chip);
+  if (opt_chip && opt_chip instanceof panels.Chip) {
+    chip = /** @type {panels.Chip} */ (opt_chip);
   } else {
     var uid = goog.string.trim(typeof opt_chip == 'string' ?
         opt_chip : this.shadowInputElem_.value);
-    chip = new ext.Chip(uid.replace(/,\s*$/, ''));
+    chip = new panels.Chip(uid.replace(/,\s*$/, ''));
   }
 
   if (chip.getValue().length == 0) {
@@ -184,7 +184,7 @@ ext.ChipHolder.prototype.addChip = function(opt_chip) {
  * Returns a list with the selected UIDs.
  * @return {!Array.<string>} A list with the selected UIDs.
  */
-ext.ChipHolder.prototype.getSelectedUids = function() {
+panels.ChipHolder.prototype.getSelectedUids = function() {
   if (this.shadowInputElem_.value.length > 0) {
     this.addAndMarkChip_(true);
   }
@@ -203,7 +203,7 @@ ext.ChipHolder.prototype.getSelectedUids = function() {
  * Returns a list with the user-provided passphrases (for symmetric encryption).
  * @return {!Array.<string>} A list with the provided passphrases.
  */
-ext.ChipHolder.prototype.getProvidedPassphrases = function() {
+panels.ChipHolder.prototype.getProvidedPassphrases = function() {
   var passphrases = new goog.structs.Map();
   this.forEachChild(function(chip) {
     if (chip.isPassphrase()) {
@@ -220,7 +220,7 @@ ext.ChipHolder.prototype.getProvidedPassphrases = function() {
  * Changes focus to the input field.
  * @private
  */
-ext.ChipHolder.prototype.refocus_ = function() {
+panels.ChipHolder.prototype.refocus_ = function() {
   this.shadowInputElem_.focus();
 };
 
@@ -231,7 +231,7 @@ ext.ChipHolder.prototype.refocus_ = function() {
  * @param {goog.events.KeyEvent} evt The keyboard event to handle.
  * @private
  */
-ext.ChipHolder.prototype.handleKeyEvent_ = function(evt) {
+panels.ChipHolder.prototype.handleKeyEvent_ = function(evt) {
   if (this.isLocked_) {
     return;
   }
@@ -272,7 +272,7 @@ ext.ChipHolder.prototype.handleKeyEvent_ = function(evt) {
  * @param {boolean} markChipBad Whether to mark the chip bad.
  * @private
  */
-ext.ChipHolder.prototype.addAndMarkChip_ = function(markChipBad) {
+panels.ChipHolder.prototype.addAndMarkChip_ = function(markChipBad) {
   this.addChip();
 
   if (markChipBad) {
@@ -286,7 +286,7 @@ ext.ChipHolder.prototype.addAndMarkChip_ = function(markChipBad) {
  * Increases the width of the input field.
  * @private
  */
-ext.ChipHolder.prototype.increaseInputArea_ = function() {
+panels.ChipHolder.prototype.increaseInputArea_ = function() {
   goog.style.setWidth(
       this.shadowInputElem_,
       goog.style.getSize(this.shadowInputElem_).width + 10);
@@ -294,7 +294,7 @@ ext.ChipHolder.prototype.increaseInputArea_ = function() {
 
 
 /** @override */
-ext.ChipHolder.prototype.removeChild = function(child, opt_unrender) {
+panels.ChipHolder.prototype.removeChild = function(child, opt_unrender) {
   var result = goog.base(this, 'removeChild', child, opt_unrender);
 
   if (this.getChildCount() == 0) {
@@ -310,7 +310,7 @@ ext.ChipHolder.prototype.removeChild = function(child, opt_unrender) {
  * user has pressed backspace. Aborts if ChipHolder is locked.
  * @private
  */
-ext.ChipHolder.prototype.removeChipOnBackspace_ = function() {
+panels.ChipHolder.prototype.removeChipOnBackspace_ = function() {
   if (this.isLocked_) {
     return;
   }
@@ -328,7 +328,7 @@ ext.ChipHolder.prototype.removeChipOnBackspace_ = function() {
 /**
  * Locks a ChipHolder, disallowing modifications to chips.
  */
-ext.ChipHolder.prototype.lock = function() {
+panels.ChipHolder.prototype.lock = function() {
   this.isLocked_ = true;
   this.forEachChild(function(chip) {
     chip.lock();
@@ -341,7 +341,7 @@ ext.ChipHolder.prototype.lock = function() {
  * Returns true, if ChipHolder is locked and cannot be removed or changed.
  * @return {boolean} is ChipHolder locked
  */
-ext.ChipHolder.prototype.isLocked = function() {
+panels.ChipHolder.prototype.isLocked = function() {
   return this.isLocked_;
 };
 

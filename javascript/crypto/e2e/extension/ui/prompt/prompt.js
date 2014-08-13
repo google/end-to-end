@@ -19,8 +19,6 @@
 
 goog.provide('e2e.ext.ui.Prompt');
 
-goog.require('e2e.ext.Chip');
-goog.require('e2e.ext.ChipHolder');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.constants.Actions');
@@ -30,6 +28,8 @@ goog.require('e2e.ext.messages.ApiRequest');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.draftmanager');
+goog.require('e2e.ext.ui.panels.Chip');
+goog.require('e2e.ext.ui.panels.ChipHolder');
 goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.ui.templates.prompt');
 goog.require('e2e.ext.utils');
@@ -54,6 +54,7 @@ var dialogs = e2e.ext.ui.dialogs;
 var drafts = e2e.ext.ui.draftmanager;
 var ext = e2e.ext;
 var messages = e2e.ext.messages;
+var panels = e2e.ext.ui.panels;
 var preferences = e2e.ext.ui.preferences;
 var templates = e2e.ext.ui.templates.prompt;
 var ui = e2e.ext.ui;
@@ -101,7 +102,7 @@ ui.Prompt.prototype.pgpLauncher_ = null;
 
 /**
  * A holder for the intended recipients of a PGP message.
- * @type {ext.ChipHolder}
+ * @type {panels.ChipHolder}
  * @private
  */
 ui.Prompt.prototype.chipHolder_ = null;
@@ -439,7 +440,7 @@ ui.Prompt.prototype.renderEncrypt_ =
             goog.partial(this.insertMessageIntoPage_, origin));
       }
 
-      this.chipHolder_ = new ext.ChipHolder(
+      this.chipHolder_ = new panels.ChipHolder(
           intendedRecipients, allAvailableRecipients);
       this.addChild(this.chipHolder_, false);
       this.chipHolder_.decorate(
@@ -582,7 +583,7 @@ ui.Prompt.prototype.renderEncryptionPassphraseConfirmDialog_ =
       goog.bind(function(confirmedPassphrase) {
         goog.dispose(confirmDialog);
         if (passphrase == confirmedPassphrase) {
-          var chip = new ext.Chip(passphrase, true);
+          var chip = new panels.Chip(passphrase, true);
           this.chipHolder_.addChip(chip);
         } else {
           var errorDialog = new dialogs.Generic(
