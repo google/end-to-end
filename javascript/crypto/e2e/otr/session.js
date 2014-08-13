@@ -237,4 +237,29 @@ e2e.otr.Session.prototype.deriveKeyValues = function() {
   };
 };
 
+
+/**
+ * Gets the long-term authentication public key.
+ */
+e2e.otr.Session.prototype.getPublicKey = function() {
+  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+};
+
+
+/**
+ * Gets the long-term authentication private key.
+ */
+e2e.otr.Session.prototype.getPrivateKey = function() {
+  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+};
+
+
+/**
+ * Gets the long-term authentication key id.
+ */
+e2e.otr.Session.prototype.getKeyId = function() {
+  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+};
+
+
 });
