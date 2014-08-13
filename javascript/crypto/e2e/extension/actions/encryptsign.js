@@ -22,12 +22,10 @@ goog.require('e2e.ext.actions.Action');
 goog.require('e2e.ext.utils.Error');
 goog.require('goog.array');
 goog.require('goog.string');
-goog.require('goog.structs.Map');
 
 goog.scope(function() {
 var actions = e2e.ext.actions;
 var utils = e2e.ext.utils;
-
 
 
 /**
@@ -98,13 +96,7 @@ actions.EncryptSign.prototype.getEncryptKeys_ =
 
   var queryFunc = function() {
     if (goog.array.isEmpty(userIds)) {
-      // De-duplicate keys.
-      // TODO(user): Move key de-duplication code to ContextImpl.
-      var keyMap = new goog.structs.Map();
-      goog.array.forEach(keys, function(key) {
-        keyMap.set(key.key.fingerprintHex, key);
-      });
-      callback(keyMap.getValues());
+      callback(keys);
     } else {
       var userId = goog.string.trim(userIds.pop());
       if (userId) {

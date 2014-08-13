@@ -46,7 +46,6 @@ goog.require('goog.structs');
 goog.require('goog.structs.Map');
 
 
-
 /**
  * Implements a "context". Provides a high level API for encryption and signing
  *     services. This context is used by external code, such as the extension's
@@ -342,10 +341,16 @@ e2e.openpgp.ContextImpl.prototype.encryptSign = function(
       signatureKeyBlock) {
     return this.clearSignInternal(plaintext, signatureKeyBlock);
   }
+  // De-duplicate keys.
+  var keyMap = new goog.structs.Map();
+  goog.array.forEach(encryptionKeys, function(key) {
+    keyMap.set(key.key.fingerprintHex, key);
+  });
   var encryptSignResult = this.encryptSignInternal(
       plaintext,
       options,
-      goog.array.map(encryptionKeys, this.keyRing_.getKeyBlock, this.keyRing_),
+      goog.array.map(keyMap.getValues(), this.keyRing_.getKeyBlock,
+                     this.keyRing_),
       passphrases,
       signatureKeyBlock);
   if (this.armorOutput) {
