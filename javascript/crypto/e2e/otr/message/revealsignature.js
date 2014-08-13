@@ -68,29 +68,29 @@ e2e.otr.message.RevealSignature.prototype.serializeMessageContent = function() {
   var keys = this.session_.deriveKeyValues();
   var mb = new goog.crypt.Hmac(new e2e.hash.sha256(), keys.m1)
       .getHmac(Array.apply([], e2e.otr.serializeBytes([
-    this.session_.authData.dh.gx,
-    this.session_.authData.dh.gy,
+    this.session_.authData.gx,
+    this.session_.authData.gy,
     this.session_.getPublicKey(),
     this.session_.getKeyId()
   ])));
 
-  var xb = e2e.otr.serializeBytes([
+  var xb = Array.apply([], e2e.otr.serializeBytes([
     this.session_.getPublicKey(),
     this.session_.getKeyId(),
     new e2e.otr.Sig(this.session_.getPrivateKey(), mb)
-  ]);
+  ]));
 
   var aes128ctr = new e2e.ciphermode.Ctr(new e2e.cipher.Aes(
       e2e.cipher.Algorithm.AES128, {key: keys.c}));
 
-  var sig = new e2e.otr.Data(new Uint8Array(e2e.async.Result.getValue(
-      aes128ctr.encrypt(xb, goog.array.repeat(0, aes128.blockSize)))));
+  var sig = new e2e.otr.Data(new Uint8Array(e2e.async.Result.getValue(aes128ctr
+      .encrypt(xb, goog.array.repeat(0, aes128ctr.cipher.blockSize)))));
 
-  var mac = new goog.crypt.Hmac(new e2e.hash.sha256(), keys.m2)
+  var mac = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m2)
       .getHmac(Array.apply([], sig.serialize()));
 
   return e2e.otr.serializeBytes([
-    new e2e.otr.Data(this.session_.authData.r), sig, mac]);
+    new e2e.otr.Data(new Uint8Array(this.session_.authData.r)), sig, mac]);
 };
 
 
