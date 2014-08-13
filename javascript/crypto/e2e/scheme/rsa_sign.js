@@ -19,6 +19,7 @@ goog.require('e2e.async.Result');
  */
 goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.scheme.SignatureScheme');
+goog.require('goog.asserts');
 
 goog.provide('e2e.scheme.Rsassa');
 

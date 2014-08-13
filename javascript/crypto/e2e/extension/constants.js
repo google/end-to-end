@@ -17,6 +17,7 @@
 
 goog.provide('e2e.ext.constants');
 goog.provide('e2e.ext.constants.Actions');
+goog.provide('e2e.ext.constants.BackupCode');
 goog.provide('e2e.ext.constants.CssClass');
 goog.provide('e2e.ext.constants.ElementId');
 goog.provide('e2e.ext.constants.StorageKey');

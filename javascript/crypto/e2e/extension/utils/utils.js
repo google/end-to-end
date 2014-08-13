@@ -19,6 +19,7 @@ goog.provide('e2e.ext.utils');
 goog.provide('e2e.ext.utils.Error');
 
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.ElementId');
 
 goog.scope(function() {
 var constants = e2e.ext.constants;

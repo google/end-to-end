@@ -20,6 +20,7 @@ goog.provide('e2e.ext.actions.DecryptVerify');
 
 goog.require('e2e');
 goog.require('e2e.ext.actions.Action');
+goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.Error');
 goog.require('e2e.ext.utils.action');
 

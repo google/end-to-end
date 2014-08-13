@@ -23,7 +23,7 @@ goog.require('e2e.async.Result');
 goog.require('e2e.ciphermode.CipherMode');
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('e2e.error.UnsupportedError');
-goog.require('goog.asserts');
+goog.require('goog.array');
 goog.require('goog.crypt');
 
 

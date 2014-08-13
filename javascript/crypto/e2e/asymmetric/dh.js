@@ -21,6 +21,7 @@ goog.provide('e2e.cipher.DiffieHellman');
 
 
 goog.require('e2e');
+goog.require('e2e.BigNum');
 goog.require('e2e.BigNumModulus');
 goog.require('e2e.random');
 

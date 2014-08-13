@@ -17,6 +17,7 @@
 
 goog.provide('e2e.ext.utils.text');
 
+goog.require('e2e.ext.constants');
 goog.require('e2e.ext.constants.Actions');
 goog.require('goog.array');
 goog.require('goog.format.EmailAddress');

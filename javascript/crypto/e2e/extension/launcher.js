@@ -20,8 +20,6 @@
 goog.provide('e2e.ext.Launcher');
 
 goog.require('e2e.ext.api.Api');
-goog.require('e2e.ext.constants');
-goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.openpgp.ContextImpl');
 

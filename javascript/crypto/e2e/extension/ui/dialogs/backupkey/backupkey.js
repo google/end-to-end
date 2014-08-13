@@ -17,14 +17,15 @@
 
 goog.provide('e2e.ext.ui.dialogs.BackupKey');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants.Actions');
-goog.require('e2e.ext.messages.ApiRequest');
 goog.require('e2e.ext.ui.dialogs.Overlay');
 goog.require('e2e.ext.ui.templates.dialogs.backupkey');
 goog.require('goog.array');
 goog.require('goog.crypt.base64');
+goog.require('soy');
 
 goog.scope(function() {
 var constants = e2e.ext.constants;

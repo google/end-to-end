@@ -27,7 +27,6 @@ goog.require('e2e.openpgp.packet.Trust');
 goog.require('e2e.openpgp.packet.UserAttribute');
 goog.require('e2e.openpgp.packet.UserId');
 goog.require('goog.array');
-goog.require('goog.asserts');
 
 
 /**

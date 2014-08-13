@@ -17,7 +17,7 @@
  */
 
 goog.require('e2e.pkcs.eme.Pkcs1');
-goog.require('e2e.scheme.Scheme');
+goog.require('e2e.scheme.EncryptionScheme');
 
 goog.provide('e2e.scheme.Eme');
 

@@ -20,9 +20,10 @@ goog.provide('e2e.ext.ui.dialogs.RestoreKey');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.constants.CssClass');
-goog.require('e2e.ext.messages.ApiRequest');
 goog.require('e2e.ext.ui.dialogs.Overlay');
 goog.require('e2e.ext.ui.templates.dialogs.backupkey');
+goog.require('goog.array');
+goog.require('goog.dom');
 goog.require('goog.ui.Dialog');
 goog.require('soy');
 

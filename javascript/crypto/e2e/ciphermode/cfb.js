@@ -22,6 +22,7 @@ goog.provide('e2e.ciphermode.Cfb');
 goog.require('e2e.async.Result');
 goog.require('e2e.ciphermode.CipherMode');
 goog.require('goog.array');
+goog.require('goog.crypt');
 
 
 /**
