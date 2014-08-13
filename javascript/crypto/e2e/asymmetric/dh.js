@@ -44,6 +44,7 @@ e2e.cipher.DiffieHellman = function(p, g) {
  * @return {!e2e.ByteArray} g^x mod p.
  */
 e2e.cipher.DiffieHellman.prototype.generate = function(opt_g) {
+  assert(this.isValidBase(opt_g || this.g_));
   return this.p_.pow(opt_g || this.g_, this.x_);
 };
 
@@ -59,4 +60,16 @@ e2e.cipher.DiffieHellman.prototype.generateExponent_ = function() {
     var check = this.p_.pow(this.g_, res);
   } while (e2e.compareByteArray(check, [1]));
   return res;
+};
+
+
+/**
+ * Checks if a base is valid.
+ * @param {!e2e.ByteArray|!Uint8Array} base The base to check.
+ * @return {boolean} Whether the base is valid.
+ */
+e2e.cipher.DiffieHellman.prototype.isValidBase = function(base) {
+  var n = new e2e.BigNum(base);
+  var two = new e2e.BigNum([2]);
+  return n.compare(two) >= 0 && n.compare(this.p_.subtract(two)) <= 0;
 };
