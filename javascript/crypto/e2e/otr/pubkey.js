@@ -76,6 +76,13 @@ e2e.otr.pubkey.Pubkey.prototype.serializePubkey = goog.abstractMethod;
 
 
 /**
+ * Deconstructs PUBKEY into component data.
+ * @return {!e2e.otr.pubkeyAny} The object containing the component data.
+ */
+e2e.otr.pubkey.Pubkey.prototype.deconstruct = goog.abstractMethod;
+
+
+/**
  * Object that keeps track of key types available.
  * @private
  * @type {!Object.<number, function(!Uint8Array):!e2e.otr.pubkey.Pubkey>}

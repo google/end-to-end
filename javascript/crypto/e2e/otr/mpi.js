@@ -52,6 +52,15 @@ e2e.otr.Mpi.prototype.serialize = function() {
 
 
 /**
+ * Deconstructs MPI into a Uint8Array
+ * @return {!Uint8Array} The MPI data
+ */
+e2e.otr.Mpi.prototype.deconstruct = function() {
+  return new Uint8Array(this.data_);
+};
+
+
+/**
  * Extracts an MPI from the body, and returns the MPI.
  * @param {!Uint8Array} body The body from where to extract the data.
  * @return {!e2e.otr.Mpi} The generated packet.

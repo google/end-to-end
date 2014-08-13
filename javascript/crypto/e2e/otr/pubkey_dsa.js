@@ -27,10 +27,10 @@ goog.require('e2e.otr.pubkey.Pubkey');
  * An OTRv3 DSA PUBKEY.
  * @constructor
  * @extends {e2e.otr.pubkey.Pubkey}
- * @param {!e2e.otr.Mpi} p DSA public key parameter p.
- * @param {!e2e.otr.Mpi} q DSA public key parameter q.
- * @param {!e2e.otr.Mpi} g DSA public key parameter g.
- * @param {!e2e.otr.Mpi} y DSA public key parameter y.
+ * @param {!e2e.ByteArray} p DSA public key parameter p.
+ * @param {!e2e.ByteArray} q DSA public key parameter q.
+ * @param {!e2e.ByteArray} g DSA public key parameter g.
+ * @param {!e2e.ByteArray} y DSA public key parameter y.
  */
 e2e.otr.pubkey.Dsa = function(p, q, g, y) {
   goog.base(this);
@@ -51,7 +51,26 @@ e2e.otr.pubkey.Dsa.PUBKEY_TYPE = e2e.otr.constants.PubkeyType.DSA;
 
 /** @inheritDoc */
 e2e.otr.pubkey.Dsa.prototype.serializePubkey = function() {
-  return e2e.otr.serializeBytes([this.p_, this.q_, this.g_, this.y_]);
+  return e2e.otr.serializeBytes([
+    new e2e.otr.Mpi(new Uint8Array(this.p_)),
+    new e2e.otr.Mpi(new Uint8Array(this.q_)),
+    new e2e.otr.Mpi(new Uint8Array(this.g_)),
+    new e2e.otr.Mpi(new Uint8Array(this.y_))
+  ]);
+};
+
+
+/**
+ * Deconstructs DSA PUBKEY into p, q, g, and y.
+ * @return {!e2e.otr.pubkeyDsa} The object containing p, q, g, and y.
+ */
+e2e.otr.pubkey.Dsa.prototype.deconstruct = function() {
+  return {
+    p: goog.array.clone(this.p_),
+    q: goog.array.clone(this.q_),
+    g: goog.array.clone(this.g_),
+    y: goog.array.clone(this.y_)
+  };
 };
 
 

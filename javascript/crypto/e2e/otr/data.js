@@ -49,6 +49,15 @@ e2e.otr.Data.prototype.serialize = function() {
 
 
 /**
+ * Deconstructs DATA into a Uint8Array
+ * @return {!Uint8Array} The DATA contents
+ */
+e2e.otr.Data.prototype.deconstruct = function() {
+  return new Uint8Array(this.data_);
+};
+
+
+/**
  * Extracts an DATA from the body, and returns the DATA.
  * @param {!Uint8Array} body The body from where to extract the data.
  * @return {!e2e.otr.Data} The generated packet.

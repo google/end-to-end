@@ -67,3 +67,18 @@ e2e.otr.Short;
  *     WHITESPACE_START_AKE: boolean, ERROR_START_AKE: boolean}}
  */
 e2e.otr.Policy;
+
+
+/**
+ * Represents any public key type.
+ * @typedef {e2e.otr.pubkeyDsa}
+ */
+e2e.otr.pubkeyAny;
+
+
+/**
+ * Represents a DSA public key.
+ * @typedef {{p: !e2e.ByteArray, q: !e2e.ByteArray, g: !e2e.ByteArray,
+ *     y: !e2e.ByteArray}}
+ */
+e2e.otr.pubkeyDsa;
