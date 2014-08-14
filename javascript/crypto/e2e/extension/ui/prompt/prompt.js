@@ -250,6 +250,11 @@ ui.Prompt.prototype.buttonClick_ = function(
     action, origin, contentBlob, event) {
   var elem = goog.dom.getElement(constants.ElementId.BODY);
   var target = event.target;
+
+  if (target instanceof HTMLImageElement) {
+    target = target.parentElement;
+  }
+
   if (target instanceof Element) {
     if (goog.dom.classlist.contains(target, constants.CssClass.CANCEL)) {
       this.close();
