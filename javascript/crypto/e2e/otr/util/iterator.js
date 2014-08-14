@@ -21,6 +21,7 @@
 
 goog.provide('e2e.otr.util.Iterator');
 
+goog.require('e2e.otr');
 goog.require('e2e.otr.error.InvalidArgumentsError');
 
 
@@ -82,4 +83,14 @@ e2e.otr.util.Iterator.prototype.peek = function(opt_howMany) {
  */
 e2e.otr.util.Iterator.prototype.rest = function() {
   return this.next(this.iterable_.length);
+};
+
+
+/**
+ * Gets a 4 byte length encoded chunk from the data stream.
+ * @return {T} Up to (4 + len) bytes from the iterator including length bytes.
+ */
+e2e.otr.util.Iterator.prototype.nextEncoded = function() {
+  var len = this.next(4);
+  return e2e.otr.concat([len, this.next(e2e.otr.intToNum(len))]);
 };
