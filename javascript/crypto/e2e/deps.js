@@ -150,7 +150,7 @@ goog.addDependency('../crypto/e2e/otr/message/query.js', ['e2e.otr.message.Query
 goog.addDependency('../crypto/e2e/otr/message/revealsignature.js', ['e2e.otr.message.RevealSignature'], ['e2e', 'e2e.async.Result', 'e2e.cipher.Algorithm', 'e2e.ciphermode.Ctr', 'e2e.hash.Sha256', 'e2e.otr.Data', 'e2e.otr.Sig', 'e2e.otr.constants', 'e2e.otr.error.NotImplementedError', 'e2e.otr.message.Message', 'e2e.signer.Algorithm', 'e2e.signer.factory', 'goog.crypt.Hmac'], false);
 goog.addDependency('../crypto/e2e/otr/message/signature.js', ['e2e.otr.message.Signature'], ['e2e', 'e2e.async.Result', 'e2e.cipher.Algorithm', 'e2e.ciphermode.Ctr', 'e2e.hash.Sha256', 'e2e.otr.Data', 'e2e.otr.Sig', 'e2e.otr.constants', 'e2e.otr.error.NotImplementedError', 'e2e.otr.message.Message', 'e2e.signer.Algorithm', 'e2e.signer.factory', 'goog.crypt.Hmac'], false);
 goog.addDependency('../crypto/e2e/otr/mpi.js', ['e2e.otr.Mpi'], ['e2e', 'e2e.otr', 'e2e.otr.error.ParseError'], false);
-goog.addDependency('../crypto/e2e/otr/otr.js', ['e2e.otr'], ['e2e', 'e2e.otr.Serializable', 'e2e.otr.error.InvalidArgumentsError'], false);
+goog.addDependency('../crypto/e2e/otr/otr.js', ['e2e.otr'], ['e2e', 'e2e.fixedtiming', 'e2e.otr.Serializable', 'e2e.otr.error.InvalidArgumentsError'], false);
 goog.addDependency('../crypto/e2e/otr/pubkey.js', ['e2e.otr.pubkey.Pubkey'], ['e2e.otr', 'e2e.otr.constants', 'e2e.otr.error.ParseError'], false);
 goog.addDependency('../crypto/e2e/otr/pubkey_dsa.js', ['e2e.otr.pubkey.Dsa'], ['e2e.otr', 'e2e.otr.pubkey.Pubkey'], false);
 goog.addDependency('../crypto/e2e/otr/serializable.js', ['e2e.otr.Serializable'], [], false);

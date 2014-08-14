@@ -21,6 +21,7 @@
 goog.provide('e2e.otr');
 
 goog.require('e2e');
+goog.require('e2e.fixedtiming');
 goog.require('e2e.otr.Serializable');
 goog.require('e2e.otr.error.InvalidArgumentsError');
 
@@ -170,4 +171,31 @@ e2e.otr.intToNum = function(n) {
     throw new e2e.otr.error.InvalidArgumentsError('Invalid e2e.otr.Int.');
   }
   return e2e.byteArrayToDwordArray(goog.array.clone(n))[0];
+};
+
+
+/**
+ * Derived from fixed timing compare in e2e.BigNum.
+ * Compares two byte arrays. Return a negative, zero, and a positive number when
+ * the first is smaller than, equal to, or bigger than the second respectively.
+ * This is fixed-timing, thanks to quannguyen@.
+ * @param {!e2e.ByteArray|!Uint8Array} a The first array.
+ * @param {!e2e.ByteArray|!Uint8Array} b The second array.
+ * @return {number}
+ */
+e2e.otr.compareByteArray = function(a, b) {
+  var greater = 0;
+  var previousLesser = 0;
+  var previousGreater = 0;
+  var lesser = 0;
+  var maxLen = e2e.fixedtiming.max(a.length, b.length);
+  for (var i = maxLen; i >= 0; --i) {
+    var x = a[a.length - i] | 0;
+    var y = b[b.length - i] | 0;
+    previousLesser |= (x < y);
+    greater |= (x > y) & !previousLesser;
+    previousGreater |= (x > y);
+    lesser |= (x < y) & !previousGreater;
+  }
+  return greater - lesser;
 };

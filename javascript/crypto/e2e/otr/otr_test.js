@@ -211,3 +211,13 @@ function testIntToNum() {
       goog.partial(e2e.otr.intToNum, new Uint8Array([1, 2, 3, 4, 5])));
   assertTrue(err instanceof e2e.otr.error.InvalidArgumentsError);
 }
+
+function testCompareByteArray() {
+  var cba = e2e.otr.compareByteArray;
+  assertEquals(0, cba([0], [0]));
+  assertEquals(0, cba([0, 0], [0, 0, 0]));
+  assertEquals(0, cba([1, 19], [0, 1, 19]));
+  assertEquals(-1, cba([1, 19], [1, 1, 19]));
+  assertEquals(-1, cba([0, 0, 1, 19], [1, 1, 19]));
+  assertEquals(1, cba([3, 0, 1, 19], [1, 1, 19]));
+}
