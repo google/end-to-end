@@ -59,6 +59,7 @@ e2e.otr.message.DhKey.MESSAGE_TYPE = constants.MessageType.DH_KEY;
 e2e.otr.message.DhKey.prototype.prepareSend = function() {
   this.session_.authData.r = null;
   this.session_.authData.dh = this.dh_;
+  this.session_.authData.dhkey = this;
   return goog.base(this, 'prepareSend');
 };
 

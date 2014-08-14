@@ -79,6 +79,7 @@ e2e.otr.message.DhCommit.prototype.prepareSend = function() {
   this.session_.authData.r = this.r_;
   this.session_.authData.dh = this.dh_;
   this.session_.authData.gx = this.gx_;
+  this.session_.authData.dhcommit = this;
   return goog.base(this, 'prepareSend');
 };
 
