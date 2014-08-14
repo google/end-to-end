@@ -94,6 +94,7 @@ e2e.otr.message.RevealSignature.prototype.serializeMessageContent = function() {
 
   var mac = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m2)
       .getHmac(Array.apply([], sig.serialize()));
+  mac = mac.slice(0, 160 / 8);
 
   return e2e.otr.serializeBytes([
     new e2e.otr.Data(new Uint8Array(this.session_.authData.r)), sig, mac]);
