@@ -23,6 +23,7 @@ goog.provide('e2e.otr');
 goog.require('e2e');
 goog.require('e2e.fixedtiming');
 goog.require('e2e.otr.Serializable');
+goog.require('e2e.otr.error.IllegalStateError');
 goog.require('e2e.otr.error.InvalidArgumentsError');
 
 
@@ -198,4 +199,21 @@ e2e.otr.compareByteArray = function(a, b) {
     lesser |= (x < y) & !previousGreater;
   }
   return greater - lesser;
+};
+
+
+/**
+ * Asserts that a given state expression is true.
+ * Does *not* get removed during compilation.
+ * @template T
+ * @param {?T} cond The expression to check.
+ * @param {string=} opt_msg The message to throw.
+ * @return {!T} The result of the conditional expression.
+ */
+e2e.otr.assertState = function(cond, opt_msg) {
+  if (cond == null || !cond) {
+    throw new e2e.otr.error.IllegalStateError(
+        opt_msg || 'State assertion failed.');
+  }
+  return cond;
 };
