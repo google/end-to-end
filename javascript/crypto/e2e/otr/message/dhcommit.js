@@ -32,12 +32,14 @@ goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.NotImplementedError');
 goog.require('e2e.otr.error.ParseError');
 goog.require('e2e.otr.message.Encoded');
+goog.require('e2e.otr.util.Iterator');
 goog.require('e2e.random');
 
 
 goog.scope(function() {
 
 var constants = e2e.otr.constants;
+var AUTHSTATE = constants.AUTHSTATE;
 
 
 /**
@@ -102,6 +104,46 @@ e2e.otr.message.DhCommit.prototype.serializeMessageContent = function() {
  * @param {!Uint8Array} data The data to be processed.
  */
 e2e.otr.message.DhCommit.process = function(session, data) {
-  throw new e2e.otr.error.NotImplementedError('This is not yet implemented.');
+  var iter = new e2e.otr.util.Iterator(data);
+  var aesgx = e2e.otr.Data.parse(iter.nextEncoded()).deconstruct();
+  var hgx = e2e.otr.Data.parse(iter.nextEncoded()).deconstruct();
+
+  if (iter.hasNext()) {
+    throw new e2e.otr.error.ParseError('Malformed DH COMMIT.');
+  }
+
+  switch (session.getAuthState()) {
+    case AUTHSTATE.AWAITING_DHKEY:
+      // TODO(user): Remove annotation when closure-compiler #260 is fixed.
+      var storedhgx = /** @type {!Uint8Array} */ (e2e.otr.assertState(
+          session.authData.hgx, 'h(gx) not defined.'));
+      if (e2e.otr.compareByteArray(storedhgx, hgx) > 0) {
+        // TODO(user): Remove annotation when closure-compiler #260 is fixed.
+        session.send(
+            /** @type {!e2e.otr.message.DhCommit} */ (e2e.otr.assertState(
+            session.authData.dhcommit, 'dhcommit not defined.')));
+        return;
+      }
+      // fall through -- spec: pretend we're in AUTHSTATE_NONE.
+
+    case AUTHSTATE.NONE:
+    case AUTHSTATE.AWAITING_SIG:
+    case AUTHSTATE.V1_SETUP:
+      session.send(new e2e.otr.message.DhKey(session));
+      session.setAuthState(AUTHSTATE.AWAITING_REVEALSIG);
+      break;
+
+    case AUTHSTATE.AWAITING_REVEALSIG:
+      // TODO(user): Remove annotation when closure-compiler #260 is fixed.
+      session.send(/** @type {!e2e.otr.message.DhKey} */ (e2e.otr.assertState(
+          session.authData.dhkey, 'dhkey not defined.')));
+      break;
+
+    default:
+      e2e.otr.assertState(false, 'Invalid auth state.');
+  }
+
+  session.authData.aesgx = aesgx;
+  session.authData.hgx = hgx;
 };
 });
