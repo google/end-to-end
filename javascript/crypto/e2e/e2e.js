@@ -274,3 +274,20 @@ e2e.compareByteArray = function(ba1, ba2) {
   }
   return yes == 1;
 };
+
+
+/**
+ * Asserts that a given expression evaluates to true.
+ * Does *not* get removed during compilation.
+ * @template T
+ * @param {?T} cond The expression to check.
+ * @param {string=} opt_msg The message to throw.
+ * @param {!function(new:Error,string)=} opt_error The error type to throw.
+ * @return {!T} The result of the conditional expression.
+ */
+e2e.assert = function(cond, opt_msg, opt_error) {
+  if (!cond) {
+    throw new (opt_error || Error)(opt_msg || 'Assertion failed.');
+  }
+  return cond;
+};

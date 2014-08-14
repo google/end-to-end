@@ -203,7 +203,7 @@ e2e.otr.compareByteArray = function(a, b) {
 
 
 /**
- * Asserts that a given state expression is true.
+ * Asserts that a given state expression evaluates to true.
  * Does *not* get removed during compilation.
  * @template T
  * @param {?T} cond The expression to check.
@@ -211,9 +211,5 @@ e2e.otr.compareByteArray = function(a, b) {
  * @return {!T} The result of the conditional expression.
  */
 e2e.otr.assertState = function(cond, opt_msg) {
-  if (cond == null || !cond) {
-    throw new e2e.otr.error.IllegalStateError(
-        opt_msg || 'State assertion failed.');
-  }
-  return cond;
+  return e2e.assert(cond, opt_msg, e2e.otr.error.IllegalStateError);
 };
