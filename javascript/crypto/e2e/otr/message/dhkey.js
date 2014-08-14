@@ -31,6 +31,7 @@ goog.require('e2e.random');
 goog.scope(function() {
 
 var constants = e2e.otr.constants;
+var AUTHSTATE = constants.AUTHSTATE;
 
 
 /**
@@ -79,6 +80,38 @@ e2e.otr.message.DhKey.prototype.serializeMessageContent = function() {
  * @param {!Uint8Array} data The data to be processed.
  */
 e2e.otr.message.DhKey.process = function(session, data) {
-  throw new e2e.otr.error.NotImplementedError('This is not yet implemented.');
+  var gy = Array.apply([], e2e.otr.Mpi.parse(data).deconstruct());
+  if (!session.authData.dh.isValidBase(gy)) {
+    // TODO(user): Log the error and/or warn the user.
+    return;
+  }
+
+  switch (session.getAuthState()) {
+    case AUTHSTATE.AWAITING_DHKEY:
+      session.authData.gy = gy;
+      session.authData.s = session.authData.dh.generate(session.authData.gy);
+      session.send(new e2e.otr.message.RevealSignature(session));
+      session.setAuthState(AUTHSTATE.AWAITING_SIG);
+      break;
+
+    case AUTHSTATE.AWAITING_SIG:
+      // TODO(user): Remove annotation when closure-compiler #260 is fixed.
+      if (e2e.otr.compareByteArray(gy, /** @type {!e2e.ByteArray} */ (
+          e2e.otr.assertState(session.authData.gy, 'gy not defined.'))) == 0) {
+        // TODO(user): Remove annotation when closure-compiler #260 is fixed.
+        session.send(/** @type {!e2e.otr.message.RevealSignature} */ (
+            e2e.otr.assertState(session.authData.revealsignature,
+            'revealsignature not defined.')));
+      } else return;
+      break;
+
+    case AUTHSTATE.NONE:
+    case AUTHSTATE.AWAITING_REVEALSIG:
+    case AUTHSTATE.V1_SETUP:
+      return;
+
+    default:
+      e2e.otr.assertState(false, 'Invalid auth state.');
+  }
 };
 });

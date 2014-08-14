@@ -59,12 +59,18 @@ e2e.otr.message.RevealSignature.MESSAGE_TYPE =
     constants.MessageType.REVEAL_SIGNATURE;
 
 
+/** @inheritDoc */
+e2e.otr.message.RevealSignature.prototype.prepareSend = function() {
+  this.session_.authData.revealsignature = this;
+  return goog.base(this, 'prepareSend');
+};
+
+
 /**
  * Serialize the REVEAL SIGNATURE into a Uint8Array.
  * @return {!Uint8Array} The serialized REVEAL SIGNATURE.
  */
 e2e.otr.message.RevealSignature.prototype.serializeMessageContent = function() {
-  this.session_.s = this.session_.authData.dh.generate(this.session_.gy);
   var keys = this.session_.deriveKeyValues();
   var mb = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m1)
       .getHmac(Array.apply([], e2e.otr.serializeBytes([
