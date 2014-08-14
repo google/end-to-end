@@ -79,12 +79,12 @@ e2e.otr.message.Signature.prototype.serializeMessageContent = function() {
     new e2e.otr.Sig(this.session_.getPrivateKey(), ma)
   ]));
 
-  var aes128ctr = new e2e.ciphermode.Ctr(new e2e.cipher.Aes(
-      e2e.cipher.Algorithm.AES128, {key: keys.cprime}));
+  var aes128 = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128,
+      {key: keys.cprime});
+  var aes128ctr = new e2e.ciphermode.Ctr(aes128);
 
   var sig = new e2e.otr.Data(new Uint8Array(e2e.async.Result.getValue(aes128ctr
-      .encrypt(xa, goog.array.repeat(0, 16)))));
-  // TODO(user) Change 16 to aes128ctr.cipher.blockSize.
+      .encrypt(xa, goog.array.repeat(0, aes128.blockSize)))));
 
   var mac = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m2prime)
       .getHmac(Array.apply([], sig.serialize()));
