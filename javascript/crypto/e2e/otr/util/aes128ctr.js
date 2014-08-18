@@ -30,12 +30,16 @@ goog.require('goog.array');
  * Processes data with AES128-CTR using key and optional initial counter.
  * @private
  * @param {boolean} encrypt Encrypts the data if true; else decrypts it.
- * @param {!e2e.cipher.key.Key} key The key to use for encryption.
+ * @param {(!Uint8Array|!e2e.ByteArray)} key The key to use for en/decryption.
  * @param {(!Uint8Array|!e2e.ByteArray)} data The data to encrypt.
  * @param {(!Uint8Array|!e2e.ByteArray)=} opt_ctr Initial counter (default = 0).
  * @return {!Uint8Array} The encrypted/decrypted data.
  */
 e2e.otr.util.aes128ctr.exec_ = function(encrypt, key, data, opt_ctr) {
+  if (key instanceof Uint8Array) {
+    key = Array.apply([], key);
+  }
+
   if (data instanceof Uint8Array) {
     data = Array.apply([], data);
   }
@@ -44,7 +48,7 @@ e2e.otr.util.aes128ctr.exec_ = function(encrypt, key, data, opt_ctr) {
     opt_ctr = Array.apply([], opt_ctr);
   }
 
-  var aes128 = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128, key);
+  var aes128 = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128, {key: key});
   var aes128ctr = new e2e.ciphermode.Ctr(aes128);
   var encrypted = (encrypt ? aes128ctr.encrypt : aes128ctr.decrypt).call(
       aes128ctr, data, opt_ctr || goog.array.repeat(0, aes128.blockSize));
@@ -54,7 +58,7 @@ e2e.otr.util.aes128ctr.exec_ = function(encrypt, key, data, opt_ctr) {
 
 /**
  * AES128-CTR encrypts data using key and optional initial counter.
- * @param {!e2e.cipher.key.Key} key The key to use for encryption.
+ * @param {(!Uint8Array|!e2e.ByteArray)} key The key to use for encryption.
  * @param {(!Uint8Array|!e2e.ByteArray)} data The data to encrypt.
  * @param {(!Uint8Array|!e2e.ByteArray)=} opt_ctr Initial counter (default = 0).
  * @return {!Uint8Array} The encrypted data.
@@ -64,7 +68,7 @@ e2e.otr.util.aes128ctr.encrypt = goog.partial(e2e.otr.util.aes128ctr.exec_, 1);
 
 /**
  * AES128-CTR decrypts data using key and optional initial counter.
- * @param {!e2e.cipher.key.Key} key The key to use for decryption.
+ * @param {(!Uint8Array|!e2e.ByteArray)} key The key to use for decryption.
  * @param {(!Uint8Array|!e2e.ByteArray)} data The data to decrypt.
  * @param {(!Uint8Array|!e2e.ByteArray)=} opt_ctr Initial counter (default = 0).
  * @return {!Uint8Array} The decrypted data.

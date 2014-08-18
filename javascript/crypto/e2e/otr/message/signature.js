@@ -20,17 +20,13 @@
 goog.provide('e2e.otr.message.Signature');
 
 goog.require('e2e');
-goog.require('e2e.async.Result');
-goog.require('e2e.cipher.Algorithm');
-goog.require('e2e.ciphermode.Ctr');
 goog.require('e2e.hash.Sha256');
 goog.require('e2e.otr.Data');
 goog.require('e2e.otr.Sig');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.NotImplementedError');
 goog.require('e2e.otr.message.Message');
-goog.require('e2e.signer.Algorithm');
-goog.require('e2e.signer.factory');
+goog.require('e2e.otr.util.aes128ctr');
 goog.require('goog.crypt.Hmac');
 
 
@@ -79,12 +75,8 @@ e2e.otr.message.Signature.prototype.serializeMessageContent = function() {
     new e2e.otr.Sig(this.session_.getPrivateKey(), ma)
   ]));
 
-  var aes128 = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128,
-      {key: keys.cprime});
-  var aes128ctr = new e2e.ciphermode.Ctr(aes128);
-
-  var sig = new e2e.otr.Data(new Uint8Array(e2e.async.Result.getValue(aes128ctr
-      .encrypt(xa, goog.array.repeat(0, aes128.blockSize)))));
+  var sig = new e2e.otr.Data(
+      e2e.otr.util.aes128ctr.encrypt(keys.cprime, xa));
 
   var mac = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m2prime)
       .getHmac(Array.apply([], sig.serialize()));

@@ -20,10 +20,7 @@
 goog.provide('e2e.otr.message.DhCommit');
 
 goog.require('e2e');
-goog.require('e2e.cipher.Aes');
-goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.DiffieHellman');
-goog.require('e2e.ciphermode.Ctr');
 goog.require('e2e.hash.Sha256');
 goog.require('e2e.otr');
 goog.require('e2e.otr.Data');
@@ -33,6 +30,7 @@ goog.require('e2e.otr.error.NotImplementedError');
 goog.require('e2e.otr.error.ParseError');
 goog.require('e2e.otr.message.Encoded');
 goog.require('e2e.otr.util.Iterator');
+goog.require('e2e.otr.util.aes128ctr');
 goog.require('e2e.random');
 
 
@@ -59,11 +57,8 @@ e2e.otr.message.DhCommit = function(session) {
   // TODO(user): Remove when e2e supports TypedArrays
   gxmpi = Array.apply([], gxmpi);
 
-  var aes128 = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128, {key: this.r_});
-
-  var encryptedGxmpi = new e2e.ciphermode.Ctr(aes128)
-      .encrypt(gxmpi, goog.array.repeat(0, aes128.blockSize));
-  this.encryptedGxmpi_ = e2e.async.Result.getValue(encryptedGxmpi);
+  this.encryptedGxmpi_ =
+      Array.apply([], e2e.otr.util.aes128ctr.encrypt(this.r_, gxmpi));
   this.gxmpiHash_ = new e2e.hash.Sha256().hash(gxmpi);
 };
 goog.inherits(e2e.otr.message.DhCommit, e2e.otr.message.Encoded);
