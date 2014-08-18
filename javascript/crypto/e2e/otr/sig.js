@@ -50,10 +50,33 @@ e2e.otr.Sig.prototype.serialize = function() {
 
 
 /**
+ * Deconstructs SIG into component data.
+ * @return {!e2e.signer.signature.Signature} The SIG data.
+ */
+e2e.otr.Sig.prototype.deconstruct = function() {
+  return /** @type {!e2e.signer.signature.Signature} */ (
+      goog.object.clone(this.sig_));
+};
+
+
+/**
  * Extracts a SIG from the body, and returns the SIG.
  * @param {!Uint8Array} body The body from where to extract the data.
  * @return {!e2e.otr.Sig} The generated packet.
  */
 e2e.otr.Sig.parse = function(body) {
   throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+};
+
+
+/**
+ * Verifies a signature.
+ * @param {!e2e.signer.key.DsaPublicKey} key The public key for verification.
+ * @param {!e2e.ByteArray} m The message to verify.
+ * @param {!e2e.otr.Sig} sig The signature for the message.
+ * @return {boolean} Whether the signature is valid.
+ */
+e2e.otr.Sig.verify = function(key, m, sig) {
+  return e2e.async.Result.getValue(e2e.signer.factory.get(
+      e2e.signer.Algorithm.DSA, key).verify(m, sig.deconstruct()));
 };
