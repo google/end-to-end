@@ -33,6 +33,7 @@ goog.require('goog.crypt.Hmac');
 goog.scope(function() {
 
 var constants = e2e.otr.constants;
+var AUTHSTATE = constants.AUTHSTATE;
 
 
 /**
@@ -99,6 +100,100 @@ e2e.otr.message.RevealSignature.prototype.serializeMessageContent = function() {
  * @param {!Uint8Array} data The data to be processed.
  */
 e2e.otr.message.RevealSignature.process = function(session, data) {
-  throw new e2e.otr.error.NotImplementedError('This is not yet implemented.');
+  switch (session.getAuthState()) {
+    case AUTHSTATE.AWAITING_REVEALSIG:
+      var iter = new e2e.otr.util.Iterator(data);
+      var r = e2e.otr.Data.parse(iter.nextEncoded()).deconstruct();
+      var aesxb = e2e.otr.Data.parse(iter.nextEncoded()).deconstruct();
+      var mac = iter.next(20);
+
+      if (iter.hasNext() || mac.length != 20) {
+        throw new e2e.otr.error.ParseError('Malformed REVEAL SIGNATURE.');
+      }
+
+      // TODO(user): Remove annotation when closure-compiler #260 is fixed.
+      var gxmpi = e2e.otr.util.aes128ctr.decrypt(r, /** @type {!Uint8Array} */ (
+          e2e.otr.assertState(session.authData.aesgx, 'AES(gx) not defined')));
+      var gxmpiHash = new e2e.hash.Sha256().hash(gxmpi);
+
+      var gx = Array.apply([], e2e.otr.Mpi.parse(gxmpi).deconstruct());
+
+      if (
+        // h(g^x) mismatch.
+        e2e.otr.compareByteArray(/** @type {!Uint8Array} */ (
+            e2e.otr.assertState(session.authData.hgx, 'hgx not defined')),
+            gxmpiHash) ||
+
+        // Or Invalid g^x.
+        !session.authData.dh.isValidBase(gx)
+      ) {
+        // TODO(user): Log the error and/or warn the user.
+        return;
+      }
+
+      var s = session.authData.dh.generate(gx);
+      var keys = session.deriveKeyValues();
+
+      var calculatedMac = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m2)
+          .getHmac(Array.apply([], aesxb));
+
+      calculatedMac = calculatedMac.slice(0, 160 / 8);
+
+      if (e2e.otr.compareByteArray(Array.apply([], mac), calculatedMac)) {
+        // TODO(user): Log the error and/or warn the user.
+        return;
+      }
+
+      var xb = e2e.otr.util.aes128ctr.decrypt(keys.c, aesxb);
+
+      iter = new e2e.otr.util.Iterator(xb);
+      var pubBType = iter.next(2);
+      // TODO(user): Make Type.parse accept Iterator to pull appropriate data.
+      var pubB = {
+        p: Array.apply([], iter.nextEncoded()),
+        q: Array.apply([], iter.nextEncoded()),
+        g: Array.apply([], iter.nextEncoded()),
+        y: Array.apply([], iter.nextEncoded())
+      };
+      var keyidB = iter.next(4);
+      var sigmb = e2e.otr.Sig.parse(iter.next(40));
+
+      if (iter.hasNext()) {
+        throw new e2e.otr.error.ParseError('Malformed xb in REVEAL SIGNATURE.');
+      }
+
+      var mb = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m1)
+          .getHmac(Array.apply([], e2e.otr.serializeBytes([
+        gx,
+        session.authData.gy,
+        pubB,
+        keyidB
+      ])));
+
+      if (!e2e.otr.Sig.verify(pubB, mb, sigmb)) {
+        // TODO(user): Log the error and/or warn the user.
+        return;
+      }
+
+      session.storeRemotePubkey(keyidB, pubB);
+      session.authData.gx = gx;
+      session.authData.s = s;
+      session.send(new e2e.otr.message.Signature(session));
+      session.setAuthState(AUTHSTATE.NONE);
+      session.setMsgState(constants.MSGSTATE.ENCRYPTED);
+
+      // TODO(user): Send any stored messages.
+
+      break;
+
+    case AUTHSTATE.NONE:
+    case AUTHSTATE.AWAITING_DHKEY:
+    case AUTHSTATE.AWAITING_SIG:
+    case AUTHSTATE.V1_SETUP:
+      return;
+
+    default:
+      e2e.otr.assertState(false, 'Invalid auth state.');
+  }
 };
 });
