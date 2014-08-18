@@ -60,6 +60,14 @@ e2e.signer.key.Dsa;
 
 
 /**
+ * @typedef {?{p: !e2e.ByteArray, q: !e2e.ByteArray,
+ *     g: !e2e.ByteArray, x: (!e2e.ByteArray|undefined),
+ *     y: !e2e.ByteArray, loc: (undefined|!e2e.algorithm.KeyLocations)}}
+ */
+e2e.signer.key.DsaPublicKey;
+
+
+/**
  * @typedef {?{curve: ?e2e.ecc.PrimeCurveOid,
  *     pubKey: !e2e.ByteArray,
  *     privKey: ?e2e.ByteArray,
@@ -78,8 +86,8 @@ e2e.signer.key.Rsa;
 
 
 /**
- * @typedef {e2e.signer.key.Dsa|e2e.signer.key.Ecdsa|
- *     e2e.signer.key.Rsa|null}
+ * @typedef {e2e.signer.key.Dsa|e2e.signer.key.DsaPublicKey|
+ *     e2e.signer.key.Ecdsa|e2e.signer.key.Rsa|null}
  */
 e2e.signer.key.Key;
 

@@ -71,14 +71,6 @@ e2e.otr.Policy;
 
 /**
  * Represents any public key type.
- * @typedef {e2e.otr.pubkeyDsa}
+ * @typedef {e2e.signer.key.DsaPublicKey}
  */
 e2e.otr.pubkeyAny;
-
-
-/**
- * Represents a DSA public key.
- * @typedef {{p: !e2e.ByteArray, q: !e2e.ByteArray, g: !e2e.ByteArray,
- *     y: !e2e.ByteArray}}
- */
-e2e.otr.pubkeyDsa;

@@ -62,7 +62,7 @@ e2e.otr.pubkey.Dsa.prototype.serializePubkey = function() {
 
 /**
  * Deconstructs DSA PUBKEY into p, q, g, and y.
- * @return {!e2e.otr.pubkeyDsa} The object containing p, q, g, and y.
+ * @return {!e2e.signer.key.DsaPublicKey} The object containing p, q, g, and y.
  */
 e2e.otr.pubkey.Dsa.prototype.deconstruct = function() {
   return {
