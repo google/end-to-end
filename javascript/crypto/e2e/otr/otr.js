@@ -29,7 +29,7 @@ goog.require('e2e.otr.error.InvalidArgumentsError');
 
 /**
  * Serializes arguments into a Uint8Array, calling .serialize as needed.
- * @param {Array.<!Uint8Array|!e2e.otr.Serializable|!e2e.ByteArray>} items
+ * @param {!Array.<!Uint8Array|!e2e.otr.Serializable|!e2e.ByteArray>} items
  *     Items to serialize.
  * @return {!Uint8Array} The arguments serialized into a single Uint8Array.
  */
