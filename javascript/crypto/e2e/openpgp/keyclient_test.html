@@ -39,13 +39,23 @@
 
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 /** @type {goog.testing.PropertyReplacer} */
-var stubs;
-var keyClient;
+var stubs = new goog.testing.PropertyReplacer();
+var keyClient = new e2e.openpgp.KeyClient('http://127.0.0.1:8888');
+var key = e2e.openpgp.block.factory.parseBlock([
+  new e2e.openpgp.packet.PublicKey(4, 0,
+      e2e.cipher.factory.get(e2e.cipher.Algorithm.RSA,
+                             {
+                               n: [35],
+                               e: [3]
+                             })),
+  new e2e.openpgp.packet.UserId('first userid')
+]);
 
 function setUp() {
-  keyClient = new e2e.openpgp.KeyClient('http://127.0.0.1:8888');
-  stubs = new goog.testing.PropertyReplacer();
   stubs.replace(goog.net.XhrIo, 'send', goog.testing.net.XhrIo.send);
+  stubs.replace(keyClient, 'getOpenIdCredentials_', function() {
+    return e2e.async.Result.toResult({postBody: 'x', requestUri: 'y'});
+  });
 }
 
 function tearDown() {
@@ -54,13 +64,15 @@ function tearDown() {
 }
 
 function testAddPublicKeyOKStatusCode() {
-  var key = 'testing key';
   var result = keyClient.importPublicKey(key);
   var xhrios = goog.testing.net.XhrIo.getSendInstances();
   assertEquals(1, xhrios.length);
   assertEquals('POST', xhrios[0].getLastMethod());
   assertEquals('http://127.0.0.1:8888/pks/add', xhrios[0].getLastUri());
-  assertEquals('keytext=testing%20key', xhrios[0].getLastContent());
+  assertEquals(
+    'keytext=-----BEGIN%20PGP%20PUBLIC%20KEY%20BLOCK-----%0D%0ACharset%3A%20UTF-8%0D%0A%0D%0Axv' +
+    '8AAAAMBAAAAAABAAYjAAIDzf8AAAAMZmlyc3QgdXNlcmlk%0D%0A%3Dndwu%0D%0A-----END%20PGP%20PUBLIC%2' +
+    '0KEY%20BLOCK-----&requestUri=y&postBody=x', xhrios[0].getLastContent());
   xhrios[0].simulateResponse(200, '');
   result.addCallback(function(isSucceeded) {
       assertEquals(true, isSucceeded);
@@ -68,13 +80,15 @@ function testAddPublicKeyOKStatusCode() {
 }
 
 function testAddPublicKeyNotOKStatusCode() {
-  var key = 'testing key';
   var result = keyClient.importPublicKey(key);
   var xhrios = goog.testing.net.XhrIo.getSendInstances();
   assertEquals(1, xhrios.length);
   assertEquals('POST', xhrios[0].getLastMethod());
   assertEquals('http://127.0.0.1:8888/pks/add', xhrios[0].getLastUri());
-  assertEquals('keytext=testing%20key', xhrios[0].getLastContent());
+  assertEquals(
+    'keytext=-----BEGIN%20PGP%20PUBLIC%20KEY%20BLOCK-----%0D%0ACharset%3A%20UTF-8%0D%0A%0D%0Axv' +
+    '8AAAAMBAAAAAABAAYjAAIDzf8AAAAMZmlyc3QgdXNlcmlk%0D%0A%3Dndwu%0D%0A-----END%20PGP%20PUBLIC%2' +
+    '0KEY%20BLOCK-----&requestUri=y&postBody=x', xhrios[0].getLastContent());
   xhrios[0].simulateResponse(400, '');
   result.addCallback(function(isSucceeded) {
       assertEquals(false, isSucceeded);
