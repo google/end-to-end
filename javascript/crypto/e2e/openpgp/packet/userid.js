@@ -95,10 +95,56 @@ e2e.openpgp.packet.UserId.prototype.serialize = function() {
 
 
 /**
- * @param {e2e.openpgp.packet.Signature} sig
+ * @param {e2e.openpgp.packet.Signature} signature
+ * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
+ *     verify the signature.
  */
-e2e.openpgp.packet.UserId.prototype.addCertification = function(sig) {
-  this.certifications_.push(sig);
+e2e.openpgp.packet.UserId.prototype.addCertification = function(signature,
+    verifyingKey) {
+  if (!signature.isCertificationSignature()) {
+    throw new e2e.openpgp.error.ParseError(
+        'Signature is not a certification signature.');
+  }
+  var signer = /** @type {!e2e.signer.Signer} */ (verifyingKey.cipher);
+  if (signer instanceof e2e.openpgp.EncryptedCipher && signer.isLocked()) {
+    // TODO(user): Fix that. Key is locked, so the hashed data will be wrong.
+    this.certifications_.push(signature);
+    return;
+  }
+  var signedData = this.getCertificationSignatureData_(verifyingKey);
+  try {
+    var signatureVerified = signature.verify(signedData,
+      goog.asserts.assertObject(signer));
+  } catch (e) {
+    // Ignore signatures that throw unsupported errors (e.g. weak hash
+    // algorithms), user IDs. While subkeys need to be signed, User IDs do not.
+    if (e instanceof e2e.openpgp.error.UnsupportedError) {
+      return;
+    }
+    throw e;
+  }
+
+  if (signatureVerified) {
+    this.certifications_.push(signature);
+  } else {
+    throw new e2e.openpgp.error.ParseError(
+        'Certification signature verification failed.');
+  }
+};
+
+
+/**
+ * Returns data for creating a certification signature between this packet and
+ *     a given binding key.
+ * @param  {!e2e.openpgp.packet.Key} certifyingKey Key that certified
+ * @return {!e2e.ByteArray} Signature data.
+ * @private
+ */
+e2e.openpgp.packet.UserId.prototype.getCertificationSignatureData_ = function(
+    certifyingKey) {
+  return goog.array.flatten(
+      certifyingKey.getPublicKeyPacket().getBytesToSign(),
+      this.getBytesToSign());
 };
 
 
@@ -115,9 +161,9 @@ e2e.openpgp.packet.UserId.prototype.getCertifications = function() {
  */
 e2e.openpgp.packet.UserId.prototype.certifyBy = function(key) {
   var data = goog.array.flatten(
-      key.getBytesToSign(),
+      key.getPublicKeyPacket().getBytesToSign(),
       this.getBytesToSign()
-      );
+  );
   var sigResult = e2e.openpgp.packet.Signature.construct(
       key,
       data,
@@ -125,7 +171,7 @@ e2e.openpgp.packet.UserId.prototype.certifyBy = function(key) {
       this.getSignatureAttributes_(key));
 
   sigResult.addCallback(function(sig) {
-    this.addCertification(sig);
+    this.certifications_.push(sig);
   }, this);
 };
 

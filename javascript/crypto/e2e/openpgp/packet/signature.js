@@ -386,6 +386,22 @@ e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
 
 
 /**
+ * Returns true iff signature type is of one the types provided for User ID /
+ *     public key packet certification.
+ * @return {boolean} True if the it's a certification signature, false otherwise
+ */
+e2e.openpgp.packet.Signature.prototype.isCertificationSignature = function() {
+  var certificationTypes = [
+    e2e.openpgp.packet.Signature.SignatureType.GENERIC_USER_ID,
+    e2e.openpgp.packet.Signature.SignatureType.PERSONA_USER_ID,
+    e2e.openpgp.packet.Signature.SignatureType.CASUAL_USER_ID,
+    e2e.openpgp.packet.Signature.SignatureType.POSITIVE_USER_ID
+  ];
+  return goog.array.contains(certificationTypes, this.signatureType);
+};
+
+
+/**
  * Signs the data and creates a signature packet.
  * @param {!e2e.openpgp.packet.SecretKey} key Key to sign with.
  * @param {!e2e.ByteArray} data Data to sign.

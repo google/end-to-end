@@ -125,6 +125,10 @@ function testV3() {
   assertArrayEquals([0xEE, 0x0A, 0xC2, 0x35, 0x7E, 0x9B, 0x23, 0x1A,
                      0x6B, 0xF1, 0x07, 0x9D, 0xB7, 0x33, 0xEC, 0x46],
                    publicKeyBlock.keyPacket.fingerprint);
+  // nielsKey uses MD5 for signature digest algorithm. Assure no signatures were accepted.
+  assertEquals(0, publicKeyBlock.userIds[0].getCertifications().length);
+  assertEquals(0, publicKeyBlock.userIds[1].getCertifications().length);
+  assertEquals(0, publicKeyBlock.userIds[2].getCertifications().length);
   var bytes = publicKeyBlock.keyPacket.serializePacketBody();
   var publicKeyParsed = e2e.openpgp.packet.PublicKey.parse(bytes);
   assertArrayEquals([54, 124, 22, 166, 10, 47, 135, 229],

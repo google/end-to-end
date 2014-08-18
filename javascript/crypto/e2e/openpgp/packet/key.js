@@ -27,6 +27,7 @@ goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.SerializationError');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.Signature');
+goog.require('e2e.openpgp.packet.Signature.SignatureType');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.openpgp.types');
 goog.require('goog.array');
@@ -125,13 +126,18 @@ e2e.openpgp.packet.Key.prototype.getPublicKeyPacket = goog.abstractMethod;
  */
 e2e.openpgp.packet.Key.prototype.addBindingSignature = function(signature,
     verifyingKey) {
+  if (signature.signatureType !==
+      e2e.openpgp.packet.Signature.SignatureType.SUBKEY) {
+    throw new e2e.openpgp.error.ParseError(
+        'Signature type is not a subkey binding signature.');
+  }
   var signer = /** @type {!e2e.signer.Signer} */ (verifyingKey.cipher);
-  var signedData = this.getKeyBindingSignatureData_(verifyingKey);
   if (signer instanceof e2e.openpgp.EncryptedCipher && signer.isLocked()) {
     // TODO(user): Fix that. Key is locked, so the hashed data will be wrong.
     this.bindingSignatures_.push(signature);
     return;
   }
+  var signedData = this.getKeyBindingSignatureData_(verifyingKey);
   if (!signature.verify(signedData, goog.asserts.assertObject(signer))) {
     throw new e2e.openpgp.error.ParseError(
         'Binding signature verification failed.');
@@ -157,7 +163,7 @@ e2e.openpgp.packet.Key.prototype.addRevocation = function(signature) {
  * @return {!e2e.async.Result.<undefined>}
  */
 e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type) {
-  var data = this.getKeyBindingSignatureData_(bindingKey.getPublicKeyPacket());
+  var data = this.getKeyBindingSignatureData_(bindingKey);
 
   var sigRes = e2e.openpgp.packet.Signature.construct(
       bindingKey,
@@ -184,8 +190,8 @@ e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type) {
 e2e.openpgp.packet.Key.prototype.getKeyBindingSignatureData_ = function(
     bindingKey) {
   return goog.array.flatten(
-      bindingKey.getBytesToSign(),
-      this.getBytesToSign());
+      bindingKey.getPublicKeyPacket().getBytesToSign(),
+      this.getPublicKeyPacket().getBytesToSign());
 };
 
 

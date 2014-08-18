@@ -440,11 +440,10 @@ function importPrivKey(asciiKey, uid) {
   var m = goog.array.repeat(0x01, 16);
   asyncTestCase.waitForAsync('waiting for encryption.');
   ecdhPubKey.cipher.encrypt(m).addCallback(function(c) {
-    asyncTestCase.continueTesting();
     asyncTestCase.waitForAsync('waiting for decryption.');
     ecdhPrivKey.cipher.decrypt(c).addCallback(function(p) {
-      asyncTestCase.continueTesting();
       assertArrayEquals(m, p);
+      asyncTestCase.continueTesting();
     });
   });
   var sig = e2e.async.Result.getValue(ecdsaPrivKey.cipher.sign(m));

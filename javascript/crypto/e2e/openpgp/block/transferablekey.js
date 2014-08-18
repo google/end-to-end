@@ -124,7 +124,11 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
       this.packets.push(packets.shift());
       packet = packets[0];
       while (packet instanceof e2e.openpgp.packet.Signature) {
-        userId.addCertification(packet);
+        // TODO(user): Figure out what to do with foreign certifications
+        if (goog.array.equals(goog.asserts.assertArray(this.keyPacket.keyId),
+            packet.getSignerKeyId())) {
+          userId.addCertification(packet, this.keyPacket);
+        }
         this.packets.push(packets.shift());
         while (packets[0] instanceof e2e.openpgp.packet.Trust) {
           packets.shift();
