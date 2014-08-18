@@ -268,4 +268,14 @@ e2e.otr.Session.prototype.getKeyId = function() {
 };
 
 
+/**
+ * Stores remote party's keyid/public key.
+ * @param {!Uint8Array} keyid The keyid provided by the remote party.
+ * @param {!e2e.otr.pubkeyAny} pubkey The public key associated with the key id.
+ */
+e2e.otr.Session.prototype.storeRemotePubkey = function(keyid, pubkey) {
+  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+};
+
+
 });
