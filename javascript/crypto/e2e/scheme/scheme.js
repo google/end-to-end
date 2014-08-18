@@ -51,6 +51,8 @@ e2e.scheme.Scheme = function(cipher) {
           'No WebCrypto encrypt(), but the key is stored in WebCrypto!');
     }
     this.crypto = this.crypto.subtle;
+    this.key = cipher.getWebCryptoKey();
+    goog.asserts.assert(goog.isDefAndNotNull(this.key));
   } else if (this.useHardwareCrypto) {
     /* TODO(user): when cl/70331225 is submitted and integrated into e2e,
      * replace with the apropriate.

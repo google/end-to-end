@@ -121,6 +121,25 @@ e2e.cipher.key.ElGamal;
 
 
 /**
+ * Used to store the algorithm identifier, including things like name, key size,
+ * public exponent (for RSA), etc.
+ * @typedef {*}
+ */
+e2e.algorithm.WebCryptoAID;
+
+/**
+ * @typedef {!{algorithm: !e2e.algorithm.WebCryptoAID, extractable: boolean,
+ *           type:string, usages: !Array.<string>}}
+ */
+e2e.algorithm.WebCryptoKey;
+
+/**
+ * @typedef {!{privateKey: (e2e.algorithm.WebCryptoKey|undefined),
+ *             publicKey: e2e.algorithm.WebCryptoKey}}
+ */
+e2e.algorithm.WebCryptoKeyPair;
+
+/**
  * @typedef {e2e.cipher.key.ElGamal|e2e.cipher.key.Ecdh|
  *     e2e.cipher.key.Rsa|e2e.signer.key.Key|null}
  */

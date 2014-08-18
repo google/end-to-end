@@ -34,7 +34,6 @@ goog.provide('e2e.scheme.Rsassa');
 e2e.scheme.Rsassa = function(signer) {
   this.signer = signer;
   goog.base(this, signer);
-  this.key = /** @type {e2e.scheme.Rsassa.KeyPair} */ (signer.getKey());
   this.algorithmIdentifier = {
     'name': 'RSASSA-PKCS1-v1_5',
     'modulusLength': signer.keySize,

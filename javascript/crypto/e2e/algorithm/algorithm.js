@@ -44,6 +44,13 @@ e2e.Algorithm.prototype.key;
 
 
 /**
+ * @type {e2e.algorithm.WebCryptoKeyPair}
+ * @protected
+ */
+e2e.Algorithm.prototype.webCryptoKey;
+
+
+/**
  * @type {number}
  */
 e2e.Algorithm.prototype.keySize;
@@ -65,8 +72,14 @@ e2e.Algorithm.prototype.getKey;
 e2e.Algorithm.prototype.setKey;
 
 /**
+ * Changes the WebCrypto key of the algorithm.
+ * @param {!e2e.algorithm.WebCryptoKeyPair} webCryptoKey The WebCrypto key
+ */
+e2e.Algorithm.prototype.setWebCryptoKey;
+
+/**
  * Returns a WebCrypto key object (which we don't possess key material).
- * @return {*}
+ * @return {e2e.algorithm.WebCryptoKeyPair}
  */
 e2e.Algorithm.prototype.getWebCryptoKey;
 
@@ -86,6 +99,15 @@ e2e.AlgorithmImpl = function(algorithm, opt_key) {
   }
 };
 
+
+/** @override */
+e2e.AlgorithmImpl.prototype.setWebCryptoKey = function(webCryptoKey) {
+  this.webCryptoKey = webCryptoKey;
+};
+
+
+/** @override */
+e2e.AlgorithmImpl.prototype.webCryptoKey;
 
 /** @override */
 e2e.AlgorithmImpl.prototype.key;
@@ -113,5 +135,6 @@ e2e.AlgorithmImpl.prototype.setKey = function(key, opt_keySize) {
 
 /** @override */
 e2e.AlgorithmImpl.prototype.getWebCryptoKey = function() {
-  return null;
+  goog.asserts.assert(goog.isDef(this.webCryptoKey));
+  return this.webCryptoKey;
 };

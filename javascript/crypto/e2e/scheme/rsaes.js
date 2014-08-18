@@ -36,7 +36,6 @@ e2e.scheme.Rsaes = function(cipher) {
     'publicExponent': new Uint8Array(cipher.getKey()['e'])
   };
   goog.base(this, cipher);
-  this.key = cipher.getKey();
 };
 goog.inherits(e2e.scheme.Rsaes, e2e.scheme.Eme);
 
