@@ -21,21 +21,25 @@ goog.provide('e2e.otr.Data');
 
 goog.require('e2e');
 goog.require('e2e.otr');
+goog.require('e2e.otr.Storable');
 goog.require('e2e.otr.error.ParseError');
+goog.require('goog.asserts');
 
 
 /**
  * An OTRv3 DATA type. The data would be available as
  * an Array of bytes but should be treated as read-only.
- * @param {!Uint8Array} data The DATA's contents.
- * @implements {e2e.otr.Serializable}
  * @constructor
+ * @implements {e2e.otr.Serializable}
+ * @extends {e2e.otr.Storable}
+ * @param {!Uint8Array} data The DATA's contents.
  */
 e2e.otr.Data = function(data) {
   this.data_ = new Uint8Array(data);
   // TODO(user): Avoid calling implements every time class is instantiated.
   e2e.otr.implements(e2e.otr.Data, e2e.otr.Serializable);
 };
+goog.inherits(e2e.otr.Data, e2e.otr.Storable);
 
 
 /**
@@ -76,4 +80,17 @@ e2e.otr.Data.parse = function(body) {
   }
 
   return new e2e.otr.Data(number);
+};
+
+
+/** @inheritDoc */
+e2e.otr.Data.prototype.pack = function() {
+  return Array.apply(this.data_);
+};
+
+
+/** @inheritDoc */
+e2e.otr.Data.unpack = function(data) {
+  assert(goog.isArrayLike(data));
+  return new e2e.otr.Data(new Uint8Array(/** @type {!Array} */ (data)));
 };

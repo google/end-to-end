@@ -20,6 +20,7 @@
 goog.provide('e2e.otr.pubkey.Pubkey');
 
 goog.require('e2e.otr');
+goog.require('e2e.otr.Storable');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.ParseError');
 
@@ -38,6 +39,7 @@ var PUBKEY_TYPE_VALUES = Object.keys(e2e.otr.constants.PubkeyType).map(
  * An OTRv3 PUBKEY.
  * @constructor
  * @implements {e2e.otr.Serializable}
+ * @extends {e2e.otr.Storable}
  */
 e2e.otr.pubkey.Pubkey = function() {
   //TODO(user): Remove when closure compiler issue #104 (@abstract) is resolved.
@@ -49,6 +51,7 @@ e2e.otr.pubkey.Pubkey = function() {
 
   e2e.otr.implements(e2e.otr.pubkey.Pubkey, e2e.otr.Serializable);
 };
+goog.inherits(e2e.otr.pubkey.Pubkey, e2e.otr.Storable);
 
 
 /**

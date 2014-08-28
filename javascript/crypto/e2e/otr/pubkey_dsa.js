@@ -19,8 +19,11 @@
 
 goog.provide('e2e.otr.pubkey.Dsa');
 
+goog.require('e2e');
 goog.require('e2e.otr');
+goog.require('e2e.otr.Storable');
 goog.require('e2e.otr.pubkey.Pubkey');
+goog.require('goog.asserts');
 
 
 /**
@@ -79,6 +82,21 @@ e2e.otr.pubkey.Dsa.prototype.deconstruct = function() {
 e2e.otr.pubkey.Dsa.parse = function(body) {
   var iter = new e2e.otr.util.Iterator(body);
   throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+};
+
+
+/** @inheritDoc */
+e2e.otr.pubkey.Dsa.prototype.pack = function() {
+  return {p: this.p_, q: this.q_, g: this.g_, y: this.y_};
+};
+
+
+/** @inheritDoc */
+e2e.otr.pubkey.Dsa.unpack = function(data) {
+  assert(e2e.isByteArray(data.p) && e2e.isByteArray(data.q) &&
+      e2e.isByteArray(data.g) && e2e.isByteArray(data.y));
+  return new e2e.otr.pubkey.Dsa(/** @type {!e2e.signer.key.DsaPublicKey} */
+      (data));
 };
 
 e2e.otr.pubkey.Pubkey.add(e2e.otr.pubkey.Dsa);

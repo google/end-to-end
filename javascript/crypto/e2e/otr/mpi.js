@@ -21,15 +21,18 @@ goog.provide('e2e.otr.Mpi');
 
 goog.require('e2e');
 goog.require('e2e.otr');
+goog.require('e2e.otr.Storable');
 goog.require('e2e.otr.error.ParseError');
+goog.require('goog.asserts');
 
 
 /**
  * An OTRv3 MPI. The number would be available as
  * an Array of bytes but should be treated as read-only.
- * @param {!Uint8Array} number The MPI's value.
- * @implements {e2e.otr.Serializable}
  * @constructor
+ * @implements {e2e.otr.Serializable}
+ * @extends {e2e.otr.Storable}
+ * @param {!Uint8Array} number The MPI's value.
  */
 e2e.otr.Mpi = function(number) {
   // drop leading 0s and assign copy to this.data_
@@ -39,6 +42,7 @@ e2e.otr.Mpi = function(number) {
   // TODO(user): Avoid calling implements every time class is instantiated.
   e2e.otr.implements(e2e.otr.Mpi, e2e.otr.Serializable);
 };
+goog.inherits(e2e.otr.Mpi, e2e.otr.Storable);
 
 
 /**
@@ -79,4 +83,17 @@ e2e.otr.Mpi.parse = function(body) {
   }
 
   return new e2e.otr.Mpi(number);
+};
+
+
+/** @inheritDoc */
+e2e.otr.Mpi.prototype.pack = function() {
+  return Array.apply(this.data_);
+};
+
+
+/** @inheritDoc */
+e2e.otr.Mpi.unpack = function(data) {
+  assert(goog.isArrayLike(data));
+  return new e2e.otr.Mpi(new Uint8Array(/** @type {!Array} */ (data)));
 };

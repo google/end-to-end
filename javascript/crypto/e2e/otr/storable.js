@@ -34,15 +34,15 @@ e2e.otr.Storable = function() {
 
 
 /**
- * Provides a JSON representation of the class.
- * @return {string} The serialized data.
+ * Provides a JSON.stringify-able representation of the class.
+ * @return {*} The serialized data.
  */
 e2e.otr.Storable.prototype.pack = goog.abstractMethod;
 
 
 /**
- * Instantiates a class from a JSON representation.
- * @param {string} json The JSON representation.
+ * Instantiates a class from a parsed JSON representation.
+ * @param {*} json The parsed JSON representation.
  * @return {!e2e.otr.Storable} The class instance.
  */
 e2e.otr.Storable.unpack = goog.abstractMethod;

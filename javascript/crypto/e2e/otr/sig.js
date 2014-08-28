@@ -19,8 +19,10 @@
 
 goog.provide('e2e.otr.Sig');
 
+goog.require('e2e');
 goog.require('e2e.async.Result');
 goog.require('e2e.otr');
+goog.require('e2e.otr.Storable');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.NotImplementedError');
 goog.require('e2e.signer.Algorithm');
@@ -32,6 +34,7 @@ goog.require('goog.asserts');
  * An OTRv3 SIG.
  * @constructor
  * @implements {e2e.otr.Serializable}
+ * @extends {e2e.otr.Storable}
  * @param {!e2e.signer.key.Dsa} key The DSA key used for signing.
  * @param {!e2e.ByteArray} data The data to sign.
  */
@@ -41,6 +44,7 @@ e2e.otr.Sig = function(key, data) {
     e2e.signer.factory.get(e2e.signer.Algorithm.DSA, key).sign(data));
   e2e.otr.implements(e2e.otr.Sig, e2e.otr.Serializable);
 };
+goog.inherits(e2e.otr.Sig, e2e.otr.Storable);
 
 
 /** @inheritDoc */
@@ -79,4 +83,19 @@ e2e.otr.Sig.parse = function(body) {
 e2e.otr.Sig.verify = function(key, m, sig) {
   return e2e.async.Result.getValue(e2e.signer.factory.get(
       e2e.signer.Algorithm.DSA, key).verify(m, sig.deconstruct()));
+};
+
+
+/** @inheritDoc */
+e2e.otr.Sig.prototype.pack = function() {
+  return this.sig_;
+};
+
+
+/** @inheritDoc */
+e2e.otr.Sig.unpack = function(data) {
+  assert(e2e.isByteArray(data.r) && e2e.isByteArray(data.s));
+  var obj = Object.create(e2e.otr.Sig.prototype);
+  obj.sig_ = data;
+  return obj;
 };
