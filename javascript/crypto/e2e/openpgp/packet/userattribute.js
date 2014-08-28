@@ -17,25 +17,27 @@
 
 goog.provide('e2e.openpgp.packet.UserAttribute');
 
-goog.require('e2e.openpgp.packet.Packet');
+goog.require('e2e.openpgp.packet.UserId');
 goog.require('e2e.openpgp.packet.factory');
 
 
-
 /**
+ * User Attribute Packet (Tag 17) defined in RFC 4880 section 5.12. Data inside
+ *     the packet is not parsed.
  * @constructor
- * @extends {e2e.openpgp.packet.Packet}
+ * @extends {e2e.openpgp.packet.UserId}
+ * @param {!e2e.ByteArray} data Attribute data.
  */
-e2e.openpgp.packet.UserAttribute = function() {
-  goog.base(this);
+e2e.openpgp.packet.UserAttribute = function(data) {
+
   /**
-   * @type {Array.<e2e.openpgp.packet.Signature>}
-   * @private
+   * @type {!e2e.ByteArray}
    */
-  this.certifications_ = [];
+  this.data = data;
+  goog.base(this, '');
 };
 goog.inherits(e2e.openpgp.packet.UserAttribute,
-              e2e.openpgp.packet.Packet);
+              e2e.openpgp.packet.UserId);
 
 
 /** @inheritDoc */
@@ -43,21 +45,30 @@ e2e.openpgp.packet.UserAttribute.prototype.tag = 17;
 
 
 /**
- * @param {e2e.openpgp.packet.Signature} sig
+ * Gets a byte array representing the User attribute data to create the
+ *     signature over. This is intended for signatures of type 0x10 through
+ *     0x13. See RFC 4880 5.2.4 for details.
+ * @return {!e2e.ByteArray} The bytes to sign.
+ * @protected
  */
-e2e.openpgp.packet.UserAttribute.prototype.addCertification =
-    function(sig) {
-  this.certifications_.push(sig);
+e2e.openpgp.packet.UserAttribute.prototype.getBytesToSign = function() {
+  return goog.array.flatten(
+      0xD1,
+      e2e.dwordArrayToByteArray([this.data.length]),
+      this.data
+  );
 };
 
 
 /**
- * @param {!e2e.ByteArray} body
+ * @param {!e2e.ByteArray} data data to parse
  * @return {e2e.openpgp.packet.UserAttribute}
  */
-e2e.openpgp.packet.UserAttribute.parse = function(body) {
-  // TODO(user): Implement parsing.
-  return new e2e.openpgp.packet.UserAttribute;
+e2e.openpgp.packet.UserAttribute.parse = function(data) {
+  //TODO: implement subpacket parsing
+  var body = data;
+  data = [];
+  return new e2e.openpgp.packet.UserAttribute(body);
 };
 
 

@@ -63,12 +63,12 @@ e2e.openpgp.packet.UserId.prototype.tag = 13;
 /**
  * Parses and extracts the data from the body. It will consume all data from the
  * array.
- * @param {!e2e.ByteArray} body The data to parse.
+ * @param {!e2e.ByteArray} data The data to parse.
  * @return {e2e.openpgp.packet.UserId} A user ID Packet.
  */
-e2e.openpgp.packet.UserId.parse = function(body) {
-  var userId = e2e.byteArrayToString(body);
-  body = [];
+e2e.openpgp.packet.UserId.parse = function(data) {
+  var userId = e2e.byteArrayToString(data);
+  data = [];
   return new e2e.openpgp.packet.UserId(userId);
 };
 
@@ -218,7 +218,7 @@ e2e.openpgp.packet.UserId.prototype.getSignatureAttributes_ = function(key) {
  * Gets a byte array representing the User ID data to create the signature over.
  * This is intended for signatures of type 0x10 through 0x13.
  * See RFC 4880 5.2.4 for details.
- * @return {!e2e.ByteArray} The serialization of the key packet.
+ * @return {!e2e.ByteArray} The bytes to sign.
  * @protected
  */
 e2e.openpgp.packet.UserId.prototype.getBytesToSign = function() {

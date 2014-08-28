@@ -119,31 +119,25 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
     // http://tools.ietf.org/html/rfc4880#section-11.1 UserId sequences should
     // always come first. See Issue #33.
     while (packet instanceof e2e.openpgp.packet.UserId) {
-      var userId = packet;
-      this.userIds.push(packet);
+      // UserAttribute extends UserId
+      if (packet instanceof e2e.openpgp.packet.UserAttribute) {
+        this.userAttributes.push(packet);
+      } else {
+        this.userIds.push(packet);
+      }
+      var userIdOrAttribute = packet;
       this.packets.push(packets.shift());
       packet = packets[0];
       while (packet instanceof e2e.openpgp.packet.Signature) {
         // TODO(user): Figure out what to do with foreign certifications
         if (goog.array.equals(goog.asserts.assertArray(this.keyPacket.keyId),
             packet.getSignerKeyId())) {
-          userId.addCertification(packet, this.keyPacket);
+          userIdOrAttribute.addCertification(packet, this.keyPacket);
         }
         this.packets.push(packets.shift());
         while (packets[0] instanceof e2e.openpgp.packet.Trust) {
           packets.shift();
         }
-        packet = packets[0];
-      }
-    }
-    while (packet instanceof e2e.openpgp.packet.UserAttribute) {
-      var userAttribute = packet;
-      this.userAttributes.push(packet);
-      this.packets.push(packets.shift());
-      packet = packets[0];
-      while (packet instanceof e2e.openpgp.packet.Signature) {
-        userAttribute.addCertification(packet);
-        this.packets.push(packets.shift());
         packet = packets[0];
       }
     }
