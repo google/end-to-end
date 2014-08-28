@@ -40,13 +40,27 @@ e2e.cipher.DiffieHellman = function(p, g) {
 
 
 /**
+ * Caches the result of g^x for future use.
+ * @type {!e2e.ByteArray} g^x.
+ */
+e2e.cipher.DiffieHellman.prototype.cachedResult_;
+
+
+/**
  * Computes g^x mod p.
  * @param {!e2e.ByteArray} opt_g The base.
  * @return {!e2e.ByteArray} g^x mod p.
  */
 e2e.cipher.DiffieHellman.prototype.generate = function(opt_g) {
-  assert(this.isValidBase(opt_g || this.g_));
-  return this.p_.pow(opt_g || this.g_, this.x_);
+  if (opt_g) {
+    assert(this.isValidBase(opt_g));
+    return this.p_.pow(opt_g, this.x_);
+  }
+  if (!this.cachedResult_) {
+    assert(this.isValidBase(this.g_));
+    this.cachedResult_ = this.p_.pow(this.g_, this.x_);
+  }
+  return this.cachedResult_;
 };
 
 
