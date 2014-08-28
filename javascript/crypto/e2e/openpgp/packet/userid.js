@@ -47,10 +47,15 @@ e2e.openpgp.packet.UserId = function(userId) {
    */
   this.userId = userId;
   /**
-   * @type {Array.<e2e.openpgp.packet.Signature>}
+   * @type {!Array.<!e2e.openpgp.packet.Signature>}
    * @private
    */
   this.certifications_ = [];
+  /**
+   * @type {!Array.<!e2e.openpgp.packet.Signature>}
+   * @private
+   */
+  this.revocations_ = [];
 };
 goog.inherits(e2e.openpgp.packet.UserId,
               e2e.openpgp.packet.Packet);
@@ -82,14 +87,11 @@ e2e.openpgp.packet.UserId.prototype.serializePacketBody = function() {
 /** @override */
 e2e.openpgp.packet.UserId.prototype.serialize = function() {
   var serialized = goog.base(this, 'serialize');
-  if (this.certifications_.length > 0) {
-    goog.array.extend(serialized, goog.array.flatten(
-        goog.array.map(
-            this.certifications_,
-            function(sig) {
-              return sig.serialize();
-            })));
-  }
+  goog.array.forEach(
+      this.revocations_.concat(this.certifications_),
+      function(sig) {
+        goog.array.extend(serialized, sig.serialize());
+      });
   return serialized;
 };
 
@@ -107,21 +109,39 @@ e2e.openpgp.packet.UserId.prototype.addCertification = function(signature) {
 
 
 /**
+ * Adds the User ID revocation signature.
+ * Caution! Signature is not verified, use verifySignatures() function to verify
+ * the signature.
+ * @param {!e2e.openpgp.packet.Signature} signature Revocation signature
+ */
+e2e.openpgp.packet.UserId.prototype.addRevocation = function(signature) {
+  if (signature.signatureType !==
+      e2e.openpgp.packet.Signature.SignatureType.CERTIFICATION_REVOCATION) {
+    throw new e2e.openpgp.error.ParseError(
+        'Invalid revocation signature type.');
+  }
+  this.revocations_.push(signature);
+};
+
+
+/**
  * @param {e2e.openpgp.packet.Signature} signature
  * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
  *     verify the certification signature.
+ * @param {!e2e.ByteArray} signedData data that was signed.
+ * @param {string} verificationErrorMsg error message when signature did not
+ *     verify.
  * @return {boolean} True iff signature verified correctly.
  * @private
  */
-e2e.openpgp.packet.UserId.prototype.verifyCertification_ = function(
-    signature, verifyingKey) {
+e2e.openpgp.packet.UserId.prototype.verifySignatureInternal_ = function(
+    signature, verifyingKey, signedData, verificationErrorMsg) {
   if (!verifyingKey.keyId || !goog.array.equals(signature.getSignerKeyId(),
       verifyingKey.keyId)) {
     // Different key, ignore signature.
     return false;
   }
   var signer = /** @type {!e2e.signer.Signer} */ (verifyingKey.cipher);
-  var signedData = this.getCertificationSignatureData_(verifyingKey);
   try {
     var signatureVerified = signature.verify(signedData,
       goog.asserts.assertObject(signer));
@@ -134,10 +154,26 @@ e2e.openpgp.packet.UserId.prototype.verifyCertification_ = function(
     throw e;
   }
   if (!signatureVerified) {
-    throw new e2e.openpgp.error.SignatureError(
-        'Certification signature verification failed.');
+    throw new e2e.openpgp.error.SignatureError(verificationErrorMsg);
   }
   return true;
+};
+
+
+/**
+ * @param {e2e.openpgp.packet.Signature} signature
+ * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
+ *     verify the certification signature.
+ * @return {boolean} True iff signature verified correctly.
+ * @private
+ */
+e2e.openpgp.packet.UserId.prototype.verifyCertification_ = function(signature,
+    verifyingKey) {
+  return this.verifySignatureInternal_(
+      signature,
+      verifyingKey,
+      this.getCertificationSignatureData_(verifyingKey),
+      'Certification signature verification failed.');
 };
 
 
@@ -150,14 +186,44 @@ e2e.openpgp.packet.UserId.prototype.verifyCertification_ = function(
  * @return {boolean} True if key has a valid certification.
  */
 e2e.openpgp.packet.UserId.prototype.verifySignatures = function(verifyingKey) {
-  // Key needs to have a binding signature. See RFC 4880 11.1.
-  if (!goog.array.some(this.certifications_, function(signature) {
-      return this.verifyCertification_(signature, verifyingKey);
-  }, this)) {
-    return false;
+  // Revocation removes related certification signatures.
+  goog.array.forEach(this.revocations_,
+      goog.bind(this.applyRevocation_, this, verifyingKey));
+  // User ID needs to have a valid certification signature. See RFC 4880 11.1.
+  var hasCertification = false;
+  // Process all signatures to detect tampering.
+  goog.array.forEach(this.certifications_, function(signature) {
+      if (this.verifyCertification_(signature, verifyingKey))
+        hasCertification = true;
+  }, this);
+  return hasCertification;
+};
+
+
+/**
+ * Applies a revocation signature, removing all certification signatures by a
+ * given key.
+ * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
+ *     verify the signatures
+ * @param  {!e2e.openpgp.packet.Signature} revocation revocation signature
+ * @private
+ */
+e2e.openpgp.packet.UserId.prototype.applyRevocation_ = function(verifyingKey,
+    revocation) {
+  if (this.verifySignatureInternal_(
+        revocation,
+        verifyingKey,
+        this.getCertificationSignatureData_(verifyingKey),
+        'User ID revocation signature verification failed.')) {
+    var revocationKey = revocation.getSignerKeyId();
+    for (var i = this.certifications_.length - 1; i >= 0; i--) {
+      if (goog.array.equals(revocationKey,
+          this.certifications_[i].getSignerKeyId())) {
+        // Invalidate certifications by the same key
+        this.certifications_.splice(i, 1);
+      }
+    }
   }
-  // TODO(user): revocation support.
-  return true;
 };
 
 

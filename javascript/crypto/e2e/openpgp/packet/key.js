@@ -170,20 +170,23 @@ e2e.openpgp.packet.Key.prototype.addBindingSignature = function(signature) {
  * @return {boolean} True if key has valid binding.
  */
 e2e.openpgp.packet.Key.prototype.verifySignatures = function(verifyingKey) {
+  // Always process signatures to throw errors on any signature tampering.
+
   // There should be no valid revocation signatures.
-  if (goog.array.some(this.revocations_, function(signature) {
-      return this.verifyRevocation_(signature, verifyingKey);
-  }, this)) {
-    return false;
-  }
+  var isRevoked = false;
+  goog.array.forEach(this.revocations_, function(signature) {
+      if (this.verifyRevocation_(signature, verifyingKey)) {
+        isRevoked = true;
+      }
+  }, this);
+  var hasBinding = false;
   // Subkeys needs to have a binding signature. See RFC 4880 11.1.
-  if (this.isSubkey &&
-      !goog.array.some(this.bindingSignatures_, function(signature) {
-          return this.verifyBindingSignature_(signature, verifyingKey);
-      }, this)) {
-    return false;
-  }
-  return true;
+  goog.array.forEach(this.bindingSignatures_, function(signature) {
+    if (this.verifyBindingSignature_(signature, verifyingKey)) {
+      hasBinding = true;
+    }
+  }, this);
+  return (!isRevoked && (!this.isSubKey || hasBinding));
 };
 
 
@@ -350,7 +353,7 @@ e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type) {
 e2e.openpgp.packet.Key.prototype.serialize = function() {
   var serialized = goog.base(this, 'serialize');
   goog.array.forEach(
-      this.bindingSignatures_.concat(this.revocations_),
+      this.revocations_.concat(this.bindingSignatures_),
       function(sig) {
         goog.array.extend(serialized, sig.serialize());
       });

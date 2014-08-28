@@ -132,10 +132,11 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
       packet = packets[0];
       while (packet instanceof e2e.openpgp.packet.Signature) {
         // TODO(user): Figure out what to do with foreign certifications
-        // TODO(user): Add certification revocation support.
-        if (goog.array.equals(goog.asserts.assertArray(this.keyPacket.keyId),
-            packet.getSignerKeyId())) {
+        if (packet.isCertificationSignature()) {
           userIdOrAttribute.addCertification(packet);
+        } else if (packet.signatureType === e2e.openpgp.packet.Signature.
+            SignatureType.CERTIFICATION_REVOCATION) {
+          userIdOrAttribute.addRevocation(packet);
         }
         this.packets.push(packets.shift());
         while (packets[0] instanceof e2e.openpgp.packet.Trust) {
@@ -215,7 +216,12 @@ e2e.openpgp.block.TransferableKey.prototype.processSignatures = function() {
     }
   }
   if (this.userIds.length == 0) {
-    throw new e2e.openpgp.error.SignatureError('No valid user IDs.');
+    throw new e2e.openpgp.error.SignatureError('No certified user IDs.');
+  }
+  for (i = this.userAttributes.length - 1; i >= 0; i--) {
+    if (!this.userAttributes[i].verifySignatures(signingKey)) {
+      this.userAttributes.splice(i, 1);
+    }
   }
 };
 
