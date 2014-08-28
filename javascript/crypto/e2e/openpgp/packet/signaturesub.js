@@ -192,9 +192,9 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       // RFC 4880 section 5.2.3.21.
       break;
     case e2e.openpgp.packet.SignatureSub.Type.REVOCATION_REASON:
-      var bodyClone = goog.array.clone(subpacket.body);
-      attributes.REVOCATION_REASON = bodyClone.shift();
-      attributes.REVOCATION_REASON_TEXT = e2e.byteArrayToString(bodyClone);
+      attributes.REVOCATION_REASON = subpacket.body[0];
+      attributes.REVOCATION_REASON_TEXT = e2e.byteArrayToString(
+          goog.array.slice(subpacket.body, 1));
       break;
     case e2e.openpgp.packet.SignatureSub.Type.FEATURES:
       if (subpacket.body.length == 0) {
