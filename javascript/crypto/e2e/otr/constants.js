@@ -46,6 +46,23 @@ e2e.otr.constants.MessageType = {
 
 
 /**
+ * OTR TLV types.
+ * @enum {e2e.otr.Short}
+ */
+e2e.otr.constants.TlvType = {
+  PADDING: new Uint8Array([0x00, 0x00]),
+  DISCONNECTED: new Uint8Array([0x00, 0x01]),
+  SMP_MESSAGE_1: new Uint8Array([0x00, 0x02]),
+  SMP_MESSAGE_2: new Uint8Array([0x00, 0x03]),
+  SMP_MESSAGE_3: new Uint8Array([0x00, 0x04]),
+  SMP_MESSAGE_4: new Uint8Array([0x00, 0x05]),
+  SMP_MESSAGE_ABORT: new Uint8Array([0x00, 0x06]),
+  SMP_MESSAGE_1Q: new Uint8Array([0x00, 0x07]),
+  EXTRA_SYMMETRIC_KEY: new Uint8Array([0x00, 0x08])
+};
+
+
+/**
  * OTR pubkey types.
  * @enum {e2e.otr.Short}
  */
