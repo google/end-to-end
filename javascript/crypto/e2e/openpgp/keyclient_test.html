@@ -28,13 +28,49 @@
   goog.require('e2e.cipher.Aes');
   goog.require('e2e.cipher.Algorithm');
   goog.require('e2e.openpgp.block.TransferablePublicKey');
-  goog.require('e2e.openpgp.keyringTestData');
   goog.require('e2e.openpgp.block.factory');
   goog.require('e2e.openpgp.KeyClient');
   goog.require('e2e.hash.Sha1');
   goog.require('e2e.signer.Algorithm');
   goog.require('e2e.signer.Ecdsa');
 </script>
+<!--
+:public key packet:
+  version 4, algo 19, created 1408716939, expires 0
+  unknown algorithm 19
+:user ID packet: "<ecc@example.com>"
+:signature packet: algo 19, keyid A91985B3AA980DC1
+  version 4, created 1408716939, md5len 0, sigclass 0x10
+  digest algo 8, begin of digest f9 06
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID A91985B3AA980DC1)
+  unknown algorithm 19
+:public sub key packet:
+  version 4, algo 18, created 1408716939, expires 0
+  unknown algorithm 18
+:signature packet: algo 19, keyid A91985B3AA980DC1
+  version 4, created 1408716939, md5len 0, sigclass 0x18
+  digest algo 8, begin of digest 7d 8f
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID A91985B3AA980DC1)
+  unknown algorithm 19
+-->
+<textarea id="pubKeyAscii">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Charset: UTF-8
+
+xv8AAABSBFP3UIsTCCqGSM49AwEHAgMEjt37zqFShFGWQs2XsjXe82RAjD0ULivh
+wPVyqt/Bvn2eTTzWB9Bv5SDIaHI5m979ThVRRKlSMGQIiK2Il71wus3/AAAAETxl
+Y2NAZXhhbXBsZS5jb20+wv8AAABmBBATCAAY/wAAAAWCU/dQi/8AAAAJkKkZhbOq
+mA3BAAD5BgD/VVQ2Zjsv/pJeTRUeAjSB6k7tr1UyQneZ6/V1NHJZ0x8A/0lITTKZ
+TZKyZLb+TejK9k9F7s0m9zZn4q4JxFWDbkOizv8AAABWBFP3UIsSCCqGSM49AwEH
+AgMERvFPl1fK8weTLuZRhFkbC28BVFyW7WL5BoOZ0noaHsLb+GPpXSU4O9H593Bw
+uYpu0ZNL7ueWkyFJPuNFGyG4lwMBCAfC/wAAAGYEGBMIABj/AAAABYJT91CL/wAA
+AAmQqRmFs6qYDcEAAH2PAQD4vU9agaX1njxMXgF8nsqGAu1UWF+2M0t/JVQ9+YFC
+hwEA1RFEzURGNJbObccP6oJGdBdL0A6YpZNLI2hXyISsU2A=
+=taNi
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
 <script>
 
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
@@ -112,10 +148,10 @@ function testSearchPublicKeyFoundValidKey() {
       'http://127.0.0.1:8888/pks/lookup?op=get&x-email=test%40google.com',
       xhrios[0].getLastUri());
   asyncTestCase.waitForAsync('Waiting for response to be processed.');
-  xhrios[0].simulateResponse(200, e2e.openpgp.keyringTestData.pubKeyAscii);
+  xhrios[0].simulateResponse(200, document.getElementById('pubKeyAscii').value);
   pubKeys.addCallback(function(pubKeys) {
     assertEquals(1, pubKeys.length);
-    assertEquals('ecc real name <ecc@example.com>', pubKeys[0].getUserIds()[0]);
+    assertEquals('<ecc@example.com>', pubKeys[0].getUserIds()[0]);
     asyncTestCase.continueTesting();
   });
 }

@@ -190,6 +190,52 @@ function testSignECDSA() {
   });
 }
 
+function testKeySignatureParsing() {
+    var publicKeyAscii =
+    '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
+    'Version: GnuPG v2.1.0-ecc (GNU/Linux)\n' +
+    '\n' +
+    'mFIEUh5AoBMIKoZIzj0DAQcCAwT68182duSEJFXKa+qkBa0Vgeswnv8GP8tKYiU/\n' +
+    'MCZd6dGTvrtf2gSjyAsVkB0V0idW7i8yW1wfh3y2AbGWDr/dtB9lY2MgcmVhbCBu\n' +
+    'YW1lIDxlY2NAZXhhbXBsZS5jb20+iHoEExMIACIFAlIeQKACGwMGCwkIBwMCBhUI\n' +
+    'AgkKCwQWAgMBAh4BAheAAAoJEOrrinav6MhnxtcA/iAteDFo/P5SU5XV/8/4BN9x\n' +
+    'f28SuvwFipnjjyOmvB0eAP4kPM5LAp2EW+QIyG6+CJP1No9uWyZTdLPkTRgLtYhi\n' +
+    'GLhWBFIeQKASCCqGSM49AwEHAgMEgk1dVpgPCM38NBNoBcvehm7mt6aUmK8mDb/M\n' +
+    'SHo2/NlwfTh+BDCoVX5asSetzuW2RbnP6sCBwfsuLSrSWUVauwMBCAeIYQQYEwgA\n' +
+    'CQUCUh5AoAIbDAAKCRDq64p2r+jIZzqQAQCcv0VOQFiNOM6JNdLHTqlCYxeoz09d\n' +
+    'UP3LdgcnLED/YwD9FqcNrkok9BuXJ9+rXTSu+uqdWB7gpMO9mfk65d5IQ+s=\n' +
+    '=xRCj\n' +
+    '-----END PGP PUBLIC KEY BLOCK-----';
+  var key = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
+  assertEquals(0, key.keyPacket.bindingSignatures_.length);
+  // Subkey signature for encrypting subkey
+  assertEquals(1, key.subKeys[0].bindingSignatures_.length);
+  assertEquals(e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
+      key.subKeys[0].bindingSignatures_[0].signatureType);
+  assertTrue(Boolean(key.subKeys[0].bindingSignatures_[0].attributes.
+      KEY_FLAG_ENCRYPT_COMMUNICATION));
+  assertTrue(Boolean(key.subKeys[0].bindingSignatures_[0].attributes.
+      KEY_FLAG_ENCRYPT_STORAGE));
+  assertFalse(Boolean(key.subKeys[0].bindingSignatures_[0].attributes.
+      KEY_FLAG_SIGN));
+  assertArrayEquals(key.subKeys[0].bindingSignatures_[0].getSignerKeyId(),
+      key.keyPacket.keyId);
+
+  // User ID certification signature
+  assertEquals(1, key.userIds[0].certifications_.length);
+  assertEquals(e2e.openpgp.packet.Signature.SignatureType.POSITIVE_USER_ID,
+      key.userIds[0].certifications_[0].signatureType);
+  assertFalse(Boolean(key.userIds[0].certifications_[0].attributes.
+      KEY_FLAG_ENCRYPT_COMMUNICATION));
+  assertFalse(Boolean(key.userIds[0].certifications_[0].attributes.
+      KEY_FLAG_ENCRYPT_STORAGE));
+  assertTrue(Boolean(key.userIds[0].certifications_[0].attributes.
+      KEY_FLAG_SIGN));
+  assertArrayEquals(key.userIds[0].certifications_[0].getSignerKeyId(),
+      key.keyPacket.keyId);
+}
+
+
 function testSignRSA() {
   var publicKeyAscii =  // "test 4" 1024-bit RSA key, ID 092DA808, 06 ff ...
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +

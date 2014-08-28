@@ -1,3 +1,4 @@
+
 // Copyright 2013 Google Inc. All rights reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,6 +21,7 @@ goog.provide('e2e.openpgp.block.TransferableKey');
 
 goog.require('e2e.openpgp.block.Block');
 goog.require('e2e.openpgp.error.ParseError');
+goog.require('e2e.openpgp.error.SignatureError');
 goog.require('e2e.openpgp.packet.PublicSubkey');
 goog.require('e2e.openpgp.packet.SecretSubkey');
 goog.require('e2e.openpgp.packet.Signature');
@@ -108,7 +110,7 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
           'Invalid block. Only key revocation signatures are allowed after ' +
           'key packets.');
     }
-    this.keyPacket.addRevocation(packet, this.keyPacket);
+    this.keyPacket.addRevocation(packet);
     this.packets.push(packets.shift());
     packet = packets[0];
   }
@@ -130,9 +132,10 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
       packet = packets[0];
       while (packet instanceof e2e.openpgp.packet.Signature) {
         // TODO(user): Figure out what to do with foreign certifications
+        // TODO(user): Add certification revocation support.
         if (goog.array.equals(goog.asserts.assertArray(this.keyPacket.keyId),
             packet.getSignerKeyId())) {
-          userIdOrAttribute.addCertification(packet, this.keyPacket);
+          userIdOrAttribute.addCertification(packet);
         }
         this.packets.push(packets.shift());
         while (packets[0] instanceof e2e.openpgp.packet.Trust) {
@@ -143,7 +146,7 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
     }
   }
   if (this.userIds.length < 1) {
-    throw new Error('Invalid block. Missing User ID.');
+    throw new e2e.openpgp.error.ParseError('Invalid block. Missing User ID.');
   }
   while (packet instanceof e2e.openpgp.packet.PublicSubkey ||
         packet instanceof e2e.openpgp.packet.SecretSubkey) {
@@ -161,7 +164,7 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
       if (packet.signatureType ==
           e2e.openpgp.packet.Signature.SignatureType.SUBKEY) {
         // TODO(user): Add support for signing key not being the main key.
-        subKey.addBindingSignature(packet, this.keyPacket);
+        subKey.addBindingSignature(packet);
         this.packets.push(packets.shift());
         // Ignore trust packets.
         while (packets[0] instanceof e2e.openpgp.packet.Trust) {
@@ -170,7 +173,7 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
         packet = packets[0];
       } else if (packet.signatureType ==
                  e2e.openpgp.packet.Signature.SignatureType.SUBKEY_REVOCATION) {
-        subKey.addRevocation(packet, this.keyPacket);
+        subKey.addRevocation(packet);
         this.packets.push(packets.shift());
         packet = packets[0];
       } else {
@@ -178,8 +181,42 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
       }
     }
   }
-
   return packets;
+};
+
+
+/**
+ * Verify all certification, binding and revocation signatures present in
+ *     key block. This will remove all keys and User IDs with non-verifying or
+ *     missing signatures. Revoked keys and User IDs are also removed.
+ *  This method will throw an error if the resulting TransferableKey has no
+ *  user IDs or any signature has been tampered with.
+ */
+e2e.openpgp.block.TransferableKey.prototype.processSignatures = function() {
+  var signingKey = goog.asserts.assertObject(this.keyPacket);
+
+  if (!this.keyPacket.verifySignatures(signingKey)) {
+    // main key is invalid
+    throw new e2e.openpgp.error.SignatureError(
+      'Main key is invalid.');
+  }
+  // Process subkeys
+  var keysToRemove = [];
+  for (var i = this.subKeys.length - 1; i >= 0; i--) {
+    if (!this.subKeys[i].verifySignatures(signingKey)) {
+      // Remove subKey, it's invalid
+      this.subKeys.splice(i, 1);
+    }
+  }
+  // Process user IDs
+  for (i = this.userIds.length - 1; i >= 0; i--) {
+    if (!this.userIds[i].verifySignatures(signingKey)) {
+      this.userIds.splice(i, 1);
+    }
+  }
+  if (this.userIds.length == 0) {
+    throw new e2e.openpgp.error.SignatureError('No valid user IDs.');
+  }
 };
 
 

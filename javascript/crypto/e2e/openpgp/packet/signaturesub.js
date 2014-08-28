@@ -186,10 +186,16 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       if (subpacket.body.length == 0) {
         attributes.KEY_FLAGS = 0;
       } else {
+        // RFC 4880 section 5.2.3.21.
         attributes.KEY_FLAGS = subpacket.body[0];
+        attributes.KEY_FLAG_CERTIFY = attributes.KEY_FLAGS & 0x01;
+        attributes.KEY_FLAG_SIGN = attributes.KEY_FLAGS & 0x02;
+        attributes.KEY_FLAG_ENCRYPT_COMMUNICATION = attributes.KEY_FLAGS & 0x04;
+        attributes.KEY_FLAG_ENCRYPT_STORAGE = attributes.KEY_FLAGS & 0x08;
+        attributes.KEY_FLAG_SPLIT = attributes.KEY_FLAGS & 0x10;
+        attributes.KEY_FLAG_AUTHENTICATION = attributes.KEY_FLAGS & 0x20;
+        attributes.KEY_FLAG_SHARED = attributes.KEY_FLAGS & 0x80;
       }
-      // TODO(user) Implement functions to access bit fields as described in
-      // RFC 4880 section 5.2.3.21.
       break;
     case e2e.openpgp.packet.SignatureSub.Type.REVOCATION_REASON:
       attributes.REVOCATION_REASON = subpacket.body[0];
@@ -202,6 +208,9 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       } else {
         attributes.FEATURES = subpacket.body[0];  // MDC is 0x01
       }
+      break;
+    case e2e.openpgp.packet.SignatureSub.Type.EMBEDDED_SIGNATURE:
+        attributes.EMBEDDED_SIGNATURE = subpacket.body;
       break;
     default:
       if (subpacket.critical) {
@@ -229,5 +238,6 @@ e2e.openpgp.packet.SignatureSub.Type = {
   'PRIMARY_USER_ID': 25,
   'KEY_FLAGS': 27,
   'REVOCATION_REASON': 29,
-  'FEATURES': 30
+  'FEATURES': 30,
+  'EMBEDDED_SIGNATURE': 32
 };

@@ -96,40 +96,68 @@ e2e.openpgp.packet.UserId.prototype.serialize = function() {
 
 /**
  * @param {e2e.openpgp.packet.Signature} signature
- * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
- *     verify the signature.
  */
-e2e.openpgp.packet.UserId.prototype.addCertification = function(signature,
-    verifyingKey) {
+e2e.openpgp.packet.UserId.prototype.addCertification = function(signature) {
   if (!signature.isCertificationSignature()) {
     throw new e2e.openpgp.error.ParseError(
         'Signature is not a certification signature.');
   }
-  var signer = /** @type {!e2e.signer.Signer} */ (verifyingKey.cipher);
-  if (signer instanceof e2e.openpgp.EncryptedCipher && signer.isLocked()) {
-    // TODO(user): Fix that. Key is locked, so the hashed data will be wrong.
-    this.certifications_.push(signature);
-    return;
+  this.certifications_.push(signature);
+};
+
+
+/**
+ * @param {e2e.openpgp.packet.Signature} signature
+ * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
+ *     verify the certification signature.
+ * @return {boolean} True iff signature verified correctly.
+ * @private
+ */
+e2e.openpgp.packet.UserId.prototype.verifyCertification_ = function(
+    signature, verifyingKey) {
+  if (!verifyingKey.keyId || !goog.array.equals(signature.getSignerKeyId(),
+      verifyingKey.keyId)) {
+    // Different key, ignore signature.
+    return false;
   }
+  var signer = /** @type {!e2e.signer.Signer} */ (verifyingKey.cipher);
   var signedData = this.getCertificationSignatureData_(verifyingKey);
   try {
     var signatureVerified = signature.verify(signedData,
       goog.asserts.assertObject(signer));
   } catch (e) {
     // Ignore signatures that throw unsupported errors (e.g. weak hash
-    // algorithms), user IDs. While subkeys need to be signed, User IDs do not.
+    // algorithms)
     if (e instanceof e2e.openpgp.error.UnsupportedError) {
-      return;
+      return false;
     }
     throw e;
   }
-
-  if (signatureVerified) {
-    this.certifications_.push(signature);
-  } else {
-    throw new e2e.openpgp.error.ParseError(
+  if (!signatureVerified) {
+    throw new e2e.openpgp.error.SignatureError(
         'Certification signature verification failed.');
   }
+  return true;
+};
+
+
+/**
+ * Checks if a packet has valid certification signature by a given
+ *     key packet. This function will throw error if signature verification
+ *     fails.
+ * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
+ *     verify the signatures
+ * @return {boolean} True if key has a valid certification.
+ */
+e2e.openpgp.packet.UserId.prototype.verifySignatures = function(verifyingKey) {
+  // Key needs to have a binding signature. See RFC 4880 11.1.
+  if (!goog.array.some(this.certifications_, function(signature) {
+      return this.verifyCertification_(signature, verifyingKey);
+  }, this)) {
+    return false;
+  }
+  // TODO(user): revocation support.
+  return true;
 };
 
 

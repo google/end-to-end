@@ -183,6 +183,7 @@ e2e.openpgp.block.factory.extractKeys = function(blocks) {
   var keys = [];
   for (var b = 0; b < blocks.length; b++) {
     if (blocks[b] instanceof e2e.openpgp.block.TransferableKey) {
+      blocks[b].processSignatures();
       keys.push(blocks[b].toKeyObject(true));
     }
   }

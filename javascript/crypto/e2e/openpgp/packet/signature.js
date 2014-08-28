@@ -101,6 +101,17 @@ e2e.openpgp.packet.Signature = function(
       e2e.openpgp.packet.SignatureSub.populateAttribute(
           this.untrustedAttributes, subpacket, false);
     }, this);
+    /**
+     * Embedded signature.
+     * @type {e2e.openpgp.packet.Signature}
+     */
+    this.embeddedSignature = null;
+    var sigBytes = this.attributes.EMBEDDED_SIGNATURE ||
+        this.untrustedAttributes.EMBEDDED_SIGNATURE;
+    if (sigBytes) {
+      this.embeddedSignature = e2e.openpgp.packet.Signature.parse(
+          goog.array.clone(sigBytes));
+    }
   } else if (version == 0x03 || version == 0x02) {
     if (!goog.isDef(opt_signerKeyId) ||
         !goog.isDef(opt_creationTime)) {

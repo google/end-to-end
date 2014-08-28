@@ -1,0 +1,430 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.block.TransferableKey</title>
+<script src="../../../../closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.openpgp.block.all');
+  goog.require('e2e.openpgp.block.factory');
+ </script>
+
+<!--
+Public key block containing a signing subkey (with binding 0x19 signature)
+:public key packet:
+  version 4, algo 1, created 1408612889, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+:user ID packet: "signing-subkey <signing-subkey@example.com>"
+:signature packet: algo 1, keyid 6A69A7100F8C5C47
+  version 4, created 1408612889, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest e9 eb
+  hashed subpkt 2 len 4 (sig created 2014-08-21)
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 5 (pref-sym-algos: 9 8 7 3 2)
+  hashed subpkt 21 len 5 (pref-hash-algos: 8 2 9 10 11)
+  hashed subpkt 22 len 2 (pref-zip-algos: 2 1)
+  hashed subpkt 30 len 1 (features: 01)
+  hashed subpkt 23 len 1 (key server preferences: 80)
+  subpkt 16 len 8 (issuer key ID 6A69A7100F8C5C47)
+  data: [1024 bits]
+:public sub key packet:
+  version 4, algo 1, created 1408612889, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+:signature packet: algo 1, keyid 6A69A7100F8C5C47
+  version 4, created 1408612889, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest b1 7c
+  hashed subpkt 2 len 4 (sig created 2014-08-21)
+  hashed subpkt 27 len 1 (key flags: 0C)
+  subpkt 16 len 8 (issuer key ID 6A69A7100F8C5C47)
+  data: [1024 bits]
+:public sub key packet:
+  version 4, algo 1, created 1408612974, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+:signature packet: algo 1, keyid 6A69A7100F8C5C47
+  version 4, created 1408612974, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest 93 5a
+  hashed subpkt 2 len 4 (sig created 2014-08-21)
+  hashed subpkt 27 len 1 (key flags: 02)
+  subpkt 16 len 8 (issuer key ID 6A69A7100F8C5C47)
+  subpkt 32 len 156 (signature: v4, class 0x19, algo 1, digest algo 2)
+  data: [1021 bits]
+-->
+<textarea id="SigningSubkey">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2
+
+mI0EU/W6GQEEALr7DpMdrxW2/X1GTepEeABgojRLY7TdGBGR6r7VWzmKh2agQdAC
+FyvBcRb/tGwwZmimxyxsws7o+2h3oaM8GL0OQ9WEi1035G5DQweHM989Yw84Dj1O
+WeXZxRKAqU93+rEz6xys9BYteqL6SNyNt29EjZ7W+mRtWCRUxViaJhGhABEBAAG0
+K3NpZ25pbmctc3Via2V5IDxzaWduaW5nLXN1YmtleUBleGFtcGxlLmNvbT6ItwQT
+AQIAIQUCU/W6GQIbAwYLCQgHAwIGFQgCCQoLAxYCAQIeAQIXgAAKCRBqaacQD4xc
+R+nrBACSTSve7hlxRONletyvDIeQWewQi6ePXkPGWElPrvf8BjEynDMsJHJiDblO
+rv0uvpELS2v+OvzJLGD97arenkfWq7PTp7Lm/CWdrJmvCFTZc2gUyTtxMExre2co
+uTpfsUNwZudQwe/n9X9oQ0gAXyT79puJ44SqJ5rB2iQj97YOtbiNBFP1uhkBBACi
+80AIcHy8YG2UrfCEy+pThYBJxevsS34ne4jwPQFvQe6XULojujaZ8mUmQ3QeNLhS
+oBS6q3zhE/FCSpbjt6IWTmYqXz4gH1AGxCv3kEfUc4s1iVj2/u9lNP7Sh7nzNlFp
+mfy59uxn4bS1qXf0K6bVIJMj2T3Aq73bOyk/DWvUqwARAQABiJ8EGAECAAkFAlP1
+uhkCGwwACgkQammnEA+MXEexfAQAo7wANLUBF9SMKsoGtMZGgIHXpc27E25Nr2IN
+/du5mM7MvJXz7wSU8upw89q2g2LvmpoxMshWfw1hRLR92KIzNEb6HFt/WfIxLBeO
+RKLu+kETTWN4cnbU8Rtg8Rvw7OY92/vnvwjv1HXXF2qAbf+Lj0Jy7e6h7C+dAXfS
+ZdLlE924jQRT9bpuAQQApdRMs7l2uCQtQOg2qRyoUbQdkaCj+6ON5hvN7swUkLaN
+zOT6E0V+mQUjHDbnbS8U3sFEyOwciNvzt1KRKUhsZFN4xaPSYXECw1JQMcZczZ2w
+9OOcJrVLpJFrv5cQFrx5X9jfTWePXuC40rXzPZ/RvggSMSlW+dWeFPFA2OYszOkA
+EQEAAYkBPQQYAQIACQUCU/W6bgIbAgCoCRBqaacQD4xcR50gBBkBAgAGBQJT9bpu
+AAoJEPTeZfMn+FaMeIQD/iNfsKYvRPWHEDcSHL8Cp5Gsf8fshrl4yA7md0SFq627
+BtW+wYSBoUE1yuMQhQ64mzMOawvw9kZlYYZuMNmzaY9wtlSe8JpNm0OW10vp7bv3
+FNaxBfJa2d+G8wkMPthAbSISd25P6LN1E3szD1IXpnTpY3GMfy1Ed8PFDD5IX26n
+k1oD/RBBJp4qH81YpH4PrbBDtliH4xvSHZB/VxAf0AyUmCPj6Mk7SeOFpPayvpMs
+ygwBuLvy1JANBI3DLckdmI1tSeOScBpjWqmtWB92U7G3s6bOtyDioDsjBrKzrx8G
+RYE/ktdjGkfHqR4TSu7/51yofDGLY1ZHXUp9Kk3PbKWH4Uw5
+=8AAO
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+
+<!--
+Revoked subkey:
+:public key packet:
+  version 4, algo 1, created 1402245840, expires 0
+  pkey[0]: [2048 bits]
+  pkey[1]: [17 bits]
+:user ID packet: "revoked <revoked@revoked.net>"
+:signature packet: algo 1, keyid 1875FF0B267CDC0E
+  version 4, created 1402245840, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest c0 34
+  hashed subpkt 2 len 4 (sig created 2014-06-08)
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 5 (pref-sym-algos: 9 8 7 3 2)
+  hashed subpkt 21 len 5 (pref-hash-algos: 8 2 9 10 11)
+  hashed subpkt 22 len 3 (pref-zip-algos: 2 3 1)
+  hashed subpkt 30 len 1 (features: 01)
+  hashed subpkt 23 len 1 (key server preferences: 80)
+  subpkt 16 len 8 (issuer key ID 1875FF0B267CDC0E)
+  data: [2047 bits]
+:public sub key packet:
+  version 4, algo 1, created 1402245840, expires 0
+  pkey[0]: [2048 bits]
+  pkey[1]: [17 bits]
+:signature packet: algo 1, keyid 1875FF0B267CDC0E
+  version 4, created 1402245876, md5len 0, sigclass 0x28
+  digest algo 2, begin of digest b6 9d
+  hashed subpkt 2 len 4 (sig created 2014-06-08)
+  hashed subpkt 29 len 14 (revocation reason 0x02 (revoke subkey))
+  subpkt 16 len 8 (issuer key ID 1875FF0B267CDC0E)
+  data: [2047 bits]
+:signature packet: algo 1, keyid 1875FF0B267CDC0E
+  version 4, created 1402245840, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest 1d 4e
+  hashed subpkt 2 len 4 (sig created 2014-06-08)
+  hashed subpkt 27 len 1 (key flags: 0C)
+  subpkt 16 len 8 (issuer key ID 1875FF0B267CDC0E)
+  data: [2048 bits]
+-->
+<textarea id="RevokedSubKey">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1
+
+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
+=80Vy
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<!--
+Revoked main key:
+// Key generation instruction:
+// gpg --gen-key (RSA/RSA/1024 - uid=revoked-main)
+// gpg --edit revoked-main
+// gpg> revkey, key has been compromised, save, quit
+:public key packet:
+  version 4, algo 1, created 1408442396, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+:signature packet: algo 1, keyid 44416104FBFEA899
+  version 4, created 1408442501, md5len 0, sigclass 0x20
+  digest algo 2, begin of digest 19 4c
+  hashed subpkt 2 len 4 (sig created 2014-08-19)
+  hashed subpkt 29 len 25 (revocation reason 0x02 (Main key revocation test))
+  subpkt 16 len 8 (issuer key ID 44416104FBFEA899)
+  data: [1024 bits]
+:user ID packet: "revoked-main <revoked-main@example.com>"
+:signature packet: algo 1, keyid 44416104FBFEA899
+  version 4, created 1408442396, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest c2 1a
+  hashed subpkt 2 len 4 (sig created 2014-08-19)
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 5 (pref-sym-algos: 9 8 7 3 2)
+  hashed subpkt 21 len 5 (pref-hash-algos: 8 2 9 10 11)
+  hashed subpkt 22 len 2 (pref-zip-algos: 2 1)
+  hashed subpkt 30 len 1 (features: 01)
+  hashed subpkt 23 len 1 (key server preferences: 80)
+  subpkt 16 len 8 (issuer key ID 44416104FBFEA899)
+  data: [1022 bits]
+:public sub key packet:
+  version 4, algo 1, created 1408442396, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+:signature packet: algo 1, keyid 44416104FBFEA899
+  version 4, created 1408442396, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest b4 39
+  hashed subpkt 2 len 4 (sig created 2014-08-19)
+  hashed subpkt 27 len 1 (key flags: 0C)
+  subpkt 16 len 8 (issuer key ID 44416104FBFEA899)
+  data: [1022 bits]
+-->
+<textarea id="RevokedMainKey">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2
+
+mI0EU/MgHAEEALgGq+UDj7R5XwEl3wDzx4M2K3oBJI6ISuc7nJTCbNrcZ2yahAdF
+i9Qmunoa8/rryHQZovuBX4QjkZsxorVzFmH+qvaczUYYMsN6vXGKAsPn0OX6AjRs
+VesFtqZyi3yW9pLZaCRuikWeUumgJdbFBFS6uoGGwDKK0X1sqajFGIrlABEBAAGI
+twQgAQIAIQUCU/MghRodAk1haW4ga2V5IHJldm9jYXRpb24gdGVzdAAKCRBEQWEE
++/6omRlMBACHerNXj6TFIf/h9yjVnL2PmvoMuAVMftVOnXJQq3ikW44Hu9iY+YwX
+M6cevKXETAGuEhvKmBAneNUoC0oaQvel5G7VHQTJqlhVRzpv1M/Rqj3879VbGsSh
+gmthv8y2lcPRcXvsB0FY/Jxi4v26CcvreYa77efvywuLD+fTaVOY6bQncmV2b2tl
+ZC1tYWluIDxyZXZva2VkLW1haW5AZXhhbXBsZS5jb20+iLcEEwECACEFAlPzIBwC
+GwMGCwkIBwMCBhUIAgkKCwMWAgECHgECF4AACgkQREFhBPv+qJnCGgP+LvSRVdS4
+K+8Ps/LVplD8DP5jDOnMQIHanr85g8RD76gCXD7vqTCaQZbrwRwR43C1g+CB47vJ
+l7jToVhjhdGKHKiRxoyF/xwhTDM9LtWA1PwneecoMYTTR4f8dvd+gX/BAOfwahlP
+R/CoC8sUflBWb3nezl7mRXpKhVnLxo5DJKC4jQRT8yAcAQQA6xCjxRKKSPxp2lMl
+Bd3a+qPtrW32THL7H0dpq+FJ0UiuP78Z6nQ1DWdMFIgQx4SBoBpnTlYNjiG4+XIk
+e1WOVvLMpgBTjPHk/BCrweZhHbV/BF97sLxHcqDU40Uf/UUFweEUbVHAD5XrQasz
+JmP9EAUUSEDUh/hh5tnPf/avw1sAEQEAAYifBBgBAgAJBQJT8yAcAhsMAAoJEERB
+YQT7/qiZtDkD/jCMvfGLZDbw4pjPT/iHTynmltD57X946rqAkOp0mKdyxKS6CbIZ
+nR2/cVSIeQoSBWU+qTj52Uw5bWj3uOVvJNfcAPOt7oyYdUJR0WojD7HXYJH9ym0G
+/fgSVhEjpq3TDFQQ/s41bw6Nqbnqn+UAdOi97x9ow+zHd2OtVbnCICRE
+=VB3i
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<!--
+ECC key to check subkey/user id signature verification.
+:public key packet:
+  version 4, algo 19, created 1377714336, expires 0
+  pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
+  pkey[1]: [515 bits]
+  keyid: EAEB8A76AFE8C867
+:user ID packet: "ecc real name <ecc@example.com>"
+:signature packet: algo 19, keyid EAEB8A76AFE8C867
+  version 4, created 1377714336, md5len 0, sigclass 0x13
+  digest algo 8, begin of digest c6 d7
+  hashed subpkt 2 len 4 (sig created 2013-08-28)
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 5 (pref-sym-algos: 9 8 7 3 2)
+  hashed subpkt 21 len 5 (pref-hash-algos: 8 2 9 10 11)
+  hashed subpkt 22 len 3 (pref-zip-algos: 2 3 1)
+  hashed subpkt 30 len 1 (features: 01)
+  hashed subpkt 23 len 1 (key server preferences: 80)
+  subpkt 16 len 8 (issuer key ID EAEB8A76AFE8C867)
+  data: [254 bits]
+  data: [254 bits]
+:public sub key packet:
+  version 4, algo 18, created 1377714336, expires 0
+  pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
+  pkey[1]: [515 bits]
+  pkey[2]: [32 bits]
+  keyid: DBA95B52C1FBBA97
+:signature packet: algo 19, keyid EAEB8A76AFE8C867
+  version 4, created 1377714336, md5len 0, sigclass 0x18
+  digest algo 8, begin of digest 3a 90
+  hashed subpkt 2 len 4 (sig created 2013-08-28)
+  hashed subpkt 27 len 1 (key flags: 0C)
+  subpkt 16 len 8 (issuer key ID EAEB8A76AFE8C867)
+  data: [256 bits]
+  data: [253 bits]
+-->
+<textarea id="EccKey">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2.1.0-ecc (GNU/Linux)
+
+mFIEUh5AoBMIKoZIzj0DAQcCAwT68182duSEJFXKa+qkBa0Vgeswnv8GP8tKYiU/
+MCZd6dGTvrtf2gSjyAsVkB0V0idW7i8yW1wfh3y2AbGWDr/dtB9lY2MgcmVhbCBu
+YW1lIDxlY2NAZXhhbXBsZS5jb20+iHoEExMIACIFAlIeQKACGwMGCwkIBwMCBhUI
+AgkKCwQWAgMBAh4BAheAAAoJEOrrinav6MhnxtcA/iAteDFo/P5SU5XV/8/4BN9x
+f28SuvwFipnjjyOmvB0eAP4kPM5LAp2EW+QIyG6+CJP1No9uWyZTdLPkTRgLtYhi
+GLhWBFIeQKASCCqGSM49AwEHAgMEgk1dVpgPCM38NBNoBcvehm7mt6aUmK8mDb/M
+SHo2/NlwfTh+BDCoVX5asSetzuW2RbnP6sCBwfsuLSrSWUVauwMBCAeIYQQYEwgA
+CQUCUh5AoAIbDAAKCRDq64p2r+jIZzqQAQCcv0VOQFiNOM6JNdLHTqlCYxeoz09d
+UP3LdgcnLED/YwD9FqcNrkok9BuXJ9+rXTSu+uqdWB7gpMO9mfk65d5IQ+s=
+=xRCj
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<script>
+function getKey(id) {
+  return e2e.openpgp.block.factory.parseAscii(
+      document.getElementById(id).value);
+}
+
+
+function testSigningSubkey() {
+  var key = getKey('SigningSubkey');
+  var mainKeyId = key.keyPacket.keyId;
+  var signingSubKey = key.subKeys[1];
+  var bindingSig = signingSubKey.bindingSignatures_[0];
+  assertArrayEquals(mainKeyId, bindingSig.getSignerKeyId());
+  assertTrue(bindingSig.embeddedSignature
+      instanceof e2e.openpgp.packet.Signature);
+  assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_SIGN));
+  var crossSignature = bindingSig.embeddedSignature;
+  assertArrayEquals(signingSubKey.keyId, crossSignature.getSignerKeyId());
+  assertEquals(e2e.openpgp.packet.Signature.SignatureType.PRIMARY_KEY,
+      crossSignature.signatureType);
+  key.processSignatures();
+  assertEquals(2, key.subKeys.length);
+}
+
+function testEmbeddedSignatures() {
+  var key, error;
+  // Remove embedded signature
+  key = getKey('SigningSubkey');
+  delete key.subKeys[1].bindingSignatures_[0].embeddedSignature;
+  error = assertThrows(function() {
+    key.processSignatures();
+  });
+  assertTrue(error instanceof e2e.openpgp.error.SignatureError);
+  // Tamper signature type
+  key = getKey('SigningSubkey');
+  key.subKeys[1].bindingSignatures_[0].embeddedSignature.signatureType =
+      e2e.openpgp.packet.Signature.SignatureType.SUBKEY;
+  error = assertThrows(function() {
+    key.processSignatures();
+  });
+  assertTrue(error instanceof e2e.openpgp.error.SignatureError);
+  // Invalidate signature
+  key = getKey('SigningSubkey');
+  key.subKeys[1].bindingSignatures_[0].embeddedSignature.signature.s ^= 0x01;
+  error = assertThrows(function() {
+    key.processSignatures();
+  });
+  assertTrue(error instanceof e2e.openpgp.error.SignatureError);
+}
+
+
+function testSignatureVerification() {
+  var keyBlock = getKey('EccKey');
+  assertEquals(1, keyBlock.subKeys[0].bindingSignatures_.length);
+  assertEquals(
+      e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
+      keyBlock.subKeys[0].bindingSignatures_[0].signatureType);
+  assertArrayEquals(
+      keyBlock.subKeys[0].bindingSignatures_[0].untrustedAttributes.ISSUER,
+      keyBlock.keyPacket.keyId);
+  // Modify the signature.
+  keyBlock.subKeys[0].bindingSignatures_[0].signature.s ^= 0x01;
+
+  var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
+      keyBlock.serialize());
+  var tamperedKey = e2e.openpgp.block.factory.parseAscii(tamperedAscii);
+  var error = assertThrows(function() {
+    tamperedKey.processSignatures(); // Signature tampering invalidates the key.
+  });
+  assertTrue(error instanceof e2e.openpgp.error.SignatureError);
+}
+
+
+function testGnupgRevokedSubkey() {
+  // Test for https://code.google.com/p/end-to-end/issues/detail?id=60
+  // GnuPG places subkey revocation signature packet right after subkey
+  // packet.
+  var publicKeyBlock = getKey('RevokedSubKey');
+
+  // Parsing revocation signature
+  assertEquals(1, publicKeyBlock.subKeys.length);
+  var revokedSubkey = publicKeyBlock.subKeys[0];
+  assertEquals(1, revokedSubkey.revocations_.length);
+  assertEquals(e2e.openpgp.packet.Signature.SignatureType.SUBKEY_REVOCATION,
+      revokedSubkey.revocations_[0].signatureType);
+  assertEquals(e2e.openpgp.packet.Signature.RevocationReason.KEY_COMPROMISED,
+      revokedSubkey.revocations_[0].attributes.REVOCATION_REASON);
+  assertEquals('revoke subkey',
+      revokedSubkey.revocations_[0].attributes.REVOCATION_REASON_TEXT);
+  assertEquals(1, revokedSubkey.bindingSignatures_.length);
+  // Applying revocation signature removes the revoked subkey, but the key is
+  // still valid.
+  publicKeyBlock.processSignatures();
+  assertEquals(0, publicKeyBlock.subKeys.length);
+
+  // Tamper revocation signature
+  var clone = getKey('RevokedSubKey');
+  clone.subKeys[0].revocations_[0].signature.s ^= 0x01;
+  var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
+      clone.serialize());
+  var error = assertThrows(function() {
+      var key = e2e.openpgp.block.factory.parseAscii(tamperedAscii);
+      key.processSignatures(); // Signature tampering invalidates the key.
+  });
+  assertTrue(error instanceof e2e.openpgp.error.SignatureError);
+}
+
+
+function testGnupgRevokedMainKey() {
+  var publicKeyBlock = getKey('RevokedMainKey');
+
+  assertEquals(1, publicKeyBlock.keyPacket.revocations_.length);
+  assertEquals(e2e.openpgp.packet.Signature.SignatureType.KEY_REVOCATION,
+      publicKeyBlock.keyPacket.revocations_[0].signatureType);
+  assertEquals(e2e.openpgp.packet.Signature.RevocationReason.KEY_COMPROMISED,
+      publicKeyBlock.keyPacket.revocations_[0].attributes.REVOCATION_REASON);
+  assertEquals('Main key revocation test',
+      publicKeyBlock.keyPacket.revocations_[0].attributes.REVOCATION_REASON_TEXT);
+  var error = assertThrows(function() {
+      // The whole key is revoked, so this throws error
+      publicKeyBlock.processSignatures();
+  });
+  assertTrue(error instanceof e2e.openpgp.error.SignatureError);
+
+  // Tamper revocation signature
+  publicKeyBlock.keyPacket.revocations_[0].signature.s ^= 0x01;
+  var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
+      publicKeyBlock.serialize());
+  var error = assertThrows(function() {
+      var key = e2e.openpgp.block.factory.parseAscii(tamperedAscii)
+      key.processSignatures();
+  });
+  assertTrue(error instanceof e2e.openpgp.error.SignatureError);
+}
+</script>

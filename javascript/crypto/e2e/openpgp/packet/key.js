@@ -128,50 +128,123 @@ e2e.openpgp.packet.Key.prototype.isSubkey = false;
 
 
 /**
- * Verifies and adds the key binding signature.
+ * Adds the key binding signature.
+ * Caution! Signature is not verified, use verifySignatures() function to verify
+ * the signature.
  * @param {!e2e.openpgp.packet.Signature} signature
- * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
- *     verify the signature.
  */
-e2e.openpgp.packet.Key.prototype.addBindingSignature = function(signature,
-    verifyingKey) {
-  this.verifySignatureInternal_(
-      signature,
-      verifyingKey,
-      this.getKeyBindingSignatureData_(verifyingKey),
-      e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
-      'Signature type is not a subkey binding signature.',
-      'Binding signature verification failed.');
+e2e.openpgp.packet.Key.prototype.addBindingSignature = function(signature) {
+  if (signature.signatureType !==
+      e2e.openpgp.packet.Signature.SignatureType.SUBKEY) {
+    throw new e2e.openpgp.error.ParseError(
+        'Invalid binding signature type.');
+  }
+  if (signature.attributes.KEY_FLAG_SIGN) {
+      // RFC 4880 5.2.1.
+      // A signature that binds a signing subkey MUST have
+      // an Embedded Signature subpacket in this binding signature that
+      // contains a 0x19 signature made by the signing subkey on the
+      // primary key and subkey.
+      if (!signature.embeddedSignature) {
+        throw new e2e.openpgp.error.ParseError(
+            'Missing required key cross-signature.');
+      }
+      var crossSignature = signature.embeddedSignature;
+      if (!this.keyId ||
+          !goog.array.equals(crossSignature.getSignerKeyId(), this.keyId) ||
+          crossSignature.signatureType !==
+              e2e.openpgp.packet.Signature.SignatureType.PRIMARY_KEY) {
+        throw new e2e.openpgp.error.ParseError('Invalid key cross-signature.');
+      }
+  }
   this.bindingSignatures_.push(signature);
 };
 
 
 /**
- * Verifies and adds the key/subkey revocation signature.
+ * Checks if a key has valid (unrevoked) binding signature to a given key
+ *     packet. This function will throw SignatureError if any signature
+ *     verification fails.
+ * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
+ *     verify the signatures
+ * @return {boolean} True if key has valid binding.
+ */
+e2e.openpgp.packet.Key.prototype.verifySignatures = function(verifyingKey) {
+  // There should be no valid revocation signatures.
+  if (goog.array.some(this.revocations_, function(signature) {
+      return this.verifyRevocation_(signature, verifyingKey);
+  }, this)) {
+    return false;
+  }
+  // Subkeys needs to have a binding signature. See RFC 4880 11.1.
+  if (this.isSubkey &&
+      !goog.array.some(this.bindingSignatures_, function(signature) {
+          return this.verifyBindingSignature_(signature, verifyingKey);
+      }, this)) {
+    return false;
+  }
+  return true;
+};
+
+
+/**
+ * Adds the key/subkey revocation signature.
+ * Caution! Signature is not verified, use verifySignatures() function to verify
+ * the signature.
+ * @param {!e2e.openpgp.packet.Signature} signature Revocation signature
+ */
+e2e.openpgp.packet.Key.prototype.addRevocation = function(signature) {
+  if (signature.signatureType !== (this.isSubkey ?
+      e2e.openpgp.packet.Signature.SignatureType.SUBKEY_REVOCATION :
+      e2e.openpgp.packet.Signature.SignatureType.KEY_REVOCATION)) {
+    throw new e2e.openpgp.error.ParseError(
+        'Invalid revocation signature type.');
+  }
+  this.revocations_.push(signature);
+};
+
+
+/**
+ * Verifies key/subkey revocation signature.
  * @param {!e2e.openpgp.packet.Signature} signature Revocation signature
  * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
  *     verify the signature
+ * @return {boolean} True iff signature verified correctly.
+ * @private
  */
-e2e.openpgp.packet.Key.prototype.addRevocation = function(signature,
+e2e.openpgp.packet.Key.prototype.verifyRevocation_ = function(signature,
     verifyingKey) {
   if (this.isSubkey) {
-    this.verifySignatureInternal_(
+    return this.verifySignatureInternal_(
         signature,
         verifyingKey,
         this.getKeyBindingSignatureData_(verifyingKey),
-        e2e.openpgp.packet.Signature.SignatureType.SUBKEY_REVOCATION,
-        'Signature type is not a subkey revocation signature.',
         'Subkey revocation signature verification failed.');
   } else {
-    this.verifySignatureInternal_(
+    return this.verifySignatureInternal_(
         signature,
         verifyingKey,
         this.getPublicKeyPacket().getBytesToSign(),
-        e2e.openpgp.packet.Signature.SignatureType.KEY_REVOCATION,
-        'Signature type is not a key revocation signature.',
         'Key revocation signature verification failed.');
   }
-  this.revocations_.push(signature);
+};
+
+
+/**
+ * Verifies subkey binding signature.
+ * @param {!e2e.openpgp.packet.Signature} signature Subkey binding signature
+ * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
+ *     verify the signature
+ * @return {boolean} True iff signature verified correctly.
+ * @private
+ */
+e2e.openpgp.packet.Key.prototype.verifyBindingSignature_ = function(signature,
+    verifyingKey) {
+  return this.verifySignatureInternal_(
+      signature,
+      verifyingKey,
+      this.getKeyBindingSignatureData_(verifyingKey),
+      'Binding signature verification failed.');
 };
 
 
@@ -182,23 +255,54 @@ e2e.openpgp.packet.Key.prototype.addRevocation = function(signature,
  * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
  *     verify the signature
  * @param {!e2e.ByteArray} signedData data that was signed.
- * @param {e2e.openpgp.packet.Signature.SignatureType} expectedType
- * @param {string} typeMismatchErrorMsg error message when signature type is
- *     different than expected.
  * @param {string} verificationErrorMsg error message when signature did not
  *     verify.
+ * @return {boolean} True iff signature verified correctly.
  * @private
  */
 e2e.openpgp.packet.Key.prototype.verifySignatureInternal_ = function(signature,
-    verifyingKey, signedData, expectedType, typeMismatchErrorMsg,
-    verificationErrorMsg) {
-  if (signature.signatureType !== expectedType) {
-    throw new e2e.openpgp.error.ParseError(typeMismatchErrorMsg);
+    verifyingKey, signedData, verificationErrorMsg) {
+  if (!verifyingKey.keyId || !goog.array.equals(signature.getSignerKeyId(),
+      verifyingKey.keyId)) {
+    // Key mismatch, ignore signature.
+    return false;
   }
   var signer = /** @type {!e2e.signer.Signer} */ (verifyingKey.cipher);
-  if (!signature.verify(signedData, goog.asserts.assertObject(signer))) {
+  try {
+    var signatureVerified = signature.verify(signedData,
+      goog.asserts.assertObject(signer));
+  } catch (e) {
+    // Ignore signatures that throw unsupported errors (e.g. weak hash
+    // algorithms)
+    if (e instanceof e2e.openpgp.error.UnsupportedError) {
+      return false;
+    }
+    throw e;
+  }
+  if (!signatureVerified) {
     throw new e2e.openpgp.error.SignatureError(verificationErrorMsg);
   }
+  // Process embedded signature
+  if (this.isSubkey &&
+      signature.attributes.KEY_FLAG_SIGN &&
+      signature.signatureType ===
+          e2e.openpgp.packet.Signature.SignatureType.SUBKEY) {
+      if (!signature.embeddedSignature) {
+        throw new e2e.openpgp.error.SignatureError(
+            'Missing cross-signature for a signing subkey.');
+      }
+      if (signature.embeddedSignature.signatureType !==
+          e2e.openpgp.packet.Signature.SignatureType.PRIMARY_KEY) {
+        throw new e2e.openpgp.error.SignatureError(
+            'Invalid cross-signature type.');
+      }
+      return this.verifySignatureInternal_(
+          signature.embeddedSignature,
+          this.getPublicKeyPacket(),
+          signedData,
+          'Cross-signature verification failed.');
+  }
+  return true;
 };
 
 

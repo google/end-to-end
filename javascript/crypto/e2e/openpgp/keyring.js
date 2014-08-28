@@ -248,6 +248,7 @@ e2e.openpgp.KeyRing.prototype.importKey = function(
   } else {
     return false;
   }
+  keyBlock.processSignatures();
   var uids = keyBlock.getUserIds();
   goog.array.removeDuplicates(uids);
   var importedKeys = goog.array.map(uids, function(uid) {

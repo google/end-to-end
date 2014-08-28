@@ -102,16 +102,20 @@ var USER_ID_2 = 'Drew Hintz <adhintz@google.com>';
 
 var PUBLIC_KEY_ASCII_2 =  // user ID of 'Drew Hintz <adhintz@google.com>'
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
+    'Charset: UTF-8\n' +
     '\n' +
-    'xv8AAABSBFir2cUTCCqGSM49AwEHAgMERh6l2ToYyzlvyRSEqkZSAxrXy6TGs6TR\n' +
-    'FmAHwW4wtkRtYFoe+DyUbU5qodcyjAFFmVnNxTukBDOQOjPJiOFZ6M3/AAAAH0Ry\n' +
-    'ZXcgSGludHogPGFkaGludHpAZ29vZ2xlLmNvbT7G/wAAAFYEWKvaQxIIKoZIzj0D\n' +
-    'AQcCAwQAFjV1E/cPxpjJ4WLTKFrr2sEwmLoktmSDClx3SspVAOZkCcSFMXN1lRwP\n' +
-    'kkrZzHlaPd41OWMeypKXUX394Y2SAwEIB83/AAAAH0RyZXcgSGludHogPGFkaGlu\n' +
-    'dHpAZ29vZ2xlLmNvbT4=\n' +
-    '=Af1R\n' +
+    'xv8AAABSBFP3bHYTCCqGSM49AwEHAgMECt6MVqa43Ab248CosK/cy664pkL/9XvC\n' +
+    '0O2K0O1Jh2qau7ll3Q9vssdObSwX0EaiMm4Dvegxr1z+SblWSFV4x83/AAAAH0Ry\n' +
+    'ZXcgSGludHogPGFkaGludHpAZ29vZ2xlLmNvbT7C/wAAAGYEEBMIABj/AAAABYJT\n' +
+    '92x2/wAAAAmQ8eznwfj7hkMAADA9AQCWE4jmpmA5XRN1tZduuz8QwtxGZOFurpAK\n' +
+    '6RCzKDqS8wEAx9eBxXLhKB4xm9xwPdh0+W6rbsvf58FzKjlxrkUfuxTO/wAAAFYE\n' +
+    'U/dsdhIIKoZIzj0DAQcCAwQ0M6kFa7VaVmt2PRdOUdZWrHp6CZZglTVQi1eyiXB/\n' +
+    'nnUUbH+qrreWTD7W9RxRtr0IqAYssLG5ZoWsXa5jQC3DAwEIB8L/AAAAZgQYEwgA\n' +
+    'GP8AAAAFglP3bHf/AAAACZDx7OfB+PuGQwAAkO4BALMuXsta+bCOvzSn7InOs7wA\n' +
+    '+OmDN5cv1cR/SsN5+FkLAQCmmBa/Fe76gmDd0RjvpQW7pWK2zXj3il6HYQ2NsWlI\n' +
+    'bQ==\n' +
+    '=LlKd\n' +
     '-----END PGP PUBLIC KEY BLOCK-----';
-
 
 function setUp() {
   window.localStorage.clear();
