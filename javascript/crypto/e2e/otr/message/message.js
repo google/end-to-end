@@ -43,8 +43,6 @@ e2e.otr.message.Message = function(session) {
   assert(goog.isFunction(this.constructor.process));
 
   this.session_ = session;
-
-  e2e.otr.implements(e2e.otr.message.Message, e2e.otr.Serializable);
 };
 
 

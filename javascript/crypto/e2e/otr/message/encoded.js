@@ -55,6 +55,8 @@ e2e.otr.message.Encoded = function(session) {
   assert(goog.isDefAndNotNull(this.constructor.MESSAGE_TYPE));
   assert(MESSAGE_TYPE_VALUES.indexOf(
       e2e.otr.byteToNum(this.constructor.MESSAGE_TYPE)) != -1);
+
+  e2e.otr.implements(e2e.otr.message.Encoded, e2e.otr.Serializable);
 };
 goog.inherits(e2e.otr.message.Encoded, e2e.otr.message.Message);
 
