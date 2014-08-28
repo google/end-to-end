@@ -51,10 +51,7 @@ e2e.algorithm.KeyLocations = {
 };
 
 /**
- * @typedef {?{p: !e2e.ByteArray, q: !e2e.ByteArray,
- *     g: !e2e.ByteArray, x: !e2e.ByteArray,
- *     y: !e2e.ByteArray,
- *     loc: (undefined|!e2e.algorithm.KeyLocations)}}
+ * @typedef {(e2e.signer.key.DsaPublicKey|e2e.signer.key.DsaPrivateKey)}
  */
 e2e.signer.key.Dsa;
 
@@ -65,6 +62,14 @@ e2e.signer.key.Dsa;
  *     y: !e2e.ByteArray, loc: (undefined|!e2e.algorithm.KeyLocations)}}
  */
 e2e.signer.key.DsaPublicKey;
+
+
+/**
+ * @typedef {?{p: !e2e.ByteArray, q: !e2e.ByteArray,
+ *     g: !e2e.ByteArray, x: !e2e.ByteArray, y: (!e2e.ByteArray|undefined),
+ *     loc: (undefined|!e2e.algorithm.KeyLocations)}}
+ */
+e2e.signer.key.DsaPrivateKey;
 
 
 /**

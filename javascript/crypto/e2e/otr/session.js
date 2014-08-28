@@ -38,10 +38,12 @@ var constants = e2e.otr.constants;
 /**
  * A session maintaining the state and configuration of an OTR conversation.
  * @constructor
+ * @param {!e2e.otr.Context} context The session's context.
  * @param {!e2e.otr.Int} instanceTag The client's instance tag.
  * @param {!e2e.otr.Policy=} opt_policy Policy params to be set on the session.
  */
-e2e.otr.Session = function(instanceTag, opt_policy) {
+e2e.otr.Session = function(context, instanceTag, opt_policy) {
+  this.context_ = context;
   this.policy = goog.object.clone(constants.DEFAULT_POLICY);
   goog.object.extend(this.policy, opt_policy || {});
 
@@ -248,16 +250,18 @@ e2e.otr.Session.prototype.deriveKeyValues = function() {
 
 /**
  * Gets the long-term authentication public key.
+ * @return {!e2e.otr.pubkey.Pubkey}
  */
 e2e.otr.Session.prototype.getPublicKey = function() {
-  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+  return this.context_.pubkey;
 };
 
 
 /**
- * Gets the long-term authentication private key.
+ * Gets a signer based on the long term private key.
+ * @return {!function(new: e2e.otr.Sig, !e2e.ByteArray)} The signer.
  */
-e2e.otr.Session.prototype.getPrivateKey = function() {
-  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+e2e.otr.Session.prototype.getSigner = function() {
+  return this.context_.getSigner();
 };
 });

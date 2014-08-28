@@ -35,7 +35,7 @@ goog.require('goog.asserts');
  * @constructor
  * @implements {e2e.otr.Serializable}
  * @extends {e2e.otr.Storable}
- * @param {!e2e.signer.key.Dsa} key The DSA key used for signing.
+ * @param {!e2e.signer.key.DsaPrivateKey} key The DSA key used for signing.
  * @param {!e2e.ByteArray} data The data to sign.
  */
 e2e.otr.Sig = function(key, data) {

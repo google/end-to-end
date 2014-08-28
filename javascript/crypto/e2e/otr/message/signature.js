@@ -73,7 +73,7 @@ e2e.otr.message.Signature.prototype.serializeMessageContent = function() {
   var xa = Array.apply([], e2e.otr.serializeBytes([
     this.session_.getPublicKey(),
     keyA.keyid,
-    new e2e.otr.Sig(this.session_.getPrivateKey(), ma)
+    new (this.session_.getSigner())(ma)
   ]));
 
   var sig = new e2e.otr.Data(

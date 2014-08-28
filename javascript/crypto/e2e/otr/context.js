@@ -26,3 +26,10 @@ goog.provide('e2e.otr.Context');
  * @interface
  */
 e2e.otr.Context = function() {};
+
+
+/**
+ * Creates a signer based on the long term private key.
+ * @return {!function(new: e2e.otr.Sig, !e2e.ByteArray)} The signer.
+ */
+e2e.otr.Context.prototype.getSigner;

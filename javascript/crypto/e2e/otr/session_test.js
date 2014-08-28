@@ -29,23 +29,23 @@ var constants = e2e.otr.constants;
 var tag = new Uint8Array([1, 2, 3, 4]);
 
 function testConstructor() {
-  var s = new e2e.otr.Session(tag);
+  var s = new e2e.otr.Session(null, tag);
   assertObjectEquals(constants.DEFAULT_POLICY, s.policy);
   assertEquals(constants.MSGSTATE.PLAINTEXT, s.msgState_);
   assertEquals(constants.AUTHSTATE.NONE, s.authState_);
   assertUint8ArrayEquals(tag, s.instanceTag);
   assertUint8ArrayEquals([0, 0, 0, 0], s.remoteInstanceTag);
 
-  s = new e2e.otr.Session(tag, {testProperty: 123});
+  s = new e2e.otr.Session(null, tag, {testProperty: 123});
   assertEquals(123, s.policy.testProperty);
 
   assertThrows(function() {
-    new e2e.otr.Session(new Uint8Array([0, 0, 0, 0]));
+    new e2e.otr.Session(null, new Uint8Array([0, 0, 0, 0]));
   });
 }
 
 function testUpdateAuthState() {
-  var s = new e2e.otr.Session(tag);
+  var s = new e2e.otr.Session(null, tag);
   assertEquals(constants.AUTHSTATE.NONE, s.authState_);
   assertThrows(function() {
     s.setAuthState(constants.AUTHSTATE.AWAITING_SIG);

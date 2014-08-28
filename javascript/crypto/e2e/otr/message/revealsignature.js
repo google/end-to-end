@@ -81,7 +81,7 @@ e2e.otr.message.RevealSignature.prototype.serializeMessageContent = function() {
   var xb = Array.apply([], e2e.otr.serializeBytes([
     this.session_.getPublicKey(),
     keyB.keyid,
-    new e2e.otr.Sig(this.session_.getPrivateKey(), mb)
+    new (this.session_.getSigner())(mb)
   ]));
 
   var sig = new e2e.otr.Data(e2e.otr.util.aes128ctr.encrypt(keys.c, xb));
