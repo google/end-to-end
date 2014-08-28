@@ -295,15 +295,24 @@ e2e.assert = function(cond, opt_msg, opt_error) {
 
 /**
  * Increments (++ByteArray) an unsigned big endian in a ByteArray.
- * @param {!e2e.ByteArray} n The number to increment.
- * @return {!e2e.ByteArray} The incremented array.
+ * @template T
+ * @param {T} n The number to increment.
+ * @return {T} The incremented array.
  */
 e2e.incrementByteArray = function(n) {
-  var carry = 1;  // initial increment
-  for (var i = n.length - 1; i >= 0; --i) {
-    n[i] += carry;
-    carry = (n[i] & 0x100) >>> 8;
-    n[i] &= 0xff;
-  }
-  return n;
+  /**
+   * Inner function to allow static type checking.
+   * @param {(!e2e.ByteArray|!Uint8Array)} n The number to increment.
+   * @return {(!e2e.ByteArray|!Uint8Array)} The incremented array.
+   */
+  var fn = function(n) {
+    var carry = 1;  // initial increment
+    for (var i = n.length - 1; i >= 0; --i) {
+      n[i] += carry;
+      carry = (n[i] & 0x100) >>> 8;
+      n[i] &= 0xff;
+    }
+    return n;
+  };
+  return fn(n);
 };
