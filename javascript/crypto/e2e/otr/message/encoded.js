@@ -87,15 +87,25 @@ e2e.otr.message.Encoded.prototype.serializeMessageContent =
     goog.abstractMethod;
 
 
-/** @inheritDoc */
-e2e.otr.message.Encoded.prototype.serialize = function() {
+/**
+ * Adds headers to the outgoing message.
+ * @param {!Uint8Array} data The message content.
+ * @return {!Uint8Array} The headers + message.
+ */
+e2e.otr.message.Encoded.prototype.addHeader = function(data) {
   return e2e.otr.serializeBytes([
     [0x00, 0x03], // protocol version TODO(user): allow other versions.
     this.constructor.MESSAGE_TYPE,
     this.session_.instanceTag,
     this.session_.remoteInstanceTag,
-    this.serializeMessageContent()
+    data
   ]);
+};
+
+
+/** @inheritDoc */
+e2e.otr.message.Encoded.prototype.serialize = function() {
+  return this.addHeader(this.serializeMessageContent());
 };
 
 

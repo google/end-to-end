@@ -56,6 +56,8 @@ e2e.otr.Session = function(instanceTag, opt_policy) {
       dhkey: null, revealsignature: null};
 
   this.keymanager = new e2e.otr.KeyManager();
+
+  this.sendCtr = goog.array.repeat(0, 8);
 };
 
 

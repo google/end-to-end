@@ -25,9 +25,11 @@ goog.require('e2e.otr');
 goog.require('e2e.otr.Data');
 goog.require('e2e.otr.Mpi');
 goog.require('e2e.otr.constants');
+goog.require('e2e.otr.error.InvalidArgumentsError');
 goog.require('e2e.otr.error.NotImplementedError');
 goog.require('e2e.otr.message.Encoded');
-goog.require('e2e.otr.util.Iterator');
+goog.require('e2e.otr.util.aes128ctr');
+goog.require('goog.crypt.Hmac');
 
 
 goog.scope(function() {
@@ -41,9 +43,21 @@ var MSGSTATE = constants.MSGSTATE;
  * @constructor
  * @extends {e2e.otr.message.Encoded}
  * @param {!e2e.otr.Session} session The enclosing session.
+ * @param {string} plaintext The plaintext portion of the message.
+ * @param {!Array.<e2e.otr.message.Tlv>=} tlvs 0+ TLV records to include.
+ * @param {number=} opt_flags The flags to set on the message.
  */
-e2e.otr.message.Data = function(session) {
+e2e.otr.message.Data = function(session, plaintext, tlvs, opt_flags) {
   goog.base(this, session);
+
+  if (this.plaintext_.indexOf('\0') > -1) {
+    throw new e2e.otr.error.InvalidArgumentsError(
+        'Plaintext may not contain \\0');
+  }
+
+  this.plaintext_ = plaintext;
+  this.tlvs_ = tlvs;
+  this.flags_ = new Uint8Array([0x00 | opt_flags]);
 };
 goog.inherits(e2e.otr.message.Data, e2e.otr.message.Encoded);
 
@@ -102,7 +116,40 @@ e2e.otr.message.Data.prototype.computeKeys = function(localDh, remoteKey) {
  * @return {!Uint8Array} The serialized DATA message.
  */
 e2e.otr.message.Data.prototype.serializeMessageContent = function() {
-  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+  var ctrTop = e2e.incrementByteArray(this.session_.sendCtr);
+  var remoteKey = this.session_.keymanager.getRemoteKey();
+  var dh = this.session_.keymanager.getKey();
+
+  var message = e2e.otr.serializeBytes([
+    e2e.stringToByteArray(this.plaintext_),
+    [0x00] // NULL BYTE
+  ].concat(this.tlvs_));
+
+  var keys = this.computeKeys(dh, remoteKey);
+
+  var encryptedMessage = e2e.otr.util.aes128ctr.encrypt(keys.sendingAes,
+      message, ctrTop.concat(goog.array.repeat(0, 8)));
+
+  var nextDh = new e2e.cipher.DiffieHellman(constants.DH_MODULUS,
+      [constants.DH_GENERATOR]);
+  this.session_.keymanager.storeKey(nextDh);
+
+  var partialData = e2e.otr.serializeBytes([
+    this.flags_,
+    dh.keyid,
+    remoteKey.keyid,
+    nextDh.generate(),
+    ctrTop,
+    encryptedMessage
+  ]);
+
+  var mac = new goog.crypt.Hmac(new e2e.hash.Sha1(), keys.sendingMac).getHmac(
+      this.addHeader(partialData));
+
+  // TODO(user): old MAC keys to be revealed.
+  var oldMacKeys = [];
+
+  return e2e.otr.serializeBytes([partialData, mac, oldMacKeys]);
 };
 
 
