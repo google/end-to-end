@@ -22,6 +22,7 @@ goog.provide('e2e.otr.Session');
 
 goog.require('e2e.hash.Sha256');
 goog.require('e2e.otr');
+goog.require('e2e.otr.KeyManager');
 goog.require('e2e.otr.Mpi');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.IllegalStateError');
@@ -53,6 +54,8 @@ e2e.otr.Session = function(instanceTag, opt_policy) {
   this.authState_ = constants.AUTHSTATE.NONE;
   this.authData = {r: null, dh: null, gx: null, gy: null, s: null, hgx: null,
       aesgx: null, dhcommit: null, dhkey: null, revealsignature: null};
+
+  this.keymanager = new e2e.otr.KeyManager();
 };
 
 
