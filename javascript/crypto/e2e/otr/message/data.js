@@ -69,12 +69,6 @@ goog.inherits(e2e.otr.message.Data, e2e.otr.message.Encoded);
 e2e.otr.message.Data.MESSAGE_TYPE = constants.MessageType.DATA;
 
 
-/** @inheritDoc */
-e2e.otr.message.Data.prototype.prepareSend = function() {
-  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
-};
-
-
 /**
  * Generates the keys used for AES and SHA1-HMAC of data messages.
  * @param {!e2e.cipher.DiffieHellman} localDh The DH of the local key component.
