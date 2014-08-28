@@ -20,8 +20,10 @@
 goog.provide('e2e.otr.message.Data');
 
 goog.require('e2e');
+goog.require('e2e.hash.Sha1');
 goog.require('e2e.otr');
 goog.require('e2e.otr.Data');
+goog.require('e2e.otr.Mpi');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.NotImplementedError');
 goog.require('e2e.otr.message.Encoded');
@@ -56,6 +58,42 @@ e2e.otr.message.Data.MESSAGE_TYPE = constants.MessageType.DATA;
 /** @inheritDoc */
 e2e.otr.message.Data.prototype.prepareSend = function() {
   throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+};
+
+
+/**
+ * Generates the keys used for AES and SHA1-HMAC of data messages.
+ * @param {!e2e.cipher.DiffieHellman} localDh The DH of the local key component.
+ * @param {!e2e.ByteArray} remoteKey The remote key component.
+ * @return {!{sendingAes: !e2e.ByteArray, receivingAes: !e2e.ByteArray,
+ *     sendingMac: !e2e.ByteArray, receivingMac: !e2e.ByteArray}}
+ */
+e2e.otr.message.Data.prototype.computeKeys = function(localDh, remoteKey) {
+  var highEnd = e2e.otr.compareByteArray(localDh.generate(), remoteKey) > 0;
+  var sendbyte = highEnd ? 0x01 : 0x02;
+  var recvbyte = highEnd ? 0x02 : 0x01;
+  var secret = localDh.generate(remoteKey);
+  var secbytes = new e2e.otr.Mpi(new Uint8Array(secret)).serialize();
+
+  /**
+   * h1 function as defined in OTR spec.
+   * @param {number} b The input byte.
+   * @return {!e2e.ByteArray} The 160-bit output of the SHA-1 hash of the
+   *     (5+len) bytes consisting of the byte b, followed by secbytes.
+   */
+  var h1 = function(b) {
+    return new e2e.hash.Sha1().hash([b].concat(secbytes));
+  };
+
+  var sendingAes = h1(sendbyte).slice(0, 16);
+  var receivingAes = h1(recvbyte).slice(0, 16);
+
+  return {
+    sendingAes: sendingAes,
+    sendingMac: new e2e.hash.Sha1().hash(sendingAes),
+    receivingAes: receivingAes,
+    receivingMac: new e2e.hash.Sha1().hash(receivingAes)
+  };
 };
 
 
