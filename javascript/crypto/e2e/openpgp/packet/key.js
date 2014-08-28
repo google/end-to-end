@@ -132,11 +132,6 @@ e2e.openpgp.packet.Key.prototype.addBindingSignature = function(signature,
         'Signature type is not a subkey binding signature.');
   }
   var signer = /** @type {!e2e.signer.Signer} */ (verifyingKey.cipher);
-  if (signer instanceof e2e.openpgp.EncryptedCipher && signer.isLocked()) {
-    // TODO(user): Fix that. Key is locked, so the hashed data will be wrong.
-    this.bindingSignatures_.push(signature);
-    return;
-  }
   var signedData = this.getKeyBindingSignatureData_(verifyingKey);
   if (!signature.verify(signedData, goog.asserts.assertObject(signer))) {
     throw new e2e.openpgp.error.ParseError(

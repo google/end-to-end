@@ -457,7 +457,7 @@ e2e.openpgp.EncryptedCipher.prototype.getHash = function() {
 
 /** @override */
 e2e.openpgp.EncryptedCipher.prototype.setHash = function(hash) {
-    throw new e2e.openpgp.error.InvalidArgumentsError('Not implemented.');
+    this.cipher_.setHash(hash);
 };
 
 
