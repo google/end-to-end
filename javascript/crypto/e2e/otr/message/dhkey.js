@@ -96,9 +96,8 @@ e2e.otr.message.DhKey.process = function(session, data) {
       break;
 
     case AUTHSTATE.AWAITING_SIG:
-      // TODO(user): Remove annotation when closure-compiler #260 is fixed.
-      if (e2e.otr.compareByteArray(gy, /** @type {!e2e.ByteArray} */ (
-          session.keymanager.getRemoteKey(new Uint8Array(4)))) == 0) {
+      if (e2e.otr.compareByteArray(gy,
+          session.keymanager.getRemoteKey(new Uint8Array(4)).key) == 0) {
         // TODO(user): Remove annotation when closure-compiler #260 is fixed.
         session.send(/** @type {!e2e.otr.message.RevealSignature} */ (
             e2e.otr.assertState(session.authData.revealsignature,

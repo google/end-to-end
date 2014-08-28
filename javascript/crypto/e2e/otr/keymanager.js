@@ -41,9 +41,10 @@ e2e.otr.KeyManager = function() {
 e2e.otr.KeyManager.prototype.lastRemoteKey_;
 
 /**
- * Gets the key for a given keyid.
+ * Gets the key for a given keyid or the most recent key.
  * @param {!Uint8Array=} opt_keyid The keyid associated with the key.
- * @return {!{keyid: !Uint8Array, key: !e2e.cipher.DiffieHellman}}
+ * @return {!{keyid: !Uint8Array, key: !e2e.cipher.DiffieHellman}} The key and
+ *     keyid.
  */
 e2e.otr.KeyManager.prototype.getKey = function(opt_keyid) {
   throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
@@ -70,9 +71,9 @@ e2e.otr.KeyManager.prototype.storeRemoteKey = function(keyid, pubkey) {
 
 
 /**
- * Gets remote key for a given keyid.
+ * Gets remote key for a given keyid or the most recent key.
  * @param {!Uint8Array=} opt_keyid The keyid associated with the key.
- * @return {!e2e.ByteArray} The key associated with the key id.
+ * @return {!{keyid: !Uint8Array, key: !e2e.ByteArray}} The key and keyid.
  */
 e2e.otr.KeyManager.prototype.getRemoteKey = function(opt_keyid) {
   throw new e2e.otr.error.NotImplementedError('Not yet implemented.');

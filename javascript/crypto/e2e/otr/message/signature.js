@@ -65,7 +65,7 @@ e2e.otr.message.Signature.prototype.serializeMessageContent = function() {
   var ma = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m1prime)
       .getHmac(Array.apply([], e2e.otr.serializeBytes([
     keyA.key.generate(),
-    this.session_.keymanager.getRemoteKey(new Uint8Array(4)),
+    this.session_.keymanager.getRemoteKey(new Uint8Array(4)).key,
     this.session_.getPublicKey(),
     keyA.keyid
   ])));
@@ -129,7 +129,7 @@ e2e.otr.message.Signature.process = function(session, data) {
 
       var ma = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m1prime)
           .getHmac(Array.apply([], e2e.otr.serializeBytes([
-        session.keymanager.getRemoteKey(new Uint8Array(4)),
+        session.keymanager.getRemoteKey(new Uint8Array(4)).key,
         session.keymanager.getKey().key.generate(),
         pubA,
         keyidA

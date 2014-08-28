@@ -73,7 +73,7 @@ e2e.otr.message.RevealSignature.prototype.serializeMessageContent = function() {
   var mb = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m1)
       .getHmac(Array.apply([], e2e.otr.serializeBytes([
     keyB.key.generate(),
-    this.session_.keymanager.getRemoteKey(new Uint8Array(4)),
+    this.session_.keymanager.getRemoteKey(new Uint8Array(4)).key,
     this.session_.getPublicKey(),
     keyB.keyid
   ])));
