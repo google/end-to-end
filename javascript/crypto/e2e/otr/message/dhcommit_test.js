@@ -78,7 +78,7 @@ function testDhCommit() {
 
   var out = commit.serializeMessageContent();
   assertEquals(200 + 36, out.length);
-  assertUint8ArrayEquals(
+  assertTypedArrayEquals(
       [0, 0, 0, 196, 37, 56, 167, 255, 44, 147, 168, 233, 248, 209, 247, 189,
        18, 117, 189, 55, 49, 9, 90, 222, 222, 34, 108, 176, 33, 35, 181, 250,
        28, 216, 40, 130, 15, 29, 201, 52, 147, 188, 7, 217, 66, 214, 38, 9, 112,

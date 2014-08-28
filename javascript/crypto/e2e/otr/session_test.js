@@ -33,8 +33,8 @@ function testConstructor() {
   assertObjectEquals(constants.DEFAULT_POLICY, s.policy);
   assertEquals(constants.MSGSTATE.PLAINTEXT, s.msgState_);
   assertEquals(constants.AUTHSTATE.NONE, s.authState_);
-  assertUint8ArrayEquals(tag, s.instanceTag);
-  assertUint8ArrayEquals([0, 0, 0, 0], s.remoteInstanceTag);
+  assertTypedArrayEquals(tag, s.instanceTag);
+  assertTypedArrayEquals([0, 0, 0, 0], s.remoteInstanceTag);
 
   s = new e2e.otr.Session(null, tag, {testProperty: 123});
   assertEquals(123, s.policy.testProperty);

@@ -70,7 +70,7 @@ function testConstructor() {
 
 function testSerialize() {
   var pk = new pkImpl(new Uint8Array([1, 2, 3]));
-  assertUint8ArrayEquals([0, 0, 1, 2, 3], pk.serialize());
+  assertTypedArrayEquals([0, 0, 1, 2, 3], pk.serialize());
 }
 
 function testParse() {

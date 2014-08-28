@@ -75,7 +75,7 @@ function tearDown() {
 }
 
 function testSerializeBytes() {
-  assertUint8ArrayEquals([1, 2, 3, 4],
+  assertTypedArrayEquals([1, 2, 3, 4],
       e2e.otr.serializeBytes([[1], new SerializableArrayImpl([1, 2]), [4]]));
 }
 
@@ -126,8 +126,8 @@ function testImplementationof() {
 }
 
 function testConcat() {
-  assertUint8ArrayEquals([], e2e.otr.concat([]));
-  assertUint8ArrayEquals([1, 2, 3, 4, 5, 6], e2e.otr.concat([
+  assertTypedArrayEquals([], e2e.otr.concat([]));
+  assertTypedArrayEquals([1, 2, 3, 4, 5, 6], e2e.otr.concat([
     new Uint8Array([1, 2]),
     [3, 4],
     new Uint8Array([5]),
@@ -137,9 +137,9 @@ function testConcat() {
 }
 
 function testNumToByte() {
-  assertUint8ArrayEquals([0], e2e.otr.numToByte(0));
-  assertUint8ArrayEquals([0x56], e2e.otr.numToByte(0x56));
-  assertUint8ArrayEquals([0xFF], e2e.otr.numToByte(0xFF));
+  assertTypedArrayEquals([0], e2e.otr.numToByte(0));
+  assertTypedArrayEquals([0x56], e2e.otr.numToByte(0x56));
+  assertTypedArrayEquals([0xFF], e2e.otr.numToByte(0xFF));
   [-1, 0x100, 0x5678, 0x12345678, Infinity, -Infinity].forEach(function(n) {
     assertTrue(assertThrows(function() {
       e2e.otr.numToByte(n);
@@ -148,9 +148,9 @@ function testNumToByte() {
 }
 
 function testNumToShort() {
-  assertUint8ArrayEquals([0, 0], e2e.otr.numToShort(0));
-  assertUint8ArrayEquals([0x56, 0x78], e2e.otr.numToShort(0x5678));
-  assertUint8ArrayEquals([0xFF, 0xFF], e2e.otr.numToShort(0xFFFF));
+  assertTypedArrayEquals([0, 0], e2e.otr.numToShort(0));
+  assertTypedArrayEquals([0x56, 0x78], e2e.otr.numToShort(0x5678));
+  assertTypedArrayEquals([0xFF, 0xFF], e2e.otr.numToShort(0xFFFF));
   [-1, 0x10000, 0x12345678, Infinity, -Infinity].forEach(function(n) {
     assertTrue(assertThrows(function() {
       e2e.otr.numToShort(n);
@@ -159,10 +159,10 @@ function testNumToShort() {
 }
 
 function testNumToInt() {
-  assertUint8ArrayEquals([0, 0, 0, 0], e2e.otr.numToInt(0));
-  assertUint8ArrayEquals([0x12, 0x34, 0x56, 0x78],
+  assertTypedArrayEquals([0, 0, 0, 0], e2e.otr.numToInt(0));
+  assertTypedArrayEquals([0x12, 0x34, 0x56, 0x78],
       e2e.otr.numToInt(0x12345678));
-  assertUint8ArrayEquals([0xFF, 0xFF, 0xFF, 0xFF],
+  assertTypedArrayEquals([0xFF, 0xFF, 0xFF, 0xFF],
       e2e.otr.numToInt(0xFFFFFFFF));
   [-1, 0x100000000, Infinity, -Infinity].forEach(function(n) {
     assertTrue(assertThrows(function() {

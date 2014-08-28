@@ -29,7 +29,7 @@ goog.require('goog.testing.asserts');
  * @param {*} b The actual array (2 args) or the expected array (3 args).
  * @param {*=} opt_c The actual array (3 args only).
  */
-var assertUint8ArrayEquals = function(a, b, opt_c) {
+var assertTypedArrayEquals = function(a, b, opt_c) {
   assertArrayEquals.apply(null, goog.array.map(arguments, function(e) {
     return e instanceof Uint8Array ? goog.array.clone(e) : e;
   }));

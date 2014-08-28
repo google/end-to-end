@@ -29,28 +29,28 @@ goog.setTestOnly();
 var Data = e2e.otr.Data;
 
 function testDataConstructor() {
-  assertUint8ArrayEquals([0x01, 0x02, 0x03, 0xFF, 0xFE, 0xFF], new e2e.otr.Data(
+  assertTypedArrayEquals([0x01, 0x02, 0x03, 0xFF, 0xFE, 0xFF], new e2e.otr.Data(
       new Uint8Array([0x01, 0x02, 0x03, 0xFF, 0xFE, 0xFF])).data_);
 }
 
 function testDataSerialize() {
-  assertUint8ArrayEquals([0, 0, 0, 0x06, 0x01, 0x02, 0x03, 0xFF, 0xFE, 0xFF],
+  assertTypedArrayEquals([0, 0, 0, 0x06, 0x01, 0x02, 0x03, 0xFF, 0xFE, 0xFF],
       new e2e.otr.Data(
       new Uint8Array([0x01, 0x02, 0x03, 0xFF, 0xFE, 0xFF])).serialize());
-  assertUint8ArrayEquals([0, 0, 0, 1, 0], new e2e.otr.Data(
+  assertTypedArrayEquals([0, 0, 0, 1, 0], new e2e.otr.Data(
       new Uint8Array([0])).serialize());
-  assertUint8ArrayEquals([0, 0, 1, 1].concat(goog.array.repeat(1, 257)),
+  assertTypedArrayEquals([0, 0, 1, 1].concat(goog.array.repeat(1, 257)),
       new e2e.otr.Data(new Uint8Array(goog.array.repeat(1, 257))).serialize());
 }
 
 function testDataParse() {
-  assertUint8ArrayEquals([0x01, 0x02, 0x03, 0xFF, 0xFE, 0xFF], Data.parse(
+  assertTypedArrayEquals([0x01, 0x02, 0x03, 0xFF, 0xFE, 0xFF], Data.parse(
       new Uint8Array(
       [0, 0, 0, 0x06, 0x01, 0x02, 0x03, 0xFF, 0xFE, 0xFF])).data_);
-  assertUint8ArrayEquals([], Data.parse(new Uint8Array([0, 0, 0, 0])).data_);
-  assertUint8ArrayEquals(goog.array.repeat(1, 257), Data.parse(
+  assertTypedArrayEquals([], Data.parse(new Uint8Array([0, 0, 0, 0])).data_);
+  assertTypedArrayEquals(goog.array.repeat(1, 257), Data.parse(
         e2e.otr.concat([[0, 0, 1, 1], goog.array.repeat(1, 257)])).data_);
-  assertUint8ArrayEquals([1, 2, 3], Data.parse(
+  assertTypedArrayEquals([1, 2, 3], Data.parse(
       new Uint8Array([0, 0, 0, 3, 1, 2, 3, 4])).data_);
 
   var err = assertThrows(goog.partial(Data.parse, new Uint8Array([0])));

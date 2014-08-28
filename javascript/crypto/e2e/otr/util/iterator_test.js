@@ -43,7 +43,7 @@ function testConstructor() {
   assertEquals(si.index_, 0);
   assertArrayEquals(ai.iterable_, ['a', 'r', 'r', 'a', 'y']);
   assertEquals(ai.index_, 0);
-  assertUint8ArrayEquals(ta.iterable_, [1, 2, 3, 4, 5]);
+  assertTypedArrayEquals(ta.iterable_, [1, 2, 3, 4, 5]);
   assertEquals(ta.index_, 0);
 
   [5, 0, null, undefined, {}, true].forEach(function(arg) {
@@ -76,9 +76,9 @@ function testNext() {
   assertArrayEquals(ai.next(2), ['r', 'r']);
   assertArrayEquals(ai.next(999), ['a', 'y']);
 
-  assertUint8ArrayEquals(ta.next(), [1]);
-  assertUint8ArrayEquals(ta.next(2), [2, 3]);
-  assertUint8ArrayEquals(ta.next(999), [4, 5]);
+  assertTypedArrayEquals(ta.next(), [1]);
+  assertTypedArrayEquals(ta.next(2), [2, 3]);
+  assertTypedArrayEquals(ta.next(999), [4, 5]);
 }
 
 function testPeek() {
@@ -96,12 +96,12 @@ function testPeek() {
   assertArrayEquals(ai.next(), ['a']);
   assertArrayEquals(ai.peek(), ['r']);
 
-  assertUint8ArrayEquals(ta.peek(), [1]);
-  assertUint8ArrayEquals(ta.peek(), [1]);
-  assertUint8ArrayEquals(ta.peek(3), [1, 2, 3]);
-  assertUint8ArrayEquals(ta.peek(6), [1, 2, 3, 4, 5]);
-  assertUint8ArrayEquals(ta.next(), [1]);
-  assertUint8ArrayEquals(ta.peek(), [2]);
+  assertTypedArrayEquals(ta.peek(), [1]);
+  assertTypedArrayEquals(ta.peek(), [1]);
+  assertTypedArrayEquals(ta.peek(3), [1, 2, 3]);
+  assertTypedArrayEquals(ta.peek(6), [1, 2, 3, 4, 5]);
+  assertTypedArrayEquals(ta.next(), [1]);
+  assertTypedArrayEquals(ta.peek(), [2]);
 }
 
 function testRest() {
@@ -121,11 +121,11 @@ function testRest() {
   assertArrayEquals(ai.rest(), ['r', 'r', 'a', 'y']);
   assertFalse(ai.hasNext());
 
-  assertUint8ArrayEquals(ta.rest(), [1, 2, 3, 4, 5]);
+  assertTypedArrayEquals(ta.rest(), [1, 2, 3, 4, 5]);
   assertFalse(ta.hasNext());
 
   ta = new e2e.otr.util.Iterator(new Uint8Array([1, 2, 3, 4, 5]));
-  assertUint8ArrayEquals(ta.next(), [1]);
-  assertUint8ArrayEquals(ta.rest(), [2, 3, 4, 5]);
+  assertTypedArrayEquals(ta.next(), [1]);
+  assertTypedArrayEquals(ta.rest(), [2, 3, 4, 5]);
   assertFalse(ta.hasNext());
 }
