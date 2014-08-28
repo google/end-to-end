@@ -215,6 +215,15 @@ e2e.otr.Session.prototype.send = function(data) {
 
 
 /**
+ * Displays data to the user.
+ * @param {string} data The message to display.
+ */
+e2e.otr.Session.prototype.display = function(data) {
+  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+};
+
+
+/**
  * Computes c, c', m1, m2, m1', m2' and session id from shared secret s.
  * @return {!{c: !e2e.ByteArray, cprime: !e2e.ByteArray, m1: !e2e.ByteArray,
  *     m2: !e2e.ByteArray, m1prime: !e2e.ByteArray, m2prime: !e2e.ByteArray,

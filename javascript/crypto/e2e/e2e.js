@@ -162,7 +162,7 @@ e2e.USE_TEXT_DECODER = 'TextDecoder' in goog.global;
 
 /**
  * Converts a byte array into a JS string.
- * @param {!e2e.ByteArray} bytes The bytes to convert.
+ * @param {!e2e.ByteArray|!Uint8Array} bytes The bytes to convert.
  * @param {string=} opt_charset The charset to try (defaults to UTF-8).
  * @return {string} The string representation of bytes.
  */

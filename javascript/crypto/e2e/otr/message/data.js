@@ -28,6 +28,8 @@ goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.InvalidArgumentsError');
 goog.require('e2e.otr.error.NotImplementedError');
 goog.require('e2e.otr.message.Encoded');
+goog.require('e2e.otr.util.Iterator');
+goog.require('e2e.otr.util.Tee');
 goog.require('e2e.otr.util.aes128ctr');
 goog.require('goog.crypt.Hmac');
 
@@ -76,7 +78,7 @@ e2e.otr.message.Data.MESSAGE_TYPE = constants.MessageType.DATA;
  * @return {!{sendingAes: !e2e.ByteArray, receivingAes: !e2e.ByteArray,
  *     sendingMac: !e2e.ByteArray, receivingMac: !e2e.ByteArray}}
  */
-e2e.otr.message.Data.prototype.computeKeys = function(localDh, remoteKey) {
+e2e.otr.message.Data.computeKeys = function(localDh, remoteKey) {
   var highEnd = e2e.otr.compareByteArray(localDh.generate(), remoteKey) > 0;
   var sendbyte = highEnd ? 0x01 : 0x02;
   var recvbyte = highEnd ? 0x02 : 0x01;
@@ -119,7 +121,7 @@ e2e.otr.message.Data.prototype.serializeMessageContent = function() {
     [0x00] // NULL BYTE
   ].concat(this.tlvs_));
 
-  var keys = this.computeKeys(dh, remoteKey);
+  var keys = e2e.otr.message.Data.computeKeys(dh, remoteKey);
 
   var encryptedMessage = e2e.otr.util.aes128ctr.encrypt(keys.sendingAes,
       message, ctrTop.concat(goog.array.repeat(0, 8)));
@@ -153,6 +155,58 @@ e2e.otr.message.Data.prototype.serializeMessageContent = function() {
  * @param {!Uint8Array} data The data to be processed.
  */
 e2e.otr.message.Data.process = function(session, data) {
-  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+  switch (session.getMsgState()) {
+    case MSGSTATE.ENCRYPTED:
+      var tee = new e2e.otr.util.Tee();
+      var iter = new e2e.otr.util.Iterator(data);
+
+      var flags = e2e.otr.byteToNum(tee.tee(iter.next()));
+      var ignoreUnreadable = flags & 0x01;
+      var remoteKeyid = tee.tee(iter.next(4));
+      var keyid = tee.tee(iter.next(4));
+      var nextDh = e2e.otr.Mpi.parse(tee.tee(iter.nextEncoded())).serialize();
+      var ctrTop = Array.apply([], tee.tee(iter.next(8)));
+      var encryptedMessage = e2e.otr.Data.parse(tee.tee(iter.nextEncoded()))
+          .deconstruct();
+      var mac = iter.next(20);
+
+      var key = session.keymanager.getKey(keyid);
+      var remoteKey = session.keymanager.getRemoteKey(remoteKeyid);
+      var keys = e2e.otr.message.Data.computeKeys(key.key, remoteKey.key);
+
+      var macData = e2e.otr.message.Encoded.addHeader(session,
+          constants.MessageType.DATA, tee.dump(), true);
+      var calculatedMac = new goog.crypt.Hmac(new e2e.hash.Sha1(),
+          keys.receivingMac).getHmac(macData);
+
+      if (e2e.otr.compareByteArray(mac, calculatedMac)) {
+        if (!ignoreUnreadable) {
+          // TODO(user): Log the error and/or warn the user. Remove extra return.
+          return;
+        }
+        return;
+      }
+
+      session.keymanager.storeRemoteKey(e2e.incrementByteArray(Array.apply([],
+          remoteKeyid)));
+
+      var message = e2e.otr.util.aes128ctr.decrypt(keys.receivingAes,
+          encryptedMessage, ctrTop.concat(goog.array.repeat(0, 8)));
+
+      var split = Array.prototype.indexOf.call(message, '\0');
+      session.display(e2e.byteArrayToString(message.subarray(0, split)));
+      // TODO(user): Process TLVs.
+      break;
+
+    case MSGSTATE.PLAINTEXT:
+    case MSGSTATE.FINISHED:
+      // TODO(user): Inform the user that an unreadable encrypted message was
+      // received, and reply with an Error Message.
+      throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+      break;
+
+    default:
+      e2e.otr.assertState(false, 'Invalid message state.');
+  }
 };
 });

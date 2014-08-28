@@ -88,18 +88,33 @@ e2e.otr.message.Encoded.prototype.serializeMessageContent =
 
 
 /**
- * Adds headers to the outgoing message.
- * @param {!Uint8Array} data The message content.
+ * Adds a message header to the data.
+ * @param {!e2e.otr.Session} session The enclosing session.
+ * @param {!e2e.otr.Short} mt The message type.
+ * @param {!Uint8Array|!e2e.ByteArray} data The message content.
+ * @param {boolean=} opt_receiving True if this is for an incoming message.
  * @return {!Uint8Array} The headers + message.
  */
-e2e.otr.message.Encoded.prototype.addHeader = function(data) {
+e2e.otr.message.Encoded.addHeader = function(session, mt, data, opt_receiving) {
   return e2e.otr.serializeBytes([
     [0x00, 0x03], // protocol version TODO(user): allow other versions.
-    this.constructor.MESSAGE_TYPE,
-    this.session_.instanceTag,
-    this.session_.remoteInstanceTag,
+    mt,
+    opt_receiving ? session.remoteInstanceTag : session.instanceTag,
+    opt_receiving ? session.instanceTag : session.remoteInstanceTag,
     data
   ]);
+};
+
+
+/**
+ * Adds headers to the outgoing message.
+ * @param {!Uint8Array|!e2e.ByteArray} data The message content.
+ * @param {boolean=} opt_receiving True if this is for an incoming message.
+ * @return {!Uint8Array} The headers + message.
+ */
+e2e.otr.message.Encoded.prototype.addHeader = function(data, opt_receiving) {
+  return e2e.otr.message.Encoded.addHeader(this.session_,
+      this.constructor.MESSAGE_TYPE, data, opt_receiving);
 };
 
 
