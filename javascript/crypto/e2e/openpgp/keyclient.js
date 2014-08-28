@@ -23,7 +23,9 @@ goog.require('e2e.async.Result');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.TransferablePublicKey');
 goog.require('e2e.openpgp.block.factory');
+goog.require('e2e.random');
 goog.require('goog.Uri');
+goog.require('goog.crypt');
 goog.require('goog.net.XhrIo');
 
 /**
@@ -119,52 +121,29 @@ e2e.openpgp.KeyClient.GET_OP_PARAM_ = 'get';
 e2e.openpgp.KeyClient.X_EMAIL_PARAM_ = 'x-email';
 
 /**
+ * The user id parameter during key import. The key server will extract the
+ * email from it.
+ * @type {string}
+ * @const
+ * @private
+ */
+e2e.openpgp.KeyClient.X_USER_ID_PARAM_ = 'x-userid';
+
+/**
+ * A random nonce to identify the key being uploaded.
+ * @type {string}
+ * @const
+ * @private
+ */
+e2e.openpgp.KeyClient.NONCE_PARAM_ = 'nonce';
+
+/**
  * The origin parameter to identify the extension.
  * @type {string}
  * @const
  * @private
  */
 e2e.openpgp.KeyClient.ORIGIN_PARAM_ = 'origin';
-
-/**
- * Obtains the URL to register the user.
- * @param {string} email The email address.
- * @return {string} the URL.
- * @private
- */
-e2e.openpgp.KeyClient.prototype.getRegistrationUrl_ = function(email) {
-  var data = new goog.Uri.QueryData();
-  data.add(e2e.openpgp.KeyClient.X_EMAIL_PARAM_, email);
-  data.add(e2e.openpgp.KeyClient.ORIGIN_PARAM_, goog.global.location.origin);
-  return (
-      this.keyServerUrl_ +
-      e2e.openpgp.KeyClient.REGISTER_REL_PATH_ +
-      '?' + data);
-};
-
-/**
- * Obtains the OpenID credentials for the given email address.
- * @param {string} email The email address.
- * @return {!e2e.async.Result.<{requestUri: string, postBody: string}>} The
- *     OpenID credentials.
- * @private
- */
-e2e.openpgp.KeyClient.prototype.getOpenIdCredentials_ = function(email) {
-  var result = new e2e.async.Result();
-  if (goog.isDef(goog.global.open)) {
-    var url = this.getRegistrationUrl_(email);
-    var win = goog.global.open(url);
-    goog.global.addEventListener('message', function(e) {
-      if (e.source == win && e.origin == this.keyServerUrl_) {
-        win.close();
-        result.callback(e.data);
-      }
-    });
-  } else {
-    result.errback('Window.open not available.');
-  }
-  return result;
-};
 
 /**
  * Imports a public key to the key server.
@@ -177,23 +156,102 @@ e2e.openpgp.KeyClient.prototype.importPublicKey = function(key) {
   if (uids.length != 1) {
     throw new Error('Invalid user ID for key import.');
   }
-  return this.getOpenIdCredentials_(uids[0]).addCallback(function(creds) {
-    var result = new e2e.async.Result();
-    var serializedKey = e2e.openpgp.asciiArmor.encode(
-        'PUBLIC KEY BLOCK',
-        key.serialize());
-    var data = new goog.Uri.QueryData();
-    data.add(e2e.openpgp.KeyClient.KEY_TEXT_PARAM_, serializedKey);
-    data.add(e2e.openpgp.KeyClient.REQUEST_URI_PARAM_, creds.requestUri);
-    data.add(e2e.openpgp.KeyClient.POST_BODY_PARAM_, creds.postBody);
-    goog.net.XhrIo.send(this.keyServerUrl_ +
-        e2e.openpgp.KeyClient.ADD_REL_PATH_,
-        function(e) {
-          result.callback(e.target.getStatus() == 200);
-        },
-        'POST', data.toString());
-    return result;
-  }, this);
+  var nonce = goog.crypt.byteArrayToHex(e2e.random.getRandomBytes(16));
+  var serializedKey = e2e.openpgp.asciiArmor.encode(
+    'PUBLIC KEY BLOCK', key.serialize());
+  return this.getOpenIdCredentials_(uids[0], nonce).addCallback(
+      goog.bind(this.importKeyWithCredentials_, this, nonce, serializedKey));
+};
+
+/**
+ * Obtains the OpenID credentials for the given email address and a nonce.
+ * @param {string} email The email address.
+ * @param {string} nonce The random nonce.
+ * @return {!e2e.async.Result.<{port: MessagePort, credentials: {
+ *     requestUri: string, postBody: string}}>} The port and credentials.
+ * @private
+ */
+e2e.openpgp.KeyClient.prototype.getOpenIdCredentials_ = function(
+    email, nonce) {
+  var result = new e2e.async.Result();
+  var doc = goog.global.document;
+  if (goog.isDef(doc)) {
+    var url = this.getRegistrationUrl_(email, nonce);
+    var iframe = doc.createElement('iframe');
+    doc.documentElement.appendChild(iframe);
+    iframe.src = url;
+    var win = iframe.contentWindow;
+    goog.global.addEventListener('message', goog.bind(function(e) {
+      if (e.source == win && e.origin == this.keyServerUrl_ && e.ports[0]) {
+        var port = e.ports[0];
+        port.onmessage = function(e) {
+          result.callback({
+            credentials: e.data,
+            port: port
+          });
+        };
+      }
+    }, this));
+  } else {
+    result.errback('Document not available.');
+  }
+  return result;
+};
+
+/**
+ * Obtains the URL to register the user.
+ * @param {string} userid The user id.
+ * @param {string} nonce The random nonce.
+ * @return {string} the URL.
+ * @private
+ */
+e2e.openpgp.KeyClient.prototype.getRegistrationUrl_ = function(
+    userid, nonce) {
+  var data = new goog.Uri.QueryData();
+  data.add(e2e.openpgp.KeyClient.X_USER_ID_PARAM_, userid);
+  data.add(e2e.openpgp.KeyClient.NONCE_PARAM_, nonce);
+  data.add(e2e.openpgp.KeyClient.ORIGIN_PARAM_, goog.global.location.origin);
+  return (
+      this.keyServerUrl_ +
+      e2e.openpgp.KeyClient.REGISTER_REL_PATH_ +
+      '?' + data);
+};
+
+/**
+ * Imports the given key with the provided credentials.
+ * @param {string} nonce The random nonce.
+ * @param {string} serializedKey The serialized OpenPGP public key.
+ * @param {{port: MessagePort, credentials: {requestUri: string,
+ *     postBody: string}}} response The response object from the call.
+ * @return {!e2e.async.Result.<boolean>} True if importing key is succeeded.
+ * @private
+ */
+e2e.openpgp.KeyClient.prototype.importKeyWithCredentials_ = function(
+    nonce, serializedKey, response) {
+  var result = new e2e.async.Result();
+  var data = new goog.Uri.QueryData();
+  data.add(e2e.openpgp.KeyClient.KEY_TEXT_PARAM_, serializedKey);
+  data.add(e2e.openpgp.KeyClient.NONCE_PARAM_, nonce);
+  data.add(
+      e2e.openpgp.KeyClient.REQUEST_URI_PARAM_,
+      response.credentials.requestUri);
+  data.add(
+      e2e.openpgp.KeyClient.POST_BODY_PARAM_,
+      response.credentials.postBody);
+  goog.net.XhrIo.send(
+      this.keyServerUrl_ + e2e.openpgp.KeyClient.ADD_REL_PATH_,
+      function(e) {
+        var status = e.target.getStatus();
+        if (status == 200) {
+          response.port.close();
+          result.callback(true);
+        } else if (status == 500) {
+          response.port.close();
+          result.callback(false);
+        }
+      },
+      'POST', data.toString(), undefined, undefined, true);
+  return result;
 };
 
 /**
@@ -214,17 +272,17 @@ e2e.openpgp.KeyClient.prototype.searchPublicKey = function(email) {
       goog.bind(function(e) {
         if (e.target.getStatus() == 200) {
           try {
-            var receivedPubKeys = e2e.openpgp.block.factory
-              .parseAsciiMulti(e.target.getResponseText());
+            var receivedPubKeys = e2e.openpgp.block.factory.parseAsciiMulti(
+                e.target.getResponseText());
             // TODO(user): Get the public key blob's proof and verify the
             // consistency of the proof.
-            // resultPubKeys.callback(receivedPubKeys);
+            resultPubKeys.callback(receivedPubKeys);
           } catch (error) {
             resultPubKeys.callback([]);
           }
         } else {
           resultPubKeys.callback([]);
         }
-      }, this), 'GET');
+      }, this), 'GET', undefined, undefined, undefined, true);
   return resultPubKeys;
 };

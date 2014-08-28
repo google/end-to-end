@@ -216,11 +216,11 @@
     "description": "A sentence confirming that the user has successfully changed the keyring's passphrase."
   },
   "genKeyTitle": {
-    "message": "Generate a new PGP key",
+    "message": "Sign up to receive secret messages",
     "description": "A section title indicating where the user can generate a new PGP key."
   },
   "genKeyEmailLabel": {
-    "message": "Please enter your email address so we can make your keys:\n(We won't do anything else with this email address.)",
+    "message": "Please enter the email address you will use to receive secret messages.\nNote that everyone will know you can receive secret messages here.",
     "description": "A sentence fragment prompting the user to provide his/her email address."
   },
   "genKeyPassphraseLabel": {
@@ -228,8 +228,8 @@
     "description": "A noun indicating where the user needs to specify a passphrase for her new PGP key."
   },
   "genKeyGenerateButtonLabel": {
-    "message": "Make key",
-    "description": "A verb prompting the user to generate a new PGP key."
+    "message": "Sign Up",
+    "description": "A verb prompting the user to register to receive secret messages."
   },
   "settingsTitle": {
     "message": "End-To-End Keys and Settings",

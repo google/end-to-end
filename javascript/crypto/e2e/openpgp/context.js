@@ -44,6 +44,14 @@ e2e.openpgp.Context.prototype.setArmorHeader;
 
 
 /**
+ * The URL of the key server.
+ * @type {string}
+ * @protected
+ */
+e2e.openpgp.Context.prototype.keyServerUrl;
+
+
+/**
  * The types of keys used for search.
  * @enum {string}
  */

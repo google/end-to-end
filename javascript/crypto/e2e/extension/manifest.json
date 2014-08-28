@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "__MSG_extName__",
   "description": "__MSG_extDescription__",
-  "version": "0.3.1339",
+  "version": "0.3.1341",
   "permissions": ["activeTab", "notifications"],
   "optional_permissions": [],
   "background": {"scripts": ["launcher_binary.js"]},
@@ -18,5 +18,6 @@
     "128": "images/icon-128.png"
   },
   "web_accessible_resources": ["glass.html", "gmonkeystub.js"],
-  "default_locale": "en"
+  "default_locale": "en",
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAgRnXfhAUW+nb3IcT4Z8UZ4W10qN/3lB65lwDxHLNT4hc3Y0WTwgG81NFWCR8l/O79AMrn028v1x7O6yu1YZ3NmWl2QXo0GKHYmcuQQfHiAZwOLMq7ZBEDJzGlB6IkyFrDdIhaeLK8X9zYDJHRGZ2qruExD1JWVT9oRyXCyy5R+UAwDnNP8xa7X/65ojdZT4RcrBgwfwUhY5SBtBF9vlX4FpoROTVDtlAj2wNXX1Pi74tDL/ZsvERX7Y8E1w/Z2JOYlmZpsHaD9FZuUxB62tbJ7PC2xcSgxy7XNOeWJvi5BlGoG3lUwsLFAfLnXbd9D0txcCEMS2xr7hl4dh+V6+UbwIDAQAB"
 }

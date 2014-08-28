@@ -60,11 +60,23 @@ e2e.openpgp.ContextImpl = function() {
    * @private
    */
   this.armorHeaders_ = {};
+
+  this.keyServerUrl = e2e.openpgp.ContextImpl.KEY_SERVER_URL || undefined;
 };
+
+
+/**
+ * @define {string} The URL of the key server.
+ */
+e2e.openpgp.ContextImpl.KEY_SERVER_URL = '';
 
 
 /** @override */
 e2e.openpgp.ContextImpl.prototype.armorOutput = true;
+
+
+/** @override */
+e2e.openpgp.ContextImpl.prototype.keyServerUrl;
 
 
 /** @override */
@@ -84,7 +96,7 @@ e2e.openpgp.ContextImpl.prototype.keyRing_ = null;
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.setKeyRingPassphrase = function(
     passphrase) {
-  this.keyRing_ = new e2e.openpgp.KeyRing(passphrase);
+  this.keyRing_ = new e2e.openpgp.KeyRing(passphrase, this.keyServerUrl);
 };
 
 
@@ -424,14 +436,13 @@ e2e.openpgp.ContextImpl.prototype.encryptSignInternal = function(
  * @return {!e2e.openpgp.KeyResult} The result of the search.
  */
 e2e.openpgp.ContextImpl.prototype.searchKey_ = function(uid, type) {
-  /** @type {!Array.<!e2e.openpgp.block.TransferableKey>} */
-  var keyBlocks = this.keyRing_.searchKey(uid, type) || [];
-  /** @type {!e2e.openpgp.Keys} */
-  var keys = goog.array.map(keyBlocks,
-      function(keyBlock) {
-        return keyBlock.toKeyObject();
+  return this.keyRing_.searchKeyLocalAndRemote(uid, type).addCallback(
+      function(keyBlocks) {
+        return /** @type {!e2e.openpgp.Keys} */ (goog.array.map(keyBlocks,
+            function(keyBlock) {
+              return keyBlock.toKeyObject();
+            }));
       });
-  return e2e.async.Result.toResult(keys);
 };
 
 
