@@ -27,17 +27,14 @@ goog.require('e2e.otr.pubkey.Pubkey');
  * An OTRv3 DSA PUBKEY.
  * @constructor
  * @extends {e2e.otr.pubkey.Pubkey}
- * @param {!e2e.ByteArray} p DSA public key parameter p.
- * @param {!e2e.ByteArray} q DSA public key parameter q.
- * @param {!e2e.ByteArray} g DSA public key parameter g.
- * @param {!e2e.ByteArray} y DSA public key parameter y.
+ * @param {!e2e.signer.key.DsaPublicKey} key DSA public key object.
  */
-e2e.otr.pubkey.Dsa = function(p, q, g, y) {
+e2e.otr.pubkey.Dsa = function(key) {
   goog.base(this);
-  this.p_ = p;
-  this.q_ = q;
-  this.g_ = g;
-  this.y_ = y;
+  this.p_ = goog.array.clone(key.p);
+  this.q_ = goog.array.clone(key.q);
+  this.g_ = goog.array.clone(key.g);
+  this.y_ = goog.array.clone(key.y);
 };
 goog.inherits(e2e.otr.pubkey.Dsa, e2e.otr.pubkey.Pubkey);
 
