@@ -163,4 +163,35 @@
         assertFalse(e2e.compareByteArray([1, 2, 3, 4, 5, 6], [1, 2, 3]));
         assertFalse(e2e.compareByteArray([1, 2, 3], [1, 2, 3, 4, 5, 6, 7, 8]));
       }
+
+      function testIncrementByteArray() {
+        var x = [];
+        assertArrayEquals([], e2e.incrementByteArray(x));
+        assertArrayEquals([], x);
+        x = [0];
+        assertArrayEquals([1], e2e.incrementByteArray(x));
+        assertArrayEquals([1], x);
+        x = [255];
+        assertArrayEquals([0], e2e.incrementByteArray(x));
+        assertArrayEquals([0], x);
+        x = [0, 0, 0, 0];
+        assertArrayEquals([0, 0, 0, 1], e2e.incrementByteArray(x));
+        assertArrayEquals([0, 0, 0, 1], x);
+        assertArrayEquals([0, 0, 0, 2], e2e.incrementByteArray(x));
+        assertArrayEquals([0, 0, 0, 2], x);
+        x = [1, 2, 3, 4];
+        assertArrayEquals([1, 2, 3, 5], e2e.incrementByteArray(x));
+        assertArrayEquals([1, 2, 3, 5], x);
+        x = [1, 2, 3, 255];
+        assertArrayEquals([1, 2, 4, 0], e2e.incrementByteArray(x));
+        assertArrayEquals([1, 2, 4, 0], x);
+        assertArrayEquals([1, 2, 4, 1], e2e.incrementByteArray(x));
+        assertArrayEquals([1, 2, 4, 1], x);
+        x = [7, 255, 255, 255];
+        assertArrayEquals([8, 0, 0, 0], e2e.incrementByteArray(x));
+        assertArrayEquals([8, 0, 0, 0], x);
+        x = [255, 255, 255, 255];
+        assertArrayEquals([0, 0, 0, 0], e2e.incrementByteArray(x));
+        assertArrayEquals([0, 0, 0, 0], x);
+      }
 </script>

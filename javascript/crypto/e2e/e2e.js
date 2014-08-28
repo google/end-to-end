@@ -291,3 +291,19 @@ e2e.assert = function(cond, opt_msg, opt_error) {
   }
   return cond;
 };
+
+
+/**
+ * Increments (++ByteArray) an unsigned big endian in a ByteArray.
+ * @param {!e2e.ByteArray} n The number to increment.
+ * @return {!e2e.ByteArray} The incremented array.
+ */
+e2e.incrementByteArray = function(n) {
+  var carry = 1;  // initial increment
+  for (var i = n.length - 1; i >= 0; --i) {
+    n[i] += carry;
+    carry = (n[i] & 0x100) >>> 8;
+    n[i] &= 0xff;
+  }
+  return n;
+};

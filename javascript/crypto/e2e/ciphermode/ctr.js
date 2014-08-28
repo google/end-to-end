@@ -44,17 +44,11 @@ goog.inherits(e2e.ciphermode.Ctr, e2e.ciphermode.CipherMode);
 
 /**
  * Increments an unsigned big endian in a ByteArray.
- * @param {e2e.ByteArray} n The number to increment.
+ * @param {!e2e.ByteArray} n The number to increment.
  * @private
  */
 e2e.ciphermode.Ctr.increment_ = function(n) {
-  var carry = 1;  // initial increment
-  for (var i = n.length - 1; i >= 0; --i) {
-    n[i] += carry;
-    carry = (n[i] & 0x100) >>> 8;
-    n[i] &= 0xff;
-  }
-  if (carry > 0) {
+  if (e2e.incrementByteArray(n).every(function(aByte) { return !aByte; })) {
     throw new e2e.error.UnsupportedError('CTR overflow: Too many blocks.');
   }
 };
