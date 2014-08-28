@@ -18,13 +18,20 @@
 goog.provide('e2e.ext.utils.actionTest');
 
 goog.require('e2e.cipher.Rsa');
+goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.utils.action');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.factory');
+goog.require('goog.testing.MockControl');
+goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.require('goog.testing.mockmatchers');
 goog.setTestOnly();
 
+var launcher = null;
+var mockControl = null;
+var stubs = new goog.testing.PropertyReplacer();
 var utils = e2e.ext.utils.action;
 
 var PUBLIC_KEY_ASCII =
@@ -49,8 +56,84 @@ var PUBLIC_KEY_ASCII =
     '-----END PGP PUBLIC KEY BLOCK-----';
 
 
+function setUp() {
+  window.localStorage.clear();
+  mockControl = new goog.testing.MockControl();
+
+  stubs.setPath('chrome.browserAction.setBadgeText', goog.nullFunction);
+  stubs.setPath('chrome.browserAction.setTitle', goog.nullFunction);
+  stubs.setPath('chrome.i18n.getMessage', goog.nullFunction);
+  stubs.setPath('chrome.runtime.onConnect.addListener', goog.nullFunction);
+  stubs.setPath('chrome.runtime.onConnect.removeListener', goog.nullFunction);
+
+  launcher = new e2e.ext.Launcher();
+  launcher.start();
+  stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
+    callback({launcher: launcher});
+  });
+}
+
+
+function tearDown() {
+  stubs.reset();
+  mockControl.$tearDown();
+  launcher = null;
+}
+
+
 function testExtractUserIds() {
   var byteData = e2e.openpgp.asciiArmor.parse(PUBLIC_KEY_ASCII).data;
   var key = e2e.openpgp.block.factory.parseByteArrayMulti(byteData)[0];
   assertEquals('test 4', utils.extractUserIds([key.toKeyObject()]));
+}
+
+
+function testGetContext() {
+  var context = {};
+  stubs.set(launcher, 'getContext', mockControl.createFunctionMock());
+  launcher.getContext().$returns(context);
+
+  var callback = mockControl.createFunctionMock();
+  callback(context);
+
+  mockControl.$replayAll();
+  utils.getContext(callback);
+  mockControl.$verifyAll();
+}
+
+
+function testGetSelectedContent() {
+  var callback = mockControl.createFunctionMock();
+  callback();
+
+  var callbackArg = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  stubs.set(launcher, 'getSelectedContent', mockControl.createFunctionMock());
+  launcher.getSelectedContent(callbackArg);
+
+  mockControl.$replayAll();
+  utils.getSelectedContent(callback);
+  callbackArg.arg();
+  mockControl.$verifyAll();
+}
+
+
+function testUpdateSelectedContent() {
+  var content = 'irrelevant';
+  var recipients = [];
+  var origin = 'irrelevant';
+  var expectMoreUpdates = false;
+  var callback = mockControl.createFunctionMock();
+  callback();
+
+  var callbackArg = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  stubs.set(
+      launcher, 'updateSelectedContent', mockControl.createFunctionMock());
+  launcher.updateSelectedContent(
+      content, recipients, origin, expectMoreUpdates, callbackArg);
+
+  mockControl.$replayAll();
+  utils.updateSelectedContent(
+      content, recipients, origin, expectMoreUpdates, callback);
+  callbackArg.arg();
+  mockControl.$verifyAll();
 }

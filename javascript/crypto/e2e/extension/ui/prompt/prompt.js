@@ -33,6 +33,7 @@ goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.ui.templates.prompt');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.Error');
+goog.require('e2e.ext.utils.action');
 goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.Timer');
@@ -117,14 +118,11 @@ ui.Prompt.prototype.decorateInternal = function(elem) {
   var styles = elem.querySelector('link');
   styles.href = chrome.extension.getURL('prompt_styles.css');
 
-  chrome.runtime.getBackgroundPage(goog.bind(function(page) {
-    var backgroundPage = /** @type {{launcher: ext.Launcher}} */ (page);
-    this.pgpLauncher_ = backgroundPage.launcher || this.pgpLauncher_;
-    if (this.pgpLauncher_) {
-      this.pgpLauncher_.getSelectedContent(
-          goog.bind(this.processSelectedContent_, this));
-    }
-  }, this));
+  utils.action.getExtensionLauncher(function(launcher) {
+    this.pgpLauncher_ = launcher || this.pgpLauncher_;
+  }, this.displayFailure_, this);
+  utils.action.getSelectedContent(
+      this.processSelectedContent_, this.displayFailure_, this);
 };
 
 
@@ -821,8 +819,9 @@ ui.Prompt.prototype.surfaceDismissButton_ = function() {
 ui.Prompt.prototype.insertMessageIntoPage_ = function(origin) {
   var textArea = this.getElement().querySelector('textarea');
   var recipients = this.chipHolder_.getSelectedUids();
-  this.pgpLauncher_.updateSelectedContent(
-        textArea.value, recipients, origin, false, goog.bind(this.close, this));
+  utils.action.updateSelectedContent(
+      textArea.value, recipients, origin, false,
+      this.close, this.displayFailure_, this);
 };
 
 
@@ -844,8 +843,9 @@ ui.Prompt.prototype.saveDraft_ = function(origin, evt) {
   }), this, goog.bind(function(encrypted) {
     var draft = e2e.openpgp.asciiArmor.markAsDraft(encrypted);
     if (evt.type == goog.events.EventType.CLICK) {
-      this.pgpLauncher_.updateSelectedContent(
-          draft, [], origin, true, goog.nullFunction);
+      utils.action.updateSelectedContent(
+          draft, [], origin, true,
+          goog.nullFunction, this.displayFailure_, this);
     } else {
       drafts.saveDraft(draft, origin);
     }

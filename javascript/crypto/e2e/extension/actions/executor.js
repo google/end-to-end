@@ -26,6 +26,7 @@ goog.require('e2e.ext.actions.ListKeys');
 goog.require('e2e.ext.actions.RestoreKeyringData');
 goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.utils.Error');
+goog.require('e2e.ext.utils.action');
 
 goog.scope(function() {
 var actions = e2e.ext.actions;
@@ -69,13 +70,13 @@ actions.Executor.prototype.execute =
   var errorCallback = opt_errorCallback || this.errorCallback_;
 
   if (action) {
-    this.getContext_(goog.bind(function(ctx) {
+    utils.action.getContext(function(ctx) {
       try {
         action.execute(ctx, request, requestor, callback, errorCallback);
       } catch (error) {
         errorCallback(error);
       }
-    }, this), errorCallback);
+    }, errorCallback, this);
   } else {
     errorCallback(new utils.Error(
         'Unsupported End-to-End action.', 'errorUnsupportedAction'));
@@ -108,27 +109,6 @@ actions.Executor.prototype.getAction_ = function(actionType) {
       return new actions.RestoreKeyringData();
   }
   return null;
-};
-
-
-/**
- * Gets the PGP context.
- * @param {!function(e2e.openpgp.ContextImpl)} callback The callback where
- *     the PGP context is to be passed.
- * @param {!function(...)} errorCallback The callback to invoke if an error is
- *     encountered.
- * @private
- */
-actions.Executor.prototype.getContext_ = function(callback, errorCallback) {
-  chrome.runtime.getBackgroundPage(goog.bind(function(backgroundPage) {
-    if (backgroundPage) {
-      callback(
-          /** @type {!e2e.openpgp.ContextImpl} */
-          (backgroundPage.launcher.getContext()));
-    } else {
-      errorCallback(chrome.runtime.lastError);
-    }
-  }, this));
 };
 
 }); // goog.scope

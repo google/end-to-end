@@ -30,6 +30,7 @@ goog.require('e2e.ext.ui.panels.PreferencesPanel');
 goog.require('e2e.ext.ui.templates');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.Error');
+goog.require('e2e.ext.utils.action');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.signer.Algorithm');
 goog.require('goog.array');
@@ -80,14 +81,6 @@ ui.Settings.prototype.pgpContext_ = null;
 
 
 /**
- * The extension's launcher.
- * @type {ext.Launcher}
- * @private
- */
-ui.Settings.prototype.pgpLauncher_ = null;
-
-
-/**
  * The panel to list and manage all stored PGP keys.
  * @type {panels.KeyringMgmtFull}
  * @private
@@ -105,22 +98,18 @@ ui.Settings.prototype.getContentElement = function() {
 ui.Settings.prototype.decorateInternal = function(elem) {
   this.setElementInternal(elem);
 
-  chrome.runtime.getBackgroundPage(goog.bind(function(page) {
-    if (page) {
-      this.pgpLauncher_ = page.launcher;
-      this.pgpContext_ = page.launcher.getContext();
-      if (!this.pgpContext_.hasPassphrase()) {
-        window.alert(chrome.i18n.getMessage('settingsKeyringLockedError'));
-        window.close();
-      } else {
-        this.pgpContext_.getAllKeys()
-            .addCallback(this.renderTemplate_, this)
-            .addErrback(this.displayFailure_, this);
-      }
+  utils.action.getContext(function(pgpCtx) {
+    this.pgpContext_ = pgpCtx;
+    if (!this.pgpContext_.hasPassphrase()) {
+      window.alert(chrome.i18n.getMessage('settingsKeyringLockedError'));
+      window.close();
     } else {
-      e2e.ext.utils.errorHandler(chrome.runtime.lastError);
+      // TODO(user): Move to an E2E action.
+      this.pgpContext_.getAllKeys().
+          addCallback(this.renderTemplate_, this).
+          addErrback(this.displayFailure_, this);
     }
-  }, this));
+  }, this.displayFailure_, this);
 };
 
 
