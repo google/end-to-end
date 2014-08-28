@@ -33,6 +33,7 @@ goog.require('goog.crypt.Hmac');
 goog.scope(function() {
 
 var constants = e2e.otr.constants;
+var AUTHSTATE = constants.AUTHSTATE;
 
 
 /**
@@ -93,6 +94,66 @@ e2e.otr.message.Signature.prototype.serializeMessageContent = function() {
  * @param {!Uint8Array} data The data to be processed.
  */
 e2e.otr.message.Signature.process = function(session, data) {
-  throw new e2e.otr.error.NotImplementedError('This is not yet implemented.');
+  switch (session.getAuthState()) {
+    case AUTHSTATE.AWAITING_SIG:
+      var iter = new e2e.otr.util.Iterator(data);
+      var aesxa = e2e.otr.Data.parse(iter.nextEncoded()).deconstruct();
+      var mac = iter.next(20);
+
+      var keys = session.deriveKeyValues();
+
+      var calculatedMac = new goog.crypt.Hmac(new e2e.hash.Sha256(),
+          keys.m2prime).getHmac(Array.apply([], aesxa));
+
+      calculatedMac = calculatedMac.slice(0, 160 / 8);
+
+      if (e2e.otr.compareByteArray(mac, calculatedMac)) {
+        // TODO(user): Log the error and/or warn the user.
+        return;
+      }
+
+      var xa = e2e.otr.util.aes128ctr.decrypt(keys.cprime, aesxa);
+
+      iter = new e2e.otr.util.Iterator(xa);
+
+      // TODO(user): Make Type.parse accept Iterator to pull appropriate data.
+      var pubAType = iter.next(2);
+      var pubA = {
+        p: Array.apply([], iter.nextEncoded()),
+        q: Array.apply([], iter.nextEncoded()),
+        g: Array.apply([], iter.nextEncoded()),
+        y: Array.apply([], iter.nextEncoded())
+      };
+      var keyidA = iter.next(4);
+      var sigma = e2e.otr.Sig.parse(iter.next(40));
+
+      var ma = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m1prime)
+          .getHmac(Array.apply([], e2e.otr.serializeBytes([
+        session.authData.gy,
+        session.authData.gx,
+        pubA,
+        keyidA
+      ])));
+
+      if (!e2e.otr.Sig.verify(pubA, ma, sigma)) {
+        // TODO(user): Log the error and/or warn the user.
+        return;
+      }
+
+      session.setAuthState(AUTHSTATE.NONE);
+      session.setMsgState(constants.MSGSTATE.ENCRYPTED);
+
+      // TODO(user): Send any stored messages.
+
+      break;
+
+    case AUTHSTATE.NONE:
+    case AUTHSTATE.AWAITING_DHKEY:
+    case AUTHSTATE.AWAITING_REVEALSIG:
+      return;
+
+    default:
+      e2e.otr.assertState(false, 'Invalid auth state.');
+  }
 };
 });
