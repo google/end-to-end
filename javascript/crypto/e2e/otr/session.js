@@ -52,8 +52,8 @@ e2e.otr.Session = function(instanceTag, opt_policy) {
   assert(e2e.otr.intToNum(this.instanceTag) >= 0x100);
 
   this.authState_ = constants.AUTHSTATE.NONE;
-  this.authData = {r: null, dh: null, gx: null, gy: null, s: null, hgx: null,
-      aesgx: null, dhcommit: null, dhkey: null, revealsignature: null};
+  this.authData = {r: null, s: null, hgx: null, aesgx: null, dhcommit: null,
+      dhkey: null, revealsignature: null};
 
   this.keymanager = new e2e.otr.KeyManager();
 };
@@ -72,9 +72,6 @@ e2e.otr.Session.prototype.processMessage = function(serialized) {
  * Stores AKE information.
  * @type {{
  *   r: e2e.ByteArray,
- *   dh: e2e.cipher.DiffieHellman,
- *   gx: e2e.ByteArray,
- *   gy: e2e.ByteArray,
  *   s: e2e.ByteArray,
  *   hgx: Uint8Array,
  *   aesgx: Uint8Array,
@@ -261,24 +258,4 @@ e2e.otr.Session.prototype.getPublicKey = function() {
 e2e.otr.Session.prototype.getPrivateKey = function() {
   throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
 };
-
-
-/**
- * Gets the long-term authentication key id.
- */
-e2e.otr.Session.prototype.getKeyId = function() {
-  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
-};
-
-
-/**
- * Stores remote party's keyid/public key.
- * @param {!Uint8Array} keyid The keyid provided by the remote party.
- * @param {!e2e.otr.pubkeyAny} pubkey The public key associated with the key id.
- */
-e2e.otr.Session.prototype.storeRemotePubkey = function(keyid, pubkey) {
-  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
-};
-
-
 });

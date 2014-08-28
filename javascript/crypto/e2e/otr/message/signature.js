@@ -60,19 +60,19 @@ e2e.otr.message.Signature.MESSAGE_TYPE = constants.MessageType.SIGNATURE;
  * @return {!Uint8Array} The serialized SIGNATURE.
  */
 e2e.otr.message.Signature.prototype.serializeMessageContent = function() {
-  this.session_.s = this.session_.authData.dh.generate(this.session_.gx);
   var keys = this.session_.deriveKeyValues();
+  var keyA = this.session_.keymanager.getKey();
   var ma = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m1prime)
       .getHmac(Array.apply([], e2e.otr.serializeBytes([
-    this.session_.authData.gy,
-    this.session_.authData.gx,
+    keyA.key.generate(),
+    this.session_.keymanager.getRemoteKey(new Uint8Array(4)),
     this.session_.getPublicKey(),
-    this.session_.getKeyId()
+    keyA.keyid
   ])));
 
   var xa = Array.apply([], e2e.otr.serializeBytes([
     this.session_.getPublicKey(),
-    this.session_.getKeyId(),
+    keyA.keyid,
     new e2e.otr.Sig(this.session_.getPrivateKey(), ma)
   ]));
 
@@ -129,8 +129,8 @@ e2e.otr.message.Signature.process = function(session, data) {
 
       var ma = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m1prime)
           .getHmac(Array.apply([], e2e.otr.serializeBytes([
-        session.authData.gy,
-        session.authData.gx,
+        session.keymanager.getRemoteKey(new Uint8Array(4)),
+        session.keymanager.getKey().key.generate(),
         pubA,
         keyidA
       ])));

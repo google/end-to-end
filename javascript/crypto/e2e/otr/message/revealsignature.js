@@ -69,17 +69,18 @@ e2e.otr.message.RevealSignature.prototype.prepareSend = function() {
  */
 e2e.otr.message.RevealSignature.prototype.serializeMessageContent = function() {
   var keys = this.session_.deriveKeyValues();
+  var keyB = this.session_.keymanager.getKey();
   var mb = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m1)
       .getHmac(Array.apply([], e2e.otr.serializeBytes([
-    this.session_.authData.gx,
-    this.session_.authData.gy,
+    keyB.key.generate(),
+    this.session_.keymanager.getRemoteKey(new Uint8Array(4)),
     this.session_.getPublicKey(),
-    this.session_.getKeyId()
+    keyB.keyid
   ])));
 
   var xb = Array.apply([], e2e.otr.serializeBytes([
     this.session_.getPublicKey(),
-    this.session_.getKeyId(),
+    keyB.keyid,
     new e2e.otr.Sig(this.session_.getPrivateKey(), mb)
   ]));
 
@@ -117,6 +118,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
       var gxmpiHash = new e2e.hash.Sha256().hash(gxmpi);
 
       var gx = Array.apply([], e2e.otr.Mpi.parse(gxmpi).deconstruct());
+      var dh = session.keymanager.getKey().key;
 
       if (
         // h(g^x) mismatch.
@@ -125,13 +127,13 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
             gxmpiHash) ||
 
         // Or Invalid g^x.
-        !session.authData.dh.isValidBase(gx)
+        !dh.isValidBase(gx)
       ) {
         // TODO(user): Log the error and/or warn the user.
         return;
       }
 
-      var s = session.authData.dh.generate(gx);
+      var s = dh.generate(gx);
       var keys = session.deriveKeyValues();
 
       var calculatedMac = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m2)
@@ -165,7 +167,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
       var mb = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m1)
           .getHmac(Array.apply([], e2e.otr.serializeBytes([
         gx,
-        session.authData.gy,
+        session.keymanager.getKey().key.generate(),
         pubB,
         keyidB
       ])));
@@ -175,8 +177,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
         return;
       }
 
-      session.storeRemotePubkey(keyidB, pubB);
-      session.authData.gx = gx;
+      session.keymanager.storeRemoteKey(keyidB, gx);
       session.authData.s = s;
       session.send(new e2e.otr.message.Signature(session));
       session.setAuthState(AUTHSTATE.NONE);

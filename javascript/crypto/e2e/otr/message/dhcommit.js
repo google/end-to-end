@@ -51,8 +51,7 @@ e2e.otr.message.DhCommit = function(session) {
   this.r_ = e2e.random.getRandomBytes(128 / 8);
   this.dh_ = new e2e.cipher.DiffieHellman(constants.DH_MODULUS,
       [constants.DH_GENERATOR]);
-  this.gx_ = this.dh_.generate();
-  var gxmpi = new e2e.otr.Mpi(new Uint8Array(this.gx_)).serialize();
+  var gxmpi = new e2e.otr.Mpi(new Uint8Array(this.dh_.generate())).serialize();
 
   // TODO(user): Remove when e2e supports TypedArrays
   gxmpi = Array.apply([], gxmpi);
@@ -74,8 +73,7 @@ e2e.otr.message.DhCommit.MESSAGE_TYPE = constants.MessageType.DH_COMMIT;
 /** @inheritDoc */
 e2e.otr.message.DhCommit.prototype.prepareSend = function() {
   this.session_.authData.r = this.r_;
-  this.session_.authData.dh = this.dh_;
-  this.session_.authData.gx = this.gx_;
+  this.session_.keymanager.storeKey(this.dh_);
   this.session_.authData.dhcommit = this;
   return goog.base(this, 'prepareSend');
 };

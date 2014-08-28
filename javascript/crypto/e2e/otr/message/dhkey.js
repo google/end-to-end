@@ -59,7 +59,7 @@ e2e.otr.message.DhKey.MESSAGE_TYPE = constants.MessageType.DH_KEY;
 /** @inheritDoc */
 e2e.otr.message.DhKey.prototype.prepareSend = function() {
   this.session_.authData.r = null;
-  this.session_.authData.dh = this.dh_;
+  this.session_.keymanager.storeKey(this.dh_);
   this.session_.authData.dhkey = this;
   return goog.base(this, 'prepareSend');
 };
@@ -81,15 +81,16 @@ e2e.otr.message.DhKey.prototype.serializeMessageContent = function() {
  */
 e2e.otr.message.DhKey.process = function(session, data) {
   var gy = Array.apply([], e2e.otr.Mpi.parse(data).deconstruct());
-  if (!session.authData.dh.isValidBase(gy)) {
+  var dh = session.keymanager.getKey().key;
+  if (!dh.isValidBase(gy)) {
     // TODO(user): Log the error and/or warn the user.
     return;
   }
 
   switch (session.getAuthState()) {
     case AUTHSTATE.AWAITING_DHKEY:
-      session.authData.gy = gy;
-      session.authData.s = session.authData.dh.generate(session.authData.gy);
+      session.keymanager.storeRemoteKey(new Uint8Array(4), gy);
+      session.authData.s = dh.generate(gy);
       session.send(new e2e.otr.message.RevealSignature(session));
       session.setAuthState(AUTHSTATE.AWAITING_SIG);
       break;
@@ -97,7 +98,7 @@ e2e.otr.message.DhKey.process = function(session, data) {
     case AUTHSTATE.AWAITING_SIG:
       // TODO(user): Remove annotation when closure-compiler #260 is fixed.
       if (e2e.otr.compareByteArray(gy, /** @type {!e2e.ByteArray} */ (
-          e2e.otr.assertState(session.authData.gy, 'gy not defined.'))) == 0) {
+          session.keymanager.getRemoteKey(new Uint8Array(4)))) == 0) {
         // TODO(user): Remove annotation when closure-compiler #260 is fixed.
         session.send(/** @type {!e2e.otr.message.RevealSignature} */ (
             e2e.otr.assertState(session.authData.revealsignature,
