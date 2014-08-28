@@ -65,7 +65,7 @@ function tearDown() {
 function testConstructor() {
   var construct = function(opt_sender, opt_receiver, opt_data) {
     return function() {
-      new msgImpl({
+      return new msgImpl({
         instanceTag: opt_sender || new Uint8Array([1, 2, 3, 4]),
         remoteInstanceTag: opt_receiver || new Uint8Array([5, 6, 7, 8])
       }, opt_data || new Uint8Array([9, 10]));
@@ -84,6 +84,8 @@ function testConstructor() {
   assertThrows(construct());
   stubs.reset();
 
+  assertTrue(e2e.otr.implementationof(construct()(), e2e.otr.Serializable));
+  // TODO(user): Base class does not implement until constructor is called.
   assertTrue(e2e.otr.implementationof(msgImpl, e2e.otr.Serializable));
 }
 

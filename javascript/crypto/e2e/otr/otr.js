@@ -67,13 +67,14 @@ e2e.otr.implements = function(childCtor, interfaceCtor) {
  * @return {boolean} Whether the implementation implements the interface.
  */
 e2e.otr.implementationof = function(implementation, interfaceCtor) {
-  // get implementedInterfaces_ from constructor if passed instance of class.
-  var implementedInterfaces = (typeof implementation == 'function' ?
-      implementation : implementation.constructor).implementedInterfaces_ || [];
+  // get construcotr if instance of class.
+  if (implementation.constructor != Function) {
+    implementation = implementation.constructor;
+  }
 
   return (
     // check if implementation implements interface.
-    implementedInterfaces.some(function(e) {
+    (implementation.implementedInterfaces_ || []).some(function(e) {
       return e == interfaceCtor || e2e.otr.implementationof(e, interfaceCtor);
     }) ||
     // check if superclass implements interface.
