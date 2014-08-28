@@ -24,8 +24,10 @@
   goog.require('e2e.cipher.Ecdh');
   goog.require('e2e.cipher.Rsa');
   goog.require('e2e.openpgp.block.factory');
+  goog.require('e2e.openpgp.error.SignatureError');
   goog.require('e2e.openpgp.packet.PublicKey');
   goog.require('e2e.openpgp.packet.PublicSubkey');
+  goog.require('e2e.openpgp.packet.Signature.RevocationReason');
   goog.require('e2e.openpgp.parse');
   goog.require('e2e.signer.Ecdsa');
 </script>
@@ -106,7 +108,7 @@ function testSignatureVerification() {
         keyBlock.subKeys[0].bindingSignatures_[0].untrustedAttributes.ISSUER,
         keyBlock.keyPacket.keyId);
     // Modify the signature.
-    keyBlock.subKeys[0].bindingSignatures_[0].signature.s = 0x01;
+    keyBlock.subKeys[0].bindingSignatures_[0].signature.s ^= 0x01;
 
     var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
         keyBlock.serialize());
@@ -114,8 +116,7 @@ function testSignatureVerification() {
     var error = assertThrows(function() {
         e2e.openpgp.block.factory.parseAscii(tamperedAscii);
     });
-    assertTrue(error instanceof e2e.openpgp.error.ParseError);
-    assertEquals('Binding signature verification failed.', error.message);
+    assertTrue(error instanceof e2e.openpgp.error.SignatureError);
 }
 
 
@@ -181,7 +182,71 @@ function testGnupgRevokedSubkey() {
   assertEquals(1, publicKeyBlock.subKeys.length);
   var revokedSubkey = publicKeyBlock.subKeys[0];
   assertEquals(1, revokedSubkey.revocations_.length);
+  assertEquals(e2e.openpgp.packet.Signature.SignatureType.SUBKEY_REVOCATION,
+      revokedSubkey.revocations_[0].signatureType);
+  assertEquals(e2e.openpgp.packet.Signature.RevocationReason.KEY_COMPROMISED,
+      revokedSubkey.revocations_[0].attributes.REVOCATION_REASON);
+  assertEquals('revoke subkey',
+      revokedSubkey.revocations_[0].attributes.REVOCATION_REASON_TEXT);
+
   assertEquals(1, revokedSubkey.bindingSignatures_.length);
+  // Tamper revocation signature
+  revokedSubkey.revocations_[0].signature.s ^= 0x01;
+  var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
+      publicKeyBlock.serialize());
+  var error = assertThrows(function() {
+      e2e.openpgp.block.factory.parseAscii(tamperedAscii);
+  });
+  assertTrue(error instanceof e2e.openpgp.error.SignatureError);
+}
+
+function testGnupgRevokedMainKey() {
+  // Key generation instruction:
+  // gpg --gen-key (RSA/RSA/1024 - uid=revoked-main)
+  // gpg --edit revoked-main
+  // gpg> revkey, key has been compromised, save, quit
+  var revokedKeyAscii = '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
+        'Version: GnuPG v2\n' +
+        '\n' +
+        'mI0EU/MgHAEEALgGq+UDj7R5XwEl3wDzx4M2K3oBJI6ISuc7nJTCbNrcZ2yahAdF\n' +
+        'i9Qmunoa8/rryHQZovuBX4QjkZsxorVzFmH+qvaczUYYMsN6vXGKAsPn0OX6AjRs\n' +
+        'VesFtqZyi3yW9pLZaCRuikWeUumgJdbFBFS6uoGGwDKK0X1sqajFGIrlABEBAAGI\n' +
+        'twQgAQIAIQUCU/MghRodAk1haW4ga2V5IHJldm9jYXRpb24gdGVzdAAKCRBEQWEE\n' +
+        '+/6omRlMBACHerNXj6TFIf/h9yjVnL2PmvoMuAVMftVOnXJQq3ikW44Hu9iY+YwX\n' +
+        'M6cevKXETAGuEhvKmBAneNUoC0oaQvel5G7VHQTJqlhVRzpv1M/Rqj3879VbGsSh\n' +
+        'gmthv8y2lcPRcXvsB0FY/Jxi4v26CcvreYa77efvywuLD+fTaVOY6bQncmV2b2tl\n' +
+        'ZC1tYWluIDxyZXZva2VkLW1haW5AZXhhbXBsZS5jb20+iLcEEwECACEFAlPzIBwC\n' +
+        'GwMGCwkIBwMCBhUIAgkKCwMWAgECHgECF4AACgkQREFhBPv+qJnCGgP+LvSRVdS4\n' +
+        'K+8Ps/LVplD8DP5jDOnMQIHanr85g8RD76gCXD7vqTCaQZbrwRwR43C1g+CB47vJ\n' +
+        'l7jToVhjhdGKHKiRxoyF/xwhTDM9LtWA1PwneecoMYTTR4f8dvd+gX/BAOfwahlP\n' +
+        'R/CoC8sUflBWb3nezl7mRXpKhVnLxo5DJKC4jQRT8yAcAQQA6xCjxRKKSPxp2lMl\n' +
+        'Bd3a+qPtrW32THL7H0dpq+FJ0UiuP78Z6nQ1DWdMFIgQx4SBoBpnTlYNjiG4+XIk\n' +
+        'e1WOVvLMpgBTjPHk/BCrweZhHbV/BF97sLxHcqDU40Uf/UUFweEUbVHAD5XrQasz\n' +
+        'JmP9EAUUSEDUh/hh5tnPf/avw1sAEQEAAYifBBgBAgAJBQJT8yAcAhsMAAoJEERB\n' +
+        'YQT7/qiZtDkD/jCMvfGLZDbw4pjPT/iHTynmltD57X946rqAkOp0mKdyxKS6CbIZ\n' +
+        'nR2/cVSIeQoSBWU+qTj52Uw5bWj3uOVvJNfcAPOt7oyYdUJR0WojD7HXYJH9ym0G\n' +
+        '/fgSVhEjpq3TDFQQ/s41bw6Nqbnqn+UAdOi97x9ow+zHd2OtVbnCICRE\n' +
+        '=VB3i\n' +
+        '-----END PGP PUBLIC KEY BLOCK----- \n';
+  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(revokedKeyAscii);
+
+  assertEquals(1, publicKeyBlock.keyPacket.revocations_.length);
+  assertEquals(e2e.openpgp.packet.Signature.SignatureType.KEY_REVOCATION,
+      publicKeyBlock.keyPacket.revocations_[0].signatureType);
+  assertEquals(e2e.openpgp.packet.Signature.RevocationReason.KEY_COMPROMISED,
+      publicKeyBlock.keyPacket.revocations_[0].attributes.REVOCATION_REASON);
+  assertEquals('Main key revocation test',
+      publicKeyBlock.keyPacket.revocations_[0].attributes.REVOCATION_REASON_TEXT);
+
+
+  // Tamper revocation signature
+  publicKeyBlock.keyPacket.revocations_[0].signature.s ^= 0x01;
+  var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
+      publicKeyBlock.serialize());
+  var error = assertThrows(function() {
+      e2e.openpgp.block.factory.parseAscii(tamperedAscii);
+  });
+  assertTrue(error instanceof e2e.openpgp.error.SignatureError);
 }
 
 

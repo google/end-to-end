@@ -24,6 +24,7 @@ goog.provide('e2e.openpgp.error.MissingPassphraseError');
 goog.provide('e2e.openpgp.error.ParseError');
 goog.provide('e2e.openpgp.error.PassphraseError');
 goog.provide('e2e.openpgp.error.SerializationError');
+goog.provide('e2e.openpgp.error.SignatureError');
 goog.provide('e2e.openpgp.error.UnsupportedError');
 goog.provide('e2e.openpgp.error.WrongPassphraseError');
 
@@ -52,6 +53,19 @@ e2e.openpgp.error.ParseError = function(opt_msg) {
   goog.base(this, opt_msg);
 };
 goog.inherits(e2e.openpgp.error.ParseError, e2e.openpgp.error.Error);
+
+
+/**
+ * Class to represent required signature verification errors.
+ * @param {*=} opt_msg The custom error message.
+ * @constructor
+ * @extends {e2e.openpgp.error.Error}
+ */
+e2e.openpgp.error.SignatureError = function(opt_msg) {
+  goog.base(this, opt_msg);
+};
+goog.inherits(e2e.openpgp.error.SignatureError,
+    e2e.openpgp.error.Error);
 
 
 /**

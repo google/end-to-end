@@ -191,6 +191,11 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       // TODO(user) Implement functions to access bit fields as described in
       // RFC 4880 section 5.2.3.21.
       break;
+    case e2e.openpgp.packet.SignatureSub.Type.REVOCATION_REASON:
+      var bodyClone = goog.array.clone(subpacket.body);
+      attributes.REVOCATION_REASON = bodyClone.shift();
+      attributes.REVOCATION_REASON_TEXT = e2e.byteArrayToString(bodyClone);
+      break;
     case e2e.openpgp.packet.SignatureSub.Type.FEATURES:
       if (subpacket.body.length == 0) {
         attributes.FEATURES = 0;
@@ -223,5 +228,6 @@ e2e.openpgp.packet.SignatureSub.Type = {
   'KEY_SERVER_PREFERENCES': 23,
   'PRIMARY_USER_ID': 25,
   'KEY_FLAGS': 27,
+  'REVOCATION_REASON': 29,
   'FEATURES': 30
 };

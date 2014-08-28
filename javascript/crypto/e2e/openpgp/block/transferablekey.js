@@ -108,7 +108,7 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
           'Invalid block. Only key revocation signatures are allowed after ' +
           'key packets.');
     }
-    this.keyPacket.addRevocation(packet);
+    this.keyPacket.addRevocation(packet, this.keyPacket);
     this.packets.push(packets.shift());
     packet = packets[0];
   }
@@ -170,7 +170,7 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
         packet = packets[0];
       } else if (packet.signatureType ==
                  e2e.openpgp.packet.Signature.SignatureType.SUBKEY_REVOCATION) {
-        subKey.addRevocation(packet);
+        subKey.addRevocation(packet, this.keyPacket);
         this.packets.push(packets.shift());
         packet = packets[0];
       } else {

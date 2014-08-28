@@ -24,6 +24,7 @@ goog.require('e2e.openpgp.packet.factory');
 
 
 
+
 /**
  * A Public Subkey Packet (Tag 14) RFC 4880 Section 5.5.1.2.
  * @param {number} version The version of the key.
@@ -44,6 +45,12 @@ goog.inherits(e2e.openpgp.packet.PublicSubkey,
 
 /** @inheritDoc */
 e2e.openpgp.packet.PublicSubkey.prototype.tag = 14;
+
+
+/**
+ * @override
+ */
+e2e.openpgp.packet.PublicSubkey.prototype.isSubkey = true;
 
 
 /**

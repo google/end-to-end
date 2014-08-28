@@ -46,11 +46,18 @@ goog.inherits(e2e.openpgp.packet.SecretSubkey,
 e2e.openpgp.packet.SecretSubkey.prototype.tag = 7;
 
 
+/**
+ * @override
+ */
+e2e.openpgp.packet.SecretSubkey.prototype.isSubkey = true;
+
+
 /** @override */
 e2e.openpgp.packet.SecretSubkey.prototype.getPublicKeyPacket = function() {
   return new e2e.openpgp.packet.PublicSubkey(
       this.version, this.timestamp, this.cipher, this.fingerprint);
 };
+
 
 /**
  * Extracts a Secret Subkey Packet from the body, and returns a

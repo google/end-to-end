@@ -314,7 +314,6 @@ function testEncryption() {
     result = messageBlock.eskPackets[0].decryptSessionKey(
         privateKeyBlock.packets[3].cipher.getKey());
     result.addCallback(function() {
-      asyncTestCase.continueTesting();
       messageBlock.encryptedData.decrypt(messageBlock.eskPackets[0].symmetricAlgorithm,
                                           messageBlock.eskPackets[0].getSessionKey());
       var decrypted_packet = e2e.openpgp.parse.parseSerializedPacket(
@@ -325,6 +324,7 @@ function testEncryption() {
                    e2e.byteArrayToString(decompressed_packet.data));
       assertEquals(plaintextFilename,
                    e2e.byteArrayToString(decompressed_packet.filename));
+      asyncTestCase.continueTesting();
     }).addErrback(function(e) {
       fail(e);
     });
@@ -354,7 +354,6 @@ function testSymmetricDecryption() {
     .decryptSessionKey(
       {'passphrase': passphrase})
     .addCallback(function() {
-      asyncTestCase.continueTesting();
       messageBlock.encryptedData.decrypt(messageBlock.eskPackets[0].symmetricAlgorithm,
                                           messageBlock.eskPackets[0].getSessionKey());
       var decrypted_packet = e2e.openpgp.parse.parseSerializedPacket(
@@ -363,6 +362,7 @@ function testSymmetricDecryption() {
       var decompressed_packet = e2e.openpgp.parse.parseSerializedPacket(decrypted_packet.data);
       assertEquals(e2e.byteArrayToString(decompressed_packet.data),
                    'hello world new\n');
+      asyncTestCase.continueTesting();
     }).addErrback(function(e) {
       fail(e);
     });
@@ -430,7 +430,6 @@ function testSymmetricEncryption() {
       {'passphrase': passphrase});
     asyncTestCase.waitForAsync('Waiting for decryption.');
     result.addCallback(function() {
-      asyncTestCase.continueTesting();
       messageBlock.encryptedData.decrypt(messageBlock.eskPackets[0].symmetricAlgorithm,
                                           messageBlock.eskPackets[0].getSessionKey());
       var decrypted_packet = e2e.openpgp.parse.parseSerializedPacket(
@@ -441,6 +440,7 @@ function testSymmetricEncryption() {
                    e2e.byteArrayToString(decompressed_packet.data));
       assertEquals(plaintextFilename,
                    e2e.byteArrayToString(decompressed_packet.filename));
+      asyncTestCase.continueTesting();
     }).addErrback(function(e) {
       fail(e);
     });
@@ -492,7 +492,6 @@ function testDecryptionECDH() {
       privateKeyBlock.subKeys[0].cipher.getKey());  // symmetric session key.
   asyncTestCase.waitForAsync('Waiting for decryption.');
   result.addCallback(function() {
-    asyncTestCase.continueTesting();
     messageBlock.encryptedData.decrypt(messageBlock.eskPackets[0].symmetricAlgorithm,
                                         messageBlock.eskPackets[0].getSessionKey());
     var decrypted_packet = e2e.openpgp.parse.parseSerializedPacket(
@@ -501,6 +500,7 @@ function testDecryptionECDH() {
     var decompressed_packet = e2e.openpgp.parse.parseSerializedPacket(decrypted_packet.data);
     assertEquals(e2e.byteArrayToString(decompressed_packet.data),
                  'hello world new\n');
+    asyncTestCase.continueTesting();
   }).addErrback(function(e) {
       fail(e);
   });
@@ -566,7 +566,6 @@ function testEncryptionECDH() {
     messageBlock.eskPackets[0]
       .decryptSessionKey(privateKeyBlock.subKeys[0].cipher.getKey())
       .addCallback(function(success) {
-        asyncTestCase.continueTesting();
         assert('Session key decryption should succeded.', success);
         messageBlock.encryptedData.decrypt(messageBlock.eskPackets[0].symmetricAlgorithm,
                                             messageBlock.eskPackets[0].getSessionKey());
@@ -578,6 +577,7 @@ function testEncryptionECDH() {
                      e2e.byteArrayToString(decompressed_packet.data));
         assertEquals(plaintextFilename,
                      e2e.byteArrayToString(decompressed_packet.filename));
+        asyncTestCase.continueTesting();
       })
       .addErrback(function(e) {
         fail(e);
@@ -1010,7 +1010,6 @@ function testEncryptionWithSignatures() {
       messageBlock.eskPackets[0]
         .decryptSessionKey(decryptionKey.cipher.getKey())
         .addCallback(function(ok) {
-          asyncTestCase.continueTesting();
           assertTrue(ok);
           // We go through message parsing again because of b/10950199
           messageBlock.encryptedData.decrypt(messageBlock.eskPackets[0].symmetricAlgorithm,
@@ -1033,6 +1032,7 @@ function testEncryptionWithSignatures() {
           var verifyResult = decompressed.verify([publicKeyBlock]);
           assertEquals(verifyResult.success.length, 1);
           assertEquals(verifyResult.failure.length, 0);
+          asyncTestCase.continueTesting();
         }).addErrback(function(e) {
           fail(e);
         });

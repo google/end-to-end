@@ -17,6 +17,7 @@
  */
 
 goog.provide('e2e.openpgp.packet.Signature');
+goog.provide('e2e.openpgp.packet.Signature.RevocationReason');
 goog.provide('e2e.openpgp.packet.Signature.SignatureType');
 
 goog.require('e2e');
@@ -530,4 +531,17 @@ e2e.openpgp.packet.Signature.SignatureType = {
   'CERTIFICATION_REVOCATION': 0x30,
   'TIMESTAMP': 0x40,
   'CONFIRMATION': 0x50
+};
+
+
+/**
+ * Type of revocation reasons RFC 4880 Section 5.2.3.23.
+ * @enum {number}
+ */
+e2e.openpgp.packet.Signature.RevocationReason = {
+  'UNSPECIFIED': 0x00,
+  'KEY_SUPERSEDED': 0x01,
+  'KEY_COMPROMISED': 0x02,
+  'KEY_RETIRED': 0x03,
+  'USER_ID_INVALID': 0x04
 };
