@@ -329,19 +329,21 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(email,
   }
 
   if (opt_keyLocation == e2e.algorithm.KeyLocations.JAVASCRIPT) {
+    var fingerprint;
     if (keyAlgo == e2e.signer.Algorithm.ECDSA &&
         keyLength == 256) {
       var ecdsa = e2e.openpgp.keygenerator.newEcdsaWithP256(
           this.getNextKey_(keyLength));
       this.extractKeyData_(keyData, ecdsa);
+      fingerprint = keyData.pubKey[0].fingerprint;
     }
     if (subkeyAlgo == e2e.cipher.Algorithm.ECDH &&
         subkeyLength == 256) {
       var ecdh = e2e.openpgp.keygenerator.newEcdhWithP256(
           this.getNextKey_(subkeyLength));
       this.extractKeyData_(keyData, ecdh, true);
-      return e2e.async.Result.toResult(this.certifyKeys_(email, keyData));
     }
+    return e2e.async.Result.toResult(this.certifyKeys_(email, keyData));
   } else if (opt_keyLocation == e2e.algorithm.KeyLocations.WEB_CRYPTO) {
     if (keyAlgo == e2e.signer.Algorithm.RSA) {
       if ((keyLength != 4096 && keyLength != 8192) ||

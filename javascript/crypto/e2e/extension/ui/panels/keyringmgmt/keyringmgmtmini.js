@@ -111,7 +111,7 @@ goog.inherits(panels.KeyringMgmtMini, goog.ui.Component);
 /**
  * @define {boolean} Whether backup code UI is enabled
  */
-panels.KeyringMgmtMini.ENABLE_BACKUP_CODE = false;
+panels.KeyringMgmtMini.ENABLE_BACKUP_CODE = true;
 
 
 /** @override */
