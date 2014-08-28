@@ -134,7 +134,7 @@ e2e.otr.message.Data.prototype.serializeMessageContent = function() {
     remoteKey.keyid,
     nextDh.generate(),
     ctrTop,
-    encryptedMessage
+    new e2e.otr.Data(new Uint8Array(encryptedMessage))
   ]);
 
   var mac = new goog.crypt.Hmac(new e2e.hash.Sha1(), keys.sendingMac).getHmac(
