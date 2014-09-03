@@ -144,6 +144,75 @@ vEIUQ7M7E9w=
 <textarea id="keyRingOldStyle">
 U{"pubKey":{"Drew Hintz &lt;adhintz@google.com>":["BFir2cUTCCqGSM49AwEHAgMERh6l2ToYyzlvyRSEqkZSAxrXy6TGs6TRFmAHwW4wtkRtYFoe+DyUbU5qodcyjAFFmVnNxTukBDOQOjPJiOFZ6A==","BFir2kMSCCqGSM49AwEHAgMEABY1dRP3D8aYyeFi0yha69rBMJi6JLZkgwpcd0rKVQDmZAnEhTFzdZUcD5JK2cx5Wj3eNTljHsqSl1F9/eGNkgMBCAc="],"Thai Duong &lt;thaidn@google.com>":["BF/3aSETCCqGSM49AwEHAgMEeFaL8yASJLutOZQcXTiCeMPEXCLI7aZlSC60qElzWe6YqJbiry5o9FdcONikInIbKvGXvBG3c67ySWk4qMwZUQ==","BF/3aesSCCqGSM49AwEHAgMEYqZrTdWnH8QCkbjAjurjIkXM8FPddwqs6Fblb1WElM335j8aIXssb+GFC3adXx6JuwmHUviFWoD/MktJLkn90gMBCAc="],"Radoslav Vasilev &lt;radi@google.com>":["BJ3LIAMTCCqGSM49AwEHAgMENtQtEEDfXseIscn+teabmX1TOlZLUT6J+Q1gjRgBhFAxJnOy+rWfzOBOUat83DES0HQoo1ELcZosDRqF7dMgjw==","BJ3LIMoSCCqGSM49AwEHAgMEIXahSRLiErNVpt8H0qvYx+5cvU8rOBssrgEVzBxssDcO7nIjMBfCP+8AOB/VH6+bGZfQYv/G/bwbgusfq0UPcQMBCAc="]},"privKey":{"Thai Duong &lt;thaidn@google.com>":["BF666PETCCqGSM49AwEHAgMELGfMoJnUCIQTFNMVYrInh2ux3nkSH8aBFt9sn1F5rrXlmcgHzTmL+mvTWgeKkITYrux947QLuiXC0diFgwUUowABAOqm8CXBp9ptapuKpuGuyoim1rPaPAUycscv4wOCzpowEk8=","BF666U8SCCqGSM49AwEHAgMEHTskqJhVrPhOfXonriZMHquDFIlUie5/uYYINb3G8L+V6ZFvNRiqq8G8Chv/PPL6s3i4yeHnek5HWFJghmN+wgMBCAcAAP9RL9VYjmZWE8Ox1Om1jaKwQsR3NeymhAFbHCWgHFJ+Cw/K"]}}
 </textarea>
+<!--
+:public key packet:
+  version 4, algo 1, created 1409562854, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+:user ID packet: "firstuid <firstuid@example.com>"
+:signature packet: algo 1, keyid 0C4A87EBDEBCE1C4
+  version 4, created 1409562854, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest 5e 8d
+  hashed subpkt 2 len 4 (sig created 2014-09-01)
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 5 (pref-sym-algos: 9 8 7 3 2)
+  hashed subpkt 21 len 5 (pref-hash-algos: 8 2 9 10 11)
+  hashed subpkt 22 len 3 (pref-zip-algos: 2 3 1)
+  hashed subpkt 30 len 1 (features: 01)
+  hashed subpkt 23 len 1 (key server preferences: 80)
+  subpkt 16 len 8 (issuer key ID 0C4A87EBDEBCE1C4)
+  data: [1019 bits]
+:user ID packet: "seconduid <seconduid@example.com>"
+:signature packet: algo 1, keyid 0C4A87EBDEBCE1C4
+  version 4, created 1409562877, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest 6e bc
+  hashed subpkt 2 len 4 (sig created 2014-09-01)
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 5 (pref-sym-algos: 9 8 7 3 2)
+  hashed subpkt 21 len 5 (pref-hash-algos: 8 2 9 10 11)
+  hashed subpkt 22 len 3 (pref-zip-algos: 2 3 1)
+  hashed subpkt 30 len 1 (features: 01)
+  hashed subpkt 23 len 1 (key server preferences: 80)
+  subpkt 16 len 8 (issuer key ID 0C4A87EBDEBCE1C4)
+  data: [1019 bits]
+:public sub key packet:
+  version 4, algo 1, created 1409562854, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+:signature packet: algo 1, keyid 0C4A87EBDEBCE1C4
+  version 4, created 1409562854, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest 7a 3f
+  hashed subpkt 2 len 4 (sig created 2014-09-01)
+  hashed subpkt 27 len 1 (key flags: 0C)
+  subpkt 16 len 8 (issuer key ID 0C4A87EBDEBCE1C4)
+  data: [1023 bits]
+-->
+<textarea id="MultipleUidPublic">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1.4.11 (GNU/Linux)
+
+mI0EVAQ45gEEAKLN8aBy49bWJ4CUnC/kjS7Vd2Yn5ZIQHRIDZDByQ8iomDtaGaHy
+fux0y8ltR0hmNewTaE7MnxLteFZFUnEwsl2DT/yHsGW4126osLzxHMgRqZTOhj+f
+t5ThChN8AZLZlJFAHqzGz9rRaZaXbMjc9WLVOpP/hqwHbgbx0jUtDHTBABEBAAG0
+H2ZpcnN0dWlkIDxmaXJzdHVpZEBleGFtcGxlLmNvbT6IuAQTAQIAIgUCVAQ45gIb
+AwYLCQgHAwIGFQgCCQoLBBYCAwECHgECF4AACgkQDEqH69684cRejQP7BGmBP+ao
+bL8gxMmauxqqPcvkyCNMu03zrvh7YVWXjL2/jHvScJJKiRKWt7IPkmZYwW0ZuYIP
+2mgkR/sEhCQyps9c6D0PkjuhUUl0jYt+wvga/WY45VXfHXro1+iRpcKLW4egoo8y
+wOE0K+B+AWpyIiqZUAEhaJYMugKH78AH6hG0IXNlY29uZHVpZCA8c2Vjb25kdWlk
+QGV4YW1wbGUuY29tPoi4BBMBAgAiBQJUBDj9AhsDBgsJCAcDAgYVCAIJCgsEFgID
+AQIeAQIXgAAKCRAMSofr3rzhxG68A/sFWXFAad9f0xtkO5WJwVr63Zgsbu+/TLQH
+918r6+Tq2f90kSSshwjaZmuYnNGfcjmy0E/oIaVqVKT/Y8l0Lv1pV6OEiAzJcUWb
+tvUmOmwXmBTqVMUsq2j30IC4OYgX78MIboZrKA1RFk23M3QQNkQiK0KJWy2z44O8
+OUqqqjtaf7iNBFQEOOYBBADXjcFn0zdySLlFL04frUME468QKGkTTIL2IweNzpof
+Bo6JqkCa202SjnUK32Cgsyc3QwCful69AWU422LTMesvKsVIzJBuoCkFBa1vDnrN
+Mp4cYg3owBj4cz4wwMafTnOfhchMj/y/36FGbvk/9bFt6/tiTnnnWjW3A/Wn4dBC
+PwARAQABiJ8EGAECAAkFAlQEOOYCGwwACgkQDEqH69684cR6PwP/fw5NEVGi8dEF
+ACO+bm6mAdZz1dAFKJHrNvPzw/TDrNJOqd6KpBYLEXgChf7CQ1FgihtYYYLJG2hg
+y6N7gRerDeGfGEcena5DfNZbjareUZBKh+hp4ukyHWCWRI2Uo36isu0RabWoPFkE
+n3Q52FUw+2+r+AL2dFL3Z5nK5ff9RS8=
+=+RPy
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
 <script>
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 var keyRing = null;
@@ -626,6 +695,31 @@ function testGenerateKeyProducesTwoKeyPairs() {
   assertEquals(keyRing.eccCount_, 2);
   fn();
   assertEquals(keyRing.eccCount_, 4);
+}
+
+function testMultipleUidsInAKey() {
+  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
+    document.getElementById('MultipleUidPublic').value);
+  keyRing.importKey(publicKeyBlock);
+  keyRing.importKey(e2e.openpgp.block.factory.parseAscii(
+    document.getElementById('pubKeyAscii').value));
+  var uids = keyRing.getAllKeys().getKeys().sort();
+  assertArrayEquals([
+      '<ecc@example.com>',
+      'firstuid <firstuid@example.com>',
+      'seconduid <seconduid@example.com>'
+      ], uids);
+  // Get by key ID
+  assertArrayEquals(publicKeyBlock.subKeys[0].keyId,
+      keyRing.getPublicKey(publicKeyBlock.subKeys[0].keyId).keyId);
+  assertArrayEquals(publicKeyBlock.keyPacket.keyId,
+      keyRing.getPublicKey(publicKeyBlock.keyPacket.keyId).keyId);
+  // Get keys by UID
+  assertObjectEquals(
+      keyRing.searchKey('firstuid <firstuid@example.com>',
+          e2e.openpgp.KeyRing.Type.PUBLIC),
+      keyRing.searchKey('seconduid <seconduid@example.com>',
+          e2e.openpgp.KeyRing.Type.PUBLIC));
 }
 
 </script>
