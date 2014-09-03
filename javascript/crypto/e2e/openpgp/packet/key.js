@@ -139,7 +139,7 @@ e2e.openpgp.packet.Key.prototype.addBindingSignature = function(signature) {
     throw new e2e.openpgp.error.ParseError(
         'Invalid binding signature type.');
   }
-  if (signature.attributes.KEY_FLAG_SIGN) {
+  if (Boolean(signature.attributes && signature.attributes.KEY_FLAG_SIGN)) {
       // RFC 4880 5.2.1.
       // A signature that binds a signing subkey MUST have
       // an Embedded Signature subpacket in this binding signature that
@@ -287,6 +287,7 @@ e2e.openpgp.packet.Key.prototype.verifySignatureInternal_ = function(signature,
   }
   // Process embedded signature
   if (this.isSubkey &&
+      signature.attributes &&
       signature.attributes.KEY_FLAG_SIGN &&
       signature.signatureType ===
           e2e.openpgp.packet.Signature.SignatureType.SUBKEY) {
