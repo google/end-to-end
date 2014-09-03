@@ -14,7 +14,7 @@
 /**
  * @fileoverview Representation of a textbook RSA cipher. This should only be
  * used together with PKCS or some other padding system.
- * TODO(user) Limit the visibility of this package.
+ * TODO(adhintz) Limit the visibility of this package.
  */
 
 goog.provide('e2e.cipher.Rsa');
@@ -112,7 +112,7 @@ e2e.cipher.Rsa.prototype.setKey = function(key) {
   this.modulus = new e2e.BigNumModulus(key['n']);
   var bitLength = this.modulus.getBitLength();
   switch (true) {
-    // TODO(user): Reject < 1024 bit keys (we use them in unit tests).
+    // TODO(evn): Reject < 1024 bit keys (we use them in unit tests).
     case bitLength <= 1024:
       this.hash_ = new e2e.hash.Sha1;
       break;
@@ -132,7 +132,7 @@ e2e.cipher.Rsa.prototype.setKey = function(key) {
   // we only use blinding if prime components are known
   this.use_blinding = goog.isDef(key['p']) && goog.isDef(key['q']);
 
-  // TODO(user) Throw exception if key size is smaller than 1024 bits.
+  // TODO(adhintz) Throw exception if key size is smaller than 1024 bits.
   // For this we'll need new test values in rsa_test.html.
   goog.base(this, 'setKey', key, Math.ceil(this.modulus.getBitLength() / 8));
   if (this.use_blinding) { // precompute blinders

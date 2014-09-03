@@ -52,7 +52,7 @@ e2e.openpgp.FileOptions;
 /**
  * Options for encrypting, such as algorithm preferences.
  * @typedef {Object}
- * TODO(user) Make this typedef more specific after we implement it.
+ * TODO(adhintz) Make this typedef more specific after we implement it.
  */
 e2e.openpgp.EncryptOptions;
 

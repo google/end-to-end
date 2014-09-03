@@ -233,7 +233,7 @@ ext.Helper.prototype.getSelectedContentNative_ = function(selectionRequest,
  */
 ext.Helper.prototype.getSelectedContentGmonkey_ = function(selectionRequest,
     callback) {
-  // TODO(user): Split into smaller methods.
+  // TODO(radi): Split into smaller methods.
   this.attachSetValueHandler_(goog.bind(this.setGmonkeyValue_, this));
   gmonkey.hasActiveDraft(goog.bind(function(hasDraft) {
     if (hasDraft) {

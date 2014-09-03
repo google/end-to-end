@@ -280,7 +280,7 @@ api.Api.prototype.runWrappedProcessor_ = function(processorFunc) {
   try {
     goog.bind(processorFunc, this).call();
   } catch (error) {
-    // TODO(user): i18n
+    // TODO(radi): i18n
     return error.message;
   }
 };
@@ -297,7 +297,7 @@ api.Api.prototype.getEncryptKeys_ = function(userIds) {
   goog.array.forEach(userIds, function(userId) {
     var trimmedUid = goog.string.trim(userId);
     if (trimmedUid) {
-      // TODO(user): This will break as soon as searchKey becomes really async.
+      // TODO(evn): This will break as soon as searchKey becomes really async.
       this.pgpCtx_.searchPublicKey(trimmedUid).addCallback(
           goog.bind(function(found) {
             if (found) {

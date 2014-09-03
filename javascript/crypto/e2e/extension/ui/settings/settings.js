@@ -104,7 +104,7 @@ ui.Settings.prototype.decorateInternal = function(elem) {
       window.alert(chrome.i18n.getMessage('settingsKeyringLockedError'));
       window.close();
     } else {
-      // TODO(user): Move to an E2E action.
+      // TODO(radi): Move to an E2E action.
       this.pgpContext_.getAllKeys().
           addCallback(this.renderTemplate_, this).
           addErrback(this.displayFailure_, this);
@@ -186,7 +186,7 @@ ui.Settings.prototype.removeKey_ = function(keyUid) {
   this.pgpContext_
       .searchPrivateKey(keyUid)
       .addCallback(function(privateKeys) {
-        // TODO(user): This message should be localized.
+        // TODO(evn): This message should be localized.
         var prompt = 'Deleting all keys for ' + keyUid;
         if (privateKeys && privateKeys.length > 0) {
           prompt += '\n\nWARNING: This will delete some private keys!';

@@ -144,7 +144,7 @@ e2e.openpgp.packet.SignatureSub.parse = function(data) {
  */
 e2e.openpgp.packet.SignatureSub.populateAttribute = function(
     attributes, subpacket, hashed) {
-  // TODO(user) Checks for which subpackets are fine for unhashed and
+  // TODO(adhintz) Checks for which subpackets are fine for unhashed and
   //   different signature types.
   switch (subpacket.type) {
     case e2e.openpgp.packet.SignatureSub.Type.SIGNATURE_CREATION_TIME:
@@ -214,7 +214,7 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       break;
     default:
       if (subpacket.critical) {
-        // TODO(user): Treat the signature as invalid instead of throwing.
+        // TODO(adhintz): Treat the signature as invalid instead of throwing.
         throw new Error(
             'Critical signature subpacket not recognized: ' + subpacket.type);
       }

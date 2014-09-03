@@ -101,7 +101,7 @@ dialogs.RestoreKey.prototype.getEmailInput_ = function() {
  * @private
  */
 dialogs.RestoreKey.prototype.executeRestore_ = function() {
-  /* TODO(user): Remove email when we can use keyserver for lookups */
+  /* TODO(rcc): Remove email when we can use keyserver for lookups */
   var email = this.getEmailInput_();
   new e2e.ext.actions.Executor().execute(
       /** @type {!messages.ApiRequest} */ ({

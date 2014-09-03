@@ -56,13 +56,13 @@ e2e.otr.ContextImpl = function() {
   });
 
   if (!this.privkey_) {
-    // TODO(user): Generate a DSA public/private key pair.
+    // TODO(rcc): Generate a DSA public/private key pair.
     throw new e2e.otr.error.NotImplementedError(
         'Generating DSA keys is not yet supported');
   }
 
   if (!this.pubkey) {
-    // TODO(user): Generate a public key from the private key.
+    // TODO(rcc): Generate a public key from the private key.
     // This case only occurs when a private key is present without a public key.
     throw new e2e.otr.error.NotImplementedError(
         'Generating DSA keys is not yet supported');
@@ -110,7 +110,7 @@ e2e.otr.ContextImpl.prototype.defineLocalStorageProperties_ = function(props) {
     var key = val.key || val;
     var getFilter = val.get || goog.functions.identity;
     var setFilter = val.set || goog.functions.identity;
-    // TODO(user): Consider adding caching to prevent excessive parse/stringify.
+    // TODO(rcc): Consider adding caching to prevent excessive parse/stringify.
     Object.defineProperty(this, prop, {
       enumerable: true,
       get: function() {

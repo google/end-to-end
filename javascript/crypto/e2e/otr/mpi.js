@@ -39,7 +39,7 @@ e2e.otr.Mpi = function(number) {
   var index = 0;
   while (number[index] == 0) index++;
   this.data_ = new Uint8Array(number.subarray(index));
-  // TODO(user): Avoid calling implements every time class is instantiated.
+  // TODO(rcc): Avoid calling implements every time class is instantiated.
   e2e.otr.implements(e2e.otr.Mpi, e2e.otr.Serializable);
 };
 goog.inherits(e2e.otr.Mpi, e2e.otr.Storable);

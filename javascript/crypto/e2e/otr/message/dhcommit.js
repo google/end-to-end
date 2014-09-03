@@ -53,7 +53,7 @@ e2e.otr.message.DhCommit = function(session) {
       [constants.DH_GENERATOR]);
   var gxmpi = new e2e.otr.Mpi(new Uint8Array(this.dh_.generate())).serialize();
 
-  // TODO(user): Remove when e2e supports TypedArrays
+  // TODO(rcc): Remove when e2e supports TypedArrays
   gxmpi = Array.apply([], gxmpi);
 
   this.encryptedGxmpi_ =
@@ -107,11 +107,11 @@ e2e.otr.message.DhCommit.process = function(session, data) {
 
   switch (session.getAuthState()) {
     case AUTHSTATE.AWAITING_DHKEY:
-      // TODO(user): Remove annotation when closure-compiler #260 is fixed.
+      // TODO(rcc): Remove annotation when closure-compiler #260 is fixed.
       var storedhgx = /** @type {!Uint8Array} */ (e2e.otr.assertState(
           session.authData.hgx, 'h(gx) not defined.'));
       if (e2e.otr.compareByteArray(storedhgx, hgx) > 0) {
-        // TODO(user): Remove annotation when closure-compiler #260 is fixed.
+        // TODO(rcc): Remove annotation when closure-compiler #260 is fixed.
         session.send(
             /** @type {!e2e.otr.message.DhCommit} */ (e2e.otr.assertState(
             session.authData.dhcommit, 'dhcommit not defined.')));
@@ -127,7 +127,7 @@ e2e.otr.message.DhCommit.process = function(session, data) {
       break;
 
     case AUTHSTATE.AWAITING_REVEALSIG:
-      // TODO(user): Remove annotation when closure-compiler #260 is fixed.
+      // TODO(rcc): Remove annotation when closure-compiler #260 is fixed.
       session.send(/** @type {!e2e.otr.message.DhKey} */ (e2e.otr.assertState(
           session.authData.dhkey, 'dhkey not defined.')));
       break;

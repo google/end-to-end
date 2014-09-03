@@ -246,7 +246,7 @@ function testExportKeyring() {
   testCase.waitForAsync('waiting for keyring to be exported');
   window.setTimeout(function() {
     testCase.continueTesting();
-    // TODO(user) Fix this test and enable this assert.
+    // TODO(adhintz) Fix this test and enable this assert.
     // assertTrue('Failed to export keyring', downloadedFile);
   }, 500);
 }

@@ -112,7 +112,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
         throw new e2e.otr.error.ParseError('Malformed REVEAL SIGNATURE.');
       }
 
-      // TODO(user): Remove annotation when closure-compiler #260 is fixed.
+      // TODO(rcc): Remove annotation when closure-compiler #260 is fixed.
       var gxmpi = e2e.otr.util.aes128ctr.decrypt(r, /** @type {!Uint8Array} */ (
           e2e.otr.assertState(session.authData.aesgx, 'AES(gx) not defined')));
       var gxmpiHash = new e2e.hash.Sha256().hash(gxmpi);
@@ -129,7 +129,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
         // Or Invalid g^x.
         !dh.isValidBase(gx)
       ) {
-        // TODO(user): Log the error and/or warn the user.
+        // TODO(rcc): Log the error and/or warn the user.
         return;
       }
 
@@ -142,7 +142,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
       calculatedMac = calculatedMac.slice(0, 160 / 8);
 
       if (e2e.otr.compareByteArray(Array.apply([], mac), calculatedMac)) {
-        // TODO(user): Log the error and/or warn the user.
+        // TODO(rcc): Log the error and/or warn the user.
         return;
       }
 
@@ -150,7 +150,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
 
       iter = new e2e.otr.util.Iterator(xb);
       var pubBType = iter.next(2);
-      // TODO(user): Make Type.parse accept Iterator to pull appropriate data.
+      // TODO(rcc): Make Type.parse accept Iterator to pull appropriate data.
       var pubB = {
         p: Array.apply([], iter.nextEncoded()),
         q: Array.apply([], iter.nextEncoded()),
@@ -173,7 +173,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
       ])));
 
       if (!e2e.otr.Sig.verify(pubB, mb, sigmb)) {
-        // TODO(user): Log the error and/or warn the user.
+        // TODO(rcc): Log the error and/or warn the user.
         return;
       }
 
@@ -183,7 +183,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
       session.setAuthState(AUTHSTATE.NONE);
       session.setMsgState(constants.MSGSTATE.ENCRYPTED);
 
-      // TODO(user): Send any stored messages.
+      // TODO(rcc): Send any stored messages.
 
       break;
 

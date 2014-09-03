@@ -49,7 +49,7 @@ goog.inherits(e2e.cipher.Cast5, e2e.AlgorithmImpl);
 
 /** @inheritDoc */
 e2e.cipher.Cast5.prototype.setKey = function(keyObj) {
-  // TODO(user) Implement other key sizes if needed.
+  // TODO(adhintz) Implement other key sizes if needed.
   if (keyObj.key.length != 16) {
     throw new e2e.cipher.Error('Wrong key size for Cipher.');
   }

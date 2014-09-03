@@ -49,7 +49,7 @@ var MESSAGE_TYPE_VALUES = Object.keys(e2e.otr.constants.MessageType).map(
 e2e.otr.message.Encoded = function(session) {
   goog.base(this, session);
 
-  //TODO(user): Remove when closure compiler issue #104 (@abstract) is resolved.
+  //TODO(rcc): Remove when closure compiler issue #104 (@abstract) is resolved.
   assert(this.constructor != e2e.otr.message.Encoded);
 
   assert(goog.isDefAndNotNull(this.constructor.MESSAGE_TYPE));
@@ -97,7 +97,7 @@ e2e.otr.message.Encoded.prototype.serializeMessageContent =
  */
 e2e.otr.message.Encoded.addHeader = function(session, mt, data, opt_receiving) {
   return e2e.otr.serializeBytes([
-    [0x00, 0x03], // protocol version TODO(user): allow other versions.
+    [0x00, 0x03], // protocol version TODO(rcc): allow other versions.
     mt,
     opt_receiving ? session.remoteInstanceTag : session.instanceTag,
     opt_receiving ? session.instanceTag : session.remoteInstanceTag,
@@ -145,7 +145,7 @@ e2e.otr.message.Encoded.process = function(session, data) {
   var iter = new e2e.otr.util.Iterator(
       new Uint8Array(goog.crypt.base64.decodeStringToByteArray(data)));
 
-  // TODO(user): allow other versions.
+  // TODO(rcc): allow other versions.
   if (e2e.otr.shortToNum(iter.next(2)) != 3) {
     throw new e2e.otr.error.ParseError('Invalid message version.');
   }

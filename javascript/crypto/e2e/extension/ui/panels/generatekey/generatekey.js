@@ -123,7 +123,7 @@ panels.GenerateKey.prototype.generate_ = function() {
   var email = this.getElementByClass(constants.CssClass.EMAIL).value;
   var comments = '';
 
-  // TODO(user): Add a mechanism to allow the user to adjust this.
+  // TODO(radi): Add a mechanism to allow the user to adjust this.
   var expDate = Math.floor(new Date('9999/12/31').getTime() / 1e3);
 
   this.callback_(this, name, email, comments, expDate);

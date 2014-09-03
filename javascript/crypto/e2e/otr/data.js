@@ -36,7 +36,7 @@ goog.require('goog.asserts');
  */
 e2e.otr.Data = function(data) {
   this.data_ = new Uint8Array(data);
-  // TODO(user): Avoid calling implements every time class is instantiated.
+  // TODO(rcc): Avoid calling implements every time class is instantiated.
   e2e.otr.implements(e2e.otr.Data, e2e.otr.Serializable);
 };
 goog.inherits(e2e.otr.Data, e2e.otr.Storable);

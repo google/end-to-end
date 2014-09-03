@@ -79,7 +79,7 @@ ui.Prompt = function() {
 
   /**
    * A timer to automatically save drafts.
-   * TODO(user): Optimize the frequency of which auto-save triggers as it will
+   * TODO(radi): Optimize the frequency of which auto-save triggers as it will
    * cause additional CPU (and possibly network) utilization.
    * @type {!goog.Timer}
    * @private

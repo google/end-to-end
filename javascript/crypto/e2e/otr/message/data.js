@@ -142,7 +142,7 @@ e2e.otr.message.Data.prototype.serializeMessageContent = function() {
   var mac = new goog.crypt.Hmac(new e2e.hash.Sha1(), keys.sendingMac).getHmac(
       this.addHeader(partialData));
 
-  // TODO(user): old MAC keys to be revealed.
+  // TODO(rcc): old MAC keys to be revealed.
   var oldMacKeys = [];
 
   return e2e.otr.serializeBytes([partialData, mac, oldMacKeys]);
@@ -181,7 +181,7 @@ e2e.otr.message.Data.process = function(session, data) {
 
       if (e2e.otr.compareByteArray(mac, calculatedMac)) {
         if (!ignoreUnreadable) {
-          // TODO(user): Log the error and/or warn the user. Remove extra return.
+          // TODO(rcc): Log the error and/or warn the user. Remove extra return.
           return;
         }
         return;
@@ -195,12 +195,12 @@ e2e.otr.message.Data.process = function(session, data) {
 
       var split = Array.prototype.indexOf.call(message, '\0');
       session.display(e2e.byteArrayToString(message.subarray(0, split)));
-      // TODO(user): Process TLVs.
+      // TODO(rcc): Process TLVs.
       break;
 
     case MSGSTATE.PLAINTEXT:
     case MSGSTATE.FINISHED:
-      // TODO(user): Inform the user that an unreadable encrypted message was
+      // TODO(rcc): Inform the user that an unreadable encrypted message was
       // received, and reply with an Error Message.
       throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
       break;

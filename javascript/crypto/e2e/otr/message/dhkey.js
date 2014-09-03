@@ -83,7 +83,7 @@ e2e.otr.message.DhKey.process = function(session, data) {
   var gy = Array.apply([], e2e.otr.Mpi.parse(data).deconstruct());
   var dh = session.keymanager.getKey().key;
   if (!dh.isValidBase(gy)) {
-    // TODO(user): Log the error and/or warn the user.
+    // TODO(rcc): Log the error and/or warn the user.
     return;
   }
 
@@ -98,7 +98,7 @@ e2e.otr.message.DhKey.process = function(session, data) {
     case AUTHSTATE.AWAITING_SIG:
       if (e2e.otr.compareByteArray(gy,
           session.keymanager.getRemoteKey(new Uint8Array(4)).key) == 0) {
-        // TODO(user): Remove annotation when closure-compiler #260 is fixed.
+        // TODO(rcc): Remove annotation when closure-compiler #260 is fixed.
         session.send(/** @type {!e2e.otr.message.RevealSignature} */ (
             e2e.otr.assertState(session.authData.revealsignature,
             'revealsignature not defined.')));

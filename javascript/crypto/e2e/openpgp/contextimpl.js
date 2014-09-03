@@ -531,7 +531,7 @@ e2e.openpgp.ContextImpl.prototype.getKeyringBackupData = function() {
 
 
 /** @inheritDoc */
-/* TODO(user): Remove email when we can use keyserver for lookups */
+/* TODO(rcc): Remove email when we can use keyserver for lookups */
 e2e.openpgp.ContextImpl.prototype.restoreKeyring = function(data, email) {
   return e2e.async.Result.toResult(this.keyRing_.restoreKeyring(data, email));
 };

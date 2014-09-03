@@ -42,7 +42,7 @@ var TLV_TYPE_VALUES = Object.keys(e2e.otr.constants.TlvType).map(
  * @param {!e2e.otr.Session} session The enclosing session.
  */
 e2e.otr.message.Tlv = function(session) {
-  //TODO(user): Remove when closure compiler issue #104 (@abstract) is resolved.
+  //TODO(rcc): Remove when closure compiler issue #104 (@abstract) is resolved.
   assert(this.constructor != e2e.otr.message.Tlv);
   assert(goog.isFunction(this.constructor.process));
 

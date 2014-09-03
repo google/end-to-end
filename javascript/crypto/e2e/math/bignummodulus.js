@@ -40,7 +40,7 @@ goog.require('goog.asserts');
 e2e.BigNumModulus = function(modulus, opt_RR) {
   e2e.BigNumModulus.base(this, 'constructor', modulus);
 
-  // TODO(user): do we really need to drop leading zeros here?
+  // TODO(thaidn): do we really need to drop leading zeros here?
   this.dropLeadingZeros();
   // Modulus specific initalization.
   this.inverseModulus_ = this.computeInverseModulus_();

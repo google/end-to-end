@@ -42,7 +42,7 @@ var PUBKEY_TYPE_VALUES = Object.keys(e2e.otr.constants.PubkeyType).map(
  * @extends {e2e.otr.Storable}
  */
 e2e.otr.pubkey.Pubkey = function() {
-  //TODO(user): Remove when closure compiler issue #104 (@abstract) is resolved.
+  //TODO(rcc): Remove when closure compiler issue #104 (@abstract) is resolved.
   assert(this.constructor != e2e.otr.pubkey.Pubkey);
 
   assert(goog.isDefAndNotNull(this.constructor.PUBKEY_TYPE));

@@ -36,7 +36,7 @@ actions.RestoreKeyringData = function() {};
 
 
 /** @inheritDoc */
-/* TODO(user): Remove email when we can use keyserver for lookups. */
+/* TODO(rcc): Remove email when we can use keyserver for lookups. */
 actions.RestoreKeyringData.prototype.execute =
     function(ctx, request, requestor, callback, errorCallback) {
   var data = goog.crypt.base64.decodeStringToByteArray(request.content.data);

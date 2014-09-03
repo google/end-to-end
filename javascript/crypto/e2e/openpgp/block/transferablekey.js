@@ -131,7 +131,7 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
       this.packets.push(packets.shift());
       packet = packets[0];
       while (packet instanceof e2e.openpgp.packet.Signature) {
-        // TODO(user): Figure out what to do with foreign certifications
+        // TODO(koto): Figure out what to do with foreign certifications
         if (packet.isCertificationSignature()) {
           userIdOrAttribute.addCertification(packet);
         } else if (packet.signatureType === e2e.openpgp.packet.Signature.
@@ -164,7 +164,7 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
       // Process subkey signatures.
       if (packet.signatureType ==
           e2e.openpgp.packet.Signature.SignatureType.SUBKEY) {
-        // TODO(user): Add support for signing key not being the main key.
+        // TODO(koto): Add support for signing key not being the main key.
         subKey.addBindingSignature(packet);
         this.packets.push(packets.shift());
         // Ignore trust packets.

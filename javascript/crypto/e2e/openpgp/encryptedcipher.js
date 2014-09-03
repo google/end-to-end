@@ -14,7 +14,7 @@
 
 /**
  * @fileoverview Implements a cipher or signer where the key itself is
- * encrypted. TODO(user): Replace this with WrappedKey.
+ * encrypted. TODO(evn): Replace this with WrappedKey.
  * @author evn@google.com (Eduardo Vela)
  */
 
@@ -235,7 +235,7 @@ e2e.openpgp.EncryptedCipher.prototype.lockKey = function(
     this.iv_ = e2e.random.getRandomBytes(
         cipher.blockSize);
     var count = e2e.openpgp.EncryptedCipher.DEFAULT_COUNT;
-    // TODO(user): Maybe we can use a cheaper function here instead of sha1.
+    // TODO(evn): Maybe we can use a cheaper function here instead of sha1.
     this.s2k_ = new e2e.openpgp.IteratedS2K(
         new e2e.hash.Sha1, salt, count);
     var symCipher = /** @type {e2e.cipher.SymmetricCipher} */ (
@@ -247,7 +247,7 @@ e2e.openpgp.EncryptedCipher.prototype.lockKey = function(
     symCipher.setKey({key: key});
     var sha1 = new e2e.hash.Sha1;
     var hash = sha1.hash(this.keyBytes_);
-    // TODO(user): Make this call asynchronous.
+    // TODO(evn): Make this call asynchronous.
     this.encryptedKeyData = e2e.async.Result.getValue(
       cfbSymCipher.encrypt(this.keyBytes_.concat(hash), this.iv_));
   }
@@ -337,7 +337,7 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey = function(
           'Invalid Key Derivation Type.');
   }
   symCipher.setKey({key: key});
-  // TODO(user): Make this call asynchronous.
+  // TODO(evn): Make this call asynchronous.
   var decryptedData = e2e.async.Result.getValue(
       cfbSymCipher.decrypt(this.encryptedKeyData, this.iv_));
   this.unlockAndVerifyKey_(decryptedData);

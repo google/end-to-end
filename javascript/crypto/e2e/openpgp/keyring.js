@@ -378,7 +378,7 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(email,
  */
 e2e.openpgp.KeyRing.prototype.certifyKeys_ = function(email, keyData) {
   if (keyData['pubKey'].length == 2 && keyData['privKey'].length == 2) {
-    // TODO(user): Move this code to a .construct.
+    // TODO(evn): Move this code to a .construct.
     var primaryKey = keyData['privKey'][0];
     var uid = new e2e.openpgp.packet.UserId(email);
     uid.certifyBy(primaryKey);
@@ -722,7 +722,7 @@ e2e.openpgp.KeyRing.prototype.importKey_ = function(
       return goog.isDef(keyBlock.keyPacket.keyId) && goog.array.equals(
           emailKeyBlock.keyPacket.keyId, keyBlock.keyPacket.keyId);
     });
-    // TODO(user): Merge information when the key block is already in keyring.
+    // TODO(evn): Merge information when the key block is already in keyring.
   } else {
     addKey = true;
   }
@@ -777,7 +777,7 @@ e2e.openpgp.KeyRing.prototype.serialize_ = function() {
  */
 e2e.openpgp.KeyRing.prototype.encrypt_ = function(plaintext) {
   goog.asserts.assert(this.passphrase_, 'passphrase not set');
-  // TODO(user) Cache the s2k result instead of the passphrase.
+  // TODO(adhintz) Cache the s2k result instead of the passphrase.
   var salt = this.getOrCreateSalt_();
   var s2k = new e2e.openpgp.IteratedS2K(
       new e2e.hash.Sha1, salt, 96);  // 96 is 65536 iterations.
@@ -867,7 +867,7 @@ e2e.openpgp.KeyRing.prototype.readKeyData_ = function() {
         throw new Error('No passphrase was given to decrypt the KeyRing.');
       }
     } else {
-      // TODO(user) Inform user that the keyring was not encrypted.
+      // TODO(adhintz) Inform user that the keyring was not encrypted.
       this.deserialize_(serialized);
     }
   } else {  // No data stored yet.
@@ -891,7 +891,7 @@ e2e.openpgp.KeyRing.prototype.deserialize_ = function(s) {
   } catch (ex) {
     throw new e2e.openpgp.error.SerializationError(
         'Invalid key ring: ' + ex.message);
-    // TODO(user) Should we treat JSON errors differently so we don't leak
+    // TODO(adhintz) Should we treat JSON errors differently so we don't leak
     // any keyring data in the Exception message?
   }
 };
@@ -986,7 +986,7 @@ e2e.openpgp.KeyRing.prototype.objectToPubKeyRing_ = function(s) {
         block = e2e.openpgp.block.factory.parseByteArray(
             goog.crypt.base64.decodeStringToByteArray(key));
       } catch (e) {
-        // TODO(user): Delete this code before launch.
+        // TODO(evn): Delete this code before launch.
         if (e instanceof e2e.openpgp.error.ParseError) {
           // Perhaps the user used has and old-format packet keyring.
           var keyPacket = e2e.openpgp.packet.PublicKey.parse(

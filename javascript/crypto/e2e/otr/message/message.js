@@ -38,7 +38,7 @@ var constants = e2e.otr.constants;
  * @param {!e2e.otr.Session} session The enclosing session.
  */
 e2e.otr.message.Message = function(session) {
-  //TODO(user): Remove when closure compiler issue #104 (@abstract) is resolved.
+  //TODO(rcc): Remove when closure compiler issue #104 (@abstract) is resolved.
   assert(this.constructor != e2e.otr.message.Message);
   assert(goog.isFunction(this.constructor.process));
 
@@ -79,7 +79,7 @@ e2e.otr.message.Message.process = function(session, data) {
     if (versionBits) {
       e2e.otr.message.Query.process(session, versionBits);
     } else {
-      // TODO(user): Support for non-OTR messages, tagged plaintext messages.
+      // TODO(rcc): Support for non-OTR messages, tagged plaintext messages.
       throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
     }
   }

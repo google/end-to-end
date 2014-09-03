@@ -108,7 +108,7 @@ e2e.otr.message.Signature.process = function(session, data) {
       calculatedMac = calculatedMac.slice(0, 160 / 8);
 
       if (e2e.otr.compareByteArray(mac, calculatedMac)) {
-        // TODO(user): Log the error and/or warn the user.
+        // TODO(rcc): Log the error and/or warn the user.
         return;
       }
 
@@ -116,7 +116,7 @@ e2e.otr.message.Signature.process = function(session, data) {
 
       iter = new e2e.otr.util.Iterator(xa);
 
-      // TODO(user): Make Type.parse accept Iterator to pull appropriate data.
+      // TODO(rcc): Make Type.parse accept Iterator to pull appropriate data.
       var pubAType = iter.next(2);
       var pubA = {
         p: Array.apply([], iter.nextEncoded()),
@@ -136,14 +136,14 @@ e2e.otr.message.Signature.process = function(session, data) {
       ])));
 
       if (!e2e.otr.Sig.verify(pubA, ma, sigma)) {
-        // TODO(user): Log the error and/or warn the user.
+        // TODO(rcc): Log the error and/or warn the user.
         return;
       }
 
       session.setAuthState(AUTHSTATE.NONE);
       session.setMsgState(constants.MSGSTATE.ENCRYPTED);
 
-      // TODO(user): Send any stored messages.
+      // TODO(rcc): Send any stored messages.
 
       break;
 

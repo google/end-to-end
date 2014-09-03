@@ -150,7 +150,7 @@ e2e.openpgp.S2k.parse = function(bytes) {
       return new e2e.openpgp.DummyS2k(hash, header, bytes.shift());
     }
   }
-  // TODO(user): Implement a scrypt KDF as a new S2K type.
+  // TODO(evn): Implement a scrypt KDF as a new S2K type.
   throw new e2e.openpgp.error.ParseError('Invalid S2K type.');
 };
 

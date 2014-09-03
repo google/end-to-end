@@ -85,7 +85,7 @@ function testConstructor() {
   stubs.reset();
 
   assertTrue(e2e.otr.implementationof(construct()(), e2e.otr.Serializable));
-  // TODO(user): Base class does not implement until constructor is called.
+  // TODO(rcc): Base class does not implement until constructor is called.
   assertTrue(e2e.otr.implementationof(msgImpl, e2e.otr.Serializable));
 }
 
@@ -109,7 +109,7 @@ function testPrepareSend() {
 }
 
 function testSerialize() {
-  // TODO(user): allow other versions.
+  // TODO(rcc): allow other versions.
   var msg = new msgImpl({
     instanceTag: new Uint8Array([1, 2, 3, 4]),
     remoteInstanceTag: new Uint8Array([5, 6, 7, 8])
