@@ -67,8 +67,7 @@ e2e.scheme.Rsassa.prototype.verifyWebCrypto = function(m, sig) {
   this.crypto.verify(this.algorithmIdentifier, this.key.publicKey,
       webcrypto_sig, new Uint8Array(m)
   ).then(
-      goog.bind(result.callback, result)
-  ).catch (
+      goog.bind(result.callback, result),
       goog.bind(result.errback, result));
   return result;
 };
@@ -85,8 +84,7 @@ e2e.scheme.Rsassa.prototype.signWebCrypto = function(data) {
   this.crypto.sign(this.algorithmIdentifier, this.key.privateKey,
       new Uint8Array(data)
   ).then(
-      goog.bind(result.callback, result)
-  ).catch (
+      goog.bind(result.callback, result),
       goog.bind(result.errback, result));
   return result.addCallback(function(sig) {
     return {'s': [].slice.call(new Uint8Array(sig))};
