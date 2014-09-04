@@ -99,6 +99,12 @@ e2e.openpgp.packet.Key = function(
    * @private
    */
   this.revocations_ = [];
+  /**
+   * Usages of the key packet that have been certified in signatures.
+   * @type {!Array.<!e2e.openpgp.packet.Key.Usage>}
+   * @private
+   */
+  this.certifiedUsage_ = [];
 };
 goog.inherits(e2e.openpgp.packet.Key,
               e2e.openpgp.packet.Packet);
@@ -243,11 +249,25 @@ e2e.openpgp.packet.Key.prototype.verifyRevocation_ = function(signature,
  */
 e2e.openpgp.packet.Key.prototype.verifyBindingSignature_ = function(signature,
     verifyingKey) {
-  return this.verifySignatureInternal_(
+  var result = this.verifySignatureInternal_(
       signature,
       verifyingKey,
       this.getKeyBindingSignatureData_(verifyingKey),
       'Binding signature verification failed.');
+  if (result) {
+    if (signature.attributes &&
+        signature.attributes.hasOwnProperty('KEY_FLAGS')) {
+      this.certifiedUsage_ = [];
+      if (signature.attributes.KEY_FLAG_SIGN) {
+        this.certifiedUsage_.push(e2e.openpgp.packet.Key.Usage.SIGN);
+      }
+      if (signature.attributes.KEY_FLAG_ENCRYPT_COMMUNICATION ||
+          signature.attributes.KEY_FLAG_ENCRYPT_STORAGE) {
+        this.certifiedUsage_.push(e2e.openpgp.packet.Key.Usage.ENCRYPT);
+      }
+    }
+  }
+  return result;
 };
 
 
@@ -364,11 +384,24 @@ e2e.openpgp.packet.Key.prototype.serialize = function() {
 
 /**
  * Specifies whether the key packet can be used for a specific use.
- * @param {string} use Either 'sign' or 'encrypt'.
+ * It only takes the cipher capabilities into consideration. In order to check
+ * whether the key owner wants the key to be used in a certain way, call
+ * isCertifiedTo().
+ * @param {e2e.openpgp.packet.Key.Usage} use Either 'sign' or 'encrypt'.
  * @return {boolean}
  */
 e2e.openpgp.packet.Key.prototype.can = function(use) {
   return false;
+};
+
+
+/**
+ * Specifies whether the key packet has been certified for a specific use.
+ * @param {e2e.openpgp.packet.Key.Usage} use Either 'sign' or 'encrypt'.
+ * @return {boolean}
+ */
+e2e.openpgp.packet.Key.prototype.isCertifiedTo = function(use) {
+  return goog.array.contains(this.certifiedUsage_, use);
 };
 
 

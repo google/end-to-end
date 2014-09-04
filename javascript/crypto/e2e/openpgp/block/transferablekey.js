@@ -227,7 +227,8 @@ e2e.openpgp.block.TransferableKey.prototype.processSignatures = function() {
 
 
 /**
- * Chooses a key packet for the specified use.
+ * Chooses a key packet for the specified use. Prefers keys that have been
+ * certified by the key owner for a specified use.
  * @param {e2e.openpgp.packet.Key.Usage} use The use of the key.
  * @param {function(new:T, ...)} type The constructor of the key to get.
  * @param {boolean} preferSubkey If true, subkey with a capability is preferred
@@ -238,14 +239,25 @@ e2e.openpgp.block.TransferableKey.prototype.processSignatures = function() {
  */
 e2e.openpgp.block.TransferableKey.prototype.getKeyTo =
     function(use, type, preferSubkey) {
-  if (!preferSubkey) {
+  if (!preferSubkey) { // Check main key packet capabilities first
     if (this.keyPacket.can(use) && this.keyPacket instanceof type) {
       return this.keyPacket;
     }
   }
+
+  var certifiedKey = goog.array.find(
+    this.subKeys, function(key) {
+      return key.isCertifiedTo(use) && key.can(use) && key instanceof type;
+    });
+
+  if (certifiedKey) {
+    return certifiedKey;
+  }
+
+  // Fallback if no key was certified for a usage.
   return goog.array.find(
-    this.subKeys.concat(this.keyPacket), function(key) {
-      return key.can(use) && key instanceof type;
+      this.subKeys.concat(this.keyPacket), function(key) {
+        return key.can(use) && key instanceof type;
     });
 };
 
