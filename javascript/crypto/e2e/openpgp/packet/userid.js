@@ -28,6 +28,7 @@ goog.require('e2e.hash.all');
 goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.Signature');
+goog.require('e2e.openpgp.packet.SignatureSub');
 goog.require('e2e.openpgp.packet.factory');
 goog.require('goog.array');
 
@@ -303,7 +304,10 @@ e2e.openpgp.packet.UserId.prototype.getSignatureAttributes_ = function(key) {
     'PREFERRED_SYMMETRIC_ALGORITHMS': symIds,
     'PREFERRED_HASH_ALGORITHMS': hashIds,
     'PREFERRED_COMPRESSION_ALGORITHMS': compressionIds,
-    'FEATURES': [0x01] // Modification detection. See RFC 4880 5.2.3.24.
+    'FEATURES': [0x01], // Modification detection. See RFC 4880 5.2.3.24.
+    'KEY_FLAGS': [
+        e2e.openpgp.packet.SignatureSub.KeyFlags.CERTIFY |
+        e2e.openpgp.packet.SignatureSub.KeyFlags.SIGN]
   };
 };
 

@@ -166,6 +166,14 @@ e2e.openpgp.packet.Key.prototype.addBindingSignature = function(signature) {
   this.bindingSignatures_.push(signature);
 };
 
+/**
+ * Returns key binding signatures.
+ * @return {!Array.<!e2e.openpgp.packet.Signature>}
+ */
+e2e.openpgp.packet.Key.prototype.getBindingSignatures = function() {
+  return this.bindingSignatures_;
+};
+
 
 /**
  * Checks if a key has valid (unrevoked) binding signature to a given key
@@ -350,20 +358,26 @@ e2e.openpgp.packet.Key.prototype.getKeyBindingSignatureData_ = function(
  *     packet.
  * @param {!e2e.openpgp.packet.SecretKey} bindingKey
  * @param {!e2e.openpgp.packet.Signature.SignatureType} type
+ * @param {number} opt_keyFlags key usage flags to embed in the signature
  * @return {!e2e.async.Result.<undefined>}
  */
-e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type) {
+e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type,
+    opt_keyFlags) {
   var data = this.getKeyBindingSignatureData_(bindingKey);
-
+  var attributes = {
+        'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
+            [Math.floor(new Date().getTime() / 1e3)]),
+        'ISSUER': bindingKey.keyId
+      };
+  if (goog.isDef(opt_keyFlags)) {
+    attributes.KEY_FLAGS = [opt_keyFlags];
+  }
   var sigRes = e2e.openpgp.packet.Signature.construct(
       bindingKey,
       data,
       type,
-      {
-        'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
-            [Math.floor(new Date().getTime() / 1e3)]),
-        'ISSUER': bindingKey.keyId
-      });
+      attributes);
+
   return sigRes.addCallback(function(sig) {
     this.bindingSignatures_.push(sig);
   }, this);

@@ -68,7 +68,7 @@ e2e.openpgp.packet.SignatureSub.prototype.serialize = function() {
 
 
 /**
- * @param {!Object} attributes
+ * @param {!Object.<string, !e2e.ByteArray>} attributes
  * @return {!Array.<!e2e.openpgp.packet.SignatureSub>}
  */
 e2e.openpgp.packet.SignatureSub.construct = function(attributes) {
@@ -188,13 +188,20 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       } else {
         // RFC 4880 section 5.2.3.21.
         attributes.KEY_FLAGS = subpacket.body[0];
-        attributes.KEY_FLAG_CERTIFY = attributes.KEY_FLAGS & 0x01;
-        attributes.KEY_FLAG_SIGN = attributes.KEY_FLAGS & 0x02;
-        attributes.KEY_FLAG_ENCRYPT_COMMUNICATION = attributes.KEY_FLAGS & 0x04;
-        attributes.KEY_FLAG_ENCRYPT_STORAGE = attributes.KEY_FLAGS & 0x08;
-        attributes.KEY_FLAG_SPLIT = attributes.KEY_FLAGS & 0x10;
-        attributes.KEY_FLAG_AUTHENTICATION = attributes.KEY_FLAGS & 0x20;
-        attributes.KEY_FLAG_SHARED = attributes.KEY_FLAGS & 0x80;
+        attributes.KEY_FLAG_CERTIFY = attributes.KEY_FLAGS &
+            e2e.openpgp.packet.SignatureSub.KeyFlags.CERTIFY;
+        attributes.KEY_FLAG_SIGN = attributes.KEY_FLAGS &
+            e2e.openpgp.packet.SignatureSub.KeyFlags.SIGN;
+        attributes.KEY_FLAG_ENCRYPT_COMMUNICATION = attributes.KEY_FLAGS &
+            e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_COMMUNICATION;
+        attributes.KEY_FLAG_ENCRYPT_STORAGE = attributes.KEY_FLAGS &
+            e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_STORAGE;
+        attributes.KEY_FLAG_SPLIT = attributes.KEY_FLAGS &
+            e2e.openpgp.packet.SignatureSub.KeyFlags.SPLIT;
+        attributes.KEY_FLAG_AUTHENTICATION = attributes.KEY_FLAGS &
+            e2e.openpgp.packet.SignatureSub.KeyFlags.AUTHENTICATION;
+        attributes.KEY_FLAG_SHARED = attributes.KEY_FLAGS &
+            e2e.openpgp.packet.SignatureSub.KeyFlags.SHARED;
       }
       break;
     case e2e.openpgp.packet.SignatureSub.Type.REVOCATION_REASON:
@@ -240,4 +247,19 @@ e2e.openpgp.packet.SignatureSub.Type = {
   'REVOCATION_REASON': 29,
   'FEATURES': 30,
   'EMBEDDED_SIGNATURE': 32
+};
+
+
+/**
+ * Key flags values. See RFC 4880 section 5.2.3.21.
+ * @enum {number}
+ */
+e2e.openpgp.packet.SignatureSub.KeyFlags = {
+  'CERTIFY': 0x01,
+  'SIGN': 0x02,
+  'ENCRYPT_COMMUNICATION': 0x04,
+  'ENCRYPT_STORAGE': 0x08,
+  'SPLIT': 0x10,
+  'AUTHENTICATION': 0x20,
+  'SHARED': 0x80
 };

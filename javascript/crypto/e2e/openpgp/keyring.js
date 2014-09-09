@@ -46,6 +46,7 @@ goog.require('e2e.openpgp.packet.PublicSubkey');
 goog.require('e2e.openpgp.packet.SecretKey');
 goog.require('e2e.openpgp.packet.SecretSubkey');
 goog.require('e2e.openpgp.packet.Signature');
+goog.require('e2e.openpgp.packet.SignatureSub');
 goog.require('e2e.openpgp.packet.UserId');
 goog.require('e2e.random');
 goog.require('e2e.signer.Algorithm');
@@ -383,9 +384,16 @@ e2e.openpgp.KeyRing.prototype.certifyKeys_ = function(email, keyData) {
     var uid = new e2e.openpgp.packet.UserId(email);
     uid.certifyBy(primaryKey);
     keyData['privKey'][1].bindTo(
-        primaryKey, e2e.openpgp.packet.Signature.SignatureType.SUBKEY);
+        primaryKey,
+        e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
+        e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_COMMUNICATION |
+        e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_STORAGE);
     keyData['pubKey'][1].bindTo(
-        primaryKey, e2e.openpgp.packet.Signature.SignatureType.SUBKEY);
+        primaryKey,
+        e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
+        e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_COMMUNICATION |
+        e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_STORAGE
+        );
 
     var privKeyBlock = new e2e.openpgp.block.TransferableSecretKey();
     privKeyBlock.keyPacket = primaryKey;

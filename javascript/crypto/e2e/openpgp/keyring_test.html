@@ -245,6 +245,7 @@ function testGeneration() {
   assertEquals(2, pubKeyRing.getCount());
   var pubKeys = pubKeyRing.get('<ecc@example.com>');
   assertEquals(2, pubKeys.length);
+  pubKeys[1].processSignatures();
   var ecdsaPubKey = pubKeys[1].keyPacket;
   var ecdhPubKey = pubKeys[1].subKeys[0];
   assertEquals(1, pubKeys[1].userIds.length);
@@ -261,6 +262,12 @@ function testGeneration() {
       e2e.openpgp.constants.DEFAULT_SYMMETRIC_CIPHER)],
       certification.attributes.PREFERRED_SYMMETRIC_ALGORITHMS);
   assertEquals(0x01, certification.attributes.FEATURES); // MDC
+  assertTrue(Boolean(certification.attributes.KEY_FLAG_CERTIFY));
+  assertTrue(Boolean(certification.attributes.KEY_FLAG_SIGN));
+  var bindingSig = ecdhPubKey.getBindingSignatures()[0];
+  assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_COMMUNICATION));
+  assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_STORAGE));
+  assertArrayEquals(bindingSig.attributes.ISSUER, ecdsaPubKey.keyId);
 
   assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPubKey.cipher.algorithm);
   assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPubKey.cipher.algorithm);
@@ -271,11 +278,21 @@ function testGeneration() {
   assertEquals(2, privKeyRing.getCount());
   var privKeys = privKeyRing.get('<ecc@example.com>');
   assertEquals(1, privKeys.length);
+  privKeys[0].processSignatures();
 
   var ecdsaPrivKey = privKeys[0].keyPacket;
   var ecdhPrivKey = privKeys[0].subKeys[0];
+  certification = privKeys[0].userIds[0].getCertifications()[0];
   assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPrivKey.cipher.algorithm);
   assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPrivKey.cipher.algorithm);
+  assertEquals(0x01, certification.attributes.FEATURES); // MDC
+  assertTrue(Boolean(certification.attributes.KEY_FLAG_CERTIFY));
+  assertTrue(Boolean(certification.attributes.KEY_FLAG_SIGN));
+  bindingSig = ecdhPrivKey.getBindingSignatures()[0];
+  assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_COMMUNICATION));
+  assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_STORAGE));
+  assertArrayEquals(bindingSig.attributes.ISSUER, ecdsaPubKey.keyId);
+
   // Test basic signing and encryption with the new keys.
   var m = goog.array.repeat(0x01, 16);
   asyncTestCase.waitForAsync('waiting for encryption.');
