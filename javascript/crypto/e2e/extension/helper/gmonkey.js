@@ -197,7 +197,7 @@ gmonkey.setActiveDraft = function(recipients, msgBody, opt_callback) {
     callback = opt_callback;
   }
   gmonkey.callGmonkey_('setActiveDraft', callback, {
-    to: this.getValidEmailAddressesFromArray_(recipients),
+    to: gmonkey.getValidEmailAddressesFromArray_(recipients),
     body: msgBody
   });
 };
