@@ -117,8 +117,12 @@ e2e.cipher.Aes.prototype.setKey = function(keyObj) {
 e2e.cipher.Aes.prototype.blockSize = 16; // 128 bits.
 
 
-/** @inheritDoc */
-e2e.cipher.Aes.prototype.encrypt = function(data) {
+/**
+ * Performs the encrypt operation synchronously.
+ * @param {!e2e.ByteArray} data The data to encrypt.
+ * @return {!e2e.cipher.ciphertext.Symmetric} The result of encryption.
+ */
+e2e.cipher.Aes.prototype.encryptSync = function(data) {
   var output = [];
 
   this.copyInput_(data, 0);
@@ -136,12 +140,22 @@ e2e.cipher.Aes.prototype.encrypt = function(data) {
   this.addRoundKey_(this.Nr_);
   this.copyOutput_(output, 0);
 
-  return e2e.async.Result.toResult(output);
+  return output;
 };
 
 
 /** @inheritDoc */
-e2e.cipher.Aes.prototype.decrypt = function(data) {
+e2e.cipher.Aes.prototype.encrypt = function(data) {
+  return e2e.async.Result.toResult(this.encryptSync(data));
+};
+
+
+/**
+ * Performs the decrypt operation synchronously.
+ * @param {!e2e.cipher.ciphertext.Symmetric} data The encrypted data.
+ * @return {!e2e.ByteArray} The result of decryption.
+ */
+e2e.cipher.Aes.prototype.decryptSync = function(data) {
   var output = [];
 
   this.copyInput_(data, 0);
@@ -158,7 +172,13 @@ e2e.cipher.Aes.prototype.decrypt = function(data) {
   this.subBytes_(e2e.cipher.Aes.INV_SBOX);
   this.addRoundKey_(0);
   this.copyOutput_(output, 0);
-  return e2e.async.Result.toResult(output);
+  return output;
+};
+
+
+/** @inheritDoc */
+e2e.cipher.Aes.prototype.decrypt = function(data) {
+  return e2e.async.Result.toResult(this.decryptSync(data));
 };
 
 

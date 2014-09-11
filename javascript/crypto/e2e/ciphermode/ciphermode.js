@@ -41,6 +41,25 @@ e2e.ciphermode.CipherMode = function(cipher) {
 };
 
 /**
+ * Synchronous call to encrypt the data with a given iv.
+ * @param {!e2e.ByteArray} data The data to encrypt.
+ * @param {!e2e.ByteArray} iv The initialization vector.
+ * @return {!e2e.cipher.ciphertext.Symmetric} The
+ *     encrypted data.
+ */
+e2e.ciphermode.CipherMode.prototype.encryptSync = goog.abstractMethod;
+
+
+/**
+ * Synchronous call to decrypt the data with the given iv.
+ * @param {!e2e.ByteArray} data The data to decrypt.
+ * @param {!e2e.ByteArray} iv The initialization vector.
+ * @return {!e2e.ByteArray} The decrypted data.
+ */
+e2e.ciphermode.CipherMode.prototype.decryptSync = goog.abstractMethod;
+
+
+/**
  * Asynchronous call to encrypt the data with a given iv.
  * @param {!e2e.ByteArray} data The data to encrypt.
  * @param {!e2e.ByteArray} iv The initialization vector.

@@ -55,7 +55,7 @@ e2e.ciphermode.Ctr.increment_ = function(n) {
 
 
 /** @inheritDoc */
-e2e.ciphermode.Ctr.prototype.encrypt = function(data, iv) {
+e2e.ciphermode.Ctr.prototype.encryptSync = function(data, iv) {
   if (iv.length != this.cipher.blockSize) {
     throw new e2e.error.InvalidArgumentsError('IV does not match block size.');
   }
@@ -74,7 +74,18 @@ e2e.ciphermode.Ctr.prototype.encrypt = function(data, iv) {
         block,
         encKey.slice(0, block.length)));
   }
-  return e2e.async.Result.toResult(ciphertext);
+  return ciphertext;
+};
+
+
+/** @inheritDoc */
+e2e.ciphermode.Ctr.prototype.decryptSync =
+    e2e.ciphermode.Ctr.prototype.encryptSync;
+
+
+/** @inheritDoc */
+e2e.ciphermode.Ctr.prototype.encrypt = function(data, iv) {
+  return e2e.async.Result.toResult(this.encryptSync(data, iv));
 };
 
 

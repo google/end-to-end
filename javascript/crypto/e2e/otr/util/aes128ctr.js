@@ -50,9 +50,9 @@ e2e.otr.util.aes128ctr.exec_ = function(encrypt, key, data, opt_ctr) {
 
   var aes128 = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128, {key: key});
   var aes128ctr = new e2e.ciphermode.Ctr(aes128);
-  var encrypted = (encrypt ? aes128ctr.encrypt : aes128ctr.decrypt).call(
-      aes128ctr, data, opt_ctr || goog.array.repeat(0, aes128.blockSize));
-  return new Uint8Array(e2e.async.Result.getValue(encrypted));
+  var encrypted = (encrypt ? aes128ctr.encryptSync : aes128ctr.decryptSync)
+      .call(aes128ctr, data, opt_ctr || goog.array.repeat(0, aes128.blockSize));
+  return new Uint8Array(encrypted);
 };
 
 
