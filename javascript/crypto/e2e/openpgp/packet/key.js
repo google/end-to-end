@@ -26,8 +26,10 @@ goog.require('e2e.openpgp.EncryptedCipher');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.SerializationError');
 goog.require('e2e.openpgp.error.SignatureError');
+goog.require('e2e.openpgp.error.SignatureExpiredError');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.Signature');
+
 goog.require('e2e.openpgp.packet.Signature.SignatureType');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.openpgp.types');
@@ -200,7 +202,7 @@ e2e.openpgp.packet.Key.prototype.verifySignatures = function(verifyingKey) {
       hasBinding = true;
     }
   }, this);
-  return (!isRevoked && (!this.isSubKey || hasBinding));
+  return (!isRevoked && (!this.isSubkey || hasBinding));
 };
 
 
@@ -304,8 +306,10 @@ e2e.openpgp.packet.Key.prototype.verifySignatureInternal_ = function(signature,
       goog.asserts.assertObject(signer));
   } catch (e) {
     // Ignore signatures that throw unsupported errors (e.g. weak hash
-    // algorithms)
+    // algorithms) or expired signatures.
     if (e instanceof e2e.openpgp.error.UnsupportedError) {
+      return false;
+    } else if (e instanceof e2e.openpgp.error.SignatureExpiredError) {
       return false;
     }
     throw e;

@@ -34,6 +34,7 @@ goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.SerializationError');
+goog.require('e2e.openpgp.error.SignatureExpiredError');
 goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.openpgp.packet.OnePassSignature');
 goog.require('e2e.openpgp.packet.Packet');
@@ -388,12 +389,20 @@ e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
     throw new e2e.openpgp.error.UnsupportedError(
         'Verification of old signature packets is not implemented.');
   }
-  return e2e.async.Result.getValue(
+  var signatureVerified = e2e.async.Result.getValue(
       signer.verify(e2e.openpgp.packet.Signature.getDataToHash(
       data,
       this.signatureType, this.pubKeyAlgorithm,
       this.hashAlgorithm, this.hashedSubpackets),
                     this.signature));
+  if (signatureVerified &&
+      this.attributes.SIGNATURE_EXPIRATION_TIME &&
+      this.attributes.SIGNATURE_EXPIRATION_TIME <
+          Math.floor(new Date().getTime() / 1e3)) {
+    throw new e2e.openpgp.error.SignatureExpiredError(
+        'Signature expired.');
+  }
+  return signatureVerified;
 };
 
 

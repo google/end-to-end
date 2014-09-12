@@ -11,6 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+// Author:  koto@google.com (Krzysztof Kotowicz)
+// Author:  kbsriram@gmail.com (KB Sriram) - a few testcases
 // -->
 <!DOCTYPE html>
 <title>Unit Test of e2e.block.TransferableKey</title>
@@ -97,7 +99,6 @@ RYE/ktdjGkfHqR4TSu7/51yofDGLY1ZHXUp9Kk3PbKWH4Uw5
 =8AAO
 -----END PGP PUBLIC KEY BLOCK-----
 </textarea>
-
 <!--
 Revoked subkey:
 :public key packet:
@@ -668,6 +669,253 @@ j/GbY0dnReClicttomuqZKLB3ANeap1s8cmJSinmtL+0lwNUzW/swRX3rw/Fo1Mn
 =x53K
 -----END PGP PUBLIC KEY BLOCK-----
 </textarea>
+<!--
+UID with an expired certification signature.
+:public key packet:
+  version 4, algo 1, created 1400629566, expires 0
+  pkey[0]: [2048 bits]
+  pkey[1]: [17 bits]
+:user ID packet: "expired-key"
+:signature packet: algo 1, keyid 0B448FF3EF40D052
+  version 4, created 1400629566, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest 11 65
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 1 (pref-sym-algos: 7)
+  hashed subpkt 21 len 1 (pref-hash-algos: 8)
+  hashed subpkt 30 len 1 (features: 01)
+  critical hashed subpkt 2 len 4 (sig created 2014-05-20)
+  critical hashed subpkt 3 len 4 (sig expires after 1d0h0m)
+  subpkt 16 len 8 (issuer key ID 0B448FF3EF40D052)
+  data: [2047 bits]
+:user ID packet: "good-key"
+:signature packet: algo 1, keyid 0B448FF3EF40D052
+  version 4, created 1409270276, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest 9d 08
+  hashed subpkt 2 len 4 (sig created 2014-08-28)
+  hashed subpkt 27 len 1 (key flags: 2F)
+  hashed subpkt 11 len 5 (pref-sym-algos: 9 8 7 3 2)
+  hashed subpkt 21 len 5 (pref-hash-algos: 8 2 9 10 11)
+  hashed subpkt 22 len 3 (pref-zip-algos: 2 3 1)
+  hashed subpkt 30 len 1 (features: 01)
+  hashed subpkt 23 len 1 (key server preferences: 80)
+  subpkt 16 len 8 (issuer key ID 0B448FF3EF40D052)
+  data: [2046 bits]
+-->
+<textarea id="ExpiredUid">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mQENBFN76T4BCACA04Pjpjl4i2+5tM/o5p3nFDuYga8ApFgBJHaQkYExYktGqi5j
+a9q4DTDCt9j+wJorzBryJuDYA6y32WHY5TPFShBArSZC4rx/ObDFUBRgSP85cQDP
+kcAXVmBHH1X3DtB5apgPtrehY3U8O3Ii/yQlTCfXxUVvpVZMYt+c+7+ZAPIsttlt
+oHKDw1P8ZOHruU7lzMrmOaALdcyPphHzoF0jaxnmX5lpRua4TIqUz7CwiSBZdZr5
+GP3lVL9x6z4MSVpdotkMxlK7ucyoISNDG1Bd/MUN7salkiFynMvkX8UC//KbIgqa
+9WI66j9R3L007RAz+AyLuL3O0zsMqJguTH9FABEBAAG0C2V4cGlyZWQta2V5iQEu
+BBMBAgAYAhsDAgsHAhUIAh4BBYJTe+k+BYMAAVGAAAoJEAtEj/PvQNBSEWUH/3E8
+JmeWH4KzKDWOaufQCEaZR6pwTcINPOM4vzP098zmcaYy6KeavQe1KqfNo90JE2XX
+l9VvwA3DKDDMZ1T1RdwOZtLs3ItnUEGMUaDHx2teQyRzUAtTEGRe4jKE5H0D2AH3
+/ZWDSohKFp/qmZvTZ5/s27At9omj/Hys/2H4SoSZT8TJfo9qC5dtziSHroPqF3xx
+d6irZf900+Psf6reIusENz6n030pvSiT18pmCP8JDcJlbcSiZN2ixHQkCiM8Jnrf
+JFZ0/MqAxP1+dqN9U8XD1sKeq7iZWJjOTHOqMb+Tmek5/nQfzd22WRam5mzB5qnX
+Fz5qykc9wJLpO3vsJrG0CGdvb2Qta2V5iQE4BBMBAgAiBQJT/8IEAhsvBgsJCAcD
+AgYVCAIJCgsEFgIDAQIeAQIXgAAKCRALRI/z70DQUp0IB/4m1G60KnB1bF1xg6pv
+8CPcDZMQKWHsKbAdA1bLJjNjfXQPBDXcDAS9yfyqKV5cy7Jkz4oOkeYTpy9iKqIn
+Nq97JChuHFYuxfzs0EQAxK/0hpE2tNBNgTGM1QkNOVMiMwD3lXT+Y8efo0hgQ1wp
+qzL1GLnjrRkaxIYd2Q4NYLcFJxe2vET5ZUilS/Gejd5IQtlnOoPdP9hewPagl9qh
+UmrxEV9n1w+hDGiEbX9d+QIeSoZPWJkY6FptI0E2npIOB3LF3UQ83NdhHG+YbVja
+5GazLV2afoD//WageNM2vQ0IlRKOHIf8JbJMX6Qhf33dq2tjNaziNBs4gjf79ZU4
+aDYh
+=gHUD
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<!--
+Subkey with an expired binding signature
+:public key packet:
+  version 4, algo 1, created 1400631183, expires 0
+  pkey[0]: [2048 bits]
+  pkey[1]: [17 bits]
+:user ID packet: "expired-subkey"
+:signature packet: algo 1, keyid 6CCE47F4114F7C6B
+  version 4, created 1409271184, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest 59 9c
+  hashed subpkt 2 len 4 (sig created 2014-08-29)
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 1 (pref-sym-algos: 7)
+  hashed subpkt 21 len 1 (pref-hash-algos: 8)
+  hashed subpkt 30 len 1 (features: 01)
+  subpkt 16 len 8 (issuer key ID 6CCE47F4114F7C6B)
+  data: [2047 bits]
+:public sub key packet:
+  version 4, algo 1, created 1400631183, expires 0
+  pkey[0]: [2048 bits]
+  pkey[1]: [17 bits]
+:signature packet: algo 1, keyid 6CCE47F4114F7C6B
+  version 4, created 1400631183, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest 64 b2
+  hashed subpkt 27 len 1 (key flags: 0C)
+  hashed subpkt 2 len 4 (sig created 2014-05-21)
+  hashed subpkt 3 len 4 (sig expires after 1d0h0m)
+  subpkt 16 len 8 (issuer key ID 6CCE47F4114F7C6B)
+  data: [2046 bits]
+-->
+<textarea id="ExpiredSubkey">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mQENBFN7748BCADlXXWbsunER3lvTHEElkViIq25VGtakZoaLv3q97VYZ0kIW+qQ
+06tSu3CzK+JN0tcYBoejry2f/k6mmIW8IB9OAtkTyOLLyC5cL4hyHe49hqFP5wzI
+KPaRphO0qAI7WZyxvGjLkVF7mVSoj8Uu6nTSnEtCg3/axxv2Wtrq5aOD9EoikZMP
+wZQpqLM0Tw7yCgckOgDHlTd8LV1Ay1bIYWjj3UmdwrTpAq/noKMMj2zXeiXWjUlv
+6J664dICjYmv/NcEqzFpz3R9w7ndRhWZtqhLydc/8zI/IY8q/ebsTi+kZaSW5GIg
+U5lcZXE/JpyeMPQKqWol5qpUmYWNJqLqAiklABEBAAG0DmV4cGlyZWQtc3Via2V5
+iQEoBBMBAgASBQJT/8WQAhsDAgsHAhUIAh4BAAoJEGzOR/QRT3xrWZwH/2SjkXGc
+EinBoVNivrsLGOdrUua/aTY6PDy1J4rIypdDkTtgywvt+KKwL6BjraHhRmVEGU26
+oXdrKHXHnuP4MWFUHwsAdPkA6C0cPxeJxrORL/OQ5IPx17LLe2cwVVPBmM8NHbmz
+pLuKAFU7Qf0N79RoOfqolfM1wdUDQMvB18YriVGpBLHfujzcnzMfsISFNquRcb+V
+Uo5iLJ0Vk/JlkYSop+hGHFb+OWSXx0SC6yXuVSnC635457y+GHbhGy7Y50JCKO4J
+UKQctDDZm6AIInBOhnTEGc6RbMSYQhvi7Z/6WJnvxf6abbVKIujHXJq+An2dGVIQ
+R7Nlxif2N8MY+XW5AQ0EU3vvjwEIAMUUsMpyABuPhQm3Qu76bg1/P2Wqf8de/oo1
+k0grjy177jaGAdViLosvHYdp46BVT/z4NDS1ZVHb2fcuC/0YzVuevHC5IA4fiSUr
+QrjMJVB5eB8+Y2fc2matvrZyBmcicUHV/LCQ6de4QFHBKs3Qj9HBIFMLMUMsEVH5
+g08uFCUpSgPV2MyB2eAZARZ4Z4O5bLWNpafELNdJ2JgTuHjYH5SkeF5kR5m0KMKw
+BizcqxmtzMBipq8DNi8zgkwY2E7ngrtMFLUQSvTVNxQnWGlm/osL7GCXv+Vtuee1
+eu/h6Jsf7FCObY9SQs7xxCVWnQC3PNbAfpbrk1bU4nMt9+DBDHUAEQEAAYkBJQQY
+AQIADwIbDAUCU3vvjwUDAAFRgAAKCRBszkf0EU98a2SyB/42odA+rA8vw9xiQRQg
+bJMW/lmeSBmHI5MmomgtRrYtizDPx//8FsWBi8oPF1sw2vBWZEkqEeVBhhLoqxEk
+c2XcjQnOqrYDZ1Cn6W8v+IoKePQNaltJpgcJu/vyUXtf2b6rKVCsAOmJVGzsM+m3
+g3iuMSXKi3dWTs0S7ezusfhSqtBZEouRvsnlVUM/ZHhWY8fFpz4UF7ARH9mS2Aqc
+hx5JIGRQP5teVX0unJCgdLICk2CmqENqMeg7MyMu1/0KoW+FMgBuD9X9HsqLHD1s
+l79KGLk9OEwlEPU9k0ejqC6zUDXp+F01zTTBtrkqI0fgOE9hsrc3IMZLmWLgUKvy
+59L+
+=9yM7
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<!--
+Signing subkey that misses a cross-signature
+:public key packet:
+  version 4, algo 1, created 1394133622, expires 0
+  pkey[0]: [2048 bits]
+  pkey[1]: [17 bits]
+:user ID packet: "invalid-signing-subkeys"
+:signature packet: algo 1, keyid EDD40D05081E923F
+  version 4, created 1402773625, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest 74 de
+  hashed subpkt 2 len 4 (sig created 2014-06-14)
+  hashed subpkt 27 len 1 (key flags: 01)
+  hashed subpkt 11 len 1 (pref-sym-algos: 7)
+  hashed subpkt 21 len 1 (pref-hash-algos: 8)
+  hashed subpkt 30 len 1 (features: 01)
+  subpkt 16 len 8 (issuer key ID EDD40D05081E923F)
+  data: [2046 bits]
+:public sub key packet:
+  version 4, algo 1, created 1394133622, expires 0
+  pkey[0]: [2048 bits]
+  pkey[1]: [17 bits]
+:signature packet: algo 1, keyid EDD40D05081E923F
+  version 4, created 1402773625, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest 4c c2
+  hashed subpkt 2 len 4 (sig created 2014-06-14)
+  hashed subpkt 27 len 1 (key flags: 02)
+  subpkt 16 len 8 (issuer key ID EDD40D05081E923F)
+  data: [2043 bits]
+-->
+<textarea id="MissingCrossSignature">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mQENBFMYynYBCACVOZ3/e8Bm2b9KH9QyIlHGo/i1bnkpqsgXj8tpJ2MIUOnXMMAY
+ztW7kKFLCmgVdLIC0vSoLA4yhaLcMojznh/2CcUglZeb6Ao8Gtelr//Rd5DRfPpG
+zqcfUo+m+eO1co2Orabw0tZDfGpg5p3AYl0hmxhUyYSc/xUq93xL1UJzBFgYXY54
+QsM8dgeQgFseSk/YvdP5SMx1ev+eraUyiiUtWzWrWC1TdyRa5p4UZg6Rkoppf+WJ
+QrW6BWrhAtqATHc8ozV7uJjeONjUEq24roRc/OFZdmQQGK6yrzKnnbA6MdHhqpdo
+9kWDcXYb7pSE63Lc+OBa5X2GUVvXJLS/3nrtABEBAAG0F2ludmFsaWQtc2lnbmlu
+Zy1zdWJrZXlziQEoBBMBAgASBQJTnKB5AhsBAgsHAhUIAh4BAAoJEO3UDQUIHpI/
+dN4H/idX4FQ1LIZCnpHS/oxoWQWfpRgdKAEM0qCqjMgiipJeEwSQbqjTCynuh5/R
+JlODDz85ABR06aoF4l5ebGLQWFCYifPnJZ/Yf5OYcMGtb7dIbqxWVFL9iLMO/oDL
+ioI3dotjPui5e+2hI9pVH1UHB/bZ/GvMGo6Zg0XxLPolKQODMVjpjLAQ0YJ3spew
+RAmOGre6tIvbDsMBnm8qREt7a07cBJ6XK7xjxYaZHQBiHVxyEWDa6gyANONx8duW
+/fhQ/zDTnyVM/ik6VO0Ty9BhPpcEYLFwh5c1ilFari1ta3e6qKo6ZGa9YMk/REhu
+yBHd9nTkI+0CiQUmbckUiVjDKKe5AQ0EUxjKdgEIAJcXQeP+NmuciE99YcJoffxv
+2gVLU4ZXBNHEaP0mgaJ1+tmMD089vUQAcyGRvw8jfsNsVZQIOAuRxY94aHQhIRHR
+bUzBN28ofo/AJJtfx62C15xt6fDKRV6HXYqAiygrHIpEoRLyiN69iScUsjIJeyFL
+C8wa72e8pSL6dkHoaV1N9ZH/xmrJ+k0vsgkQaAh9CzYufncDxcwkoP+aOlGtX1gP
+WwWoIbz0JwLEMPHBWvDDXQcQPQTYQyj+LGC9U6f9VZHN25E94subM1MjuT9OhN9Y
+MLfWaaIc5WyhLFyQKW2Upofn9wSFi8ubyBnv640Dfd0rVmaWv7LNTZpoZ/GbJAMA
+EQEAAYkBHwQYAQIACQUCU5ygeQIbAgAKCRDt1A0FCB6SP0zCB/sEzaVR38vpx+OQ
+MMynCBJrakiqDmUZv9xtplY7zsHSQjpd6xGflbU2n+iX99Q+nav0ETQZifNUEd4N
+1ljDGQejcTyKD6Pkg6wBL3x9/RJye7Zszazm4+toJXZ8xJ3800+BtaPoI39akYJm
++ijzbskvN0v/j5GOFJwQO0pPRAFtdHqRs9Kf4YanxhedB4dIUblzlIJuKsxFit6N
+lgGRblagG3Vv2eBszbxzPbJjHCgVLR3RmrVezKOsZjr/2i7X+xLWIR0uD3IN1qOW
+CXQxLBizEEmSNVNxsp7KPGTLnqO3bPtqFirxS9PJLIMPTPLNBY7ZYuPNTMqVIUWF
+4artDmrG
+=7FfJ
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<!--
+SubKey that has an invalid cross-signature
+:public key packet:
+  version 4, algo 1, created 1394133622, expires 0
+  pkey[0]: [2048 bits]
+  pkey[1]: [17 bits]
+:user ID packet: "invalid-signing-subkeys"
+:signature packet: algo 1, keyid EDD40D05081E923F
+  version 4, created 1402773625, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest 74 de
+  hashed subpkt 2 len 4 (sig created 2014-06-14)
+  hashed subpkt 27 len 1 (key flags: 01)
+  hashed subpkt 11 len 1 (pref-sym-algos: 7)
+  hashed subpkt 21 len 1 (pref-hash-algos: 8)
+  hashed subpkt 30 len 1 (features: 01)
+  subpkt 16 len 8 (issuer key ID EDD40D05081E923F)
+  data: [2046 bits]
+:public sub key packet:
+  version 4, algo 1, created 1394133622, expires 0
+  pkey[0]: [2048 bits]
+  pkey[1]: [17 bits]
+:signature packet: algo 1, keyid EDD40D05081E923F
+  version 4, created 1402773625, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest 7b 19
+  hashed subpkt 2 len 4 (sig created 2014-06-14)
+  hashed subpkt 27 len 1 (key flags: 02)
+  hashed subpkt 32 len 284 (signature: v4, class 0x19, algo 1, digest algo 2)
+  subpkt 16 len 8 (issuer key ID EDD40D05081E923F)
+  data: [2047 bits]
+  -->
+<textarea id="InvalidCrossSignature">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+mQENBFMYynYBCACVOZ3/e8Bm2b9KH9QyIlHGo/i1bnkpqsgXj8tpJ2MIUOnXMMAY
+ztW7kKFLCmgVdLIC0vSoLA4yhaLcMojznh/2CcUglZeb6Ao8Gtelr//Rd5DRfPpG
+zqcfUo+m+eO1co2Orabw0tZDfGpg5p3AYl0hmxhUyYSc/xUq93xL1UJzBFgYXY54
+QsM8dgeQgFseSk/YvdP5SMx1ev+eraUyiiUtWzWrWC1TdyRa5p4UZg6Rkoppf+WJ
+QrW6BWrhAtqATHc8ozV7uJjeONjUEq24roRc/OFZdmQQGK6yrzKnnbA6MdHhqpdo
+9kWDcXYb7pSE63Lc+OBa5X2GUVvXJLS/3nrtABEBAAG0F2ludmFsaWQtc2lnbmlu
+Zy1zdWJrZXlziQEoBBMBAgASBQJTnKB5AhsBAgsHAhUIAh4BAAoJEO3UDQUIHpI/
+dN4H/idX4FQ1LIZCnpHS/oxoWQWfpRgdKAEM0qCqjMgiipJeEwSQbqjTCynuh5/R
+JlODDz85ABR06aoF4l5ebGLQWFCYifPnJZ/Yf5OYcMGtb7dIbqxWVFL9iLMO/oDL
+ioI3dotjPui5e+2hI9pVH1UHB/bZ/GvMGo6Zg0XxLPolKQODMVjpjLAQ0YJ3spew
+RAmOGre6tIvbDsMBnm8qREt7a07cBJ6XK7xjxYaZHQBiHVxyEWDa6gyANONx8duW
+/fhQ/zDTnyVM/ik6VO0Ty9BhPpcEYLFwh5c1ilFari1ta3e6qKo6ZGa9YMk/REhu
+yBHd9nTkI+0CiQUmbckUiVjDKKe5AQ0EUxjKdgEIAIINDqlj7X6jYKc6DjwrOkjQ
+UIRWbQQar0LwmNilehmt70g5DCL1SYm9q4LcgJJ2Nhxj0/5qqsYib50OSWMcKeEe
+iRXpXzv1ObpcQtI5ithp0gR53YPXBib80t3bUzomQ5UyZqAAHzMp3BKC54/vUrSK
+FeRaxDzNLrCeyI00+LHNUtwghAqHvdNcsIf8VRumK8oTm3RmDh0TyjASWYbrt9c8
+R1Um3zuoACOVy+mEIgIzsfHq0u7dwYwJB5+KeM7ZLx+HGIYdUYzHuUE1sLwVoELh
++SHIGHI1HDicOjzqgajShuIjj5hZTyQySVprrsLKiXS6NEwHAP20+XjayJ/R3tEA
+EQEAAYkCPgQYAQIBKAUCU5ygeQIbAsBdIAQZAQIABgUCU5ygeQAKCRCpVlnFZmhO
+52RJB/9uD1MSa0wjY6tHOIgquZcP3bHBvHmrHNMw9HR2wRCMO91ZkhrpdS3ZHtgb
+u3/55etj0FdvDo1tb8P8FGSVtO5Vcwf5APM8sbbqoi8L951Q3i7qt847lfhu6sMl
+w0LWFvPTOLHrliZHItPRjOltS1WAWfr2jUYhsU9ytaDAJmvf9DujxEOsN5G1YJep
+54JCKVCkM/y585Zcnn+yxk/XwqoNQ0/iJUT9qRrZWvoeasxhl1PQcwihCwss44A+
+YXaAt3hbk+6LEQuZoYS73yR3WHj+42tfm7YxRGeubXfgCEz/brETEWXMh4pe0vCL
+bfWrmfSPq2rDegYcAybxRQz0lF8PAAoJEO3UDQUIHpI/exkH/0vQfdHA8g/N4T6E
+i6b1CUVBAkvtdJpCATZjWPhXmShOw62gkDw306vHPilL4SCvEEi4KzG72zkp6VsB
+DSRcpxCwT4mHue+duiy53/aRMtSJ+vDfiV1Vhq+3sWAck/yUtfDU9/u4eFaiNok1
+8/Gd7reyuZt5CiJnpdPpjCwelK21l2w7sHAnJF55ITXdOxI8oG3BRKufz0z5lyDY
+s2tXYmhhQIggdgelN8LbcMhWs/PBbtUr6uZlNJG2lW1yscD4aI529VjwJlCeo745
+U7pO4eF05VViUJ2mmfoivL3tkhoTUWhx8xs8xCUcCg8DoEoSIhxtOmoTPR22Z9BL
+6LCg2mg=
+=Dhm4
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+
 <script>
 function getKey(id) {
   return e2e.openpgp.block.factory.parseAscii(
@@ -873,6 +1121,41 @@ function testKeyUsageFlags() {
   var key = getKey('GnuPgKeyUsageFlags');
   key.processSignatures();
   assertObjectEquals(key.subKeys[1], key.getKeyToEncrypt());
+}
+
+function testExpiredUid() {
+  var key = getKey('ExpiredUid');
+  assertEquals(2, key.userIds.length);
+  assertEquals(86400, key.userIds[0].getCertifications()[0].attributes.
+      SIGNATURE_EXPIRATION_TIME);
+  key.processSignatures();
+  // Expired User ID gets rejected
+  assertEquals(1, key.userIds.length);
+  assertEquals('good-key', key.userIds[0].userId);
+}
+
+function testExpiredSubkey() {
+  var key = getKey('ExpiredSubkey');
+  assertEquals(1, key.subKeys.length);
+  assertEquals(86400, key.subKeys[0].getBindingSignatures()[0].attributes.
+      SIGNATURE_EXPIRATION_TIME);
+  key.processSignatures();
+  // Expired User ID gets rejected
+  assertEquals(0, key.subKeys.length);
+}
+
+function testBadSubkeys() {
+  var e = assertThrows(function() {
+    getKey('MissingCrossSignature')
+  });
+  assertTrue(e instanceof e2e.openpgp.error.ParseError);
+  assertEquals(e.message, 'Missing required key cross-signature.');
+  var key = getKey('InvalidCrossSignature');
+  var e = assertThrows(function() {
+    key.processSignatures();
+  });
+  assertTrue(e instanceof e2e.openpgp.error.SignatureError);
+  assertEquals(e.message, 'Cross-signature verification failed.');
 }
 
 </script>

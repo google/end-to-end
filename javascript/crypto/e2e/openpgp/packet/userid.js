@@ -22,10 +22,15 @@ goog.require('e2e');
 /** @suppress {extraRequire} intentional import */
 goog.require('e2e.compression.all');
 goog.require('e2e.compression.factory');
+
 goog.require('e2e.hash.Algorithm');
 /** @suppress {extraRequire} intentional import */
 goog.require('e2e.hash.all');
 goog.require('e2e.openpgp.constants');
+goog.require('e2e.openpgp.error.ParseError');
+goog.require('e2e.openpgp.error.SignatureError');
+goog.require('e2e.openpgp.error.SignatureExpiredError');
+goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.openpgp.packet.SignatureSub');
@@ -148,8 +153,10 @@ e2e.openpgp.packet.UserId.prototype.verifySignatureInternal_ = function(
       goog.asserts.assertObject(signer));
   } catch (e) {
     // Ignore signatures that throw unsupported errors (e.g. weak hash
-    // algorithms)
+    // algorithms) and expired signatures.
     if (e instanceof e2e.openpgp.error.UnsupportedError) {
+      return false;
+    } else if (e instanceof e2e.openpgp.error.SignatureExpiredError) {
       return false;
     }
     throw e;
