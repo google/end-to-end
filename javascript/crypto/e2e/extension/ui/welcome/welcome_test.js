@@ -103,8 +103,9 @@ function setUp() {
   mockControl = new goog.testing.MockControl();
 
   localStorage.clear();
-  launcher = new e2e.ext.Launcher();
+  preferences.setWelcomePageEnabled(false);
 
+  launcher = new e2e.ext.Launcher();
   stubs.setPath('chrome.browserAction.setBadgeText', function() {});
   stubs.setPath('chrome.browserAction.setTitle', function() {});
   stubs.setPath('chrome.extension.getURL', function() {

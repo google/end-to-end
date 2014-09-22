@@ -53,6 +53,7 @@ function setUp() {
   });
   stubs.setPath('chrome.tabs.sendMessage', function() {});
   localStorage.clear();
+  preferences.setWelcomePageEnabled(false);
   launcher = new e2e.ext.Launcher();
   launcher.start();
 }
@@ -114,7 +115,6 @@ function testUpdateSelectedContent() {
 
 
 function testBadPassphrase() {
-  localStorage.clear();
   var l1 = new e2e.ext.Launcher();
   l1.start('somesecret');
   // generate a key to ensure the keyring isn't empty.
@@ -124,7 +124,6 @@ function testBadPassphrase() {
     var l2 = new e2e.ext.Launcher();
     l2.start('fail');
   });
-  localStorage.clear();
 }
 
 
@@ -194,7 +193,7 @@ function testShowWelcomeScreenEnabled() {
   });
 
   window.localStorage.removeItem(constants.StorageKey.DISABLE_WELCOME_SCREEN);
-
+  preferences.setWelcomePageEnabled(true);
   launcher.start();
   assertTrue('Failed to open the welcome screen', openedWindow);
 }
