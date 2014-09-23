@@ -17,6 +17,7 @@
 
 goog.provide('e2e.ext.ui.panels.prompt.PanelBase');
 
+goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('goog.array');
@@ -26,6 +27,7 @@ goog.require('goog.ui.Component');
 goog.scope(function() {
 var constants = e2e.ext.constants;
 var dialogs = e2e.ext.ui.dialogs;
+var messages = e2e.ext.messages;
 var promptPanels = e2e.ext.ui.panels.prompt;
 
 
@@ -33,15 +35,29 @@ var promptPanels = e2e.ext.ui.panels.prompt;
 /**
  * Constructor for the base class for panels inside the prompt UI.
  * @param {string} title The title of the panel.
+ * @param {!messages.BridgeMessageRequest} content The content that the user is
+ *     working with.
  * @constructor
  * @extends {goog.ui.Component}
  */
-promptPanels.PanelBase = function(title) {
+promptPanels.PanelBase = function(title, content) {
   goog.base(this);
 
   this.title_ = goog.asserts.assertString(title);
+  this.content_ = goog.asserts.assert(content);
 };
 goog.inherits(promptPanels.PanelBase, goog.ui.Component);
+
+
+/** @override */
+promptPanels.PanelBase.prototype.enterDocument = function() {
+  goog.base(this, 'enterDocument');
+
+  var formText = this.getElement().querySelector('textarea');
+  if (formText) {
+    formText.textContent = this.getContent() ? this.getContent().selection : '';
+  }
+};
 
 
 /** @return {string} The title of the panel. */
@@ -51,19 +67,56 @@ promptPanels.PanelBase.prototype.getTitle = function() {
 
 
 /**
+ * @return {!messages.BridgeMessageRequest} The content that the user is
+ * working with.
+ */
+promptPanels.PanelBase.prototype.getContent = function() {
+  return this.content_;
+};
+
+
+/**
+ * Sets the content that the user is working with.
+ * @param {!messages.BridgeMessageRequest} content The content that the user is
+ *     working with.
+ * @protected
+ */
+promptPanels.PanelBase.prototype.setContentInternal = function(content) {
+  this.content_ = goog.asserts.assert(content);
+};
+
+
+/**
  * Renders the Dismiss button in the panel.
  * @protected
  */
 promptPanels.PanelBase.prototype.renderDismiss = function() {
-  var query = 'button.action,button.save';
+  var query = 'button';
   goog.array.forEach(this.getElement().querySelectorAll(query), function(btn) {
     goog.dom.classlist.add(btn, constants.CssClass.HIDDEN);
   });
 
+  goog.dom.classlist.remove(
+      this.getElementByClass(constants.CssClass.BACK),
+      constants.CssClass.HIDDEN);
+
   var cancelBtn = this.getElementByClass(constants.CssClass.CANCEL);
   if (cancelBtn) {
+    goog.dom.classlist.remove(cancelBtn, constants.CssClass.HIDDEN);
     cancelBtn.textContent = chrome.i18n.getMessage('promptDismissActionLabel');
   }
+};
+
+
+/**
+ * Renders the provided dialog into the panel.
+ * @param {!dialogs.Generic} dialog The dialog to render.
+ * @protected
+ */
+promptPanels.PanelBase.prototype.renderDialog = function(dialog) {
+  var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
+  this.addChild(dialog, false);
+  dialog.render(popupElem);
 };
 
 
@@ -77,7 +130,6 @@ promptPanels.PanelBase.prototype.renderDismiss = function() {
  */
 promptPanels.PanelBase.prototype.renderPassphraseDialog =
     function(uid, callback) {
-  var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
   var dialog = new dialogs.Generic(chrome.i18n.getMessage(
           'promptPassphraseCallbackMessage', uid),
       function(passphrase) {
@@ -88,9 +140,7 @@ promptPanels.PanelBase.prototype.renderPassphraseDialog =
       '',
       chrome.i18n.getMessage('actionEnterPassphrase'),
       chrome.i18n.getMessage('actionCancelPgpAction'));
-
-  this.addChild(dialog, false);
-  dialog.render(popupElem);
+  this.renderDialog(dialog);
 };
 
 

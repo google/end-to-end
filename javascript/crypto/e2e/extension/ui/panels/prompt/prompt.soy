@@ -30,3 +30,48 @@
   <button class="{e2e.ext.constants.CssClass.ACTION}">{$actionButtonTitle}</button>
   <button class="{e2e.ext.constants.CssClass.CANCEL}">{$cancelButtonTitle}</button>
 {/template}
+
+
+/**
+ * Renders the required UI elements for PGP encryption.
+ * @param insertCheckboxEnabled A boolean flag if the insert checkbox should be displayed.
+ * @param fromLabel The label to describe the "From:" select box.
+ * @param signerCheckboxTitle The label for the checkbox to sign messages.
+ * @param passphraseEncryptionLinkTitle The title for the passphrase encryption link.
+ * @param backButtonTitle The title for the back button.
+ * @param actionButtonTitle The title of the prompt button.
+ * @param saveDraftButtonTitle The title of the save button.
+ * @param insertButtonTitle The title of the insert button.
+ * @param optionsButtonTitle The title of the options button.
+ * @param cancelButtonTitle The title of the cancel button.
+ */
+{template .renderEncrypt}
+  <div id="{e2e.ext.constants.ElementId.FROM_HOLDER}">
+    <div>{$fromLabel}</div>
+    <select id="{e2e.ext.constants.ElementId.SIGNER_SELECT}"></select>
+  </div>
+  <div id="{e2e.ext.constants.ElementId.CHIP_HOLDER}"></div>
+  <div id="{e2e.ext.constants.ElementId.PASSPHRASE_ENCRYPTION_LINK}">
+    + {$passphraseEncryptionLinkTitle}
+  </div>
+  <textarea></textarea>
+  <div>
+    <input type="checkbox" id="{e2e.ext.constants.ElementId.SIGN_MESSAGE_CHECK}">
+    <label for="{e2e.ext.constants.ElementId.SIGN_MESSAGE_CHECK}">
+      {$signerCheckboxTitle}
+    </label>
+  </div>
+  <button class="{e2e.ext.constants.CssClass.BACK}">
+    <img src="images/back.png" title="{$backButtonTitle}"/>
+  </button>
+  <button class="{e2e.ext.constants.CssClass.ACTION}">{$actionButtonTitle}</button>
+  {if $insertCheckboxEnabled}
+    <button class="{e2e.ext.constants.CssClass.INSERT}{sp}
+                   {e2e.ext.constants.CssClass.HIDDEN}">
+      {$insertButtonTitle}
+    </button>
+    <button class="{e2e.ext.constants.CssClass.SAVE}">{$saveDraftButtonTitle}</button>
+  {/if}
+  <button class="{e2e.ext.constants.CssClass.OPTIONS}">{$optionsButtonTitle}</button>
+  <button class="{e2e.ext.constants.CssClass.CANCEL}">{$cancelButtonTitle}</button>
+{/template}

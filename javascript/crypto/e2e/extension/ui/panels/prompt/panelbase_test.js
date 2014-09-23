@@ -35,6 +35,7 @@ var constants = e2e.ext.constants;
 var mockControl = null;
 var panel = null;
 var panelTitle = 'panel-title';
+var panelContent = {};
 var stubs = new goog.testing.PropertyReplacer();
 var templates = e2e.ext.ui.templates.panels.prompt;
 
@@ -52,7 +53,7 @@ function setUp() {
     document.body.appendChild(callbackDialog);
   }
 
-  panel = new e2e.ext.ui.panels.prompt.PanelBase(panelTitle);
+  panel = new e2e.ext.ui.panels.prompt.PanelBase(panelTitle, panelContent);
   panel.render(document.body);
   soy.renderElement(panel.getElement(), templates.renderGenericForm, {});
 }
@@ -68,6 +69,15 @@ function tearDown() {
 
 function testGetTitle() {
   assertEquals(panelTitle, panel.getTitle());
+}
+
+
+function testSetGetContent() {
+  assertEquals(panelContent, panel.getContent());
+
+  var newContent = {};
+  panel.setContentInternal(newContent);
+  assertEquals(newContent, panel.getContent());
 }
 
 
