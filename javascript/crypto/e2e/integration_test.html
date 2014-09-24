@@ -256,7 +256,7 @@ function testEncryption() {
     '=nHBL\n' +
     '-----END PGP PUBLIC KEY BLOCK-----';
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
-  var literal = e2e.openpgp.block.LiteralMessage.fromText(plaintext,
+  var literal = e2e.openpgp.block.LiteralMessage.construct(plaintext,
       plaintextFilename);
   asyncTestCase.waitForAsync('Waiting for encryption.');
   e2e.openpgp.block.EncryptedMessage.construct(
@@ -412,7 +412,7 @@ function testSymmetricEncryption() {
   var plaintext = 'hello world from encrypted message';
   var plaintextFilename = 'file.txt';
 
-  var literal = e2e.openpgp.block.LiteralMessage.fromText(plaintext,
+  var literal = e2e.openpgp.block.LiteralMessage.construct(plaintext,
       plaintextFilename);
   asyncTestCase.waitForAsync('Waiting for encryption.');
   e2e.openpgp.block.EncryptedMessage.construct(
@@ -527,7 +527,7 @@ function testEncryptionECDH() {
     '-----END PGP PUBLIC KEY BLOCK-----';
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
 
-  var literal = e2e.openpgp.block.LiteralMessage.fromText(plaintext,
+  var literal = e2e.openpgp.block.LiteralMessage.construct(plaintext,
       plaintextFilename);
   asyncTestCase.waitForAsync('Waiting for encryption.');
   e2e.openpgp.block.EncryptedMessage.construct(
@@ -905,7 +905,7 @@ function testElGamal() {
       '-----END PGP PUBLIC KEY BLOCK-----';
   publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
 
-  var literal = e2e.openpgp.block.LiteralMessage.fromText(plaintext,
+  var literal = e2e.openpgp.block.LiteralMessage.construct(plaintext,
       plaintextFilename);
   asyncTestCase.waitForAsync('Waiting for encryption.');
   e2e.openpgp.block.EncryptedMessage.construct(
@@ -983,7 +983,7 @@ function testEncryptionWithSignatures() {
 
   var passphrase = e2e.stringToByteArray('test');
   privateKeyBlock.keyPacket.cipher.unlockKey(passphrase);
-  var literal = e2e.openpgp.block.LiteralMessage.fromText(plaintext);
+  var literal = e2e.openpgp.block.LiteralMessage.construct(plaintext);
 
   assertEquals(publicKeyBlock.subKeys[0], publicKeyBlock.getKeyToEncrypt());
   assertEquals(privateKeyBlock.keyPacket, privateKeyBlock.getKeyToSign());

@@ -422,6 +422,38 @@ function testEncrypt() {
 }
 
 
+function testEncryptByteArray() {
+  context.importKey(passwordCallback, publicKeyAscii);
+  var rsaKeys = e2e.async.Result.getValue(context.searchPublicKey(USER_ID));
+  assertEquals(1, rsaKeys.length);
+
+  context.importKey(passwordCallback, publicKeyAsciiOther);
+  var allKeys = new goog.structs.Map(e2e.async.Result.getValue(context.getAllKeys()));
+  var keys = goog.array.flatten(allKeys.getValues());
+  var plaintext = e2e.stringToByteArray('hello world from context message');
+  context.importKey(passwordCallback, privateKeyAscii);
+  asyncTestCase.waitForAsync('waiting for encryption.');
+  context.encryptSign(
+      plaintext,
+      [], // Options.
+      keys, // Keys to encrypt to.
+      [], // Passphrases for symmetric ESKs.
+      null // Keys to sign with.
+  ).addCallback(function(encrypted) {
+    asyncTestCase.waitForAsync('waiting for decryption.');
+    context.verifyDecrypt(passwordCallback, encrypted).addCallback(function(result) {
+      asyncTestCase.continueTesting();
+      var data = result['decrypt']['data'];
+      assertArrayEquals(plaintext, data);
+    }).addErrback(function(error) {
+      throw error;
+    });
+  }).addErrback(function(error) {
+      throw error;
+  });
+}
+
+
 function testEncryptSign() {
   context.importKey(passwordCallback, publicKeyAscii);
   var allKeys = new goog.structs.Map(e2e.async.Result.getValue(context.getAllKeys()));

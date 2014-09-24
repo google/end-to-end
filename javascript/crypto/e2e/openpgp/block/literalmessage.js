@@ -109,17 +109,20 @@ e2e.openpgp.block.LiteralMessage.prototype.parse = function(packets) {
 
 /**
  * Creates a literal message from a text contents
- * @param  {string} plaintext
+ * @param  {string|!e2e.ByteArray} plaintext
  * @param  {string=} opt_filename File name to use in LiteralData packet
  * @return {!e2e.openpgp.block.LiteralMessage} Created message.
  */
-e2e.openpgp.block.LiteralMessage.fromText = function(plaintext, opt_filename) {
+e2e.openpgp.block.LiteralMessage.construct = function(plaintext, opt_filename) {
+  if (typeof plaintext == 'string') {
+    plaintext = e2e.stringToByteArray(plaintext);
+  }
   var literal = new e2e.openpgp.packet.LiteralData(
       e2e.openpgp.packet.LiteralData.Format.TEXT,
       e2e.stringToByteArray(
         goog.isDefAndNotNull(opt_filename) ? opt_filename : ''), // file name
       Math.floor(new Date().getTime() / 1000), // time in seconds since 1970
-      e2e.stringToByteArray(plaintext));
+      plaintext);
   var message = new e2e.openpgp.block.LiteralMessage();
   message.parse([literal]);
   return message;

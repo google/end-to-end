@@ -131,7 +131,7 @@ e2e.openpgp.Context.prototype.generateKey;
 
 /**
  * Encrypts and signs a given plaintext with a set of keys.
- * @param {string} plaintext The plaintext.
+ * @param {string|!e2e.ByteArray} plaintext The plaintext.
  * @param {!e2e.openpgp.EncryptOptions} options Metadata to add.
  * @param {!Array.<!e2e.openpgp.Key>} encryptionKeys The keys to
  *     encrypt the message with.

@@ -351,7 +351,12 @@ e2e.openpgp.ContextImpl.prototype.encryptSign = function(
   }
   if (encryptionKeys.length == 0 && passphrases.length == 0 &&
       signatureKeyBlock) {
-    return this.clearSignInternal(plaintext, signatureKeyBlock);
+    if (typeof plaintext == 'string' && this.armorOutput) {
+      return this.clearSignInternal(plaintext, signatureKeyBlock);
+    } else {
+      return this.byteSignInternal(
+          goog.asserts.assertArray(plaintext), signatureKeyBlock);
+    }
   }
   // De-duplicate keys.
   var keyMap = new goog.structs.Map();
@@ -377,7 +382,7 @@ e2e.openpgp.ContextImpl.prototype.encryptSign = function(
 
 
 /**
- * Internal implementation of the encrypt/sign operation.
+ * Internal implementation of the clear sign operation.
  * @param {string} plaintext The plaintext.
  * @param {!e2e.openpgp.block.TransferableKey} key The key to sign the
  *     message with.
@@ -389,13 +394,42 @@ e2e.openpgp.ContextImpl.prototype.clearSignInternal = function(
   var messageRes = e2e.openpgp.ClearSignMessage.construct(plaintext, key);
   return messageRes.addCallback(function(message) {
     return e2e.openpgp.asciiArmor.encodeClearSign(message, this.armorHeaders_);
-  });
+  }, this);
+};
+
+
+/**
+ * Internal implementation of the byte sign operation.
+ * @param {!e2e.ByteArray} plaintext The plaintext.
+ * @param {!e2e.openpgp.block.TransferableKey} key The key to sign the
+ *     message with.
+ * @protected
+ * @return {!e2e.openpgp.EncryptSignResult}
+ */
+e2e.openpgp.ContextImpl.prototype.byteSignInternal = function(
+    plaintext, key) {
+  var msg = e2e.openpgp.block.LiteralMessage.construct(plaintext);
+  var sigKey = key.getKeyToSign();
+  if (goog.isDefAndNotNull(sigKey)) {
+    return msg.signWithOnePass(sigKey).addCallback(function() {
+      var data = msg.serialize();
+      if (this.armorOutput) {
+        return e2e.openpgp.asciiArmor.encode(
+            'MESSAGE',
+            goog.asserts.assertArray(data),
+            this.armorHeaders_);
+      }
+      return data;
+    }, this);
+  }
+  return e2e.async.Result.toError(
+      new e2e.openpgp.error.InvalidArgumentsError('Invalid signing key.'));
 };
 
 
 /**
  * Internal implementation of the encrypt/sign operation.
- * @param {string} plaintext The plaintext.
+ * @param {string|!e2e.ByteArray} plaintext The plaintext.
  * @param {!e2e.openpgp.EncryptOptions} options Metadata to add.
  * @param {!Array.<!e2e.openpgp.block.TransferableKey>} encryptionKeys The
  *     keys to encrypt the message with.
@@ -409,7 +443,7 @@ e2e.openpgp.ContextImpl.prototype.clearSignInternal = function(
 e2e.openpgp.ContextImpl.prototype.encryptSignInternal = function(
     plaintext, options, encryptionKeys, passphrases, opt_signatureKey) {
   try {
-    var literal = e2e.openpgp.block.LiteralMessage.fromText(plaintext);
+    var literal = e2e.openpgp.block.LiteralMessage.construct(plaintext);
     var blockResult = e2e.openpgp.block.EncryptedMessage.construct(
         literal,
         encryptionKeys,
