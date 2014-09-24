@@ -22,6 +22,7 @@ goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.panels.prompt.PanelBase');
 goog.require('e2e.ext.ui.templates.panels.prompt');
 goog.require('goog.dom.classlist');
+goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
@@ -30,6 +31,9 @@ goog.require('goog.testing.mockmatchers');
 goog.require('soy');
 
 goog.setTestOnly();
+
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
+asyncTestCase.stepTimeout = 2000;
 
 var constants = e2e.ext.constants;
 var mockControl = null;
@@ -53,9 +57,15 @@ function setUp() {
     document.body.appendChild(callbackDialog);
   }
 
+  stubs.set(
+      e2e.ext.ui.panels.prompt.PanelBase.prototype, 'decorateInternal',
+      function(elem) {
+        goog.base(this, 'decorateInternal', elem);
+        soy.renderElement(elem, templates.renderGenericForm, {});
+      });
+
   panel = new e2e.ext.ui.panels.prompt.PanelBase(panelTitle, panelContent);
   panel.render(document.body);
-  soy.renderElement(panel.getElement(), templates.renderGenericForm, {});
 }
 
 
@@ -118,4 +128,25 @@ function testRenderPassphraseDialog() {
 
   assertNotContains(uid, document.body.textContent);
   mockControl.$verifyAll();
+}
+
+function testClearPriorFailures() {
+  var errorCallback = mockControl. createFunctionMock();
+  errorCallback(null);
+
+  mockControl.$replayAll();
+
+  panel = new e2e.ext.ui.panels.prompt.PanelBase(
+      panelTitle, panelContent, errorCallback);
+  panel.render(document.body);
+
+  panel.getElement().click();
+  var button = panel.getElement().querySelector('button');
+  button.click();
+
+  asyncTestCase.waitForAsync('Waiting for button click.');
+  window.setTimeout(function() {
+    mockControl.$verifyAll();
+    asyncTestCase.continueTesting();
+  }, 500);
 }

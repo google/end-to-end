@@ -22,6 +22,7 @@ goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.events.EventType');
 goog.require('goog.ui.Component');
 
 goog.scope(function() {
@@ -37,16 +38,26 @@ var promptPanels = e2e.ext.ui.panels.prompt;
  * @param {string} title The title of the panel.
  * @param {!messages.BridgeMessageRequest} content The content that the user is
  *     working with.
+ * @param {function(Error)=} opt_errorCallback A callback where errors will be
+ *     passed to.
  * @constructor
  * @extends {goog.ui.Component}
  */
-promptPanels.PanelBase = function(title, content) {
+promptPanels.PanelBase = function(title, content, opt_errorCallback) {
   goog.base(this);
 
   this.title_ = goog.asserts.assertString(title);
   this.content_ = goog.asserts.assert(content);
+  this.errorCallback_ = opt_errorCallback || goog.nullFunction;
 };
 goog.inherits(promptPanels.PanelBase, goog.ui.Component);
+
+
+/** @override */
+promptPanels.PanelBase.prototype.createDom = function() {
+  goog.base(this, 'createDom');
+  this.decorateInternal(this.getElement());
+};
 
 
 /** @override */
@@ -56,6 +67,24 @@ promptPanels.PanelBase.prototype.enterDocument = function() {
   var formText = this.getElement().querySelector('textarea');
   if (formText) {
     formText.textContent = this.getContent() ? this.getContent().selection : '';
+  }
+
+  this.getHandler().listen(
+      this.getElement(),
+      goog.events.EventType.CLICK,
+      this.clearPriorFailures_, true);
+};
+
+
+/**
+ * Clears the errors that have been previously displayed in the UI.
+ * @param {Event} evt The event that was triggered to clear the prior failures
+ *     from the UI.
+ * @private
+ */
+promptPanels.PanelBase.prototype.clearPriorFailures_ = function(evt) {
+  if (evt.target instanceof HTMLButtonElement) {
+    this.errorCallback_(null);
   }
 };
 

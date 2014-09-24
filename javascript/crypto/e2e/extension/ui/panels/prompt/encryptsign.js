@@ -58,7 +58,8 @@ var utils = e2e.ext.utils;
  * @extends {promptPanels.PanelBase}
  */
 promptPanels.EncryptSign = function(actionExecutor, content, errorCallback) {
-  goog.base(this, chrome.i18n.getMessage('promptEncryptSignTitle'), content);
+  goog.base(this, chrome.i18n.getMessage('promptEncryptSignTitle'),
+      content, errorCallback);
 
   this.actionExecutor_ = actionExecutor;
   this.errorCallback_ = errorCallback;
@@ -81,13 +82,6 @@ promptPanels.EncryptSign = function(actionExecutor, content, errorCallback) {
   this.chipHolder_ = null;
 };
 goog.inherits(promptPanels.EncryptSign, promptPanels.PanelBase);
-
-
-/** @override */
-promptPanels.EncryptSign.prototype.createDom = function() {
-  goog.base(this, 'createDom');
-  this.decorateInternal(this.getElement());
-};
 
 
 /** @override */
@@ -342,8 +336,6 @@ promptPanels.EncryptSign.prototype.renderReply_ =
  * @private
  */
 promptPanels.EncryptSign.prototype.encryptSign_ = function() {
-  this.errorCallback_(null); // Clear prior failures.
-
   var textArea = /** @type {HTMLTextAreaElement} */
       (this.getElement().querySelector('textarea'));
   var origin = this.getContent().origin;

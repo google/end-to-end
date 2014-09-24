@@ -45,19 +45,12 @@ var templates = e2e.ext.ui.templates.panels.prompt;
  * @extends {promptPanels.PanelBase}
  */
 promptPanels.DecryptVerify = function(actionExecutor, content, errorCallback) {
-  goog.base(this, chrome.i18n.getMessage('promptDecryptVerifyTitle'), content);
+  goog.base(this, chrome.i18n.getMessage('promptDecryptVerifyTitle'),
+      content, errorCallback);
 
   this.actionExecutor_ = actionExecutor;
-  this.errorCallback_ = errorCallback;
 };
 goog.inherits(promptPanels.DecryptVerify, promptPanels.PanelBase);
-
-
-/** @override */
-promptPanels.DecryptVerify.prototype.createDom = function() {
-  goog.base(this, 'createDom');
-  this.decorateInternal(this.getElement());
-};
 
 
 /** @override */
@@ -90,9 +83,6 @@ promptPanels.DecryptVerify.prototype.enterDocument = function() {
  * @private
  */
 promptPanels.DecryptVerify.prototype.decryptVerify_ = function() {
-  // TODO(radi): Move code to clear prior errors in the panel base.
-  this.errorCallback_(null); // Clear prior failures.
-
   var textArea = /** @type {HTMLTextAreaElement} */
       (this.getElement().querySelector('textarea'));
 
