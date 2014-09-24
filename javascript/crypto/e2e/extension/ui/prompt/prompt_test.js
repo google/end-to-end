@@ -157,10 +157,6 @@ function testGetTitle() {
   stubs.replace(chrome.i18n, 'getMessage', function(msgId) {
     return msgId;
   });
-  assertEquals('promptEncryptSignTitle',
-      prompt.getTitle_(e2e.ext.constants.Actions.ENCRYPT_SIGN));
-  assertEquals('promptDecryptVerifyTitle',
-      prompt.getTitle_(e2e.ext.constants.Actions.DECRYPT_VERIFY));
   assertEquals('promptImportKeyTitle',
       prompt.getTitle_(e2e.ext.constants.Actions.IMPORT_KEY));
   assertEquals('actionUserSpecified',
@@ -357,7 +353,7 @@ function testDecrypt() {
         assertEquals(encrypted, arg.content);
         return true;
       }),
-      prompt,
+      goog.testing.mockmatchers.ignoreArgument,
       decryptCb,
       new goog.testing.mockmatchers.ArgumentMatcher(goog.isFunction));
 

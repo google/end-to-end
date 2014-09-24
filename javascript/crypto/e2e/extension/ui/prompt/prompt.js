@@ -29,6 +29,7 @@ goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.ui.panels.Chip');
 goog.require('e2e.ext.ui.panels.ChipHolder');
+goog.require('e2e.ext.ui.panels.prompt.DecryptVerify');
 goog.require('e2e.ext.ui.panels.prompt.EncryptSign');
 goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.ui.templates.prompt');
@@ -173,12 +174,16 @@ ui.Prompt.prototype.processSelectedContent_ =
           goog.bind(this.displayFailure_, this));
       this.addChild(encryptPanel, false);
       encryptPanel.decorate(elem);
+      title.textContent = encryptPanel.getTitle();
       break;
     case constants.Actions.DECRYPT_VERIFY:
-      this.renderGenericForm_(
-          elem,
-          chrome.i18n.getMessage('promptDecryptVerifyActionLabel'),
-          chrome.i18n.getMessage('promptDecryptVerifyPlaceholder'));
+      var decryptPanel = new panels.prompt.DecryptVerify(
+          this.actionExecutor_,
+          /** @type {!messages.BridgeMessageRequest} */ (contentBlob || {}),
+          goog.bind(this.displayFailure_, this));
+      this.addChild(decryptPanel, false);
+      decryptPanel.decorate(elem);
+      title.textContent = decryptPanel.getTitle();
       break;
     case constants.Actions.IMPORT_KEY:
       this.renderGenericForm_(
@@ -397,10 +402,6 @@ ui.Prompt.prototype.close = function() {
  */
 ui.Prompt.prototype.getTitle_ = function(action) {
   switch (action) {
-    case ext.constants.Actions.ENCRYPT_SIGN:
-      return chrome.i18n.getMessage('promptEncryptSignTitle');
-    case ext.constants.Actions.DECRYPT_VERIFY:
-      return chrome.i18n.getMessage('promptDecryptVerifyTitle');
     case ext.constants.Actions.IMPORT_KEY:
       return chrome.i18n.getMessage('promptImportKeyTitle');
     case ext.constants.Actions.USER_SPECIFIED:
@@ -442,16 +443,6 @@ ui.Prompt.prototype.executeAction_ = function(action, elem, origin) {
   var textArea = elem.querySelector('textarea');
   this.clearFailure_();
   switch (action) {
-    case constants.Actions.DECRYPT_VERIFY:
-      this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
-        action: constants.Actions.DECRYPT_VERIFY,
-        content: textArea.value,
-        passphraseCallback: goog.bind(this.renderPassphraseCallback_, this)
-      }), this, goog.bind(function(decrypted) {
-        textArea.value = decrypted;
-        this.surfaceDismissButton_();
-      }, this));
-      break;
     case ext.constants.Actions.IMPORT_KEY:
       this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
         action: constants.Actions.IMPORT_KEY,
