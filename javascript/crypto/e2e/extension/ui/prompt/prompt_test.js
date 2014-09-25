@@ -157,8 +157,6 @@ function testGetTitle() {
   stubs.replace(chrome.i18n, 'getMessage', function(msgId) {
     return msgId;
   });
-  assertEquals('promptImportKeyTitle',
-      prompt.getTitle_(e2e.ext.constants.Actions.IMPORT_KEY));
   assertEquals('actionUserSpecified',
       prompt.getTitle_(e2e.ext.constants.Actions.USER_SPECIFIED));
   assertEquals('actionUnlockKeyring',
@@ -439,7 +437,7 @@ function testImportKey() {
   e2e.ext.actions.GetKeyDescription.prototype.execute(
       goog.testing.mockmatchers.ignoreArgument,
       goog.testing.mockmatchers.ignoreArgument,
-      prompt,
+      goog.testing.mockmatchers.ignoreArgument,
       keyDescriptionArg,
       goog.testing.mockmatchers.ignoreArgument);
 
@@ -455,11 +453,13 @@ function testImportKey() {
   mockControl.$replayAll();
 
   prompt.decorate(document.documentElement);
-  var div = document.createElement('div');
-  var txtArea = document.createElement('textarea');
-  txtArea.value = PUBLIC_KEY_ASCII;
-  div.appendChild(txtArea);
-  prompt.executeAction_(constants.Actions.IMPORT_KEY, div, 'irrelevant');
+  prompt.processSelectedContent_({
+    request: true,
+    selection: PUBLIC_KEY_ASCII
+  }, constants.Actions.IMPORT_KEY);
+
+  var importBtn = document.querySelector('button.action');
+  importBtn.click();
 
   keyDescriptionArg.arg('');
   asyncTestCase.waitForAsync('waiting for keyring to be imported');
@@ -610,17 +610,6 @@ function testSetKeyringPassphraseError() {
   assertEquals(2, prompt.getChildCount());
 
   mockControl.$verifyAll();
-}
-
-
-function testRenderPassphraseCallback() {
-  stubs.replace(chrome.i18n, 'getMessage', function(a, b) {
-    return b;
-  });
-  prompt.decorate(document.body);
-  prompt.renderPassphraseCallback_('test_uid', function() {});
-
-  assertContains('test_uid', document.body.textContent);
 }
 
 

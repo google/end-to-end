@@ -26,11 +26,9 @@ goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
-goog.require('e2e.ext.ui.draftmanager');
-goog.require('e2e.ext.ui.panels.Chip');
-goog.require('e2e.ext.ui.panels.ChipHolder');
 goog.require('e2e.ext.ui.panels.prompt.DecryptVerify');
 goog.require('e2e.ext.ui.panels.prompt.EncryptSign');
+goog.require('e2e.ext.ui.panels.prompt.ImportKey');
 goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.ui.templates.prompt');
 goog.require('e2e.ext.utils');
@@ -38,21 +36,16 @@ goog.require('e2e.ext.utils.Error');
 goog.require('e2e.ext.utils.action');
 goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.asciiArmor');
-goog.require('goog.Timer');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
-goog.require('goog.object');
-goog.require('goog.string');
-goog.require('goog.string.format');
 goog.require('goog.ui.Component');
 goog.require('soy');
 
 goog.scope(function() {
 var constants = e2e.ext.constants;
 var dialogs = e2e.ext.ui.dialogs;
-var drafts = e2e.ext.ui.draftmanager;
 var ext = e2e.ext;
 var messages = e2e.ext.messages;
 var panels = e2e.ext.ui.panels;
@@ -186,8 +179,13 @@ ui.Prompt.prototype.processSelectedContent_ =
       title.textContent = decryptPanel.getTitle();
       break;
     case constants.Actions.IMPORT_KEY:
-      this.renderGenericForm_(
-          elem, chrome.i18n.getMessage('promptImportKeyActionLabel'));
+      var importPanel = new panels.prompt.ImportKey(
+          this.actionExecutor_,
+          /** @type {!messages.BridgeMessageRequest} */ (contentBlob || {}),
+          goog.bind(this.displayFailure_, this));
+      this.addChild(importPanel, false);
+      importPanel.decorate(elem);
+      title.textContent = importPanel.getTitle();
       break;
     case constants.Actions.GET_PASSPHRASE:
       this.renderKeyringPassphrase_(elem, contentBlob);
@@ -237,9 +235,6 @@ ui.Prompt.prototype.buttonClick_ = function(
     if (goog.dom.classlist.contains(target, constants.CssClass.CANCEL)) {
       this.close();
     } else if (
-      goog.dom.classlist.contains(target, constants.CssClass.ACTION)) {
-      this.executeAction_(action, elem, origin);
-    } else if (
       goog.dom.classlist.contains(target, constants.CssClass.BACK)) {
       goog.disposeAll(this.removeChildren(false));
       this.processSelectedContent_(
@@ -288,26 +283,6 @@ ui.Prompt.prototype.renderMenu_ = function(elem, contentBlob) {
 
 
 /**
- * Renders the UI elements needed for a PGP key import.
- * @param {Element} elem The element into which the UI elements are to be
- *     rendered.
- * @param {string} actionButtonTitle The title for the form's action button.
- * @param {string=} opt_textAreaPlaceholder The placeholder text that will be
- *     displayed in the form's textarea.
- * @private
- */
-ui.Prompt.prototype.renderGenericForm_ =
-    function(elem, actionButtonTitle, opt_textAreaPlaceholder) {
-  soy.renderElement(elem, templates.renderGenericForm, {
-    textAreaPlaceholder: opt_textAreaPlaceholder || '',
-    actionButtonTitle: actionButtonTitle,
-    cancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction'),
-    backButtonTitle: chrome.i18n.getMessage('actionBackToMenu')
-  });
-};
-
-
-/**
  * Renders the UI elements needed for requesting the passphrase of the PGP
  * keyring.
  * @param {Element} elem The element into which the UI elements are to be
@@ -351,32 +326,6 @@ ui.Prompt.prototype.renderKeyringPassphrase_ = function(elem, contentBlob) {
 
 
 /**
- * Renders the UI elements needed for requesting the passphrase of an individual
- * PGP key.
- * @param {string} uid The UID of the PGP key.
- * @param {!function(string)} callback The callback to invoke when the
- *     passphrase has been provided.
- * @private
- */
-ui.Prompt.prototype.renderPassphraseCallback_ = function(uid, callback) {
-  var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
-  var dialog = new dialogs.Generic(chrome.i18n.getMessage(
-          'promptPassphraseCallbackMessage', uid),
-      function(passphrase) {
-        goog.dispose(dialog);
-        callback(/** @type {string} */ (passphrase));
-      },
-      dialogs.InputType.SECURE_TEXT,
-      '',
-      chrome.i18n.getMessage('actionEnterPassphrase'),
-      chrome.i18n.getMessage('actionCancelPgpAction'));
-
-  this.addChild(dialog, false);
-  dialog.render(popupElem);
-};
-
-
-/**
  * Closes the prompt.
  */
 ui.Prompt.prototype.close = function() {
@@ -402,8 +351,6 @@ ui.Prompt.prototype.close = function() {
  */
 ui.Prompt.prototype.getTitle_ = function(action) {
   switch (action) {
-    case ext.constants.Actions.IMPORT_KEY:
-      return chrome.i18n.getMessage('promptImportKeyTitle');
     case ext.constants.Actions.USER_SPECIFIED:
       return chrome.i18n.getMessage('actionUserSpecified');
     case ext.constants.Actions.GET_PASSPHRASE:
@@ -427,42 +374,6 @@ ui.Prompt.prototype.selectAction_ = function(contentBlob, clickEvt) {
   this.processSelectedContent_(
       contentBlob,
       /** @type {constants.Actions} */ (selection.getAttribute('action')));
-};
-
-
-/**
- * Executes the PGP action and displays the result to the user.
- * @param {constants.Actions} action The PGP action that the user has
- *     requested.
- * @param {Element} elem The element with the textarea where the result of the
- *     action will be displayed.
- * @param {string} origin The web origin for which the PGP action is performed.
- * @private
- */
-ui.Prompt.prototype.executeAction_ = function(action, elem, origin) {
-  var textArea = elem.querySelector('textarea');
-  this.clearFailure_();
-  switch (action) {
-    case ext.constants.Actions.IMPORT_KEY:
-      this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
-        action: constants.Actions.IMPORT_KEY,
-        content: textArea.value,
-        passphraseCallback: goog.bind(this.renderPassphraseCallback_, this)
-      }), this, goog.bind(function(res) {
-        if (res.length > 0) {
-          // Key import successful for at least one UID.
-          utils.showNotification(
-              chrome.i18n.getMessage(
-                  'promptImportKeyNotificationLabel', res.toString()),
-              goog.bind(this.close, this));
-        } else {
-          this.displayFailure_(new utils.Error(
-              'Import key error', 'promptImportKeyError'));
-        }
-        this.surfaceDismissButton_();
-      }, this));
-      break;
-  }
 };
 
 
@@ -492,24 +403,6 @@ ui.Prompt.prototype.clearFailure_ = function() {
   this.displayFailure_(null);
 };
 
-
-/**
- * Surfaces the Dismiss button in the UI.
- * @private
- */
-ui.Prompt.prototype.surfaceDismissButton_ = function() {
-  goog.array.forEach(
-      this.getElement().querySelectorAll('button.action,button.save'),
-      function(button) {
-        goog.dom.classlist.add(button, constants.CssClass.HIDDEN);
-      });
-
-  var cancelButton = this.getElementByClass(constants.CssClass.CANCEL);
-  if (cancelButton) {
-    cancelButton.textContent =
-        chrome.i18n.getMessage('promptDismissActionLabel');
-  }
-};
 
 }); // goog.scope
 
