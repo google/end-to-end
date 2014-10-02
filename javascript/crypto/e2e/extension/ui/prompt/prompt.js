@@ -156,36 +156,28 @@ ui.Prompt.prototype.processSelectedContent_ =
     return;
   }
 
+  var promptPanel = null;
   var elem = goog.dom.getElement(constants.ElementId.BODY);
   var title = goog.dom.getElement(constants.ElementId.TITLE);
   title.textContent = this.getTitle_(action) || title.textContent;
   switch (action) {
     case constants.Actions.ENCRYPT_SIGN:
-      var encryptPanel = new panels.prompt.EncryptSign(
+      promptPanel = new panels.prompt.EncryptSign(
           this.actionExecutor_,
           /** @type {!messages.BridgeMessageRequest} */ (contentBlob || {}),
           goog.bind(this.displayFailure_, this));
-      this.addChild(encryptPanel, false);
-      encryptPanel.decorate(elem);
-      title.textContent = encryptPanel.getTitle();
       break;
     case constants.Actions.DECRYPT_VERIFY:
-      var decryptPanel = new panels.prompt.DecryptVerify(
+      promptPanel = new panels.prompt.DecryptVerify(
           this.actionExecutor_,
           /** @type {!messages.BridgeMessageRequest} */ (contentBlob || {}),
           goog.bind(this.displayFailure_, this));
-      this.addChild(decryptPanel, false);
-      decryptPanel.decorate(elem);
-      title.textContent = decryptPanel.getTitle();
       break;
     case constants.Actions.IMPORT_KEY:
-      var importPanel = new panels.prompt.ImportKey(
+      promptPanel = new panels.prompt.ImportKey(
           this.actionExecutor_,
           /** @type {!messages.BridgeMessageRequest} */ (contentBlob || {}),
           goog.bind(this.displayFailure_, this));
-      this.addChild(importPanel, false);
-      importPanel.decorate(elem);
-      title.textContent = importPanel.getTitle();
       break;
     case constants.Actions.GET_PASSPHRASE:
       this.renderKeyringPassphrase_(elem, contentBlob);
@@ -204,9 +196,10 @@ ui.Prompt.prototype.processSelectedContent_ =
       return;
   }
 
-  var formText = elem.querySelector('textarea');
-  if (formText) {
-    formText.textContent = content;
+  if (promptPanel) {
+    this.addChild(promptPanel, false);
+    promptPanel.decorate(elem);
+    title.textContent = promptPanel.getTitle();
   }
 
   this.getHandler().listen(
