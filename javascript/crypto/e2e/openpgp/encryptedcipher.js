@@ -390,18 +390,18 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey_ = function(keyBytes) {
   var keyData = this.cipher_.getKey();
   switch (this.cipher_.algorithm) {
   case e2e.cipher.Algorithm.RSA:
-    keyData.d = goog.array.clone(e2e.openpgp.Mpi.parse(key));
-    keyData.p = goog.array.clone(e2e.openpgp.Mpi.parse(key));
-    keyData.q = goog.array.clone(e2e.openpgp.Mpi.parse(key));
-    keyData.u = goog.array.clone(e2e.openpgp.Mpi.parse(key));
+    keyData.d = e2e.openpgp.Mpi.parse(key);
+    keyData.p = e2e.openpgp.Mpi.parse(key);
+    keyData.q = e2e.openpgp.Mpi.parse(key);
+    keyData.u = e2e.openpgp.Mpi.parse(key);
     break;
   case e2e.signer.Algorithm.DSA:
   case e2e.cipher.Algorithm.ELGAMAL:
-    keyData.x = goog.array.clone(e2e.openpgp.Mpi.parse(key));
+    keyData.x = e2e.openpgp.Mpi.parse(key);
     break;
   case e2e.cipher.Algorithm.ECDH:
   case e2e.signer.Algorithm.ECDSA:
-    keyData.privKey = goog.array.clone(e2e.openpgp.Mpi.parse(key));
+    keyData.privKey = e2e.openpgp.Mpi.parse(key);
     break;
   default:
     throw new e2e.openpgp.error.InvalidArgumentsError('Unknown algorithm');

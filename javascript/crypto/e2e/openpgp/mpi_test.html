@@ -26,9 +26,10 @@
     var numbers = [0x00, 0x09, 0x01, 0xFF, 0x00, 0x01, 0x01];
     var mpi1 = e2e.openpgp.Mpi.parse(numbers);
     var mpi2 = e2e.openpgp.Mpi.parse(numbers);
-    assertArrayEquals([0x01, 0xFF], goog.array.clone(mpi1));
-    assertArrayEquals([0x01], goog.array.clone(mpi2));
-    assertArrayEquals([0x00, 0x09, 0x01, 0xFF], mpi1.serialize());
-    assertArrayEquals([0x00, 0x01, 0x01], mpi2.serialize());
+    assertArrayEquals([0x01, 0xFF], mpi1);
+    assertArrayEquals([0x01], mpi2);
+    assertArrayEquals([0x00, 0x09, 0x01, 0xFF],
+        e2e.openpgp.Mpi.serialize(mpi1));
+    assertArrayEquals([0x00, 0x01, 0x01], e2e.openpgp.Mpi.serialize(mpi2));
   }
 </script>

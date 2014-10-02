@@ -78,8 +78,8 @@
     var fakeCipher = new e2e.cipher.Rsa(
       e2e.cipher.Algorithm.RSA,
       {
-        'n': goog.array.clone(e2e.openpgp.Mpi.parse(serializedKey)),
-        'e': goog.array.clone(e2e.openpgp.Mpi.parse(serializedKey))
+        'n': e2e.openpgp.Mpi.parse(serializedKey),
+        'e': e2e.openpgp.Mpi.parse(serializedKey)
       });
     var ec = new e2e.openpgp.EncryptedCipher(
         serializedKey,

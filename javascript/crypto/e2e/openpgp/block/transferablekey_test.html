@@ -959,7 +959,7 @@ function testEmbeddedSignatures() {
   assertTrue(error instanceof e2e.openpgp.error.SignatureError);
   // Invalidate signature
   key = getKey('SigningSubkey');
-  key.subKeys[1].bindingSignatures_[0].embeddedSignature.signature.s ^= 0x01;
+  key.subKeys[1].bindingSignatures_[0].embeddedSignature.signature.s[0] ^= 0x01;
   error = assertThrows(function() {
     key.processSignatures();
   });
@@ -977,7 +977,7 @@ function testSignatureVerification() {
       keyBlock.subKeys[0].bindingSignatures_[0].untrustedAttributes.ISSUER,
       keyBlock.keyPacket.keyId);
   // Modify the signature.
-  keyBlock.subKeys[0].bindingSignatures_[0].signature.s ^= 0x01;
+  keyBlock.subKeys[0].bindingSignatures_[0].signature.s[0] ^= 0x01;
 
   var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
       keyBlock.serialize());
@@ -1013,7 +1013,7 @@ function testGnupgRevokedSubkey() {
 
   // Tamper revocation signature
   var clone = getKey('RevokedSubKey');
-  clone.subKeys[0].revocations_[0].signature.s ^= 0x01;
+  clone.subKeys[0].revocations_[0].signature.s[0] ^= 0x01;
   var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
       clone.serialize());
   var error = assertThrows(function() {
@@ -1041,7 +1041,7 @@ function testGnupgRevokedMainKey() {
   assertTrue(error instanceof e2e.openpgp.error.SignatureError);
 
   // Tamper revocation signature
-  publicKeyBlock.keyPacket.revocations_[0].signature.s ^= 0x01;
+  publicKeyBlock.keyPacket.revocations_[0].signature.s[0] ^= 0x01;
   var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
       publicKeyBlock.serialize());
   var error = assertThrows(function() {
@@ -1085,7 +1085,7 @@ function testGnupgRevokedUid() {
 
   // Check that signature tampering is detected
   key = getKey('RevokedUserId');
-  key.userIds[0].revocations_[0].signature.s ^= 0x01;
+  key.userIds[0].revocations_[0].signature.s[0] ^= 0x01;
   assertThrows(function() {
     key.processSignatures();
   });

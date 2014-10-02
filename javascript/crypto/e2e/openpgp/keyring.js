@@ -1076,8 +1076,7 @@ e2e.openpgp.KeyRing.prototype.extractKeyData_ = function(
   var serializedPrivKey;
   if (opt_isJS) {
     // privKey is MPI, needs to serialize to get the right byte array.
-    var privKey = new e2e.openpgp.Mpi(
-        cryptor.getKey()['privKey']).serialize();
+    var privKey = e2e.openpgp.Mpi.serialize(cryptor.getKey()['privKey']);
     serializedPrivKey = goog.array.flatten(
         serializedPubKey,
         /* key is not encrypted individually. */

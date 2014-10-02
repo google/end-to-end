@@ -80,32 +80,32 @@ e2e.openpgp.packet.PublicKey.prototype.serializePacketBody =
   switch (this.cipher.algorithm) {
     case e2e.cipher.Algorithm.RSA:
       keyData = goog.array.flatten(
-          new e2e.openpgp.Mpi(keyObj['n']).serialize(),
-          new e2e.openpgp.Mpi(keyObj['e']).serialize());
+          e2e.openpgp.Mpi.serialize(keyObj['n']),
+          e2e.openpgp.Mpi.serialize(keyObj['e']));
       break;
     case e2e.signer.Algorithm.DSA:
       keyData = goog.array.flatten(
-          new e2e.openpgp.Mpi(keyObj['p']).serialize(),
-          new e2e.openpgp.Mpi(keyObj['q']).serialize(),
-          new e2e.openpgp.Mpi(keyObj['g']).serialize(),
-          new e2e.openpgp.Mpi(keyObj['y']).serialize());
+          e2e.openpgp.Mpi.serialize(keyObj['p']),
+          e2e.openpgp.Mpi.serialize(keyObj['q']),
+          e2e.openpgp.Mpi.serialize(keyObj['g']),
+          e2e.openpgp.Mpi.serialize(keyObj['y']));
       break;
     case e2e.cipher.Algorithm.ELGAMAL:
       keyData = goog.array.flatten(
-          new e2e.openpgp.Mpi(keyObj['p']).serialize(),
-          new e2e.openpgp.Mpi(keyObj['g']).serialize(),
-          new e2e.openpgp.Mpi(keyObj['y']).serialize());
+          e2e.openpgp.Mpi.serialize(keyObj['p']),
+          e2e.openpgp.Mpi.serialize(keyObj['g']),
+          e2e.openpgp.Mpi.serialize(keyObj['y']));
       break;
     case e2e.signer.Algorithm.ECDSA:
       keyData = goog.array.flatten(
           keyObj['curve'],
-          new e2e.openpgp.Mpi(keyObj['pubKey']).serialize());
+          e2e.openpgp.Mpi.serialize(keyObj['pubKey']));
       break;
     case e2e.cipher.Algorithm.ECDH:
       keyData = goog.array.flatten(
           // Curve is in serialized MPI format. Its first byte is its length.
           keyObj['curve'],
-          new e2e.openpgp.Mpi(keyObj['pubKey']).serialize(),
+          e2e.openpgp.Mpi.serialize(keyObj['pubKey']),
           // kdfInfo is in serialized MPI format. Its first byte is its length.
           keyObj['kdfInfo']);
       break;

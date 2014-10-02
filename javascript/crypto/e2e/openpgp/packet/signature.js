@@ -202,13 +202,13 @@ e2e.openpgp.packet.Signature.prototype.serializePacketBody = function() {
   switch (this.pubKeyAlgorithm) {
     case e2e.cipher.Algorithm.RSA:
       goog.array.extend(serialized,
-          (new e2e.openpgp.Mpi(sig['s'])).serialize());
+          e2e.openpgp.Mpi.serialize(sig['s']));
       break;
     case e2e.signer.Algorithm.ECDSA:
     case e2e.signer.Algorithm.DSA:
       goog.array.extend(serialized,
-          (new e2e.openpgp.Mpi(sig['r'])).serialize(),
-          (new e2e.openpgp.Mpi(sig['s'])).serialize());
+          e2e.openpgp.Mpi.serialize(sig['r']),
+          e2e.openpgp.Mpi.serialize(sig['s']));
       break;
     default:
       throw new e2e.openpgp.error.UnsupportedError(
