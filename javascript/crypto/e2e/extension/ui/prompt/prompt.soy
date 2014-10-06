@@ -18,6 +18,7 @@
 /**
  * Renders the base layout for the Prompt UI.
  * @param extName The name of the extension.
+ * @param menuLabel The label for the menu icon.
  */
 {template .main}
   <html>
@@ -31,22 +32,12 @@
           <h1 id="{e2e.ext.constants.ElementId.TITLE}"></h1>
         </div>
       </div>
+      <div id="{e2e.ext.constants.ElementId.MENU_CONTAINER}">
+        <img src="images/down_arrow.png" title="{$menuLabel}">
+      </div>
       <div id="{e2e.ext.constants.ElementId.ERROR_DIV}"></div>
       <div id="{e2e.ext.constants.ElementId.BODY}"></div>
       <div id="{e2e.ext.constants.ElementId.CALLBACK_DIALOG}"></div>
     </body>
   </html>
-{/template}
-
-
-/**
- * Renders the required UI elements for PGP encryption.
- * @param possibleActions The list of possible actions that can be performed.
- */
-{template .renderMenu}
-  <ul>
-    {foreach $action in $possibleActions}
-      <li action="{$action.value}">{$action.title}</li>
-    {/foreach}
-  </ul>
 {/template}

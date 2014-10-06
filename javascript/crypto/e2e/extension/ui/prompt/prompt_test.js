@@ -61,22 +61,22 @@ function setUp() {
   window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
 
-  stubs.setPath('chrome.browserAction.setBadgeText', function() {});
-  stubs.setPath('chrome.browserAction.setTitle', function() {});
+  stubs.setPath('chrome.browserAction.setBadgeText', goog.nullFunction);
+  stubs.setPath('chrome.browserAction.setTitle', goog.nullFunction);
   stubs.setPath('chrome.i18n.getMessage', function(msg) {
     return msg;
   });
-  stubs.setPath('chrome.extension.getURL', function() {});
-  stubs.setPath('chrome.notifications.create', function() {});
-  stubs.setPath('chrome.runtime.onConnect.addListener', function() {});
-  stubs.setPath('chrome.runtime.onConnect.removeListener', function() {});
-  stubs.setPath('chrome.tabs.query', function() {});
-  stubs.setPath('chrome.tabs.onUpdated.addListener', function() {});
-  stubs.setPath('chrome.tabs.onRemoved.addListener', function() {});
+  stubs.setPath('chrome.extension.getURL', goog.nullFunction);
+  stubs.setPath('chrome.notifications.create', goog.nullFunction);
+  stubs.setPath('chrome.runtime.onConnect.addListener', goog.nullFunction);
+  stubs.setPath('chrome.runtime.onConnect.removeListener', goog.nullFunction);
+  stubs.setPath('chrome.tabs.query', goog.nullFunction);
+  stubs.setPath('chrome.tabs.onUpdated.addListener', goog.nullFunction);
+  stubs.setPath('chrome.tabs.onRemoved.addListener', goog.nullFunction);
   stubs.setPath('window.confirm', function(msg) { return true;});
 
-  stubs.replace(goog.Timer.prototype, 'start', function() {});
-  stubs.replace(window, 'open', function() {});
+  stubs.replace(goog.Timer.prototype, 'start', goog.nullFunction);
+  stubs.replace(window, 'open', goog.nullFunction);
 
   prompt = new e2e.ext.ui.Prompt();
   //localStorage.clear();
@@ -142,8 +142,7 @@ function testMenuRendering() {
   prompt.processSelectedContent_();
   var elem = document.body;
 
-  assertEquals(
-      'Failed to render menu', 4, elem.querySelectorAll('ul>li').length);
+  assertContains('actionUserSpecified', elem.textContent);
 }
 
 
@@ -482,9 +481,6 @@ function testDisplayFailure() {
 
 
 function testSelectAction() {
-  var elem = document.createElement('div');
-  elem.setAttribute('action', 'test_action');
-
   var processedContent = false;
   stubs.replace(
       e2e.ext.ui.Prompt.prototype,
@@ -494,7 +490,11 @@ function testSelectAction() {
         processedContent = true;
       });
 
-  prompt.selectAction_(null, {target: elem});
+  prompt.selectAction_(null, {
+    target: {
+      getValue: function() { return 'test_action'}
+    }
+  });
 
   assertTrue('Failed to process content', processedContent);
 }

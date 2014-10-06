@@ -88,6 +88,9 @@ function testSetGetContent() {
   var newContent = {};
   panel.setContentInternal(newContent);
   assertEquals(newContent, panel.getContent());
+
+  panel.updateContentSelection_({target: {value: 'selection'}});
+  assertEquals('selection', panel.getContent().selection);
 }
 
 

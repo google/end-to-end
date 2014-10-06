@@ -67,12 +67,15 @@ promptPanels.PanelBase.prototype.enterDocument = function() {
   var formText = this.getElement().querySelector('textarea');
   if (formText) {
     formText.textContent = this.getContent() ? this.getContent().selection : '';
+    this.getHandler().listen(
+        formText, goog.events.EventType.CHANGE, this.updateContentSelection_);
   }
 
   this.getHandler().listen(
       this.getElement(),
       goog.events.EventType.CLICK,
       this.clearPriorFailures_, true);
+
 };
 
 
@@ -116,6 +119,18 @@ promptPanels.PanelBase.prototype.setContentInternal = function(content) {
 
 
 /**
+ * Updates the content that the user is working with using the input text that
+ * the user is providing.
+ * @param {Event} evt The event triggering the update.
+ * @private
+ */
+promptPanels.PanelBase.prototype.updateContentSelection_ = function(evt) {
+  var formText = /** @type {HTMLTextAreaElement} */ (evt.target);
+  this.content_.selection = formText.value;
+};
+
+
+/**
  * Renders the Dismiss button in the panel.
  * @protected
  */
@@ -124,10 +139,6 @@ promptPanels.PanelBase.prototype.renderDismiss = function() {
   goog.array.forEach(this.getElement().querySelectorAll(query), function(btn) {
     goog.dom.classlist.add(btn, constants.CssClass.HIDDEN);
   });
-
-  goog.dom.classlist.remove(
-      this.getElementByClass(constants.CssClass.BACK),
-      constants.CssClass.HIDDEN);
 
   var cancelBtn = this.getElementByClass(constants.CssClass.CANCEL);
   if (cancelBtn) {

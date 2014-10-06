@@ -102,8 +102,6 @@ promptPanels.EncryptSign.prototype.decorateInternal = function(elem) {
     actionButtonTitle: chrome.i18n.getMessage(
         'promptEncryptSignActionLabel'),
     cancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction'),
-    optionsButtonTitle: chrome.i18n.getMessage('actionConfigureExtension'),
-    backButtonTitle: chrome.i18n.getMessage('actionBackToMenu'),
     saveDraftButtonTitle: chrome.i18n.getMessage(
         'promptEncryptSignSaveDraftLabel'),
     insertButtonTitle: signInsertLabel
@@ -138,11 +136,6 @@ promptPanels.EncryptSign.prototype.enterDocument = function() {
       this.getElementByClass(constants.CssClass.ACTION),
       goog.events.EventType.CLICK,
       goog.bind(this.encryptSign_, this));
-
-  this.getHandler().listen(
-      this.getElementByClass(constants.CssClass.OPTIONS),
-      goog.events.EventType.CLICK,
-      goog.bind(this.showOptions_, this));
 
   if (this.getContent().canInject) {
     this.getHandler().listen(
@@ -492,9 +485,9 @@ promptPanels.EncryptSign.prototype.saveDraft_ = function(origin, evt) {
           },
           dialogs.InputType.NONE);
       this.renderDialog(dialog);
-    } else {
-      this.errorCallback_(error);
     }
+
+    // NOTE(radi): Errors are silenced here on purpose.
   }, this));
 };
 

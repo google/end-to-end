@@ -135,9 +135,9 @@
     "message": "Cancel",
     "description": "A verb prompting the user to cancel the current PGP operation."
   },
-  "actionBackToMenu": {
-    "message": "Back to menu",
-    "description": "A sentence prompting the user to go back to the extension's menu."
+  "actionOpenMenu": {
+    "message": "Menu",
+    "description": "A noun describing where the menu is located."
   },
   "keyMgmtTitle": {
     "message": "Keyring management",

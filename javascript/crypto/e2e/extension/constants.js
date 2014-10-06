@@ -81,6 +81,9 @@ e2e.ext.constants.ElementId = {
   PASSPHRASE_ENCRYPTION_LINK: 'passphraseEncryptionLink',
   FROM_HOLDER: 'fromHolder',
 
+  /* Used to display menus in the UI. */
+  MENU_CONTAINER: 'menu-container',
+
   // Welcome page
   WELCOME_BODY: 'welcome-main',
   WELCOME_MENU: 'welcome-menu',
@@ -104,7 +107,6 @@ e2e.ext.constants.ElementId = {
 e2e.ext.constants.CssClass = {
   ACTION: 'action',
   CANCEL: 'cancel',
-  BACK: 'back',
   SAVE: 'save',
   INSERT: 'insert',
   OPTIONS: 'options',

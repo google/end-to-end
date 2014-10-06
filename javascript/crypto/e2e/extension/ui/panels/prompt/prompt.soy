@@ -18,15 +18,11 @@
 /**
  * Renders the required UI elements for a generic PGP action (e.g. decryption, key import).
  * @param textAreaPlaceholder The placeholder text that will be displayed in the textarea.
- * @param backButtonTitle The title for the back button.
  * @param actionButtonTitle The title of the prompt button.
  * @param cancelButtonTitle The title of the cancel button.
  */
 {template .renderGenericForm}
   <textarea placeholder="{$textAreaPlaceholder}"></textarea>
-  <button class="{e2e.ext.constants.CssClass.BACK}">
-    <img src="images/back.png" title="{$backButtonTitle}"/>
-  </button>
   <button class="{e2e.ext.constants.CssClass.ACTION}">{$actionButtonTitle}</button>
   <button class="{e2e.ext.constants.CssClass.CANCEL}">{$cancelButtonTitle}</button>
 {/template}
@@ -38,11 +34,9 @@
  * @param fromLabel The label to describe the "From:" select box.
  * @param signerCheckboxTitle The label for the checkbox to sign messages.
  * @param passphraseEncryptionLinkTitle The title for the passphrase encryption link.
- * @param backButtonTitle The title for the back button.
  * @param actionButtonTitle The title of the prompt button.
  * @param saveDraftButtonTitle The title of the save button.
  * @param insertButtonTitle The title of the insert button.
- * @param optionsButtonTitle The title of the options button.
  * @param cancelButtonTitle The title of the cancel button.
  */
 {template .renderEncrypt}
@@ -61,9 +55,6 @@
       {$signerCheckboxTitle}
     </label>
   </div>
-  <button class="{e2e.ext.constants.CssClass.BACK}">
-    <img src="images/back.png" title="{$backButtonTitle}"/>
-  </button>
   <button class="{e2e.ext.constants.CssClass.ACTION}">{$actionButtonTitle}</button>
   {if $insertCheckboxEnabled}
     <button class="{e2e.ext.constants.CssClass.INSERT}{sp}
@@ -72,6 +63,5 @@
     </button>
     <button class="{e2e.ext.constants.CssClass.SAVE}">{$saveDraftButtonTitle}</button>
   {/if}
-  <button class="{e2e.ext.constants.CssClass.OPTIONS}">{$optionsButtonTitle}</button>
   <button class="{e2e.ext.constants.CssClass.CANCEL}">{$cancelButtonTitle}</button>
 {/template}

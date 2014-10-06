@@ -29,6 +29,7 @@ goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.panels.prompt.DecryptVerify');
 goog.require('e2e.ext.ui.panels.prompt.EncryptSign');
 goog.require('e2e.ext.ui.panels.prompt.ImportKey');
+goog.require('e2e.ext.ui.panels.prompt.PanelBase');
 goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.ui.templates.prompt');
 goog.require('e2e.ext.utils');
@@ -40,7 +41,12 @@ goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
+goog.require('goog.positioning.Corner');
+goog.require('goog.style');
 goog.require('goog.ui.Component');
+goog.require('goog.ui.Component.EventType');
+goog.require('goog.ui.MenuItem');
+goog.require('goog.ui.PopupMenu');
 goog.require('soy');
 
 goog.scope(function() {
@@ -71,6 +77,25 @@ ui.Prompt = function() {
    */
   this.actionExecutor_ = new e2e.ext.actions.Executor(
       goog.bind(this.displayFailure_, this));
+
+  /**
+   * The End-to-End actions that the user can select in the prompt UI.
+   * @type {!Array.<!Object.<constants.Actions,string>>}
+   * @private
+   */
+  this.selectableActions_ = [{
+    value: constants.Actions.ENCRYPT_SIGN,
+    title: chrome.i18n.getMessage('promptEncryptSignTitle')
+  }, {
+    value: constants.Actions.DECRYPT_VERIFY,
+    title: chrome.i18n.getMessage('promptDecryptVerifyTitle')
+  }, {
+    value: constants.Actions.IMPORT_KEY,
+    title: chrome.i18n.getMessage('promptImportKeyTitle')
+  }, {
+    value: constants.Actions.CONFIGURE_EXTENSION,
+    title: chrome.i18n.getMessage('actionConfigureExtension')
+  }];
 };
 goog.inherits(ui.Prompt, goog.ui.Component);
 
@@ -97,7 +122,8 @@ ui.Prompt.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
 
   soy.renderElement(elem, templates.main, {
-    extName: chrome.i18n.getMessage('extName')
+    extName: chrome.i18n.getMessage('extName'),
+    menuLabel: chrome.i18n.getMessage('actionOpenMenu')
   });
 
   var styles = elem.querySelector('link');
@@ -183,6 +209,9 @@ ui.Prompt.prototype.processSelectedContent_ =
       this.renderKeyringPassphrase_(elem, contentBlob);
       break;
     case constants.Actions.USER_SPECIFIED:
+      var menuContainer =
+          goog.dom.getElement(constants.ElementId.MENU_CONTAINER);
+      goog.dom.classlist.add(menuContainer, constants.CssClass.HIDDEN);
       this.renderMenu_(elem, contentBlob);
       return;
     case constants.Actions.CONFIGURE_EXTENSION:
@@ -205,6 +234,12 @@ ui.Prompt.prototype.processSelectedContent_ =
   this.getHandler().listen(
       elem, goog.events.EventType.CLICK,
       goog.bind(this.buttonClick_, this, action, origin, contentBlob));
+
+  this.getHandler().listen(
+      goog.dom.getElement(constants.ElementId.MENU_CONTAINER),
+      goog.events.EventType.CLICK,
+      goog.bind(this.renderMenu_, this, elem, promptPanel),
+      true);
 };
 
 
@@ -227,11 +262,6 @@ ui.Prompt.prototype.buttonClick_ = function(
   if (target instanceof Element) {
     if (goog.dom.classlist.contains(target, constants.CssClass.CANCEL)) {
       this.close();
-    } else if (
-      goog.dom.classlist.contains(target, constants.CssClass.BACK)) {
-      goog.disposeAll(this.removeChildren(false));
-      this.processSelectedContent_(
-          contentBlob, ext.constants.Actions.USER_SPECIFIED);
     }
   }
 };
@@ -241,37 +271,48 @@ ui.Prompt.prototype.buttonClick_ = function(
  * Renders the main menu.
  * @param {Element} elem The element into which the UI elements are to be
  *     rendered.
- * @param {?messages.BridgeMessageRequest} contentBlob The content that the user
- *     has selected.
+ * @param {panels.prompt.PanelBase|messages.BridgeMessageRequest} blob The
+ *     prompt UI panel that is displayed to the user or the content blob that
+ *     the user has selected.
  * @private
  */
-ui.Prompt.prototype.renderMenu_ = function(elem, contentBlob) {
-  soy.renderElement(elem, templates.renderMenu, {
-    possibleActions: [
-      {
-        value: constants.Actions.ENCRYPT_SIGN,
-        title: chrome.i18n.getMessage('promptEncryptSignTitle')
-      },
-      {
-        value: constants.Actions.DECRYPT_VERIFY,
-        title: chrome.i18n.getMessage('promptDecryptVerifyTitle')
-      },
-      {
-        value: constants.Actions.IMPORT_KEY,
-        title: chrome.i18n.getMessage('promptImportKeyTitle')
-      },
-      {
-        value: constants.Actions.CONFIGURE_EXTENSION,
-        title: chrome.i18n.getMessage('actionConfigureExtension')
-      }
-    ]
+ui.Prompt.prototype.renderMenu_ = function(elem, blob) {
+  var contentBlob;
+  if (blob instanceof panels.prompt.PanelBase) {
+    contentBlob = blob.getContent();
+  } else {
+    contentBlob = blob || null;
+  }
+
+  var menu = new goog.ui.PopupMenu();
+  goog.array.forEach(this.selectableActions_, function(action) {
+    var menuItem = new goog.ui.MenuItem(action.title);
+    menuItem.setValue(action.value);
+    menu.addChild(menuItem, true);
   });
+  this.addChild(menu, false);
+  menu.render(goog.dom.getElement(constants.ElementId.BODY));
 
   this.getHandler().listen(
-      elem.querySelector('ul'),
-      goog.events.EventType.CLICK,
-      goog.partial(this.selectAction_, contentBlob),
-      true);
+      menu,
+      goog.ui.Component.EventType.ACTION,
+      goog.partial(this.selectAction_, contentBlob));
+
+  var menuContainer = goog.dom.getElement(constants.ElementId.MENU_CONTAINER);
+  if (goog.dom.classlist.contains(menuContainer, constants.CssClass.HIDDEN)) {
+    goog.dom.classlist.remove(menu.getElement(), 'goog-menu');
+    goog.style.setStyle(menu.getElement(), {
+      'display': 'block',
+      'outline': 'none',
+      'position': 'relative',
+      'top': '-10px'
+    });
+  } else {
+    menu.attach(
+        menuContainer,
+        goog.positioning.Corner.TOP_LEFT,
+        goog.positioning.Corner.BOTTOM_LEFT);
+  }
 };
 
 
@@ -358,15 +399,18 @@ ui.Prompt.prototype.getTitle_ = function(action) {
  * Enables the user to select the PGP action they'd like to execute.
  * @param {?messages.BridgeMessageRequest} contentBlob The content that the user
  *     has selected.
- * @param {!goog.events.Event} clickEvt The event generated by the user's
+ * @param {!goog.events.Event} evt The event generated by the user's
  *     selection.
  * @private
  */
-ui.Prompt.prototype.selectAction_ = function(contentBlob, clickEvt) {
-  var selection = /** @type {HTMLElement} */ (clickEvt.target);
+ui.Prompt.prototype.selectAction_ = function(contentBlob, evt) {
+  var menuContainer = goog.dom.getElement(constants.ElementId.MENU_CONTAINER);
+  goog.dom.classlist.remove(menuContainer, constants.CssClass.HIDDEN);
+  this.removeChildren();
+
   this.processSelectedContent_(
       contentBlob,
-      /** @type {constants.Actions} */ (selection.getAttribute('action')));
+      /** @type {constants.Actions} */ (evt.target.getValue()));
 };
 
 

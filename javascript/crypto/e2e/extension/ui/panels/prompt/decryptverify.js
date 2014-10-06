@@ -61,8 +61,7 @@ promptPanels.DecryptVerify.prototype.decorateInternal = function(elem) {
     textAreaPlaceholder: chrome.i18n.getMessage(
         'promptDecryptVerifyPlaceholder'),
     actionButtonTitle: chrome.i18n.getMessage('promptDecryptVerifyActionLabel'),
-    cancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction'),
-    backButtonTitle: chrome.i18n.getMessage('actionBackToMenu')
+    cancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction')
   });
 };
 

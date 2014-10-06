@@ -62,8 +62,7 @@ promptPanels.ImportKey.prototype.decorateInternal = function(elem) {
   soy.renderElement(elem, templates.renderGenericForm, {
     textAreaPlaceholder: '',
     actionButtonTitle: chrome.i18n.getMessage('promptImportKeyActionLabel'),
-    cancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction'),
-    backButtonTitle: chrome.i18n.getMessage('actionBackToMenu')
+    cancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction')
   });
 };
 
