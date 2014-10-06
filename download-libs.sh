@@ -18,6 +18,9 @@
 #  * @author koto@google.com (Krzysztof Kotowicz)
 #  */
 
+if [ ! -d lib ]; then
+  mkdir lib
+fi
 cd lib
 
 # checkout closure library

@@ -128,7 +128,7 @@ e2e_build_extension() {
   # copy extension files
   cp -fr "$SRC_EXT_DIR/images" "$BUILD_EXT_DIR"
   cp -fr "$SRC_EXT_DIR/_locales" "$BUILD_EXT_DIR"
-  find "$SRC_EXT_DIR/ui" -regex .*.html -exec cp -f "{}" "$BUILD_EXT_DIR" \;
+  find "$SRC_EXT_DIR/ui" -regex .*.html -not -regex .*_test.html -exec cp -f "{}" "$BUILD_EXT_DIR" \;
   cp -f "$SRC_EXT_DIR/helper/gmonkeystub.js" "$BUILD_EXT_DIR"
   cp -f "$SRC_EXT_DIR/manifest.json" "$BUILD_EXT_DIR"
   echo "Done."
@@ -165,17 +165,6 @@ e2e_testserver() {
   echo "Done."
 }
 
-e2e_update() {
-  echo "Updating End-To-End sources from upstream..."
-  if [ ! -d src/.git ]; then
-    git clone "$SRC_REPO_URL" src/
-  fi
-  cd src
-  git pull origin master
-  cd ..
-  echo "Done."
-}
-
 RETVAL=0
 
 case "$1" in
@@ -184,10 +173,6 @@ case "$1" in
     ;;
   install_deps)
     e2e_install_deps;
-    e2e_update;
-    ;;
-  update)
-    e2e_update;
     ;;
   build_extension)
     e2e_build_extension;
@@ -205,7 +190,7 @@ case "$1" in
     e2e_testserver;
     ;;
   *)
-    echo "Usage: $0 {build_extension|build_library|build_templates|clean|check_deps|install_deps|update|testserver}"
+    echo "Usage: $0 {build_extension|build_library|build_templates|clean|check_deps|install_deps|testserver}"
     RETVAL=1
 esac
 
