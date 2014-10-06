@@ -34,7 +34,7 @@ Usage
 Every task can be run from do.sh Bash script:
 
   $ ./do.sh
-  Usage: ./do.sh {build_extension|build_library|build_templates|clean|check_deps|install_deps|update|testserver}
+  Usage: ./do.sh {build_extension|build_library|build_templates|clean|check_deps|install_deps|testserver}
 
 Setup
   $ git clone https://code.google.com/p/end-to-end.build/
@@ -71,9 +71,6 @@ Starting the test server:
   $ ./do.sh testserver
   Starting the End-To-End test server (Press Ctrl-C to stop)...
   Starting test server at http://127.0.0.1:8000
-
-Updating to newest sources:
-  $ ./build.sh update_src
 
 Grunt
 =====
