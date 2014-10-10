@@ -21,7 +21,6 @@ PYTHON_CMD="python"
 JSCOMPILE_CMD="$PYTHON_CMD lib/closure-library/closure/bin/build/closurebuilder.py -c lib/closure-compiler/compiler.jar"
 BUILD_DIR="build"
 BUILD_TPL_DIR="$BUILD_DIR/templates"
-SRC_REPO_URL="https://code.google.com/p/end-to-end/"
 cd ${0%/*}
 
 e2e_assert_dependencies() {
@@ -143,9 +142,6 @@ e2e_build_clean() {
 e2e_install_deps() {
   echo "Installing build dependencies..."
   ./download-libs.sh
-  if [ ! -d src/.git ]; then
-    git clone "$SRC_REPO_URL" src/
-  fi
   echo "Done."
 }
 
