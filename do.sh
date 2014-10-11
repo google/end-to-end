@@ -146,6 +146,7 @@ e2e_install_deps() {
 }
 
 e2e_testserver() {
+  e2e_build_templates 
   echo "Generating build/test_js_deps-runfiles.js file..."
   mkdir -p "$BUILD_DIR"
   $PYTHON_CMD lib/closure-library/closure/bin/build/depswriter.py \
