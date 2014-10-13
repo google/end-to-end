@@ -17,7 +17,6 @@
 
 /**
  * @fileoverview Implementation of AES in JavaScript.
- * @author aa@google.com (Aaron Boodman)
  */
 
 goog.provide('e2e.cipher.Aes');
