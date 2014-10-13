@@ -111,6 +111,10 @@ e2e_build_extension() {
   csscompile_e2e="java -jar lib/closure-stylesheets-20111230.jar src/javascript/crypto/e2e/extension/ui/styles/base.css"
   # compile javascript files
   echo "Compiling JS files..."
+  if [ "$1" ]
+  then
+    jscompile_e2e+=" -f --debug -f --formatting=PRETTY_PRINT"
+  fi
   $jscompile_e2e -o compiled -i "$SRC_EXT_DIR/bootstrap.js" > "$BUILD_EXT_DIR/launcher_binary.js"
   $jscompile_e2e -o compiled -i "$SRC_EXT_DIR/helper/helper.js" > "$BUILD_EXT_DIR/helper_binary.js"
   $jscompile_e2e -o compiled -i "$SRC_EXT_DIR/ui/glass/bootstrap.js" > "$BUILD_EXT_DIR/glass_binary.js"
@@ -174,6 +178,9 @@ case "$1" in
   build_extension)
     e2e_build_extension;
     ;;
+  build_extension_debug)
+    e2e_build_extension "debug";
+    ;;
   build_library)
     e2e_build_library;
     ;;
@@ -187,7 +194,7 @@ case "$1" in
     e2e_testserver;
     ;;
   *)
-    echo "Usage: $0 {build_extension|build_library|build_templates|clean|check_deps|install_deps|testserver}"
+    echo "Usage: $0 {build_extension|build_extension_debug|build_library|build_templates|clean|check_deps|install_deps|testserver}"
     RETVAL=1
 esac
 
