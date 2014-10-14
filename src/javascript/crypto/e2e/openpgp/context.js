@@ -36,6 +36,15 @@ e2e.openpgp.Context.prototype.armorOutput;
 
 
 /**
+ * Specifies whether the error messages generated should be verbose.
+ * Verbose error messages might leak information about the secret
+ * keys and secret messages.
+ * @type {boolean}
+ */
+e2e.openpgp.Context.prototype.verboseErrors;
+
+
+/**
  * Specifies the value of an armor header.
  * @param {string} name The name of the header.
  * @param {string} version The value of the header.
