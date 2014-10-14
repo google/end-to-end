@@ -390,7 +390,7 @@ function testMojibakeInternally() {
     });
 }
 
-function testEncrypt() {
+function encryptAsymmetric_(plaintext) {
   context.importKey(passwordCallback, publicKeyAscii);
   var rsaKeys = e2e.async.Result.getValue(context.searchPublicKey(USER_ID));
   assertEquals(1, rsaKeys.length);
@@ -398,7 +398,6 @@ function testEncrypt() {
   context.importKey(passwordCallback, publicKeyAsciiOther);
   var allKeys = new goog.structs.Map(e2e.async.Result.getValue(context.getAllKeys()));
   var keys = goog.array.flatten(allKeys.getValues());
-  var plaintext = 'hello world from context message';
   context.importKey(passwordCallback, privateKeyAscii);
   asyncTestCase.waitForAsync('waiting for encryption.');
   context.encryptSign(
@@ -419,6 +418,20 @@ function testEncrypt() {
   }).addErrback(function(error) {
       throw error;
   });
+}
+
+
+function testEncrypt() {
+  var plaintext = 'hello world from context message';
+  encryptAsymmetric_(plaintext);
+}
+
+
+// TODO(adhintz) Enable test once Closure fixes extend and flatten.
+// https://github.com/google/closure-library/pull/356
+function DISABLEDtestEncryptLarge() {
+  var plaintext = e2e.byteArrayToString(goog.array.repeat(3, 1000000));  // 1M
+  encryptAsymmetric_(plaintext);
 }
 
 
