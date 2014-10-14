@@ -23,7 +23,6 @@ Google End-To-End. Building End-To-End should be fairly easy on any Linux/OSX sy
 To build End-To-End, the following requirements must be met:
  - bash
  - git
- - svn
  - curl
  - unzip
  - Java 1.7

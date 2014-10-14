@@ -35,7 +35,7 @@ e2e_assert_dependencies() {
   # Check if required files are present.
   files=( lib/closure-library/closure/bin/build/closurebuilder.py \
     lib/closure-library \
-    lib/closure-templates \
+    lib/closure-templates-compiler \
     lib/typedarray \
     lib/zlib.js \
     lib/closure-stylesheets-20111230.jar \
@@ -77,7 +77,7 @@ e2e_build_library() {
   BUILD_EXT_DIR="$BUILD_DIR/library"
   echo "Building End-To-End library into $BUILD_EXT_DIR ..."
   mkdir -p "$BUILD_EXT_DIR"
-  SRC_DIRS=( src lib/closure-library lib/closure-templates/javascript $BUILD_TPL_DIR \
+  SRC_DIRS=( src lib/closure-library lib/closure-templates-compiler $BUILD_TPL_DIR \
     lib/zlib.js/src lib/typedarray )
   # See https://developers.google.com/closure/library/docs/closurebuilder
   jscompile_e2e="$JSCOMPILE_CMD"
@@ -99,7 +99,7 @@ e2e_build_extension() {
   mkdir -p "$BUILD_EXT_DIR"
   echo "Building End-To-End extension to $BUILD_EXT_DIR"
   SRC_EXT_DIR="src/javascript/crypto/e2e/extension"
-  SRC_DIRS=( src lib/closure-library lib/closure-templates/javascript $BUILD_TPL_DIR \
+  SRC_DIRS=( src lib/closure-library lib/closure-templates-compiler $BUILD_TPL_DIR \
     lib/zlib.js/src lib/typedarray )
 
   # See https://developers.google.com/closure/library/docs/closurebuilder
@@ -150,13 +150,13 @@ e2e_install_deps() {
 }
 
 e2e_testserver() {
-  e2e_build_templates 
+  e2e_build_templates
   echo "Generating build/test_js_deps-runfiles.js file..."
   mkdir -p "$BUILD_DIR"
   $PYTHON_CMD lib/closure-library/closure/bin/build/depswriter.py \
     --root_with_prefix="build/templates/ ../../../build/templates/" \
     --root_with_prefix="src/javascript/crypto/e2e/ ../crypto/e2e/" \
-    --root_with_prefix="lib/closure-templates/javascript/ ../../../../lib/closure-templates/javascript" \
+    --root_with_prefix="lib/closure-templates-compiler/ ../../../../lib/closure-templates-compiler" \
     --root_with_prefix="lib/zlib.js/ ../../../lib/zlib.js/" \
     > "$BUILD_DIR/test_js_deps-runfiles.js"
 

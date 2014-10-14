@@ -28,11 +28,6 @@ if [ ! -d closure-library/.git ]; then
   git clone --depth 1 https://github.com/google/closure-library/ closure-library
 fi
 
-# checkout closure templates
-if [ ! -d closure-templates/.svn ]; then
-  svn checkout https://closure-templates.googlecode.com/svn/trunk/ closure-templates
-fi
-
 # checkout zlib.js
 if [ ! -d zlib.js/.git ]; then
   git clone --depth 1 https://github.com/imaya/zlib.js zlib.js
