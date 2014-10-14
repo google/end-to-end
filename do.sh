@@ -150,7 +150,7 @@ e2e_install_deps() {
 }
 
 e2e_testserver() {
-  e2e_build_templates 
+  e2e_build_templates
   echo "Generating build/test_js_deps-runfiles.js file..."
   mkdir -p "$BUILD_DIR"
   $PYTHON_CMD lib/closure-library/closure/bin/build/depswriter.py \
@@ -164,6 +164,18 @@ e2e_testserver() {
   echo "Starting the End-To-End test server (Press Ctrl-C to stop)..."
   $PYTHON_CMD test_server.py
   echo "Done."
+}
+
+e2e_lint() {
+  if [ -z `which gjslint` ]; then
+    echo "Closure Linter is not installed."
+    echo "Follow instructions at https://developers.google.com/closure/utilities/docs/linter_howto to install (root access is needed)."
+    RETVAL=1
+  else
+    echo "Running Closure Linter..."
+    gjslint -r src
+    RETVAL=$?
+  fi
 }
 
 RETVAL=0
@@ -193,8 +205,11 @@ case "$1" in
   testserver)
     e2e_testserver;
     ;;
+  lint)
+    e2e_lint;
+    ;;
   *)
-    echo "Usage: $0 {build_extension|build_extension_debug|build_library|build_templates|clean|check_deps|install_deps|testserver}"
+    echo "Usage: $0 {build_extension|build_extension_debug|build_library|build_templates|clean|check_deps|install_deps|testserver|lint}"
     RETVAL=1
 esac
 
