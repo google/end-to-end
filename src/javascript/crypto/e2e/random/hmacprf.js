@@ -59,5 +59,3 @@ e2e.HmacPRF.prototype.getHmacPRF = function(key, input) {
   var hmacer = new goog.crypt.Hmac(this.hash_, key, 64);
   return hmacer.getHmac(input);
 };
-
-/* Dummy comment to check MOE export migration */
