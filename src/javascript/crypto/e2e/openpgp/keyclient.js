@@ -18,6 +18,7 @@
 /**
  * @fileoverview Implements a key client that searches, imports and verifies
  *    keys from/to http key server.
+ * @author quannguyen@google.com (Quan Nguyen)
  */
 goog.provide('e2e.openpgp.KeyClient');
 

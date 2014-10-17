@@ -17,6 +17,7 @@
 /**
  * @fileoverview Basic arithmetic operations for big numbers used as modulus
  * in modular arithmetic.
+ * @author mschilder@google.com (Marius Schilder).
  */
 
 goog.provide('e2e.BigNumModulus');

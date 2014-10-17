@@ -17,6 +17,7 @@
 /**
  * @fileoverview Implementation of Cipher Block Chaining mode.
  *
+ * @author tunatoksoz@google.com (Tuna Toksoz)
  */
 
 goog.provide('e2e.ciphermode.Cbc');

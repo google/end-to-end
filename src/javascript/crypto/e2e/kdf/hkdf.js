@@ -17,6 +17,7 @@
 
 /**
  * @fileoverview Implements RFC 5869 HMAC-based Key Derivation Function (HKDF).
+ * @author quannguyen@google.com (Quan Nguyen)
  */
 goog.provide('e2e.Hkdf');
 
