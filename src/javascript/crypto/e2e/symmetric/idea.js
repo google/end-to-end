@@ -17,7 +17,6 @@
 
 /**
  * @fileoverview Implementation of IDEA.
- * @author rowen@google.com (Russell Owen)
  */
 
 goog.provide('e2e.cipher.Idea');
