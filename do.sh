@@ -166,6 +166,18 @@ e2e_testserver() {
   echo "Done."
 }
 
+e2e_lint() {
+  if [ -z `which gjslint` ]; then
+    echo "Closure Linter is not installed."
+    echo "Follow instructions at https://developers.google.com/closure/utilities/docs/linter_howto to install (root access is needed)."
+    RETVAL=1
+  else
+    echo "Running Closure Linter..."
+    gjslint -r src
+    RETVAL=$?
+  fi
+}
+
 RETVAL=0
 
 case "$1" in
@@ -193,8 +205,11 @@ case "$1" in
   testserver)
     e2e_testserver;
     ;;
+  lint)
+    e2e_lint;
+    ;;
   *)
-    echo "Usage: $0 {build_extension|build_extension_debug|build_library|build_templates|clean|check_deps|install_deps|testserver}"
+    echo "Usage: $0 {build_extension|build_extension_debug|build_library|build_templates|clean|check_deps|install_deps|testserver|lint}"
     RETVAL=1
 esac
 
