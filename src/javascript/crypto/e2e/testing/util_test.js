@@ -19,6 +19,7 @@
  * @author koto@google.com (Krzysztof Kotowicz)
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.testing.UtilTest');
 
 goog.require('e2e.testing.Util');
