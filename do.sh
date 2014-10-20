@@ -173,14 +173,22 @@ e2e_lint() {
     RETVAL=1
   else
     echo "Running Closure Linter..."
-    gjslint -r src
+    if [ -z "$1" ]; then
+      ADDITIONAL="-r src/javascript/crypto/e2e"
+    else
+      ADDITIONAL=$*
+    fi
+    gjslint --strict --closurized_namespaces=goog,e2e --limited_doc_files=_test.js $ADDITIONAL
     RETVAL=$?
   fi
 }
 
 RETVAL=0
 
-case "$1" in
+CMD=$1
+shift
+
+case "$CMD" in
   check_deps)
     e2e_assert_dependencies;
     ;;
@@ -206,7 +214,7 @@ case "$1" in
     e2e_testserver;
     ;;
   lint)
-    e2e_lint;
+    e2e_lint $*;
     ;;
   *)
     echo "Usage: $0 {build_extension|build_extension_debug|build_library|build_templates|clean|check_deps|install_deps|testserver|lint}"
