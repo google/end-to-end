@@ -31,6 +31,7 @@ goog.require('e2e.compression.factory');
 goog.require('goog.array');
 
 
+
 /**
  * Wrapper around the external zip raw deflate implementation.
  * @extends {e2e.compression.Compression}
@@ -60,4 +61,4 @@ e2e.compression.Zip.prototype.compress = function(data) {
 
 
 e2e.compression.factory.add(e2e.compression.Zip,
-                                    e2e.compression.Algorithm.ZIP);
+    e2e.compression.Algorithm.ZIP);

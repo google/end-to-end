@@ -34,6 +34,7 @@ goog.require('e2e.cipher.factory');
 goog.require('goog.array');
 
 
+
 /**
  * Basic implementation of Blowfish, 16 rounds.
  * OpenPGP specifies a 128 bit key, but this implementation supports arbitrary
@@ -292,6 +293,7 @@ e2e.cipher.Blowfish.S0 = [
   0x53b02d5d, 0xa99f8fa1, 0x08ba4799, 0x6e85076a
 ];
 
+
 /**
  * S-box 1
  * @type {Array.<number>}
@@ -342,6 +344,7 @@ e2e.cipher.Blowfish.S1 = [
   0x675fda79, 0xe3674340, 0xc5c43465, 0x713e38d8, 0x3d28f89e, 0xf16dff20,
   0x153e21e7, 0x8fb03d4a, 0xe6e39f2b, 0xdb83adf7
 ];
+
 
 /**
  * S-box 2
@@ -394,6 +397,7 @@ e2e.cipher.Blowfish.S2 = [
   0xd79a3234, 0x92638212, 0x670efa8e, 0x406000e0
 ];
 
+
 /**
  * S-box 3
  * @type {Array.<number>}
@@ -445,6 +449,7 @@ e2e.cipher.Blowfish.S3 = [
   0xb74e6132, 0xce77e25b, 0x578fdfe3, 0x3ac372e6
 ];
 
+
 /**
  * Startup permutation array, P-array.
  * @type {Array.<number>}
@@ -458,4 +463,4 @@ e2e.cipher.Blowfish.P = [
 
 
 e2e.cipher.factory.add(e2e.cipher.Blowfish,
-                               e2e.cipher.Algorithm.BLOWFISH);
+    e2e.cipher.Algorithm.BLOWFISH);

@@ -86,9 +86,9 @@ ui.GlassWrapper.prototype.installGlass = function() {
   this.targetElem_.appendChild(glassFrame);
 
   glassFrame.addEventListener('load', goog.bind(function() {
-      glassFrame.contentWindow.postMessage(
-          goog.crypt.base64.encodeString(pgpMessage, true),
-          chrome.runtime.getURL(''));
+    glassFrame.contentWindow.postMessage(
+        goog.crypt.base64.encodeString(pgpMessage, true),
+        chrome.runtime.getURL(''));
   }, this), false);
 
   glassFrame.addEventListener('mousewheel', function(evt) {
@@ -121,4 +121,4 @@ ui.GlassWrapper.prototype.getOriginalContent = function() {
   return this.targetElem_.getAttribute('original_content');
 };
 
-}); // goog.scope
+});  // goog.scope

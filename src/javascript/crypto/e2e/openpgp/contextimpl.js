@@ -38,6 +38,7 @@ goog.require('e2e.openpgp.block.LiteralMessage');
 goog.require('e2e.openpgp.block.Message');
 goog.require('e2e.openpgp.block.TransferableKey');
 goog.require('e2e.openpgp.block.factory');
+goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.PassphraseError');
 /** @suppress {extraRequire} force loading of all signers */
@@ -47,6 +48,7 @@ goog.require('goog.asserts');
 goog.require('goog.async.DeferredList');
 goog.require('goog.structs');
 goog.require('goog.structs.Map');
+
 
 
 /**

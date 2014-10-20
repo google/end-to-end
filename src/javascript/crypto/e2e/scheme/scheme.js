@@ -22,6 +22,7 @@
 goog.require('e2e.algorithm.KeyLocations');
 goog.require('e2e.async.Result');
 goog.require('e2e.openpgp.error.UnsupportedError');
+goog.require('goog.asserts');
 goog.provide('e2e.scheme.EncryptionScheme');
 goog.provide('e2e.scheme.Scheme');
 goog.provide('e2e.scheme.SignatureScheme');

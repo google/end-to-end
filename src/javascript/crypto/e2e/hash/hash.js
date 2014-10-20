@@ -28,6 +28,7 @@ goog.require('goog.crypt.Hash');
 goog.require('goog.debug.Error');
 
 
+
 /**
  * Error class used to represent errors in the hash algorithms.
  * @param {*=} opt_msg Optional message to send.

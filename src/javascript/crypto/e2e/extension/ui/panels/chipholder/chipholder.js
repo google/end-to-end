@@ -218,7 +218,6 @@ panels.ChipHolder.prototype.getProvidedPassphrases = function() {
 };
 
 
-
 /**
  * Changes focus to the input field.
  * @private
@@ -226,7 +225,6 @@ panels.ChipHolder.prototype.getProvidedPassphrases = function() {
 panels.ChipHolder.prototype.refocus_ = function() {
   this.shadowInputElem_.focus();
 };
-
 
 
 /**
@@ -348,4 +346,4 @@ panels.ChipHolder.prototype.isLocked = function() {
   return this.isLocked_;
 };
 
-}); // goog.scope
+});  // goog.scope

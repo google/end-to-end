@@ -35,6 +35,7 @@ goog.provide('e2e.openpgp.error.WrongPassphraseError');
 goog.require('goog.debug.Error');
 
 
+
 /**
  * The base class for End to End OpenPGP errors.
  * @param {*=} opt_msg The custom error message.
@@ -47,6 +48,7 @@ e2e.openpgp.error.Error = function(opt_msg) {
 goog.inherits(e2e.openpgp.error.Error, goog.debug.Error);
 
 
+
 /**
  * Class to represent all parsing errors.
  * @param {*=} opt_msg The custom error message.
@@ -57,6 +59,7 @@ e2e.openpgp.error.ParseError = function(opt_msg) {
   goog.base(this, opt_msg);
 };
 goog.inherits(e2e.openpgp.error.ParseError, e2e.openpgp.error.Error);
+
 
 
 /**
@@ -72,6 +75,7 @@ goog.inherits(e2e.openpgp.error.SignatureError,
     e2e.openpgp.error.Error);
 
 
+
 /**
  * Class to represent signature verification error due to expired signature.
  * @param {*=} opt_msg The custom error message.
@@ -85,6 +89,7 @@ goog.inherits(e2e.openpgp.error.SignatureExpiredError,
     e2e.openpgp.error.SignatureError);
 
 
+
 /**
  * Class to represent all decryption errors.
  * @param {*=} opt_msg The custom error message.
@@ -95,6 +100,7 @@ e2e.openpgp.error.DecryptError = function(opt_msg) {
   goog.base(this, opt_msg);
 };
 goog.inherits(e2e.openpgp.error.DecryptError, e2e.openpgp.error.Error);
+
 
 
 /**
@@ -110,6 +116,7 @@ goog.inherits(e2e.openpgp.error.SerializationError,
               e2e.openpgp.error.Error);
 
 
+
 /**
  * Exception used when a function receives an invalid argument.
  * @param {string} message The message with the error details.
@@ -121,6 +128,7 @@ e2e.openpgp.error.InvalidArgumentsError = function(message) {
 };
 goog.inherits(e2e.openpgp.error.InvalidArgumentsError,
               e2e.openpgp.error.Error);
+
 
 
 /**
@@ -136,6 +144,7 @@ goog.inherits(e2e.openpgp.error.UnsupportedError,
               e2e.openpgp.error.Error);
 
 
+
 /**
  * Exception used for all passphrase errors.
  * @param {string} message The message with the error details.
@@ -149,6 +158,7 @@ goog.inherits(e2e.openpgp.error.PassphraseError,
               e2e.openpgp.error.Error);
 
 
+
 /**
  * Exception used when an encrypted cipher needs a passphrase.
  * @constructor
@@ -159,6 +169,7 @@ e2e.openpgp.error.MissingPassphraseError = function() {
 };
 goog.inherits(e2e.openpgp.error.MissingPassphraseError,
               e2e.openpgp.error.PassphraseError);
+
 
 
 /**

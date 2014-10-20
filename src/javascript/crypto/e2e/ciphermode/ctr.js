@@ -22,12 +22,14 @@
 
 goog.provide('e2e.ciphermode.Ctr');
 
+goog.require('e2e');
 goog.require('e2e.async.Result');
 goog.require('e2e.ciphermode.CipherMode');
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('e2e.error.UnsupportedError');
 goog.require('goog.array');
 goog.require('goog.crypt');
+
 
 
 /**

@@ -174,4 +174,4 @@ ui.Glass.prototype.scroll_ = function(evt) {
   goog.style.setPosition(fieldset, 0, newY);
 };
 
-}); // goog.scope
+});  // goog.scope

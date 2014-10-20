@@ -16,6 +16,7 @@
 
 
 goog.require('e2e.async.Result');
+
 /**
  * @fileoverview A scheme for using different sources (e.g., webcrypto, JS) to
  * sign with RSA.

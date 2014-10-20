@@ -76,20 +76,36 @@ messages.GetSelectionRequest;
  * @template T
  */
 messages.ApiRequest = function() {};
+
+
 /** @type {T} */
 messages.ApiRequest.prototype.content;
+
+
 /** @type {!Array.<string>|undefined} */
 messages.ApiRequest.prototype.recipients;
+
+
 /** @type {!Array.<string>|undefined} */
 messages.ApiRequest.prototype.encryptPassphrases;
+
+
 /** @type {string|undefined} */
 messages.ApiRequest.prototype.decryptPassphrase;
+
+
 /** @type {!function(string, function(string))|undefined} */
 messages.ApiRequest.prototype.passphraseCallback;
+
+
 /** @type {string|undefined} */
 messages.ApiRequest.prototype.currentUser;
+
+
 /** @type {boolean|undefined} */
 messages.ApiRequest.prototype.signMessage;
+
+
 /** @type {e2e.ext.constants.Actions} */
 messages.ApiRequest.prototype.action;
 
@@ -106,4 +122,4 @@ messages.ApiRequest.prototype.action;
  */
 messages.ApiResponse;
 
-}); // goog.scope
+});  // goog.scope

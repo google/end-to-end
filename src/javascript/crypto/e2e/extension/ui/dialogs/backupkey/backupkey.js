@@ -89,4 +89,4 @@ dialogs.BackupKey.prototype.getBackupCode_ = function() {
   });
   return result;
 };
-}); // goog.scope
+});  // goog.scope

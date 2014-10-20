@@ -34,6 +34,7 @@ goog.require('e2e.cipher.factory');
 goog.require('goog.math.Long');
 
 
+
 /**
  * Basic implementation of TripleDES (3DES EDE).
  * @param {e2e.cipher.Algorithm} algorithm The algorithm being
@@ -86,6 +87,7 @@ e2e.cipher.TripleDes.prototype.decrypt = function(data) {
       this.des_[1].encrypt, this.des_[1]).addCallback(
       this.des_[0].decrypt, this.des_[0]);
 };
+
 
 
 /**
@@ -410,4 +412,4 @@ e2e.cipher.Des.permutedChoice2 = [
 
 
 e2e.cipher.factory.add(e2e.cipher.TripleDes,
-                               e2e.cipher.Algorithm.TRIPLE_DES);
+    e2e.cipher.Algorithm.TRIPLE_DES);

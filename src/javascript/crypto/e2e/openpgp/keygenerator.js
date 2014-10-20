@@ -20,13 +20,17 @@
 
 goog.provide('e2e.openpgp.keygenerator');
 
+goog.require('e2e.algorithm.KeyLocations');
+goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.Ecdh');
+goog.require('e2e.cipher.Rsa');
 goog.require('e2e.ecc.PrimeCurve');
 goog.require('e2e.ecc.Protocol');
+goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.signer.Algorithm');
 goog.require('e2e.signer.Ecdsa');
-
+goog.require('goog.crypt.base64');
 
 
 /**
@@ -56,7 +60,7 @@ e2e.openpgp.keygenerator.newEcdhWithP256 = function(
   var key = e2e.ecc.Protocol.generateKeyPair(
       e2e.ecc.PrimeCurve.P_256, opt_privateKey);
   key['kdfInfo'] = [
-      0x3, 0x1, 0x8 /* SHA256 Algo ID*/, 0x7 /* AES-128 Algo ID */];
+    0x3, 0x1, 0x8 /* SHA256 Algo ID*/, 0x7 /* AES-128 Algo ID */];
   return new e2e.cipher.Ecdh(e2e.cipher.Algorithm.ECDH, key);
 };
 
@@ -74,9 +78,9 @@ e2e.openpgp.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
                 exportKey: function(...): *}} */ (goog.global.crypto['subtle']);
 
   var aid = {'name': 'RSASSA-PKCS1-v1_5',
-             'modulusLength': keyLength,
-             'publicExponent': new Uint8Array([1, 0, 1]),
-             'hash': {'name': 'SHA-256'}};
+    'modulusLength': keyLength,
+    'publicExponent': new Uint8Array([1, 0, 1]),
+    'hash': {'name': 'SHA-256'}};
 
   var result = new e2e.async.Result;
   var rsaSigner;
@@ -85,36 +89,37 @@ e2e.openpgp.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
       function(e) {
         result.errback(e);
       }).then(function(sigKeyPair) {
-        crypto.exportKey('jwk', sigKeyPair.publicKey).then(
-          function(sigPubStr) {
-            var sigPubKey = JSON.parse(String.fromCharCode.apply(null,
-                new Uint8Array(sigPubStr)));
-            var sigRSAKey = e2e.openpgp.keygenerator.jwkToNative_(sigPubKey);
-            rsaSigner = new e2e.cipher.Rsa(e2e.signer.Algorithm.RSA, sigRSAKey);
-            rsaSigner.setWebCryptoKey(sigKeyPair);
+    crypto.exportKey('jwk', sigKeyPair.publicKey).then(
+        function(sigPubStr) {
+          var sigPubKey = JSON.parse(String.fromCharCode.apply(null,
+              new Uint8Array(sigPubStr)));
+          var sigRSAKey = e2e.openpgp.keygenerator.jwkToNative_(sigPubKey);
+          rsaSigner = new e2e.cipher.Rsa(e2e.signer.Algorithm.RSA, sigRSAKey);
+          rsaSigner.setWebCryptoKey(sigKeyPair);
 
-            aid.name = 'RSAES-PKCS1-v1_5';
-            crypto.generateKey(aid, false, ['encrypt', 'decrypt']).catch (
+          aid.name = 'RSAES-PKCS1-v1_5';
+          crypto.generateKey(aid, false, ['encrypt', 'decrypt']).catch (
               function(e) {
                 result.errback(e);
               }).then(function(encKeyPair) {
-                crypto.exportKey('jwk', encKeyPair.publicKey).then(
-                  function(encPubStr) {
-                    var encPubKey = JSON.parse(String.fromCharCode.apply(
-                        null, new Uint8Array(encPubStr)));
-                    var encRSAKey = e2e.openpgp.keygenerator.jwkToNative_(
+            crypto.exportKey('jwk', encKeyPair.publicKey).then(
+                function(encPubStr) {
+                  var encPubKey = JSON.parse(String.fromCharCode.apply(
+                      null, new Uint8Array(encPubStr)));
+                  var encRSAKey = e2e.openpgp.keygenerator.jwkToNative_(
                       encPubKey);
-                    rsaCipher = new e2e.cipher.Rsa(e2e.cipher.Algorithm.RSA,
+                  rsaCipher = new e2e.cipher.Rsa(e2e.cipher.Algorithm.RSA,
                       encRSAKey);
-                    rsaCipher.setWebCryptoKey(encKeyPair);
+                  rsaCipher.setWebCryptoKey(encKeyPair);
 
-                    result.callback([rsaSigner, rsaCipher]);
-                  }).catch (function(e) { result.errback(e); });
-              });
-          }).catch (function(e) { result.errback(e); });
-      });
+                  result.callback([rsaSigner, rsaCipher]);
+                }).catch (function(e) { result.errback(e); });
+          });
+        }).catch (function(e) { result.errback(e); });
+  });
   return result;
 };
+
 
 /**
  * Given a JWK-formatted RSA key, return a key in the format that we want.

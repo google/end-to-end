@@ -27,6 +27,7 @@ goog.require('goog.format.EmailAddress');
 goog.scope(function() {
 var gmonkey = e2e.ext.gmonkey;
 
+
 /**
  * True if Gmonkey object in web application is not available (this can only
  * be determined upon first callGmonkey_ invocation).
@@ -34,6 +35,7 @@ var gmonkey = e2e.ext.gmonkey;
  * @private
  */
 gmonkey.available_ = null;
+
 
 /**
  * Calls Gmail's gmonkey API.
@@ -116,15 +118,15 @@ gmonkey.getValidEmailAddressesFromString_ = function(emailLabels) {
  * @private
  */
 gmonkey.getValidEmailAddressesFromArray_ = function(recipients) {
-    var list = [];
-    goog.array.forEach(recipients, function(recipient) {
-        var emailAddress = goog.format.EmailAddress.parse(recipient);
-        // Validate e-mail address, but add full recipient record.
-        if (e2e.ext.utils.text.extractValidEmail(emailAddress.getAddress())) {
-          list.push(emailAddress.toString());
-        }
-    });
-    return list.join(', ');
+  var list = [];
+  goog.array.forEach(recipients, function(recipient) {
+    var emailAddress = goog.format.EmailAddress.parse(recipient);
+    // Validate e-mail address, but add full recipient record.
+    if (e2e.ext.utils.text.extractValidEmail(emailAddress.getAddress())) {
+      list.push(emailAddress.toString());
+    }
+  });
+  return list.join(', ');
 };
 
 
@@ -205,4 +207,4 @@ gmonkey.setActiveDraft = function(recipients, msgBody, opt_callback) {
   });
 };
 
-}); // goog.scope
+});  // goog.scope

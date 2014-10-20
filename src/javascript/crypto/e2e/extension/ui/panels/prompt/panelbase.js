@@ -20,11 +20,14 @@
 
 goog.provide('e2e.ext.ui.panels.prompt.PanelBase');
 
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.CssClass');
+goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.dom');
+goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
 goog.require('goog.ui.Component');
 
@@ -174,7 +177,7 @@ promptPanels.PanelBase.prototype.renderDialog = function(dialog) {
 promptPanels.PanelBase.prototype.renderPassphraseDialog =
     function(uid, callback) {
   var dialog = new dialogs.Generic(chrome.i18n.getMessage(
-          'promptPassphraseCallbackMessage', uid),
+      'promptPassphraseCallbackMessage', uid),
       function(passphrase) {
         goog.dispose(dialog);
         callback(/** @type {string} */ (passphrase));
@@ -187,4 +190,4 @@ promptPanels.PanelBase.prototype.renderPassphraseDialog =
 };
 
 
-}); // goog.scope
+});  // goog.scope

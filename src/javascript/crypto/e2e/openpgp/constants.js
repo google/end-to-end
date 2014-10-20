@@ -85,82 +85,82 @@ e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SIGNER] = {};
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.PUBLIC_KEY][
-        e2e.cipher.Algorithm.RSA] = 1;
+    e2e.cipher.Algorithm.RSA] = 1;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.PUBLIC_KEY][
-        e2e.cipher.Algorithm.ELGAMAL] = 16;
+    e2e.cipher.Algorithm.ELGAMAL] = 16;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.PUBLIC_KEY][
-        e2e.cipher.Algorithm.ECDH] = 18;
+    e2e.cipher.Algorithm.ECDH] = 18;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SYMMETRIC_KEY][
-        e2e.cipher.Algorithm.PLAINTEXT] = 0;
+    e2e.cipher.Algorithm.PLAINTEXT] = 0;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SYMMETRIC_KEY][
-        e2e.cipher.Algorithm.IDEA] = 1;
+    e2e.cipher.Algorithm.IDEA] = 1;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SYMMETRIC_KEY][
-        e2e.cipher.Algorithm.TRIPLE_DES] = 2;
+    e2e.cipher.Algorithm.TRIPLE_DES] = 2;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SYMMETRIC_KEY][
-        e2e.cipher.Algorithm.CAST5] = 3;
+    e2e.cipher.Algorithm.CAST5] = 3;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SYMMETRIC_KEY][
-        e2e.cipher.Algorithm.BLOWFISH] = 4;
+    e2e.cipher.Algorithm.BLOWFISH] = 4;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SYMMETRIC_KEY][
-        e2e.cipher.Algorithm.AES128] = 7;
+    e2e.cipher.Algorithm.AES128] = 7;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SYMMETRIC_KEY][
-        e2e.cipher.Algorithm.AES192] = 8;
+    e2e.cipher.Algorithm.AES192] = 8;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SYMMETRIC_KEY][
-        e2e.cipher.Algorithm.AES256] = 9;
+    e2e.cipher.Algorithm.AES256] = 9;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SYMMETRIC_KEY][
-        e2e.cipher.Algorithm.TWOFISH] = 10;
+    e2e.cipher.Algorithm.TWOFISH] = 10;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.COMPRESSION][
-        e2e.compression.Algorithm.UNCOMPRESSED] = 0;
+    e2e.compression.Algorithm.UNCOMPRESSED] = 0;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.COMPRESSION][
-        e2e.compression.Algorithm.ZIP] = 1;
+    e2e.compression.Algorithm.ZIP] = 1;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.COMPRESSION][
-        e2e.compression.Algorithm.ZLIB] = 2;
+    e2e.compression.Algorithm.ZLIB] = 2;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.COMPRESSION][
-        e2e.compression.Algorithm.BZIP2] = 3;
+    e2e.compression.Algorithm.BZIP2] = 3;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.HASH][
-        e2e.hash.Algorithm.MD5] = 1;
+    e2e.hash.Algorithm.MD5] = 1;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.HASH][
-        e2e.hash.Algorithm.SHA1] = 2;
+    e2e.hash.Algorithm.SHA1] = 2;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.HASH][
-        e2e.hash.Algorithm.RIPEMD] = 3;
+    e2e.hash.Algorithm.RIPEMD] = 3;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.HASH][
-        e2e.hash.Algorithm.SHA256] = 8;
+    e2e.hash.Algorithm.SHA256] = 8;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.HASH][
-        e2e.hash.Algorithm.SHA384] = 9;
+    e2e.hash.Algorithm.SHA384] = 9;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.HASH][
-        e2e.hash.Algorithm.SHA512] = 10;
+    e2e.hash.Algorithm.SHA512] = 10;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.HASH][
-        e2e.hash.Algorithm.SHA224] = 11;
+    e2e.hash.Algorithm.SHA224] = 11;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SIGNER][
-        e2e.signer.Algorithm.RSA] = 1;
+    e2e.signer.Algorithm.RSA] = 1;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SIGNER][
-        e2e.signer.Algorithm.DSA] = 17;
+    e2e.signer.Algorithm.DSA] = 17;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SIGNER][
-        e2e.signer.Algorithm.ECDSA] = 19;
+    e2e.signer.Algorithm.ECDSA] = 19;
 
 
 /**
@@ -175,7 +175,7 @@ goog.object.extend(e2e.openpgp.constants.NAME_TO_ID_ALL_,
                    e2e.openpgp.constants.NAME_TO_ID[
                        e2e.openpgp.constants.Type.SYMMETRIC_KEY],
                    e2e.openpgp.constants.NAME_TO_ID[
-                     e2e.openpgp.constants.Type.COMPRESSION],
+    e2e.openpgp.constants.Type.COMPRESSION],
                    e2e.openpgp.constants.NAME_TO_ID[
                        e2e.openpgp.constants.Type.HASH],
                    e2e.openpgp.constants.NAME_TO_ID[
@@ -191,8 +191,8 @@ e2e.openpgp.constants.ID_TO_NAME = {};
 
 e2e.openpgp.constants.ID_TO_NAME[
     e2e.openpgp.constants.Type.PUBLIC_KEY] = goog.object.transpose(
-        e2e.openpgp.constants.NAME_TO_ID[
-            e2e.openpgp.constants.Type.PUBLIC_KEY]);
+    e2e.openpgp.constants.NAME_TO_ID[
+    e2e.openpgp.constants.Type.PUBLIC_KEY]);
 // RSA is special in that it has algorithm ids 1, 2 and 3 registered.
 e2e.openpgp.constants.ID_TO_NAME[
     e2e.openpgp.constants.Type.PUBLIC_KEY][2] =
@@ -202,20 +202,20 @@ e2e.openpgp.constants.ID_TO_NAME[
     e2e.cipher.Algorithm.RSA;
 e2e.openpgp.constants.ID_TO_NAME[
     e2e.openpgp.constants.Type.SYMMETRIC_KEY] = goog.object.transpose(
-        e2e.openpgp.constants.NAME_TO_ID[
-            e2e.openpgp.constants.Type.SYMMETRIC_KEY]);
+    e2e.openpgp.constants.NAME_TO_ID[
+    e2e.openpgp.constants.Type.SYMMETRIC_KEY]);
 e2e.openpgp.constants.ID_TO_NAME[
     e2e.openpgp.constants.Type.COMPRESSION] = goog.object.transpose(
-        e2e.openpgp.constants.NAME_TO_ID[
-            e2e.openpgp.constants.Type.COMPRESSION]);
+    e2e.openpgp.constants.NAME_TO_ID[
+    e2e.openpgp.constants.Type.COMPRESSION]);
 e2e.openpgp.constants.ID_TO_NAME[
     e2e.openpgp.constants.Type.HASH] = goog.object.transpose(
-        e2e.openpgp.constants.NAME_TO_ID[
-            e2e.openpgp.constants.Type.HASH]);
+    e2e.openpgp.constants.NAME_TO_ID[
+    e2e.openpgp.constants.Type.HASH]);
 e2e.openpgp.constants.ID_TO_NAME[
     e2e.openpgp.constants.Type.SIGNER] = goog.object.transpose(
-        e2e.openpgp.constants.NAME_TO_ID[
-            e2e.openpgp.constants.Type.SIGNER]);
+    e2e.openpgp.constants.NAME_TO_ID[
+    e2e.openpgp.constants.Type.SIGNER]);
 
 
 /**
@@ -258,7 +258,7 @@ e2e.openpgp.constants.getAlgorithm = function(type, id) {
     }
   }
   throw new e2e.openpgp.error.UnsupportedError(
-    'Unsupported id: ' + id);
+      'Unsupported id: ' + id);
 };
 
 
@@ -284,18 +284,18 @@ e2e.openpgp.constants.getInstance = function(type, id, opt_key) {
     case e2e.openpgp.constants.Type.SYMMETRIC_KEY:
       algorithm = /** @type {e2e.cipher.Algorithm} */ (algorithm);
       return e2e.cipher.factory.require(algorithm, opt_key);
-    break;
+      break;
     case e2e.openpgp.constants.Type.COMPRESSION:
       algorithm = /** @type {e2e.compression.Algorithm} */ (algorithm);
       return e2e.compression.factory.require(algorithm);
-    break;
+      break;
     case e2e.openpgp.constants.Type.HASH:
       algorithm = /** @type {e2e.hash.Algorithm} */ (algorithm);
       return e2e.hash.factory.require(algorithm);
     case e2e.openpgp.constants.Type.SIGNER:
       algorithm = /** @type {e2e.signer.Algorithm} */ (algorithm);
       return e2e.signer.factory.require(algorithm);
-    break;
+      break;
   }
   throw new e2e.openpgp.error.UnsupportedError(
       'Unsupported algorithm: ' + algorithm);

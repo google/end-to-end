@@ -145,7 +145,7 @@ e2e.ecc.Ed25519.prototype.verify = function(message, signature) {
  * @private
  */
 e2e.ecc.Ed25519.prototype.generatePerMessageSeed_ =
-function(message, extraBytes) {
+    function(message, extraBytes) {
   var hash = this.hash_;
   hash.reset();
   hash.update(extraBytes);

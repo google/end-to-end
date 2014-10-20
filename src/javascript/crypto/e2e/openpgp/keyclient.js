@@ -24,12 +24,13 @@ goog.provide('e2e.openpgp.KeyClient');
 
 goog.require('e2e.async.Result');
 goog.require('e2e.openpgp.asciiArmor');
-goog.require('e2e.openpgp.block.TransferablePublicKey');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.random');
 goog.require('goog.Uri');
 goog.require('goog.crypt');
 goog.require('goog.net.XhrIo');
+
+
 
 /**
  * Implements a key client that searches, imports and verifies keys from/to http
@@ -44,12 +45,14 @@ e2e.openpgp.KeyClient = function(keyServerUrl) {
   this.keyServerUrl_ = keyServerUrl;
 };
 
+
 /**
  * The url of http key server.
  * @type {string}
  * @private
  */
 e2e.openpgp.KeyClient.prototype.keyServerUrl_;
+
 
 /**
  * The relative path of key search request.
@@ -59,6 +62,7 @@ e2e.openpgp.KeyClient.prototype.keyServerUrl_;
  */
 e2e.openpgp.KeyClient.SEARCH_REL_PATH_ = '/pks/lookup';
 
+
 /**
  * The relative path of key import request.
  * @type {string}
@@ -66,6 +70,7 @@ e2e.openpgp.KeyClient.SEARCH_REL_PATH_ = '/pks/lookup';
  * @private
  */
 e2e.openpgp.KeyClient.ADD_REL_PATH_ = '/pks/add';
+
 
 /**
  * The relative path of user registration.
@@ -75,6 +80,7 @@ e2e.openpgp.KeyClient.ADD_REL_PATH_ = '/pks/add';
  */
 e2e.openpgp.KeyClient.REGISTER_REL_PATH_ = '/userauth';
 
+
 /**
  * The ASCII armored key text parameter.
  * @type {string}
@@ -82,6 +88,7 @@ e2e.openpgp.KeyClient.REGISTER_REL_PATH_ = '/userauth';
  * @private
  */
 e2e.openpgp.KeyClient.KEY_TEXT_PARAM_ = 'keytext';
+
 
 /**
  * The URL where the Identity Provider sent the user to.
@@ -91,6 +98,7 @@ e2e.openpgp.KeyClient.KEY_TEXT_PARAM_ = 'keytext';
  */
 e2e.openpgp.KeyClient.REQUEST_URI_PARAM_ = 'requestUri';
 
+
 /**
  * The POST body included in the Identity Provider response.
  * @type {string}
@@ -98,6 +106,7 @@ e2e.openpgp.KeyClient.REQUEST_URI_PARAM_ = 'requestUri';
  * @private
  */
 e2e.openpgp.KeyClient.POST_BODY_PARAM_ = 'postBody';
+
 
 /**
  * The operation parameter.
@@ -107,6 +116,7 @@ e2e.openpgp.KeyClient.POST_BODY_PARAM_ = 'postBody';
  */
 e2e.openpgp.KeyClient.OP_PARAM_ = 'op';
 
+
 /**
  * The 'get' operation to search for keys associated with an email.
  * @type {string}
@@ -115,6 +125,7 @@ e2e.openpgp.KeyClient.OP_PARAM_ = 'op';
  */
 e2e.openpgp.KeyClient.GET_OP_PARAM_ = 'get';
 
+
 /**
  * The email parameter to search for keys with the 'get' operation.
  * @type {string}
@@ -122,6 +133,7 @@ e2e.openpgp.KeyClient.GET_OP_PARAM_ = 'get';
  * @private
  */
 e2e.openpgp.KeyClient.X_EMAIL_PARAM_ = 'x-email';
+
 
 /**
  * The user id parameter during key import. The key server will extract the
@@ -132,6 +144,7 @@ e2e.openpgp.KeyClient.X_EMAIL_PARAM_ = 'x-email';
  */
 e2e.openpgp.KeyClient.X_USER_ID_PARAM_ = 'x-userid';
 
+
 /**
  * A random nonce to identify the key being uploaded.
  * @type {string}
@@ -140,6 +153,7 @@ e2e.openpgp.KeyClient.X_USER_ID_PARAM_ = 'x-userid';
  */
 e2e.openpgp.KeyClient.NONCE_PARAM_ = 'nonce';
 
+
 /**
  * The origin parameter to identify the extension.
  * @type {string}
@@ -147,6 +161,7 @@ e2e.openpgp.KeyClient.NONCE_PARAM_ = 'nonce';
  * @private
  */
 e2e.openpgp.KeyClient.ORIGIN_PARAM_ = 'origin';
+
 
 /**
  * Imports a public key to the key server.
@@ -161,10 +176,11 @@ e2e.openpgp.KeyClient.prototype.importPublicKey = function(key) {
   }
   var nonce = goog.crypt.byteArrayToHex(e2e.random.getRandomBytes(16));
   var serializedKey = e2e.openpgp.asciiArmor.encode(
-    'PUBLIC KEY BLOCK', key.serialize());
+      'PUBLIC KEY BLOCK', key.serialize());
   return this.getOpenIdCredentials_(uids[0], nonce).addCallback(
       goog.bind(this.importKeyWithCredentials_, this, nonce, serializedKey));
 };
+
 
 /**
  * Obtains the OpenID credentials for the given email address and a nonce.
@@ -201,6 +217,7 @@ e2e.openpgp.KeyClient.prototype.getOpenIdCredentials_ = function(
   return result;
 };
 
+
 /**
  * Obtains the URL to register the user.
  * @param {string} userid The user id.
@@ -219,6 +236,7 @@ e2e.openpgp.KeyClient.prototype.getRegistrationUrl_ = function(
       e2e.openpgp.KeyClient.REGISTER_REL_PATH_ +
       '?' + data);
 };
+
 
 /**
  * Imports the given key with the provided credentials.
@@ -256,6 +274,7 @@ e2e.openpgp.KeyClient.prototype.importKeyWithCredentials_ = function(
       'POST', data.toString(), undefined, undefined, true);
   return result;
 };
+
 
 /**
  * Searches a public key based on an email.

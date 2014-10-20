@@ -299,4 +299,4 @@ panels.KeyringMgmtFull.prototype.handleClick_ = function(clickEvt) {
 };
 
 
-}); // goog.scope
+});  // goog.scope

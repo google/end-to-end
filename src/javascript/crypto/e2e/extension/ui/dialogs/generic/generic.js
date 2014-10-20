@@ -224,5 +224,5 @@ dialogs.Generic.prototype.invokeCallback = function(sendBlank) {
 };
 
 
-}); // goog.scope
+});  // goog.scope
 

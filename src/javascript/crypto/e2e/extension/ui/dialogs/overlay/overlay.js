@@ -30,6 +30,7 @@ var constants = e2e.ext.constants;
 var dialogs = e2e.ext.ui.dialogs;
 
 
+
 /**
  * Constructor of a full screen modal with Ok button and background click close.
  * @constructor
@@ -73,4 +74,4 @@ dialogs.Overlay.prototype.enterDocument = function() {
       goog.partial(this.setVisible, false));
 };
 
-}); // goog.scope
+});  // goog.scope

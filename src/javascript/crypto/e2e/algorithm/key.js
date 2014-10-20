@@ -21,6 +21,9 @@
 /** @suppress {extraProvide} provide the whole namespace for simplicity */
 goog.provide('e2e.algorithm.AsymmetricKey');
 goog.provide('e2e.algorithm.KeyLocations');
+goog.provide('e2e.algorithm.WebCryptoAID');
+goog.provide('e2e.algorithm.WebCryptoKey');
+goog.provide('e2e.algorithm.WebCryptoKeyPair');
 /** @suppress {extraProvide} provide the whole namespace for simplicity */
 goog.provide('e2e.cipher.key');
 goog.provide('e2e.cipher.key.Ecdh');
@@ -31,6 +34,8 @@ goog.provide('e2e.cipher.key.SymmetricKey');
 /** @suppress {extraProvide} provide the whole namespace for simplicity */
 goog.provide('e2e.signer.key');
 goog.provide('e2e.signer.key.Dsa');
+goog.provide('e2e.signer.key.DsaPrivateKey');
+goog.provide('e2e.signer.key.DsaPublicKey');
 goog.provide('e2e.signer.key.Ecdsa');
 goog.provide('e2e.signer.key.Key');
 goog.provide('e2e.signer.key.Rsa');
@@ -52,6 +57,7 @@ e2e.algorithm.KeyLocations = {
   WEB_CRYPTO: 'WEB_CRYPTO',
   HARDWARE: 'HARDWARE'
 };
+
 
 /**
  * @typedef {(e2e.signer.key.DsaPublicKey|e2e.signer.key.DsaPrivateKey)}
@@ -135,17 +141,20 @@ e2e.cipher.key.ElGamal;
  */
 e2e.algorithm.WebCryptoAID;
 
+
 /**
  * @typedef {!{algorithm: !e2e.algorithm.WebCryptoAID, extractable: boolean,
  *           type:string, usages: !Array.<string>}}
  */
 e2e.algorithm.WebCryptoKey;
 
+
 /**
  * @typedef {!{privateKey: (e2e.algorithm.WebCryptoKey|undefined),
  *             publicKey: e2e.algorithm.WebCryptoKey}}
  */
 e2e.algorithm.WebCryptoKeyPair;
+
 
 /**
  * @typedef {e2e.cipher.key.ElGamal|e2e.cipher.key.Ecdh|

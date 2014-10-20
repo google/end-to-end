@@ -144,4 +144,4 @@ panels.GenerateKey.prototype.reset = function() {
 };
 
 
-}); // goog.scope
+});  // goog.scope

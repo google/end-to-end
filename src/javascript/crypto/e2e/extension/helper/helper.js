@@ -387,7 +387,7 @@ ext.Helper.prototype.getOrigin_ = function() {
   return window.location.origin;
 };
 
-}); // goog.scope
+});  // goog.scope
 
 // Create the helper and start it.
 if (!!chrome.extension) {

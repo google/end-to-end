@@ -71,9 +71,9 @@ e2e.openpgp.packet.SecretSubkey.prototype.getPublicKeyPacket = function() {
 e2e.openpgp.packet.SecretSubkey.parse = function(body) {
   var seckey = e2e.openpgp.packet.SecretKey.parse(body);
   var subkey = new e2e.openpgp.packet.SecretSubkey(seckey.version,
-                                                       seckey.timestamp,
-                                                       seckey.cipher,
-                                                       seckey.fingerprint);
+      seckey.timestamp,
+      seckey.cipher,
+      seckey.fingerprint);
   return subkey;
 };
 

@@ -79,11 +79,12 @@ e2e.openpgp.packet.OnePassSignature.prototype.serializePacketBody =
  * @param {!e2e.ByteArray|!Uint8Array} data The signed data.
  * @param {!e2e.signer.Signer} signer Signer with the public key that
  *     signed the data.
- * @param {string} opt_hashAlgo message digest algorithm declared in the message
+ * @param {string=} opt_hashAlgo message digest algorithm declared in the
+ *     message.
  * @return {boolean} True if the signature correctly verifies.
  */
 e2e.openpgp.packet.OnePassSignature.prototype.verify = function(
-  data, signer, opt_hashAlgo) {
+    data, signer, opt_hashAlgo) {
   if (this.signature) {
     return this.signature.verify(data, signer, opt_hashAlgo);
   }

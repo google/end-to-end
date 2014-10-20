@@ -119,4 +119,4 @@ panels.PreferenceEntry.prototype.updatePreference_ = function(changeEvt) {
   this.setterCallback_(inputElem.checked);
 };
 
-}); // goog.scope
+});  // goog.scope

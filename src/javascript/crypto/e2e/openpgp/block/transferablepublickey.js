@@ -26,6 +26,8 @@ goog.require('e2e.openpgp.block.TransferableKey');
 goog.require('e2e.openpgp.packet.Key');
 goog.require('e2e.openpgp.packet.PublicKey');
 
+
+
 /**
  * Transferable Public Key Block.
  * @constructor

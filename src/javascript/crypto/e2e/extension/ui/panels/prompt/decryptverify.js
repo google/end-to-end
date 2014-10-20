@@ -20,11 +20,11 @@
 
 goog.provide('e2e.ext.ui.panels.prompt.DecryptVerify');
 
-goog.require('e2e.ext.actions.Executor');
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.Actions');
+goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.ui.panels.prompt.PanelBase');
 goog.require('e2e.ext.ui.templates.panels.prompt');
-goog.require('goog.Timer');
+goog.require('goog.events.EventType');
 goog.require('soy');
 
 
@@ -98,4 +98,4 @@ promptPanels.DecryptVerify.prototype.decryptVerify_ = function() {
   }, this));
 };
 
-}); // goog.scope
+});  // goog.scope

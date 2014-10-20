@@ -23,7 +23,9 @@ goog.provide('e2e.AlgorithmImpl');
 
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.cipher.key');
+goog.require('goog.asserts');
 goog.require('goog.object');
+
 
 
 /**
@@ -74,18 +76,19 @@ e2e.Algorithm.prototype.getKey;
  */
 e2e.Algorithm.prototype.setKey;
 
+
 /**
  * Changes the WebCrypto key of the algorithm.
  * @param {!e2e.algorithm.WebCryptoKeyPair} webCryptoKey The WebCrypto key
  */
 e2e.Algorithm.prototype.setWebCryptoKey;
 
+
 /**
  * Returns a WebCrypto key object (which we don't possess key material).
  * @return {e2e.algorithm.WebCryptoKeyPair}
  */
 e2e.Algorithm.prototype.getWebCryptoKey;
-
 
 
 
@@ -111,6 +114,7 @@ e2e.AlgorithmImpl.prototype.setWebCryptoKey = function(webCryptoKey) {
 
 /** @override */
 e2e.AlgorithmImpl.prototype.webCryptoKey;
+
 
 /** @override */
 e2e.AlgorithmImpl.prototype.key;

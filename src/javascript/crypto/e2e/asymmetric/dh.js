@@ -29,6 +29,7 @@ goog.require('e2e.BigNumModulus');
 goog.require('e2e.random');
 
 
+
 /**
  * Diffie-Hellman generator.
  * @constructor
@@ -51,7 +52,7 @@ e2e.cipher.DiffieHellman.prototype.cachedResult_;
 
 /**
  * Computes g^x mod p.
- * @param {!e2e.ByteArray} opt_g The base.
+ * @param {!e2e.ByteArray=} opt_g The base.
  * @return {!e2e.ByteArray} g^x mod p.
  */
 e2e.cipher.DiffieHellman.prototype.generate = function(opt_g) {

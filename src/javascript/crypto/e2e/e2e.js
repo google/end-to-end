@@ -52,7 +52,7 @@ e2e.ByteArray;
  */
 e2e.longToByteArray = function(value) {
   return e2e.dwordArrayToByteArray([
-      value.getHighBits(), value.getLowBitsUnsigned()]);
+    value.getHighBits(), value.getLowBitsUnsigned()]);
 };
 
 
@@ -237,10 +237,10 @@ e2e.stringToByteArray = function(stringInput) {
  * @return {boolean} If the send number is a byte.
  */
 e2e.isByte = function(b) {
-    return (typeof b == 'number' &&
-        b >= 0 &&
-        b <= 255 &&
-        b - Math.floor(b) == 0);
+  return (typeof b == 'number' &&
+      b >= 0 &&
+      b <= 255 &&
+      b - Math.floor(b) == 0);
 };
 
 

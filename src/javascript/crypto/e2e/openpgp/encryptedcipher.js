@@ -47,7 +47,7 @@ goog.require('e2e.openpgp.error.WrongPassphraseError');
 goog.require('e2e.random');
 goog.require('e2e.signer.Algorithm');
 goog.require('e2e.signer.Signer');
-goog.require('goog.array');
+
 
 
 /**
@@ -156,6 +156,7 @@ goog.inherits(e2e.openpgp.EncryptedCipher, e2e.AlgorithmImpl);
  */
 e2e.openpgp.EncryptedCipher.prototype.keyBytes_;
 
+
 /**
  * Returns the key derivation type.
  * @return {e2e.openpgp.EncryptedCipher.KeyDerivationType|undefined}
@@ -218,7 +219,7 @@ e2e.openpgp.EncryptedCipher.prototype.lockKey = function(
   }
   if (!goog.isDef(opt_passphrase)) {
     this.keyDerivation_ =
-      e2e.openpgp.EncryptedCipher.KeyDerivationType.PLAINTEXT;
+        e2e.openpgp.EncryptedCipher.KeyDerivationType.PLAINTEXT;
     this.iv_ = [];
     this.symmetricAlgorithm_ = undefined;
     this.s2k_ = undefined;
@@ -252,7 +253,7 @@ e2e.openpgp.EncryptedCipher.prototype.lockKey = function(
     var hash = sha1.hash(this.keyBytes_);
     // TODO(evn): Make this call asynchronous.
     this.encryptedKeyData = e2e.async.Result.getValue(
-      cfbSymCipher.encrypt(this.keyBytes_.concat(hash), this.iv_));
+        cfbSymCipher.encrypt(this.keyBytes_.concat(hash), this.iv_));
   }
 };
 
@@ -392,22 +393,22 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey_ = function(keyBytes) {
   var key = keyBytes.slice(0);
   var keyData = this.cipher_.getKey();
   switch (this.cipher_.algorithm) {
-  case e2e.cipher.Algorithm.RSA:
-    keyData.d = e2e.openpgp.Mpi.parse(key);
-    keyData.p = e2e.openpgp.Mpi.parse(key);
-    keyData.q = e2e.openpgp.Mpi.parse(key);
-    keyData.u = e2e.openpgp.Mpi.parse(key);
-    break;
-  case e2e.signer.Algorithm.DSA:
-  case e2e.cipher.Algorithm.ELGAMAL:
-    keyData.x = e2e.openpgp.Mpi.parse(key);
-    break;
-  case e2e.cipher.Algorithm.ECDH:
-  case e2e.signer.Algorithm.ECDSA:
-    keyData.privKey = e2e.openpgp.Mpi.parse(key);
-    break;
-  default:
-    throw new e2e.openpgp.error.InvalidArgumentsError('Unknown algorithm');
+    case e2e.cipher.Algorithm.RSA:
+      keyData.d = e2e.openpgp.Mpi.parse(key);
+      keyData.p = e2e.openpgp.Mpi.parse(key);
+      keyData.q = e2e.openpgp.Mpi.parse(key);
+      keyData.u = e2e.openpgp.Mpi.parse(key);
+      break;
+    case e2e.signer.Algorithm.DSA:
+    case e2e.cipher.Algorithm.ELGAMAL:
+      keyData.x = e2e.openpgp.Mpi.parse(key);
+      break;
+    case e2e.cipher.Algorithm.ECDH:
+    case e2e.signer.Algorithm.ECDSA:
+      keyData.privKey = e2e.openpgp.Mpi.parse(key);
+      break;
+    default:
+      throw new e2e.openpgp.error.InvalidArgumentsError('Unknown algorithm');
   }
   // TODO(user): Figure out what loc this is once multiple locs are supported.
   keyData.loc = e2e.algorithm.KeyLocations.JAVASCRIPT;
@@ -421,6 +422,7 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey_ = function(keyBytes) {
 e2e.openpgp.EncryptedCipher.prototype.getKey = function() {
   return this.cipher_.getKey();
 };
+
 
 /** @inheritDoc */
 e2e.openpgp.EncryptedCipher.prototype.encrypt = function(data) {
@@ -460,7 +462,7 @@ e2e.openpgp.EncryptedCipher.prototype.getHash = function() {
 
 /** @override */
 e2e.openpgp.EncryptedCipher.prototype.setHash = function(hash) {
-    this.cipher_.setHash(hash);
+  this.cipher_.setHash(hash);
 };
 
 
@@ -483,6 +485,7 @@ e2e.openpgp.EncryptedCipher.KeyDerivationType = {
   'PLAINTEXT': 0,
   'MD5': 1
 };
+
 
 
 /**

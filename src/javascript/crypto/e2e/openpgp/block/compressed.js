@@ -25,6 +25,7 @@ goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.Compressed');
 
 
+
 /**
  * Representation of a compressed message block.
  * @param {Array.<!e2e.openpgp.packet.Signature>=} opt_signatures
@@ -74,7 +75,7 @@ e2e.openpgp.block.Compressed.prototype.getLiteralMessage = function() {
   while (msgBlock instanceof e2e.openpgp.block.Compressed) {
     if (currentLevel >= this.MAX_COMPRESSION_NESTING_LEVEL) {
       throw new e2e.openpgp.error.ParseError(
-                  'input data with too deeply nested packets');
+          'input data with too deeply nested packets');
     }
     msgBlock = msgBlock.getBlock();
     currentLevel++;

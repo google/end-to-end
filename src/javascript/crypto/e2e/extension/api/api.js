@@ -242,9 +242,9 @@ api.Api.prototype.executeAction_ = function(callback, req) {
                   outgoing.content = result;
                   callback(outgoing);
                 }).addErrback(function(error) {
-                  outgoing.error = error.toString();
-                  callback(outgoing);
-                });
+              outgoing.error = error.toString();
+              callback(outgoing);
+            });
           });
       break;
     case constants.Actions.IMPORT_KEY:
@@ -313,4 +313,4 @@ api.Api.prototype.getEncryptKeys_ = function(userIds) {
   return keys;
 };
 
-}); // goog.scope
+});  // goog.scope

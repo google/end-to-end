@@ -206,15 +206,15 @@ ui.Welcome.prototype.generateKey_ =
             defaults.keyLength, e2e.cipher.Algorithm[defaults.subkeyAlgo],
             defaults.subkeyLength, name, comments, email, expDate).
             addCallback(goog.bind(function(key) {
-          var dialog = new dialogs.Generic(
-              chrome.i18n.getMessage('welcomeGenKeyConfirm'),
-              this.hideKeyringSetup_,
-              dialogs.InputType.NONE);
-          this.removeChild(this.genKeyForm_, false);
-          this.addChild(dialog, false);
-          dialog.decorate(this.genKeyForm_.getElement());
-          panel.reset();
-        }, this));
+              var dialog = new dialogs.Generic(
+                  chrome.i18n.getMessage('welcomeGenKeyConfirm'),
+                  this.hideKeyringSetup_,
+                  dialogs.InputType.NONE);
+              this.removeChild(this.genKeyForm_, false);
+              this.addChild(dialog, false);
+              dialog.decorate(this.genKeyForm_.getElement());
+              panel.reset();
+            }, this));
       }), this.displayFailure_, this);
   this.keyringMgmt_.refreshOptions(true);
 };
@@ -257,7 +257,7 @@ ui.Welcome.prototype.updateKeyringPassphrase_ = function(passphrase) {
         var dialog = new dialogs.Generic(
             chrome.i18n.getMessage('keyMgmtChangePassphraseSuccessMsg'),
             goog.bind(function() {
-            this.removeChild(dialog, false);
+              this.removeChild(dialog, false);
               this.keyringMgmt_ = new ui.panels.KeyringMgmtMini(
                   goog.nullFunction,
                   goog.bind(this.importKeyring_, this),
@@ -286,7 +286,7 @@ ui.Welcome.prototype.updateKeyringPassphrase_ = function(passphrase) {
 ui.Welcome.prototype.renderPassphraseCallback_ = function(uid, callback) {
   var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
   var dialog = new dialogs.Generic(chrome.i18n.getMessage(
-          'promptPassphraseCallbackMessage', uid),
+      'promptPassphraseCallbackMessage', uid),
       function(passphrase) {
         goog.dispose(dialog);
         callback(/** @type {string} */ (passphrase));
@@ -330,7 +330,7 @@ ui.Welcome.prototype.displayFailure_ = function(error) {
   window.alert(errorMsg);
 };
 
-}); // goog.scope
+});  // goog.scope
 
 // Create the welcome page.
 if (Boolean(chrome.extension)) {

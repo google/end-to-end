@@ -43,6 +43,7 @@ e2e.ciphermode.CipherMode = function(cipher) {
   this.cipher = cipher;
 };
 
+
 /**
  * Synchronous call to encrypt the data with a given iv.
  * @param {!e2e.ByteArray} data The data to encrypt.

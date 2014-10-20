@@ -21,7 +21,6 @@
 goog.provide('e2e.ext.actions.RestoreKeyringData');
 
 goog.require('e2e.error.InvalidArgumentsError');
-goog.require('e2e.ext.actions.Action');
 goog.require('e2e.openpgp.KeyRing');
 goog.require('goog.crypt.base64');
 
@@ -63,4 +62,4 @@ actions.RestoreKeyringData.prototype.execute =
   callback(request.content.email);
 };
 
-});
+});  // goog.scope

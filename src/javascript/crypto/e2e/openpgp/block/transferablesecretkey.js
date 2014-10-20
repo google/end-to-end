@@ -27,6 +27,8 @@ goog.require('e2e.openpgp.packet.Key');
 goog.require('e2e.openpgp.packet.SecretKey');
 goog.require('goog.array');
 
+
+
 /**
  * Transferable Secret Key Block.
  * @constructor

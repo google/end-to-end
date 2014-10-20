@@ -27,6 +27,7 @@ goog.provide('e2e.compression.Error');
 goog.require('goog.debug.Error');
 
 
+
 /**
  * Error class used to represent errors in the compression algorithms.
  * @param {*=} opt_msg Optional message to send.
@@ -49,6 +50,7 @@ e2e.compression.Algorithm = {
   'ZLIB': 'ZLIB',
   'BZIP2': 'BZIP2'
 };
+
 
 
 /**

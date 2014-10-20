@@ -20,7 +20,6 @@
 
 goog.provide('e2e.ext.actions.ListKeys');
 
-goog.require('e2e.ext.actions.Action');
 goog.require('e2e.ext.utils.Error');
 goog.require('goog.object');
 
@@ -56,4 +55,4 @@ actions.ListKeys.prototype.execute =
       addErrback(errorCallback);
 };
 
-}); // goog.scope
+});  // goog.scope

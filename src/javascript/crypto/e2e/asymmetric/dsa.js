@@ -128,7 +128,7 @@ e2e.signer.Dsa.prototype.setKey = function(keyArg, opt_keySize) {
     case 1024:
       if (lenQ != 160) {
         throw new e2e.openpgp.error.InvalidArgumentsError(
-          'q must be 160-bit when p is 1024-bit.');
+            'q must be 160-bit when p is 1024-bit.');
       }
       this.hash_ = e2e.hash.factory.require(
           e2e.hash.Algorithm.SHA1);
@@ -142,16 +142,16 @@ e2e.signer.Dsa.prototype.setKey = function(keyArg, opt_keySize) {
             e2e.hash.Algorithm.SHA256);
       } else {
         throw new e2e.openpgp.error.InvalidArgumentsError(
-          'q must be 224-bit or 256-bit when p is 2048-bit.');
+            'q must be 224-bit or 256-bit when p is 2048-bit.');
       }
       break;
     case 3072:
       if (lenQ != 256) {
         throw new e2e.openpgp.error.InvalidArgumentsError(
-          'q must be 256-bit when p is 3072-bit.');
+            'q must be 256-bit when p is 3072-bit.');
       }
       this.hash_ = e2e.hash.factory.require(
-            e2e.hash.Algorithm.SHA256);
+          e2e.hash.Algorithm.SHA256);
       break;
     default:
       throw new e2e.openpgp.error.UnsupportedError(
@@ -172,7 +172,7 @@ e2e.signer.Dsa.prototype.setKey = function(keyArg, opt_keySize) {
   if (!this.g_.isBetween(e2e.BigNum.ONE, this.p_) ||
       !this.p_.modPower(this.g_, key['q']).isEqual(e2e.BigNum.ONE)) {
     throw new e2e.openpgp.error.InvalidArgumentsError(
-          'Invalid generator.');
+        'Invalid generator.');
   }
 
   if (!goog.isDefAndNotNull(key['x']) &&
@@ -223,7 +223,8 @@ e2e.signer.Dsa.prototype.sign = function(m) {
  * Exports the sign function for testing.
  * @param {!e2e.ByteArray} m The message to be signed.
  * @param {!e2e.BigNum} k The per-message secret.
- * @return {!e2e.async.Result.<!e2e.signer.signature.Signature>} The result of signing.
+ * @return {!e2e.async.Result.<!e2e.signer.signature.Signature>} The result of
+ *     signing.
  */
 e2e.signer.Dsa.prototype.signForTestingOnly = function(m, k) {
   return e2e.async.Result.toResult(this.signWithNonce_(m, k));

@@ -24,6 +24,7 @@ goog.provide('e2e.openpgp.Context');
 goog.require('e2e.openpgp.types');
 
 
+
 /**
  * Interface for a high level abstraction of encryption and signing services.
  * @interface

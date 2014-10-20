@@ -26,6 +26,7 @@ goog.provide('e2e.openpgp.packet.EncryptedData');
 goog.require('e2e.openpgp.packet.Data');
 
 
+
 /**
  * Representation of an Encrypted Data Packet.
  * @param {!e2e.ByteArray} encryptedData The encrypted data.

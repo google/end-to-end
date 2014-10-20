@@ -64,19 +64,19 @@ e2e.openpgp.asciiArmor.encodeRadix64_ = function(data) {
  * @private
  */
 e2e.openpgp.asciiArmor.crc24_ = function(data) {
-    var CRC24_INIT = 0xB704CE;
-    var CRC24_POLY = 0x1864CFB;
-    var j = 0;
-    var crc = CRC24_INIT;
-    while (j < data.length) {
-      crc ^= data[j++] << 16;
-      for (var i = 0; i < 8; i++) {
-        crc = crc << 1;
-        if (crc & 0x1000000)
-          crc ^= CRC24_POLY;
-      }
+  var CRC24_INIT = 0xB704CE;
+  var CRC24_POLY = 0x1864CFB;
+  var j = 0;
+  var crc = CRC24_INIT;
+  while (j < data.length) {
+    crc ^= data[j++] << 16;
+    for (var i = 0; i < 8; i++) {
+      crc = crc << 1;
+      if (crc & 0x1000000)
+        crc ^= CRC24_POLY;
     }
-    return crc & 0xFFFFFF;
+  }
+  return crc & 0xFFFFFF;
 };
 
 
@@ -106,11 +106,11 @@ e2e.openpgp.asciiArmor.parse = function(text) {
   // TODO(adhintz) Switch away from regex to line-by-line parsing.
   if (start > -1) {
     armor = text.substr(start).match(new RegExp(
-      '^-----BEGIN PGP ([^-]+)-----' + newLine +
-      '((?:[A-Za-z]+:[ ][^\\n]+' + newLine + ')*)' + newLine + // headers
-      '((?:[a-zA-Z0-9/+]+=*' + newLine + ')*)' + // body
-      '(?:=([a-zA-Z0-9/+]+))?' + newLine + // checksum
-      '(?:' + newLine + ')*-----END PGP \\1-----(?:' + newLine + '|$)'));
+        '^-----BEGIN PGP ([^-]+)-----' + newLine +
+        '((?:[A-Za-z]+:[ ][^\\n]+' + newLine + ')*)' + newLine + // headers
+        '((?:[a-zA-Z0-9/+]+=*' + newLine + ')*)' + // body
+        '(?:=([a-zA-Z0-9/+]+))?' + newLine + // checksum
+        '(?:' + newLine + ')*-----END PGP \\1-----(?:' + newLine + '|$)'));
     if (!armor) {
       throw new e2e.openpgp.error.ParseError('invalid ASCII armor format');
     }
@@ -146,10 +146,10 @@ e2e.openpgp.asciiArmor.parseClearSign = function(text) {
   var startMessage = text.indexOf('-----BEGIN PGP SIGNED MESSAGE-----');
   var startSignature = text.indexOf('-----BEGIN PGP SIGNATURE-----');
   var armor = text.substr(startMessage, startSignature - startMessage).match(
-    new RegExp('^-----BEGIN PGP SIGNED MESSAGE-----\\r?\\n' +
-               'Hash:[ ]([^\\n\\r]+)\\r?\\n' + // Hash header
-               '(?:[A-Za-z]+:[ ][^\\n\\r]+\\r?\\n)*' + // Other headers
-               '\\r?\\n')); // New line
+      new RegExp('^-----BEGIN PGP SIGNED MESSAGE-----\\r?\\n' +
+      'Hash:[ ]([^\\n\\r]+)\\r?\\n' + // Hash header
+      '(?:[A-Za-z]+:[ ][^\\n\\r]+\\r?\\n)*' + // Other headers
+      '\\r?\\n')); // New line
   if (!armor) {
     throw new e2e.openpgp.error.ParseError('invalid clearsign format');
   }
@@ -179,7 +179,6 @@ e2e.openpgp.asciiArmor.parseClearSign = function(text) {
 e2e.openpgp.asciiArmor.convertNewlines = function(data) {
   return data.replace(/[\x20\x09]*(\r\n|\r|\n)/g, '\r\n');
 };
-
 
 
 /**
@@ -250,7 +249,7 @@ e2e.openpgp.asciiArmor.encodeClearSign = function(message, opt_headers) {
  */
 e2e.openpgp.asciiArmor.encode = function(type, payload, opt_headers) {
   var byteChecksum = e2e.dwordArrayToByteArray(
-    [e2e.openpgp.asciiArmor.crc24_(payload)]);
+      [e2e.openpgp.asciiArmor.crc24_(payload)]);
   var checksum = e2e.openpgp.asciiArmor.encodeRadix64_(
       byteChecksum.slice(-3));
   var headers = [];

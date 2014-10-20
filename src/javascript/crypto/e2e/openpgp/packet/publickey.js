@@ -134,7 +134,6 @@ e2e.openpgp.packet.PublicKey.prototype.serializePacketBody =
 };
 
 
-
 /** @override */
 e2e.openpgp.packet.PublicKey.prototype.can = function(use) {
   if (use == e2e.openpgp.packet.Key.Usage.ENCRYPT) {
@@ -189,8 +188,8 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
       var y = e2e.openpgp.Mpi.parse(body);
       keyData = /** @type {!e2e.cipher.key.ElGamal} */(
           {'p': goog.array.clone(p),
-           'g': goog.array.clone(g),
-           'y': goog.array.clone(y)});
+            'g': goog.array.clone(g),
+            'y': goog.array.clone(y)});
       cipher = e2e.cipher.factory.require(cipherAlgorithm, keyData);
       break;
     case e2e.signer.Algorithm.DSA:
@@ -200,9 +199,9 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
       var y = e2e.openpgp.Mpi.parse(body);
       keyData = /** @type {!e2e.signer.key.Dsa} */(
           {'p': goog.array.clone(p),
-           'q': goog.array.clone(q),
-           'g': goog.array.clone(g),
-           'y': goog.array.clone(y)});
+            'q': goog.array.clone(q),
+            'g': goog.array.clone(g),
+            'y': goog.array.clone(y)});
       cipher = e2e.signer.factory.require(cipherAlgorithm, keyData);
       break;
     case e2e.signer.Algorithm.ECDSA:
@@ -210,8 +209,8 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
       var curve = body.splice(0, curveSize);
       var pubKey = e2e.openpgp.Mpi.parse(body);
       keyData = /** @type {!e2e.signer.key.Ecdsa} */(
-            {'curve': goog.array.concat(curveSize, curve),
-             'pubKey': goog.array.clone(pubKey)});
+          {'curve': goog.array.concat(curveSize, curve),
+            'pubKey': goog.array.clone(pubKey)});
       cipher = e2e.signer.factory.require(cipherAlgorithm, keyData);
       break;
     case e2e.cipher.Algorithm.ECDH:
@@ -220,9 +219,9 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
       var pubKey = e2e.openpgp.Mpi.parse(body);
       var kdfInfo = body.splice(0, 4);
       keyData = /** @type {!e2e.cipher.key.Ecdh} */(
-            {'curve': goog.array.concat(curveSize, curve),
-             'kdfInfo': goog.array.clone(kdfInfo),
-             'pubKey': goog.array.clone(pubKey)});
+          {'curve': goog.array.concat(curveSize, curve),
+            'kdfInfo': goog.array.clone(kdfInfo),
+            'pubKey': goog.array.clone(pubKey)});
       // Cannot require() here as we need the fingerprint calculation first.
       cipher = null;  // Set to avoid compile warning.
       break;
@@ -276,10 +275,10 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
  */
 e2e.openpgp.packet.PublicKey.calculateFingerprint = function(pubKey) {
   var fingerprintData = goog.array.concat(
-    e2e.openpgp.packet.PublicKey.FINGERPRINT_PREFIX,
-    pubKey.length >>> 8,
-    pubKey.length % 256,
-    pubKey);
+      e2e.openpgp.packet.PublicKey.FINGERPRINT_PREFIX,
+      pubKey.length >>> 8,
+      pubKey.length % 256,
+      pubKey);
   var sha1 = new e2e.hash.Sha1();
   return /** @type {!e2e.ByteArray} */ (sha1.hash(fingerprintData));
 };

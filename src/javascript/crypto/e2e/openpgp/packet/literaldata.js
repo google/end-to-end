@@ -89,11 +89,11 @@ e2e.openpgp.packet.LiteralData.prototype.tag = 11;
 /** @inheritDoc */
 e2e.openpgp.packet.LiteralData.prototype.serializePacketBody = function() {
   return goog.array.concat(
-    e2e.stringToByteArray(this.format),
-    this.filename.length,
-    this.filename,
-    e2e.dwordArrayToByteArray([this.timestamp]),
-    this.data
+      e2e.stringToByteArray(this.format),
+      this.filename.length,
+      this.filename,
+      e2e.dwordArrayToByteArray([this.timestamp]),
+      this.data
   );
 };
 
@@ -134,9 +134,9 @@ e2e.openpgp.packet.LiteralData.parse = function(body) {
     throw new e2e.openpgp.error.ParseError('Invalid Data Format.');
   }
   return new e2e.openpgp.packet.LiteralData(format,
-                                                      fileName,
-                                                      timestamp,
-                                                      data);
+      fileName,
+      timestamp,
+      data);
 };
 
 

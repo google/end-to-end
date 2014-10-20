@@ -30,6 +30,7 @@ if (Boolean(chrome.extension)) {
   goog.exportSymbol('launcher', launcher);
 }
 
+
 /**
  * Whether the extension was bootstrapped.
  * @type {boolean}

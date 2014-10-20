@@ -87,6 +87,7 @@ e2e.testing.Util.runPerfTests = function(benchmarks, opt_numSamples,
   });
 };
 
+
 /**
  * Creates performance table in the DOM to display the results in.
  * @param  {goog.testing.PerformanceTimer} timer Performance timer to use.
@@ -119,9 +120,9 @@ e2e.testing.Util.createPerformanceTable = function(timer) {
  */
 e2e.testing.Util.addBenchmark = function(benchmarks, fun, label, opt_async) {
   benchmarks.push({
-      benchmark: fun,
-      label: label,
-      async: Boolean(opt_async)
+    benchmark: fun,
+    label: label,
+    async: Boolean(opt_async)
   });
 };
 

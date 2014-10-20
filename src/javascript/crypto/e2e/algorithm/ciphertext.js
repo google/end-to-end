@@ -60,6 +60,7 @@ e2e.cipher.ciphertext.Symmetric;
  */
 e2e.cipher.ciphertext.Asymmetric;
 
+
 /**
  * @typedef {e2e.async.Result.<!e2e.cipher.ciphertext.Ecdh>|
  *     e2e.async.Result.<!e2e.cipher.ciphertext.Elgamal>|

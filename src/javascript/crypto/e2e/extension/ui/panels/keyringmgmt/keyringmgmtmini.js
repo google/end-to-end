@@ -360,6 +360,7 @@ panels.KeyringMgmtMini.prototype.showRestoreWindow_ = function() {
   }, this)).setVisible(true);
 };
 
+
 /**
  * Updates the button to set the keyring's passphrase according to whether the
  * keyring is encrypted or not.
@@ -392,8 +393,8 @@ panels.KeyringMgmtMini.prototype.refreshOptions = function(hasKeys) {
   this.getElementByClass(constants.CssClass.KEYRING_EXPORT).disabled = !hasKeys;
   if (hasKeys) {
     goog.dom.classlist.remove(
-          this.getElementByClass(constants.CssClass.KEYRING_BACKUP),
-          e2e.ext.constants.CssClass.HIDDEN);
+        this.getElementByClass(constants.CssClass.KEYRING_BACKUP),
+        e2e.ext.constants.CssClass.HIDDEN);
     goog.dom.classlist.add(
         this.getElementByClass(constants.CssClass.KEYRING_RESTORE),
         e2e.ext.constants.CssClass.HIDDEN);
@@ -407,4 +408,4 @@ panels.KeyringMgmtMini.prototype.refreshOptions = function(hasKeys) {
   }
 };
 
-}); // goog.scope
+});  // goog.scope

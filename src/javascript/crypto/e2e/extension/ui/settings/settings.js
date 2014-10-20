@@ -174,9 +174,9 @@ ui.Settings.prototype.generateKey_ =
       defaults.keyLength, e2e.cipher.Algorithm[defaults.subkeyAlgo],
       defaults.subkeyLength, name, comments, email, expDate)
       .addCallback(goog.bind(function(key) {
-    this.renderNewKey_(key[0].uids[0]);
-    panel.reset();
-  }, this)).addErrback(this.displayFailure_, this);
+        this.renderNewKey_(key[0].uids[0]);
+        panel.reset();
+      }, this)).addErrback(this.displayFailure_, this);
 };
 
 
@@ -286,7 +286,7 @@ ui.Settings.prototype.importKeyring_ = function(file) {
 ui.Settings.prototype.renderPassphraseCallback_ = function(uid, callback) {
   var popupElem = goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG);
   var dialog = new dialogs.Generic(chrome.i18n.getMessage(
-          'promptPassphraseCallbackMessage', uid),
+      'promptPassphraseCallbackMessage', uid),
       function(passphrase) {
         goog.dispose(dialog);
         callback(/** @type {string} */ (passphrase));
@@ -315,11 +315,11 @@ ui.Settings.prototype.exportKeyring_ = function() {
     }
     utils.writeToFile(
         armoredKey, function(fileUrl) {
-      var anchor = document.createElement('a');
-      anchor.download = filename;
-      anchor.href = fileUrl;
-      anchor.click();
-    });
+          var anchor = document.createElement('a');
+          anchor.download = filename;
+          anchor.href = fileUrl;
+          anchor.click();
+        });
   }, this).addErrback(this.displayFailure_, this);
 };
 
@@ -363,7 +363,7 @@ ui.Settings.prototype.clearFailure_ = function() {
 };
 
 
-}); // goog.scope
+});  // goog.scope
 
 
 // Create the settings page.

@@ -92,4 +92,4 @@ api.RequestThrottle.prototype.canProceed = function() {
   return false;
 };
 
-}); // goog.scope
+});  // goog.scope

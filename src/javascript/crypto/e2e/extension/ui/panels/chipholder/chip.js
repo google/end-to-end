@@ -36,6 +36,7 @@ var templates = e2e.ext.ui.templates.panels.chipholder;
 var constants = e2e.ext.constants;
 
 
+
 /**
  * Constructor for the chip.
  * @param {string} value The UID or passphrase to render.
@@ -149,4 +150,4 @@ panels.Chip.prototype.isPassphrase = function() {
   return this.isPassphrase_;
 };
 
-}); // goog.scope
+});  // goog.scope

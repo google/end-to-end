@@ -21,7 +21,6 @@
 
 goog.provide('e2e.ext.actions.EncryptSign');
 
-goog.require('e2e.ext.actions.Action');
 goog.require('e2e.ext.utils.Error');
 goog.require('goog.array');
 goog.require('goog.string');
@@ -29,6 +28,7 @@ goog.require('goog.string');
 goog.scope(function() {
 var actions = e2e.ext.actions;
 var utils = e2e.ext.utils;
+
 
 
 /**
@@ -75,7 +75,7 @@ actions.EncryptSign.prototype.execute =
           encryptionKeys, // Keys to encrypt to.
           passphrases, // For symmetrically-encrypted session keys.
           signingKey // Key to sign with.
-          ).addCallback(callback).addErrback(errorCallback);
+      ).addCallback(callback).addErrback(errorCallback);
     }).addErrback(errorCallback);
   }, errorCallback);
 };
@@ -115,4 +115,4 @@ actions.EncryptSign.prototype.getEncryptKeys_ =
   queryFunc();
 };
 
-}); // goog.scope
+});  // goog.scope

@@ -25,15 +25,13 @@ goog.provide('e2e.openpgp.packet.Key');
 goog.provide('e2e.openpgp.packet.Key.Usage');
 
 goog.require('e2e');
-goog.require('e2e.openpgp.EncryptedCipher');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.SerializationError');
 goog.require('e2e.openpgp.error.SignatureError');
 goog.require('e2e.openpgp.error.SignatureExpiredError');
+goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.Signature');
-
-goog.require('e2e.openpgp.packet.Signature.SignatureType');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.openpgp.types');
 goog.require('goog.array');
@@ -151,25 +149,26 @@ e2e.openpgp.packet.Key.prototype.addBindingSignature = function(signature) {
         'Invalid binding signature type.');
   }
   if (Boolean(signature.attributes && signature.attributes.KEY_FLAG_SIGN)) {
-      // RFC 4880 5.2.1.
-      // A signature that binds a signing subkey MUST have
-      // an Embedded Signature subpacket in this binding signature that
-      // contains a 0x19 signature made by the signing subkey on the
-      // primary key and subkey.
-      if (!signature.embeddedSignature) {
-        throw new e2e.openpgp.error.ParseError(
-            'Missing required key cross-signature.');
-      }
-      var crossSignature = signature.embeddedSignature;
-      if (!this.keyId ||
-          !goog.array.equals(crossSignature.getSignerKeyId(), this.keyId) ||
-          crossSignature.signatureType !==
-              e2e.openpgp.packet.Signature.SignatureType.PRIMARY_KEY) {
-        throw new e2e.openpgp.error.ParseError('Invalid key cross-signature.');
-      }
+    // RFC 4880 5.2.1.
+    // A signature that binds a signing subkey MUST have
+    // an Embedded Signature subpacket in this binding signature that
+    // contains a 0x19 signature made by the signing subkey on the
+    // primary key and subkey.
+    if (!signature.embeddedSignature) {
+      throw new e2e.openpgp.error.ParseError(
+          'Missing required key cross-signature.');
+    }
+    var crossSignature = signature.embeddedSignature;
+    if (!this.keyId ||
+        !goog.array.equals(crossSignature.getSignerKeyId(), this.keyId) ||
+        crossSignature.signatureType !==
+        e2e.openpgp.packet.Signature.SignatureType.PRIMARY_KEY) {
+      throw new e2e.openpgp.error.ParseError('Invalid key cross-signature.');
+    }
   }
   this.bindingSignatures_.push(signature);
 };
+
 
 /**
  * Returns key binding signatures.
@@ -194,9 +193,9 @@ e2e.openpgp.packet.Key.prototype.verifySignatures = function(verifyingKey) {
   // There should be no valid revocation signatures.
   var isRevoked = false;
   goog.array.forEach(this.revocations_, function(signature) {
-      if (this.verifyRevocation_(signature, verifyingKey)) {
-        isRevoked = true;
-      }
+    if (this.verifyRevocation_(signature, verifyingKey)) {
+      isRevoked = true;
+    }
   }, this);
   var hasBinding = false;
   // Subkeys needs to have a binding signature. See RFC 4880 11.1.
@@ -306,7 +305,7 @@ e2e.openpgp.packet.Key.prototype.verifySignatureInternal_ = function(signature,
   var signer = /** @type {!e2e.signer.Signer} */ (verifyingKey.cipher);
   try {
     var signatureVerified = signature.verify(signedData,
-      goog.asserts.assertObject(signer));
+        goog.asserts.assertObject(signer));
   } catch (e) {
     // Ignore signatures that throw unsupported errors (e.g. weak hash
     // algorithms) or expired signatures.
@@ -326,20 +325,20 @@ e2e.openpgp.packet.Key.prototype.verifySignatureInternal_ = function(signature,
       signature.attributes.KEY_FLAG_SIGN &&
       signature.signatureType ===
           e2e.openpgp.packet.Signature.SignatureType.SUBKEY) {
-      if (!signature.embeddedSignature) {
-        throw new e2e.openpgp.error.SignatureError(
-            'Missing cross-signature for a signing subkey.');
-      }
-      if (signature.embeddedSignature.signatureType !==
-          e2e.openpgp.packet.Signature.SignatureType.PRIMARY_KEY) {
-        throw new e2e.openpgp.error.SignatureError(
-            'Invalid cross-signature type.');
-      }
-      return this.verifySignatureInternal_(
-          signature.embeddedSignature,
-          this.getPublicKeyPacket(),
-          signedData,
-          'Cross-signature verification failed.');
+    if (!signature.embeddedSignature) {
+      throw new e2e.openpgp.error.SignatureError(
+          'Missing cross-signature for a signing subkey.');
+    }
+    if (signature.embeddedSignature.signatureType !==
+        e2e.openpgp.packet.Signature.SignatureType.PRIMARY_KEY) {
+      throw new e2e.openpgp.error.SignatureError(
+          'Invalid cross-signature type.');
+    }
+    return this.verifySignatureInternal_(
+        signature.embeddedSignature,
+        this.getPublicKeyPacket(),
+        signedData,
+        'Cross-signature verification failed.');
   }
   return true;
 };
@@ -365,17 +364,17 @@ e2e.openpgp.packet.Key.prototype.getKeyBindingSignatureData_ = function(
  *     packet.
  * @param {!e2e.openpgp.packet.SecretKey} bindingKey
  * @param {!e2e.openpgp.packet.Signature.SignatureType} type
- * @param {number} opt_keyFlags key usage flags to embed in the signature
+ * @param {number=} opt_keyFlags key usage flags to embed in the signature
  * @return {!e2e.async.Result.<undefined>}
  */
 e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type,
     opt_keyFlags) {
   var data = this.getKeyBindingSignatureData_(bindingKey);
   var attributes = {
-        'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
-            [Math.floor(new Date().getTime() / 1e3)]),
-        'ISSUER': bindingKey.keyId
-      };
+    'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
+        [Math.floor(new Date().getTime() / 1e3)]),
+    'ISSUER': bindingKey.keyId
+  };
   if (goog.isDef(opt_keyFlags)) {
     attributes.KEY_FLAGS = [opt_keyFlags];
   }

@@ -24,6 +24,7 @@ goog.require('e2e.async.ChildPeer');
 goog.require('e2e.async.Peer');
 
 
+
 /**
  * Used to represent a current window as a framed-peer.
  * @param {Window} parent The parent of this peer.

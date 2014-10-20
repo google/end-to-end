@@ -20,8 +20,10 @@
 
 goog.provide('e2e.ext.ui.panels.prompt.EncryptSign');
 
-goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.Actions');
+goog.require('e2e.ext.constants.CssClass');
+goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.draftmanager');
@@ -32,7 +34,14 @@ goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.ui.templates.panels.prompt');
 goog.require('e2e.ext.utils.action');
 goog.require('e2e.ext.utils.text');
+goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.Timer');
+goog.require('goog.array');
+goog.require('goog.dom');
+goog.require('goog.dom.classlist');
+goog.require('goog.events.EventType');
+goog.require('goog.object');
+goog.require('goog.string');
 goog.require('soy');
 
 
@@ -239,13 +248,13 @@ promptPanels.EncryptSign.prototype.getRecipientsEmailMap_ =
     function(recipients) {
   var map = {};
   goog.array.forEach(recipients, function(recipient) {
-      var email = utils.text.extractValidEmail(recipient);
-      if (email) {
-        if (!map.hasOwnProperty(email)) {
-          map[email] = [];
-        }
-        map[email].push(recipient);
+    var email = utils.text.extractValidEmail(recipient);
+    if (email) {
+      if (!map.hasOwnProperty(email)) {
+        map[email] = [];
       }
+      map[email].push(recipient);
+    }
   });
   return map;
 };
@@ -505,4 +514,4 @@ promptPanels.EncryptSign.prototype.clearSavedDraft_ = function(origin) {
   drafts.clearDraft(origin);
 };
 
-}); // goog.scope
+});  // goog.scope

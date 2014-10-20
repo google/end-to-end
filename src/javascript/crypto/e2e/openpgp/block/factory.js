@@ -42,6 +42,7 @@ goog.require('e2e.openpgp.packet.SecretKey');
 goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.openpgp.parse');
 
+
 /**
  * Parses a single block out of an array of packets. Consumes packets parsed.
  * RFC 4880 Section 11.3.
@@ -97,6 +98,7 @@ e2e.openpgp.block.factory.parseBlock = function(packets) {
   return block;
 };
 
+
 /**
  * Parses a single block out of ASCII Armor text.
  * @param {string} ascii ASCII armored text to parse into a block.
@@ -107,6 +109,7 @@ e2e.openpgp.block.factory.parseAscii = function(ascii) {
   return e2e.openpgp.block.factory.parseByteArray(
       data.data, data.charset);
 };
+
 
 /**
  * Parses a single block out of a ByteArray.
@@ -123,6 +126,7 @@ e2e.openpgp.block.factory.parseByteArray = function(data, opt_charset) {
   return block;
 };
 
+
 /**
  * Parses a multiple blocks out of ASCII Armor text.
  * @param {string} ascii ASCII armored text to parse into a block.
@@ -133,6 +137,7 @@ e2e.openpgp.block.factory.parseAsciiMulti = function(ascii) {
   return e2e.openpgp.block.factory.parseByteArrayMulti(
       data.data, data.charset);
 };
+
 
 /**
  * Parses a multiple blocks out of a ByteArray.

@@ -24,7 +24,6 @@ goog.provide('e2e.fixedtiming');
 goog.require('goog.asserts');
 
 
-
 /**
  * Selects a if bit is 1; otherwise selects b.
  * Copied from "Fast Elliptic Curve Cryptography in OpenSSL".

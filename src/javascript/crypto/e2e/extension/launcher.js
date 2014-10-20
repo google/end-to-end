@@ -33,6 +33,7 @@ var messages = e2e.ext.messages;
 var preferences = e2e.ext.ui.preferences;
 
 
+
 /**
  * Constructor for the End-To-End extension launcher.
  * @constructor
@@ -228,4 +229,4 @@ ext.Launcher.prototype.showWelcomeScreen_ = function() {
   }
 };
 
-}); // goog.scope
+});  // goog.scope

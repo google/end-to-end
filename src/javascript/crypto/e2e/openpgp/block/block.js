@@ -25,6 +25,7 @@
 goog.provide('e2e.openpgp.block.Block');
 
 
+
 /**
  * Representation of a collection of packets that have a specific meaning.
  * @constructor
@@ -52,6 +53,7 @@ e2e.openpgp.block.Block.prototype.parse = goog.abstractMethod;
  * @return {!e2e.ByteArray} The serialization of the block.
  */
 e2e.openpgp.block.Block.prototype.serialize = goog.abstractMethod;
+
 
 /**
  * Text to use in the ASCII Armor message header for this type of block.

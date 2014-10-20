@@ -68,6 +68,7 @@ e2e.cipher.AesKeyWrap.prototype.aes_;
  */
 e2e.cipher.AesKeyWrap.prototype.IV_ = goog.array.repeat(0xA6, 8);
 
+
 /**
  * Sets key-wrapping key.
  * @param {!e2e.cipher.key.SymmetricKey} key The key-wrapping key.
@@ -88,11 +89,11 @@ e2e.cipher.AesKeyWrap.prototype.setKey = function(key) {
  */
 e2e.cipher.AesKeyWrap.prototype.wrap = function(keyData) {
   goog.asserts.assertArray(keyData,
-       'Key data to be wrapped should be defined.');
+      'Key data to be wrapped should be defined.');
   goog.asserts.assert(keyData.length >= 16,
-       'Key data to be wrapped should be at least 128 bits.');
+      'Key data to be wrapped should be at least 128 bits.');
   goog.asserts.assert(keyData.length % 8 == 0,
-       'Key data to be wrapped should be a multiple of 8 bytes.');
+      'Key data to be wrapped should be a multiple of 8 bytes.');
 
   // Set A = IV.
   var A = this.IV_;
@@ -134,11 +135,11 @@ e2e.cipher.AesKeyWrap.prototype.wrap = function(keyData) {
  */
 e2e.cipher.AesKeyWrap.prototype.unwrap = function(wrappedKeyData) {
   goog.asserts.assertArray(wrappedKeyData,
-       'Key data to be unwrapped should be defined.');
+      'Key data to be unwrapped should be defined.');
   goog.asserts.assert(wrappedKeyData.length >= 16,
-       'Key data to be unwrapped should be at least 128 bits.');
+      'Key data to be unwrapped should be at least 128 bits.');
   goog.asserts.assert(wrappedKeyData.length % 8 == 0,
-       'Key data to be unwrapped should be a multiple of 8 bytes.');
+      'Key data to be unwrapped should be a multiple of 8 bytes.');
   // Set A = C[0]
   // For i = 1 to n
   //   R[i] = C[i]

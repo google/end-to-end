@@ -36,6 +36,7 @@ goog.require('e2e.signer.key');
 goog.require('e2e.signer.signature.Signature');
 goog.require('goog.debug.Error');
 
+
 /**
  * Algorithms (used to define which algorithm is defined).
  * @enum {string}
@@ -45,6 +46,8 @@ e2e.signer.Algorithm = {
   'ECDSA': 'ECDSA',
   'RSA': 'RSA'
 };
+
+
 
 /**
  * Error class used to represent errors in the digital signature algorithms.
@@ -56,6 +59,7 @@ e2e.signer.Error = function(opt_msg) {
   goog.base(this, opt_msg);
 };
 goog.inherits(e2e.signer.Error, goog.debug.Error);
+
 
 
 /**
@@ -84,7 +88,6 @@ e2e.signer.Signer.prototype.sign;
 e2e.signer.Signer.prototype.verify;
 
 
-
 /**
  * Returns the hash function used for the signature.
  * @return {!e2e.hash.Hash}
@@ -97,6 +100,7 @@ e2e.signer.Signer.prototype.getHash;
  * @param {!e2e.hash.Hash} Hash function
  */
 e2e.signer.Signer.prototype.setHash;
+
 
 /**
  * Contains a list of all registered implementations for each algorithm.

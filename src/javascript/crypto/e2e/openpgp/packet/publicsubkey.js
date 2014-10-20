@@ -27,7 +27,6 @@ goog.require('e2e.openpgp.packet.factory');
 
 
 
-
 /**
  * A Public Subkey Packet (Tag 14) RFC 4880 Section 5.5.1.2.
  * @param {number} version The version of the key.
@@ -65,9 +64,9 @@ e2e.openpgp.packet.PublicSubkey.prototype.isSubkey = true;
 e2e.openpgp.packet.PublicSubkey.parse = function(body) {
   var pubkey = e2e.openpgp.packet.PublicKey.parse(body);
   var subkey = new e2e.openpgp.packet.PublicSubkey(pubkey.version,
-                                                       pubkey.timestamp,
-                                                       pubkey.cipher,
-                                                       pubkey.fingerprint);
+      pubkey.timestamp,
+      pubkey.cipher,
+      pubkey.fingerprint);
   return subkey;
 };
 

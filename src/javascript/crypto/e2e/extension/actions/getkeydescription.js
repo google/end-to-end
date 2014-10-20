@@ -20,7 +20,6 @@
 
 goog.provide('e2e.ext.actions.GetKeyDescription');
 
-goog.require('e2e.ext.actions.Action');
 goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.dialogs.ImportConfirmation');
 goog.require('e2e.ext.utils.Error');
@@ -67,4 +66,4 @@ actions.GetKeyDescription.prototype.execute =
       addErrback(errorCallback);
 };
 
-}); // goog.scope
+});  // goog.scope

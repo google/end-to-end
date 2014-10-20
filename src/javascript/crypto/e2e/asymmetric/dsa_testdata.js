@@ -24,7 +24,6 @@ goog.provide('e2e.signer.dsaTestData');
 goog.setTestOnly();
 
 
-
 /**
  * Test vectors provided by NIST.
  *     - P: the prime modulus.

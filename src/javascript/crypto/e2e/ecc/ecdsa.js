@@ -36,6 +36,7 @@ goog.require('goog.array');
 goog.require('goog.asserts');
 
 
+
 /**
  * Representation of an instance of the ECDSA protocol.
  * @param {!e2e.ecc.PrimeCurve} curveName The curve used for
@@ -59,7 +60,7 @@ e2e.ecc.Ecdsa = function(curveName, opt_key) {
       break;
     default:
       throw new e2e.error.InvalidArgumentsError(
-        'Unknown algorithm for ECDSA: ' + curveName);
+          'Unknown algorithm for ECDSA: ' + curveName);
   }
 };
 goog.inherits(e2e.ecc.Ecdsa, e2e.ecc.Protocol);

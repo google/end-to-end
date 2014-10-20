@@ -25,6 +25,7 @@ goog.provide('e2e.openpgp.KeyRing');
 
 goog.require('e2e');
 goog.require('e2e.Hkdf');
+goog.require('e2e.algorithm.KeyLocations');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Aes');
 goog.require('e2e.cipher.Algorithm');
@@ -33,6 +34,7 @@ goog.require('e2e.error.InvalidArgumentsError');
 goog.require('e2e.hash.Sha1');
 goog.require('e2e.hash.Sha256');
 goog.require('e2e.openpgp');
+goog.require('e2e.openpgp.DummyS2k');
 goog.require('e2e.openpgp.EncryptedCipher');
 goog.require('e2e.openpgp.IteratedS2K');
 goog.require('e2e.openpgp.KeyClient');
@@ -63,13 +65,15 @@ goog.require('goog.object');
 goog.require('goog.storage.mechanism.HTML5LocalStorage');
 goog.require('goog.structs.Map');
 
+
+
 /**
  * Implements a key ring that exposes basic key management features such as
  * generating, searching, importing, exporting keys, etc. The key ring shall
  * be stored in browser's local storage, and shall be encrypted if the user
  * provides a passphrase.
  * @param {string} passphrase The passphrase used to encrypt the keyring.
- * @param {string} opt_keyServerUrl The optional http key server url. If not
+ * @param {string=} opt_keyServerUrl The optional http key server url. If not
  *    specified then only support key operation locally.
  * @constructor
  */
@@ -248,7 +252,7 @@ e2e.openpgp.KeyRing.prototype.importKey = function(
   if (keyBlock instanceof e2e.openpgp.block.TransferablePublicKey) {
     keyRing = this.pubKeyRing_;
   } else if (keyBlock instanceof e2e.openpgp.block.TransferableSecretKey) {
-      keyRing = this.privKeyRing_;
+    keyRing = this.privKeyRing_;
   } else {
     return false;
   }
@@ -353,16 +357,16 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(email,
     if (keyAlgo == e2e.signer.Algorithm.RSA) {
       if ((keyLength != 4096 && keyLength != 8192) ||
           subkeyAlgo != e2e.cipher.Algorithm.RSA || subkeyLength != keyLength) {
-            throw new e2e.openpgp.error.UnsupportedError(
-                'WebCrypto RSA keyLength must be 4096 or 8192');
+        throw new e2e.openpgp.error.UnsupportedError(
+            'WebCrypto RSA keyLength must be 4096 or 8192');
       }
       return e2e.openpgp.keygenerator.newWebCryptoRsaKeys(
           keyLength).addCallback(
           function(ciphers) {
-        this.extractKeyData_(keyData, ciphers[0]);
-        this.extractKeyData_(keyData, ciphers[1]);
-        return this.certifyKeys_(email, keyData);
-      });
+            this.extractKeyData_(keyData, ciphers[0]);
+            this.extractKeyData_(keyData, ciphers[1]);
+            return this.certifyKeys_(email, keyData);
+          });
     }
   } else if (opt_keyLocation == e2e.algorithm.KeyLocations.HARDWARE) {
     // TODO(user): https://code.google.com/p/end-to-end/issues/detail?id=130
@@ -373,6 +377,7 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(email,
   throw new e2e.openpgp.error.UnsupportedError(
       'Unsupported key type or length.');
 };
+
 
 /**
  * @param {string} email The email to associate the key with.
@@ -396,7 +401,7 @@ e2e.openpgp.KeyRing.prototype.certifyKeys_ = function(email, keyData) {
         e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
         e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_COMMUNICATION |
         e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_STORAGE
-        );
+    );
 
     var privKeyBlock = new e2e.openpgp.block.TransferableSecretKey();
     privKeyBlock.keyPacket = primaryKey;
@@ -421,6 +426,7 @@ e2e.openpgp.KeyRing.prototype.certifyKeys_ = function(email, keyData) {
   throw new e2e.openpgp.error.UnsupportedError(
       'Unsupported key type or length.');
 };
+
 
 /**
  * Obtains the key with a given keyId.
@@ -606,9 +612,10 @@ e2e.openpgp.KeyRing.prototype.searchKeyLocalAndRemote = function(email,
   return resultKeys;
 };
 
+
 /**
  * Gets all of the keys in the keyring.
- * @param {boolean} opt_priv If true, fetch only private keys.
+ * @param {boolean=} opt_priv If true, fetch only private keys.
  * @return {!e2e.openpgp.KeyRingType} A clone of the key ring maps.
  */
 e2e.openpgp.KeyRing.prototype.getAllKeys = function(opt_priv) {
@@ -676,6 +683,7 @@ e2e.openpgp.KeyRing.prototype.searchKey_ = function(keyRing, email) {
   return keyRing.get(email) ?
       goog.array.clone(keyRing.get(email)) : null;
 };
+
 
 /**
   * Searches a public key remotely by email.

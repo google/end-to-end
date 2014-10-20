@@ -37,6 +37,7 @@ goog.require('goog.array');
 goog.require('goog.asserts');
 
 
+
 /**
  * A Secret Key Packet (Tag 5) RFC 4880 Section 5.5.1.3.
  * @param {number} version The version of the key.
@@ -151,17 +152,17 @@ e2e.openpgp.packet.SecretKey.parse = function(body) {
         e2e.openpgp.constants.Type.SYMMETRIC_KEY, algId);
     symAlgo = /** @type {e2e.cipher.Algorithm} */ (symAlgo);
     var symCipher = /** @type {e2e.cipher.SymmetricCipher} */ (
-      e2e.cipher.factory.require(symAlgo));
+        e2e.cipher.factory.require(symAlgo));
     iv = body.splice(0, symCipher.blockSize);
   }
   var encryptedKeyData = body.splice(0, body.length);
   var encCipher = new e2e.openpgp.EncryptedCipher(
       encryptedKeyData, kd, pubCipher, symAlgo, iv, s2k);
   return new e2e.openpgp.packet.SecretKey(pubkey.version,
-                                              pubkey.timestamp,
-                                              encCipher,
-                                              pubkey.fingerprint,
-                                              pubkey.keyId);
+      pubkey.timestamp,
+      encCipher,
+      pubkey.fingerprint,
+      pubkey.keyId);
 };
 
 

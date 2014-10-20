@@ -47,9 +47,9 @@ e2e.pkcs.eme.Oaep = function() {
    * Is equivalent to the output of new e2e.hash.Sha1().hash([]).
    * @private {!e2e.ByteArray}
    */
-   this.labelHash_ = [
-     0xda, 0x39, 0xa3, 0xee, 0x5e, 0x6b, 0x4b, 0x0d, 0x32, 0x55,
-     0xbf, 0xef, 0x95, 0x60, 0x18, 0x90, 0xaf, 0xd8, 0x07, 0x09];
+  this.labelHash_ = [
+    0xda, 0x39, 0xa3, 0xee, 0x5e, 0x6b, 0x4b, 0x0d, 0x32, 0x55,
+    0xbf, 0xef, 0x95, 0x60, 0x18, 0x90, 0xaf, 0xd8, 0x07, 0x09];
 };
 
 
@@ -143,6 +143,7 @@ e2e.pkcs.eme.Oaep.prototype.maskGenerationFunction_ =
   goog.asserts.assert(mask.length >= maskLen);
   return mask.slice(0, maskLen);
 };
+
 
 
 /**
@@ -272,6 +273,7 @@ e2e.pkcs.eme.Pkcs1.decodeStateToArray = function(trans, state) {
 goog.object.forEach(e2e.pkcs.eme.Pkcs1.decodeStateTransitions,
                     e2e.pkcs.eme.Pkcs1.decodeStateToArray);
 
+
 /**
  * Decodes the given encoded message according to EME PKCS1-v1.5. This MUST be
  * done close to constant time, that's why we have a state machine.
@@ -324,18 +326,18 @@ e2e.pkcs.eme.Pkcs1.prototype.decode = function(
     }
 
     goog.array.forEach(em2, function(b, i) {
-        // === WARNING ===
-        // If we can't know the expected length of the key, we need to visit all
-        // bytes in constant time to verify they are valid. Don't add any code
-        // that might fork in this function.
-        var hasError, newState;
-        var newStateObj = nextState[state][b];
-        newState = newStateObj.state;
-        hasError = newStateObj.error;
-        accumulators[state].push(b);
-        error |= hasError;
-        state = newState;
-      });
+      // === WARNING ===
+      // If we can't know the expected length of the key, we need to visit all
+      // bytes in constant time to verify they are valid. Don't add any code
+      // that might fork in this function.
+      var hasError, newState;
+      var newStateObj = nextState[state][b];
+      newState = newStateObj.state;
+      hasError = newStateObj.error;
+      accumulators[state].push(b);
+      error |= hasError;
+      state = newState;
+    });
     error |= 1 * (msg.length == 0);
     error |= 1 * (rnd.length <= 8);
   }

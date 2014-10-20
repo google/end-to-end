@@ -37,7 +37,6 @@ e2e.async.ChildPeer = function() {
 goog.inherits(e2e.async.ChildPeer, e2e.async.Peer);
 
 
-
 /**
  * Create a new port.
  * @return {MessagePort}

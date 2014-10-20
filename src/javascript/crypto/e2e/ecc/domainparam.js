@@ -70,6 +70,7 @@ e2e.ecc.PrimeCurveOid = {
 };
 
 
+
 /**
  * Representation of domain parameters for prime curves.
  * @param {!e2e.ecc.curve.Curve} curve The elliptic curve.
@@ -387,7 +388,7 @@ e2e.ecc.DomainParam.Curve25519.prototype.generateKeyPair = function(
 
 /** @override */
 e2e.ecc.DomainParam.Curve25519.prototype.calculateSharedSecret =
-function(peerPublicKey, myPrivateKey) {
+    function(peerPublicKey, myPrivateKey) {
   var p = myPrivateKey.toByteArray().reverse();
   p[0] &= ~7;  // Must be a multiple of 8
   p[31] = (p[31] & 63) | 64;  // high bit clear, next higher bit set.
@@ -399,7 +400,7 @@ function(peerPublicKey, myPrivateKey) {
 
 /** @override */
 e2e.ecc.DomainParam.Curve25519.prototype.bigNumFromPrivateKey =
-function(p) {
+    function(p) {
   return new e2e.BigNum(p.slice().reverse());
 };
 
@@ -474,7 +475,7 @@ e2e.ecc.DomainParam.Ed25519.prototype.calculateSharedSecret = function(
 
 /** @override */
 e2e.ecc.DomainParam.Ed25519.prototype.bigNumFromPrivateKey =
-function(p) {
+    function(p) {
   return new e2e.BigNum(p.slice().reverse());
 };
 

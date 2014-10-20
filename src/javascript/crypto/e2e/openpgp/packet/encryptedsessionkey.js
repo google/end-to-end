@@ -23,6 +23,7 @@ goog.provide('e2e.openpgp.packet.EncryptedSessionKey');
 goog.require('e2e.openpgp.packet.Packet');
 
 
+
 /**
  * Represents encrypted session key packets (Tag 1 and 3) as specified in
  * RFC 4880 Section 5.1 and Section 5.3.
@@ -60,7 +61,7 @@ goog.inherits(e2e.openpgp.packet.EncryptedSessionKey,
  * @return {e2e.async.Result.<boolean>} True if decryption suceeded.
  */
 e2e.openpgp.packet.EncryptedSessionKey.prototype.decryptSessionKey =
-  goog.abstractMethod;
+    goog.abstractMethod;
 
 
 /**

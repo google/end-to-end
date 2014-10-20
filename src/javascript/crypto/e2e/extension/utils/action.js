@@ -131,4 +131,4 @@ utils.updateSelectedContent = function(content, recipients, origin,
   }, errorCallback, opt_scope);
 };
 
-}); // goog.scope
+});  // goog.scope

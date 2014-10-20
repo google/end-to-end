@@ -51,4 +51,4 @@ actions.Action = function() {};
  */
 actions.Action.prototype.execute;
 
-}); // goog.scope
+});  // goog.scope

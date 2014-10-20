@@ -64,7 +64,7 @@ e2e.ecc.curve.Ed25519 = function(q) {
   this.D = this.elementFromInteger(121665).negate().multiply(
       this.elementFromInteger(121666).inverse());
 
-   /**
+  /**
    * The 2 * D
    * @type {!e2e.ecc.Element}
    * @const
@@ -149,7 +149,7 @@ e2e.ecc.curve.Ed25519.prototype.keySizeInBits = function() {
  * @return {!e2e.ByteArray}
  */
 e2e.ecc.curve.Ed25519.prototype.littleEndianByteArray32FromBigNum =
-function(bignum) {
+    function(bignum) {
   var result = bignum.toByteArray().reverse();
   while (result.length < 32) {
     result.push(0);

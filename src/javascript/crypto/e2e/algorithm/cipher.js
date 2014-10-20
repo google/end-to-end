@@ -35,6 +35,7 @@ goog.require('e2e.ByteArray');
 goog.require('e2e.cipher.ciphertext');
 goog.require('goog.debug.Error');
 
+
 /**
  * Algorithms (used to define which algorithm is defined).
  * @enum {string}
@@ -55,6 +56,9 @@ e2e.cipher.Algorithm = {
   'ELGAMAL': 'ELGAMAL',
   'ECDH': 'ECDH'
 };
+
+
+
 /**
  * Error class used to represent errors in the ciphers.
  * @param {*=} opt_msg Optional message to send.
@@ -73,6 +77,7 @@ goog.inherits(e2e.cipher.Error, goog.debug.Error);
  * @extends {e2e.Algorithm}
  */
 e2e.cipher.Cipher = function() {};
+
 
 
 /**
@@ -114,6 +119,7 @@ e2e.cipher.SymmetricCipher.prototype.blockSize;
 e2e.cipher.SymmetricCipher.prototype.decrypt = goog.abstractMethod;
 
 
+
 /**
  * Representation of an asymmetric cipher.
  * @interface
@@ -140,6 +146,7 @@ e2e.cipher.AsymmetricCipher.prototype.encrypt = goog.abstractMethod;
  */
 e2e.cipher.AsymmetricCipher.prototype.decrypt = goog.abstractMethod;
 
+
 /**
  * @define {string} List of ciphers to register asynchronously.
  */
@@ -150,6 +157,7 @@ e2e.cipher.factory.WORKER_CIPHERS = '';
  * Initializes cipher factory.
  */
 e2e.cipher.factory.init = function() {};
+
 
 /**
  * Contains a list of all registered implementations for each algorithm.

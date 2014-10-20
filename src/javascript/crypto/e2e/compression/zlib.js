@@ -32,6 +32,7 @@ goog.require('e2e.compression.factory');
 goog.require('goog.array');
 
 
+
 /**
  * Wrapper around the external zlib implementation.
  * @extends {e2e.compression.Compression}
@@ -61,4 +62,4 @@ e2e.compression.Zlib.prototype.compress = function(data) {
 
 
 e2e.compression.factory.add(e2e.compression.Zlib,
-                                    e2e.compression.Algorithm.ZLIB);
+    e2e.compression.Algorithm.ZLIB);

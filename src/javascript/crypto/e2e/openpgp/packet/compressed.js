@@ -31,6 +31,7 @@ goog.require('e2e.openpgp.packet.factory');
 goog.require('goog.array');
 
 
+
 /**
  * Representation of a Compressed Data packet.
  * @param {e2e.compression.Algorithm} algorithm The compression

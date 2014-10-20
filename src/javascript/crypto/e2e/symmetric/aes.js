@@ -808,8 +808,8 @@ e2e.cipher.Aes.MULT_E = [
 
 // Register this implementation to handle all, 128, 192, and 256 bits keys.
 e2e.cipher.factory.add(e2e.cipher.Aes,
-                               e2e.cipher.Algorithm.AES128);
+    e2e.cipher.Algorithm.AES128);
 e2e.cipher.factory.add(e2e.cipher.Aes,
-                               e2e.cipher.Algorithm.AES192);
+    e2e.cipher.Algorithm.AES192);
 e2e.cipher.factory.add(e2e.cipher.Aes,
-                               e2e.cipher.Algorithm.AES256);
+    e2e.cipher.Algorithm.AES256);

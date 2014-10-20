@@ -25,6 +25,7 @@ goog.provide('e2e.error.UnsupportedError');
 goog.require('goog.debug.Error');
 
 
+
 /**
  * The base class for crypto errors.
  * @param {*=} opt_msg The custom error message.
@@ -35,6 +36,7 @@ e2e.error.Error = function(opt_msg) {
   goog.base(this, opt_msg);
 };
 goog.inherits(e2e.error.Error, goog.debug.Error);
+
 
 
 /**
@@ -48,6 +50,7 @@ e2e.error.InvalidArgumentsError = function(message) {
 };
 goog.inherits(e2e.error.InvalidArgumentsError,
               e2e.error.Error);
+
 
 
 /**

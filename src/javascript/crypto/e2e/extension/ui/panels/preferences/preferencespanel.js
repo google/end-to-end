@@ -90,4 +90,4 @@ panels.PreferencesPanel.prototype.decorateInternal = function(elem) {
 };
 
 
-}); // goog.scope
+});  // goog.scope

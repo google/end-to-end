@@ -104,5 +104,5 @@ draftmanager.persistAllDrafts_ = function(drafts) {
       constants.StorageKey.LAST_SAVED_DRAFT, window.JSON.stringify(drafts));
 };
 
-}); // goog.scope
+});  // goog.scope
 

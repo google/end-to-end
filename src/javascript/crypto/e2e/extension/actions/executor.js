@@ -60,7 +60,7 @@ actions.Executor = function(opt_errorCallback) {
  * @param {!messages.ApiRequest} request The input to the action.
  * @param {!goog.ui.Component} requestor The UI component through which the
  *     action was invoked.
- * @param {function(...)} opt_callback The callback to invoke once the action
+ * @param {function(...)=} opt_callback The callback to invoke once the action
  *     completes.
  * @param {function(Error)=} opt_errorCallback The callback to invoke if an
  *     error is encountered. If omitted, the default error callback will be
@@ -114,4 +114,4 @@ actions.Executor.prototype.getAction_ = function(actionType) {
   return null;
 };
 
-}); // goog.scope
+});  // goog.scope

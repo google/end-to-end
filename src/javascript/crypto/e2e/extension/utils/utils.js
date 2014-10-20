@@ -37,7 +37,7 @@ var utils = e2e.ext.utils;
  */
 utils.writeToFile = function(content, callback) {
   var blob = new Blob(
-          [content], {type: 'application/pgp-keys; format=text;'});
+      [content], {type: 'application/pgp-keys; format=text;'});
   var url = URL.createObjectURL(blob);
   callback(url);
 };
@@ -96,6 +96,7 @@ utils.errorHandler = function(error) {
 };
 
 
+
 /**
  * Constructor for a i18n friendly error.
  * @param {string} defaultMsg The default error message.
@@ -117,21 +118,21 @@ goog.inherits(utils.Error, Error);
  *     has been displayed.
  */
 utils.showNotification = function(msg, callback) {
-   chrome.notifications.create(constants.ElementId.NOTIFICATION_SUCCESS, {
-     type: 'basic',
-     iconUrl: '/images/icon-48.png',
-     title: chrome.i18n.getMessage('extName'),
-     message: msg
-   }, function() {
-     window.setTimeout(function() {
-       chrome.notifications.clear(
-           constants.ElementId.NOTIFICATION_SUCCESS,
-           goog.nullFunction); // Dummy callback to keep Chrome happy.
-     }, constants.NOTIFICATIONS_DELAY);
-     callback();
-   });
+  chrome.notifications.create(constants.ElementId.NOTIFICATION_SUCCESS, {
+    type: 'basic',
+    iconUrl: '/images/icon-48.png',
+    title: chrome.i18n.getMessage('extName'),
+    message: msg
+  }, function() {
+    window.setTimeout(function() {
+      chrome.notifications.clear(
+          constants.ElementId.NOTIFICATION_SUCCESS,
+          goog.nullFunction); // Dummy callback to keep Chrome happy.
+    }, constants.NOTIFICATIONS_DELAY);
+    callback();
+  });
 };
 
 
-}); // goog.scope
+});  // goog.scope
 

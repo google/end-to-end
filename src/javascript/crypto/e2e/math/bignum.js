@@ -29,6 +29,7 @@ goog.require('goog.array');
 goog.require('goog.asserts');
 
 
+
 /**
  * Non-negative arbitrary-precision integers.
  * @param {(!e2e.ByteArray|!Uint8Array)=} opt_value The value of the BigNum in
@@ -234,7 +235,6 @@ e2e.BigNum.prototype.toString = function() {
 
   }).join('');
 };
-
 
 
 /**

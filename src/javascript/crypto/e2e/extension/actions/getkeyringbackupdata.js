@@ -20,7 +20,6 @@
 
 goog.provide('e2e.ext.actions.GetKeyringBackupData');
 
-goog.require('e2e.ext.actions.Action');
 
 goog.scope(function() {
 var actions = e2e.ext.actions;
@@ -41,4 +40,4 @@ actions.GetKeyringBackupData.prototype.execute =
   ctx.getKeyringBackupData().addCallback(callback).addErrback(errorCallback);
 };
 
-});
+});  // goog.scope

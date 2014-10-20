@@ -43,7 +43,6 @@ goog.provide('e2e.openpgp.types');
 goog.require('e2e.ByteArray');
 
 
-
 /**
  * File information for encrypting and decrypting files.
  * @typedef {?{filename: string, creationTime: number,
@@ -73,6 +72,7 @@ e2e.openpgp.DecryptResult;
  * @typedef {e2e.async.Result.<!Array.<e2e.openpgp.Key>>}
  */
 e2e.openpgp.GenerateKeyResult;
+
 
 /**
  * Result of an import key operation.

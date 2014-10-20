@@ -38,6 +38,7 @@ goog.require('e2e.random');
 goog.require('goog.array');
 
 
+
 /**
  * Representation of a Symmetrically Encrypted Data Packet (Tag 9).
  * As defined in RFC 4880 Section 5.7.
@@ -64,7 +65,7 @@ e2e.openpgp.packet.SymmetricallyEncrypted.prototype.decrypt =
       e2e.openpgp.constants.getInstance(
           e2e.openpgp.constants.Type.SYMMETRIC_KEY, algorithm, keyObj));
   var ocfbCipher = new e2e.openpgp.Ocfb(cipher, true);
-  this.data = /** @type !e2e.ByteArray */ (
+  this.data = /** @type {!e2e.ByteArray} */ (
       e2e.async.Result.getValue(ocfbCipher.decrypt(this.encryptedData, [])));
 };
 
@@ -89,6 +90,7 @@ e2e.openpgp.packet.SymmetricallyEncrypted.parse =
 
 e2e.openpgp.packet.factory.add(
     e2e.openpgp.packet.SymmetricallyEncrypted);
+
 
 
 /**
@@ -153,7 +155,7 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.construct = function(
   goog.array.extend(plaintext, mdcCalculated);
   var iv = goog.array.repeat(0, cipher.blockSize);
   var cfbCipher = new e2e.ciphermode.Cfb(cipher);
-  var ciphertext = /** @type !e2e.ByteArray */ (
+  var ciphertext = /** @type {!e2e.ByteArray} */ (
       e2e.async.Result.getValue(cfbCipher.encrypt(plaintext, iv)));
   var packet = new e2e.openpgp.packet.SymmetricallyEncryptedIntegrity(
       ciphertext);
@@ -163,7 +165,7 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.construct = function(
 
 /** @inheritDoc */
 e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.prototype.
-serializePacketBody = function() {
+    serializePacketBody = function() {
   // SEIP has a prefix byte of version 1.
   return goog.array.concat(1, this.encryptedData);
 };

@@ -55,6 +55,7 @@ e2e.hash.Sha224.prototype.algorithm = e2e.hash.Algorithm.SHA224;
 e2e.hash.factory.add(e2e.hash.Sha224);
 
 
+
 /**
  * Wrapper around the goog.crypt.Sha256 implementation.
  * @extends {e2e.hash.Hash}
@@ -75,6 +76,7 @@ e2e.hash.Sha256.prototype.algorithm = e2e.hash.Algorithm.SHA256;
 e2e.hash.factory.add(e2e.hash.Sha256);
 
 
+
 /**
  * Wrapper around the goog.crypt.Sha384 implementation.
  * @extends {e2e.hash.Hash}
@@ -93,6 +95,7 @@ goog.inherits(e2e.hash.Sha384, e2e.hash.Hash);
 e2e.hash.Sha384.prototype.algorithm = e2e.hash.Algorithm.SHA384;
 
 e2e.hash.factory.add(e2e.hash.Sha384);
+
 
 
 /**

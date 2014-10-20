@@ -20,12 +20,13 @@
 
 goog.provide('e2e.ext.ui.panels.prompt.ImportKey');
 
-goog.require('e2e.ext.actions.Executor');
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.Actions');
+goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.ui.panels.prompt.PanelBase');
 goog.require('e2e.ext.ui.templates.panels.prompt');
 goog.require('e2e.ext.utils');
-goog.require('goog.Timer');
+goog.require('e2e.ext.utils.Error');
+goog.require('goog.events.EventType');
 goog.require('soy');
 
 
@@ -109,4 +110,4 @@ promptPanels.ImportKey.prototype.importKey_ = function() {
 
 };
 
-}); // goog.scope
+});  // goog.scope

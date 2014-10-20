@@ -116,4 +116,4 @@ utils.extractValidEmail = function(recipient) {
   return email;
 };
 
-}); // goog.scope
+});  // goog.scope

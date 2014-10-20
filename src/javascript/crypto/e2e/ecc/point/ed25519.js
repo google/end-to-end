@@ -96,6 +96,7 @@ e2e.ecc.point.Ed25519 = function(curve, x, y, opt_t, opt_z) {
 };
 goog.inherits(e2e.ecc.point.Ed25519, e2e.ecc.point.Point);
 
+
 /**
  * @type {Array.<!Array.<!e2e.ecc.point.Ed25519|
  *                        e2e.ecc.point.Ed25519X>>}
@@ -463,7 +464,6 @@ e2e.ecc.point.Ed25519.prototype.selectFromFastMultiplyTable_ = function(
 };
 
 
-
 /**
  * Converts to an extended point.
  * @return {!e2e.ecc.point.Ed25519X}
@@ -474,6 +474,7 @@ e2e.ecc.point.Ed25519.prototype.toPointX = function() {
   return new e2e.ecc.point.Ed25519X(this.curve, y.subtract(x), y.add(x),
       x.multiply(y).multiply(this.curve.D2));
 };
+
 
 /**
  * Converts to a point.
@@ -547,6 +548,7 @@ e2e.ecc.point.Ed25519X.prototype.negate = function() {
       this.sum, this.delta, this.d2xy.negate());
 };
 
+
 /**
  * Adds another point to this, and return the new point. This is the group
  *     operation.
@@ -582,7 +584,7 @@ e2e.ecc.point.Ed25519X.prototype.add = function(that) {
  * @private
  */
 e2e.ecc.point.Ed25519X.prototype.selectFromFastMultiplyTable_ =
-function(row, index) {
+    function(row, index) {
   goog.asserts.assert(index >= 1 && index < row.length, 'Argument sanity');
   var length = this.curve.q.n.length;
   var delta = e2e.BigNum.createBigNumOfSize(length);

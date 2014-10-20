@@ -43,6 +43,7 @@ goog.require('e2e.signer.factory');
 goog.require('goog.asserts');
 
 
+
 /**
  * Representation of an RSA public and/or private key. (Implements both, signer
  * and cipher).
@@ -155,7 +156,7 @@ e2e.cipher.Rsa.prototype.encrypt = function(plaintext) {
 
 /**
  * Creates a random BigNum in range [1..limit-1]
- * @param {e2e.BigNum=} limit upper bound
+ * @param {e2e.BigNum} limit upper bound
  * @return {!e2e.BigNum}
  * @private
  */
@@ -164,7 +165,7 @@ e2e.cipher.Rsa.prototype.getRandomBigNum_ = function(limit) {
   var candidate;
   do {
     candidate = new e2e.BigNum(e2e.random.getRandomBytes(
-      byteSize));
+        byteSize));
   } while (candidate.isGreaterOrEqual(limit) ||
            candidate.isEqual(e2e.BigNum.ZERO));
   return candidate;
@@ -178,22 +179,22 @@ e2e.cipher.Rsa.prototype.getRandomBigNum_ = function(limit) {
  * @private
  */
 e2e.cipher.Rsa.prototype.calculateBlindingNonces_ = function() {
-    if (this.blinder_.isEqual(e2e.BigNum.ZERO)) {
-      var r = this.getRandomBigNum_(this.modulus);
-      // r should be relatively prime to this.modulus (i.e. != p &  != q)
-      // the chance for r being k*p or k*q is negligible, we're skipping
-      // the check
-      var p = new e2e.BigNum(this.key['p']);
-      var q = new e2e.BigNum(this.key['q']);
-      var phi = this.modulus.add(e2e.BigNum.ONE).subtract(p.add(q));
-      var inv = this.modulus.modPower(r, phi.subtract(e2e.BigNum.ONE));
-      this.blinder_ = this.modulus.modPower(inv, this.key['e']);
-      this.unblinder_ = r;
-    } else {  // we already generated, derive new by squaring
-      this.blinder_ = this.modulus.modMultiply(this.blinder_, this.blinder_);
-      this.unblinder_ = this.modulus.modMultiply(this.unblinder_,
+  if (this.blinder_.isEqual(e2e.BigNum.ZERO)) {
+    var r = this.getRandomBigNum_(this.modulus);
+    // r should be relatively prime to this.modulus (i.e. != p &  != q)
+    // the chance for r being k*p or k*q is negligible, we're skipping
+    // the check
+    var p = new e2e.BigNum(this.key['p']);
+    var q = new e2e.BigNum(this.key['q']);
+    var phi = this.modulus.add(e2e.BigNum.ONE).subtract(p.add(q));
+    var inv = this.modulus.modPower(r, phi.subtract(e2e.BigNum.ONE));
+    this.blinder_ = this.modulus.modPower(inv, this.key['e']);
+    this.unblinder_ = r;
+  } else {  // we already generated, derive new by squaring
+    this.blinder_ = this.modulus.modMultiply(this.blinder_, this.blinder_);
+    this.unblinder_ = this.modulus.modMultiply(this.unblinder_,
         this.unblinder_);
-    }
+  }
 };
 
 
@@ -210,14 +211,14 @@ e2e.cipher.Rsa.prototype.decrypt = function(ciphertext) {
         'q should be defined.');
     this.calculateBlindingNonces_();
     var blinded = this.modulus.modMultiply(
-      new e2e.BigNum(ciphertext['c']),
-      this.blinder_);
+        new e2e.BigNum(ciphertext['c']),
+        this.blinder_);
     var decryption = this.modulus.modPower(blinded, this.key['d']);
     var deblinded = this.modulus.modMultiply(decryption, this.unblinder_);
     return e2e.async.Result.toResult(deblinded.toByteArray());
   } else {
     return e2e.async.Result.toResult(this.modulus.pow(ciphertext['c'],
-              this.key['d']));
+        this.key['d']));
   }
 };
 
@@ -242,10 +243,10 @@ e2e.cipher.Rsa.prototype.sign = function(data) {
 /** @override */
 e2e.cipher.Rsa.prototype.verify = function(data, sig) {
   var encodedActualHash = e2e.pkcs.EMSA_PKCS1_v1_5(
-    this.getHash(),
-    data,
-    this.keySize - 1,
-    true);
+      this.getHash(),
+      data,
+      this.keySize - 1,
+      true);
   var encodedSignedHash = e2e.async.Result.getValue(
       this.encrypt(sig['s']))['c'];
   return e2e.async.Result.toResult(

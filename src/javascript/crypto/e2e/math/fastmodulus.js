@@ -94,7 +94,7 @@ e2e.FastModulus.SpecialForm = function(modulus, shift) {
    * Amount by which modulus_ is shifted left to get shiftedModulus_ .
    * @private {number}
    */
-   this.shift_ = shift;
+  this.shift_ = shift;
 };
 
 
@@ -132,6 +132,7 @@ e2e.FastModulus.SpecialForm.prototype.residue = function(value) {
   return dividend.shiftRight(this.shift_).cloneWithSize(
       this.modulus_.getSize());
 };
+
 
 /**
  * Returns a tentative quotient digit.  The correct quotient digit is either the
@@ -200,7 +201,7 @@ goog.inherits(e2e.FastModulus.FFFFFF,
 
 /** @override */
 e2e.FastModulus.FFFFFF.prototype.calculateQuotient =
-function(dividend, deltaPlusLength) {
+    function(dividend, deltaPlusLength) {
   // Nomenclature: b = 2^24,  Δ = delta, u = dividend, v = divisor, L = length
   // We are trying to find the next quotient digit q < b such that
   //     q = floor(u / (v b^Δ))
@@ -275,7 +276,7 @@ goog.inherits(e2e.FastModulus.Ox1000000,
 
 /** @override */
 e2e.FastModulus.Ox1000000.prototype.calculateQuotient =
-function(dividend, deltaPlusLength) {
+    function(dividend, deltaPlusLength) {
   // Nomenclature: b = 2^24,  Δ = delta, u = dividend, v = divisor, L = length
   // We are trying to find the next quotient digit q < b such that
   //     q = floor(u / (v b^Δ))

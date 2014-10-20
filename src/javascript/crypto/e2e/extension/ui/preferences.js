@@ -132,4 +132,4 @@ preferences.isLookingGlassEnabled = function() {
       constants.StorageKey.ENABLE_LOOKING_GLASS);
 };
 
-}); // goog.scope
+});  // goog.scope

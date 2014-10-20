@@ -20,8 +20,11 @@
 
 goog.provide('e2e.openpgp.packet.UserAttribute');
 
+goog.require('e2e');
 goog.require('e2e.openpgp.packet.UserId');
 goog.require('e2e.openpgp.packet.factory');
+goog.require('goog.array');
+
 
 
 /**

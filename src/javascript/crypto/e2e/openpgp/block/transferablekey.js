@@ -31,6 +31,8 @@ goog.require('e2e.openpgp.packet.Trust');
 goog.require('e2e.openpgp.packet.UserAttribute');
 goog.require('e2e.openpgp.packet.UserId');
 goog.require('goog.array');
+goog.require('goog.asserts');
+
 
 
 /**
@@ -152,7 +154,7 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
     throw new e2e.openpgp.error.ParseError('Invalid block. Missing User ID.');
   }
   while (packet instanceof e2e.openpgp.packet.PublicSubkey ||
-        packet instanceof e2e.openpgp.packet.SecretSubkey) {
+      packet instanceof e2e.openpgp.packet.SecretSubkey) {
     var subKey = packet;
     this.subKeys.push(packet);
     this.packets.push(packets.shift());
@@ -201,7 +203,7 @@ e2e.openpgp.block.TransferableKey.prototype.processSignatures = function() {
   if (!this.keyPacket.verifySignatures(signingKey)) {
     // main key is invalid
     throw new e2e.openpgp.error.SignatureError(
-      'Main key is invalid.');
+        'Main key is invalid.');
   }
   // Process subkeys
   var keysToRemove = [];
@@ -248,9 +250,9 @@ e2e.openpgp.block.TransferableKey.prototype.getKeyTo =
   }
 
   var certifiedKey = goog.array.find(
-    this.subKeys, function(key) {
-      return key.isCertifiedTo(use) && key.can(use) && key instanceof type;
-    });
+      this.subKeys, function(key) {
+        return key.isCertifiedTo(use) && key.can(use) && key instanceof type;
+      });
 
   if (certifiedKey) {
     return certifiedKey;
@@ -260,7 +262,7 @@ e2e.openpgp.block.TransferableKey.prototype.getKeyTo =
   return goog.array.find(
       this.subKeys.concat(this.keyPacket), function(key) {
         return key.can(use) && key instanceof type;
-    });
+      });
 };
 
 
@@ -333,12 +335,12 @@ e2e.openpgp.block.TransferableKey.prototype.toKeyObject = function(
   return {
     key: this.keyPacket.toKeyPacketInfo(),
     subKeys: goog.array.map(
-      this.subKeys, function(subKey) {
-        return subKey.toKeyPacketInfo();
-      }),
+        this.subKeys, function(subKey) {
+          return subKey.toKeyPacketInfo();
+        }),
     uids: this.getUserIds(),
     serialized: /** @type {!e2e.ByteArray} */(
-      (opt_dontSerialize || !this.SERIALIZE_IN_KEY_OBJECT) ?
-      [] : this.serialize())
+        (opt_dontSerialize || !this.SERIALIZE_IN_KEY_OBJECT) ?
+        [] : this.serialize())
   };
 };

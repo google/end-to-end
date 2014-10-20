@@ -92,7 +92,7 @@ dialogs.ImportConfirmation.prototype.enterDocument = function() {
  * @private
  */
 dialogs.ImportConfirmation.prototype.handleSelect_ = function(changeEvt) {
-  var checkbox = /** @type (HTMLInputElement) */ (changeEvt.target);
+  var checkbox = /** @type {HTMLInputElement} */ (changeEvt.target);
 
   if (!goog.isDef(checkbox.id)) {
     // Not an element we're interested in.
@@ -147,4 +147,4 @@ dialogs.ImportConfirmation.prototype.invokeCallback = function(sendBlank) {
   goog.base(this, 'invokeCallback', sendBlank);
 };
 
-}); // goog.scope
+});  // goog.scope

@@ -29,6 +29,8 @@ goog.require('e2e.cipher.SymmetricCipher');
 goog.require('e2e.cipher.factory');
 goog.require('e2e.fixedtiming');
 
+
+
 /**
  * Basic implementation of IDEA.
  * @param {e2e.cipher.Algorithm} algorithm The algorithm being implemented.
@@ -56,11 +58,13 @@ e2e.cipher.Idea = function(algorithm, opt_keyObj) {
 };
 goog.inherits(e2e.cipher.Idea, e2e.AlgorithmImpl);
 
+
 /**
  * Number of encryption rounds
  * @type {number}
  */
 e2e.cipher.Idea.prototype.rounds = 8;
+
 
 /**
  * Number of encryption subkeys
@@ -70,8 +74,10 @@ e2e.cipher.Idea.prototype.rounds = 8;
 e2e.cipher.Idea.prototype.num_subkeys =
     (6 * e2e.cipher.Idea.prototype.rounds + 4);
 
+
 /** @inheritDoc */
 e2e.cipher.Idea.prototype.blockSize = 8;  // 64 bits.
+
 
 /** @inheritDoc */
 e2e.cipher.Idea.prototype.setKey = function(keyObj) {
@@ -79,6 +85,7 @@ e2e.cipher.Idea.prototype.setKey = function(keyObj) {
   this.initEncryptSubkeys_();
   this.initDecryptSubkeys_();
 };
+
 
 /***
  * Expand out the encryption subkeys
@@ -107,6 +114,7 @@ e2e.cipher.Idea.prototype.initEncryptSubkeys_ = function() {
   }
   return this.encryptSubKeys_;
 };
+
 
 /***
  * Expand out the decryption subkeys
@@ -145,6 +153,7 @@ e2e.cipher.Idea.prototype.initDecryptSubkeys_ = function() {
 
   return this.decryptSubKeys_;
 };
+
 
 /***
  * Apply the IDEA cipher to the data using the provided key
@@ -191,11 +200,13 @@ e2e.cipher.Idea.prototype.applyKey = function(block, key) {
   return block;
 };
 
+
 /** @inheritDoc */
 e2e.cipher.Idea.prototype.encrypt = function(data) {
   return e2e.async.Result.toResult(
       this.blockAndTackle(data, this.encryptSubKeys_));
 };
+
 
 /** @inheritDoc */
 e2e.cipher.Idea.prototype.decrypt = function(data) {
@@ -230,6 +241,7 @@ e2e.cipher.Idea.prototype.blockAndTackle = function(data, key) {
   return out;
 };
 
+
 /***
  * Compute the inverse multiplicative of x mod 2^16+1 using a^(p-2) mod p
  *
@@ -245,6 +257,7 @@ e2e.cipher.Idea.invMod16 = function(x) {
   }
   return y;
 };
+
 
 /***
  * Compute (x * y) mod 2^16+1
@@ -291,6 +304,7 @@ e2e.cipher.Idea.LSWfromInteger = function(intVal) {
   var mask = e2e.BigNum.fromInteger(0xFFFF);
   return intVal.and(mask);
 };
+
 
 /**
  * Return the most significant bits of a e2e.BigNum

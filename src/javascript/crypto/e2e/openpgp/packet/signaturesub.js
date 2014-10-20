@@ -27,6 +27,7 @@ goog.require('goog.array');
 goog.require('goog.structs.Map');
 
 
+
 /**
  * Signature Subpackets as defined in RFC 4880, section 5.2.3.1.
  * @param {!e2e.openpgp.packet.SignatureSub.Type} type Subpacket type.
@@ -220,7 +221,7 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       }
       break;
     case e2e.openpgp.packet.SignatureSub.Type.EMBEDDED_SIGNATURE:
-        attributes.EMBEDDED_SIGNATURE = subpacket.body;
+      attributes.EMBEDDED_SIGNATURE = subpacket.body;
       break;
     default:
       if (subpacket.critical) {
@@ -230,6 +231,7 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       }
   }
 };
+
 
 /**
  * Type of signature subpacket.

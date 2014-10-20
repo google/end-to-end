@@ -37,11 +37,12 @@ var messages = e2e.ext.messages;
 var templates = e2e.ext.ui.templates.dialogs.backupkey;
 
 
+
 /**
  * Constructor for the restore key window.
  * @constructor
  * @extends {e2e.ext.ui.dialogs.Overlay}
- * @param {function(string)} opt_callback The callback function on restore.
+ * @param {function(string)=} opt_callback The callback function on restore.
  */
 dialogs.RestoreKey = function(opt_callback) {
   goog.base(this);
@@ -127,4 +128,4 @@ dialogs.RestoreKey.prototype.executeRestore_ = function() {
   return false;
 };
 
-}); // goog.scope
+});  // goog.scope

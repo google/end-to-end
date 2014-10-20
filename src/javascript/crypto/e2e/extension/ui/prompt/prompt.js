@@ -23,7 +23,6 @@
 goog.provide('e2e.ext.ui.Prompt');
 
 goog.require('e2e.ext.actions.Executor');
-goog.require('e2e.ext.constants');
 goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
@@ -36,7 +35,6 @@ goog.require('e2e.ext.ui.panels.prompt.PanelBase');
 goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.ui.templates.prompt');
 goog.require('e2e.ext.utils');
-goog.require('e2e.ext.utils.Error');
 goog.require('e2e.ext.utils.action');
 goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.asciiArmor');
@@ -47,7 +45,6 @@ goog.require('goog.events.EventType');
 goog.require('goog.positioning.Corner');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
-goog.require('goog.ui.Component.EventType');
 goog.require('goog.ui.MenuItem');
 goog.require('goog.ui.PopupMenu');
 goog.require('soy');
@@ -444,7 +441,7 @@ ui.Prompt.prototype.clearFailure_ = function() {
 };
 
 
-}); // goog.scope
+});  // goog.scope
 
 // Create the settings page.
 if (Boolean(chrome.extension)) {

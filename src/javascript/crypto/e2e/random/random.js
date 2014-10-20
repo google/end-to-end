@@ -36,6 +36,7 @@ goog.require('goog.crypt.Sha256');
  */
 e2e.random.seed_ = [];
 
+
 /**
  * The state of the random function.
  * @type {Array.<number>}
@@ -66,12 +67,14 @@ e2e.random.initialized_ = false;
  */
 e2e.random.USE_WEB_CRYPTO = true;
 
+
 /**
  * Sha256 output size
  * @const {number}
  * @private
  */
- e2e.random.RNG_INTERNAL_BYTES_ = 32;
+e2e.random.RNG_INTERNAL_BYTES_ = 32;
+
 
 /**
  * @param {number} size The number of bytes to generate.
@@ -87,6 +90,7 @@ e2e.random.tryGetWebCryptoRandomInternal_ = function(size) {
   }
   return null;
 };
+
 
 /**
  * The security of this random number is based on HMAC-SHA256 being a
@@ -191,6 +195,7 @@ e2e.random.seedRandomBytesWebCrypto = function(size) {
   cryptoObject['getRandomValues'](array);
   e2e.random.seedRandomBytes(goog.array.clone(array));
 };
+
 
 /**
  * Reset the PRNG.

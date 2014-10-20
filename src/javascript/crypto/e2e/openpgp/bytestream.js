@@ -25,6 +25,8 @@ goog.provide('e2e.openpgp.ByteStream');
 
 goog.require('goog.asserts');
 
+
+
 /**
  * ByteStream object with an API emulating Array, but exposing only splice(0,x)
  * and shift() functions and a length property.
@@ -69,7 +71,7 @@ e2e.openpgp.ByteStream.prototype.splice = function(index,
   goog.asserts.assert(arguments.length == 2);
   goog.asserts.assert(this.index_ + howMany <= this.array_.length);
   var slice = this.array_.slice(this.index_, this.index_ +
-     howMany);
+      howMany);
   this.length -= howMany;
   this.index_ += howMany;
   return slice;

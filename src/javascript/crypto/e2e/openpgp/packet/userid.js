@@ -39,6 +39,7 @@ goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.openpgp.packet.SignatureSub');
 goog.require('e2e.openpgp.packet.factory');
 goog.require('goog.array');
+goog.require('goog.asserts');
 
 
 
@@ -153,7 +154,7 @@ e2e.openpgp.packet.UserId.prototype.verifySignatureInternal_ = function(
   var signer = /** @type {!e2e.signer.Signer} */ (verifyingKey.cipher);
   try {
     var signatureVerified = signature.verify(signedData,
-      goog.asserts.assertObject(signer));
+        goog.asserts.assertObject(signer));
   } catch (e) {
     // Ignore signatures that throw unsupported errors (e.g. weak hash
     // algorithms) and expired signatures.
@@ -204,8 +205,8 @@ e2e.openpgp.packet.UserId.prototype.verifySignatures = function(verifyingKey) {
   var hasCertification = false;
   // Process all signatures to detect tampering.
   goog.array.forEach(this.certifications_, function(signature) {
-      if (this.verifyCertification_(signature, verifyingKey))
-        hasCertification = true;
+    if (this.verifyCertification_(signature, verifyingKey))
+      hasCertification = true;
   }, this);
   return hasCertification;
 };
@@ -222,10 +223,10 @@ e2e.openpgp.packet.UserId.prototype.verifySignatures = function(verifyingKey) {
 e2e.openpgp.packet.UserId.prototype.applyRevocation_ = function(verifyingKey,
     revocation) {
   if (this.verifySignatureInternal_(
-        revocation,
-        verifyingKey,
-        this.getCertificationSignatureData_(verifyingKey),
-        'User ID revocation signature verification failed.')) {
+      revocation,
+      verifyingKey,
+      this.getCertificationSignatureData_(verifyingKey),
+      'User ID revocation signature verification failed.')) {
     var revocationKey = revocation.getSignerKeyId();
     for (var i = this.certifications_.length - 1; i >= 0; i--) {
       if (goog.array.equals(revocationKey,
@@ -268,7 +269,7 @@ e2e.openpgp.packet.UserId.prototype.certifyBy = function(key) {
   var data = goog.array.flatten(
       key.getPublicKeyPacket().getBytesToSign(),
       this.getBytesToSign()
-  );
+      );
   var sigResult = e2e.openpgp.packet.Signature.construct(
       key,
       data,
@@ -316,8 +317,8 @@ e2e.openpgp.packet.UserId.prototype.getSignatureAttributes_ = function(key) {
     'PREFERRED_COMPRESSION_ALGORITHMS': compressionIds,
     'FEATURES': [0x01], // Modification detection. See RFC 4880 5.2.3.24.
     'KEY_FLAGS': [
-        e2e.openpgp.packet.SignatureSub.KeyFlags.CERTIFY |
-        e2e.openpgp.packet.SignatureSub.KeyFlags.SIGN]
+      e2e.openpgp.packet.SignatureSub.KeyFlags.CERTIFY |
+          e2e.openpgp.packet.SignatureSub.KeyFlags.SIGN]
   };
 };
 
