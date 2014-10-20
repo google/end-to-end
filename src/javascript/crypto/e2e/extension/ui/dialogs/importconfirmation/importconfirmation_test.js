@@ -18,6 +18,7 @@
  * @fileoverview Tests for the generate key panel.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.dialogs.ImportConfirmationTest');
 
 goog.require('e2e.ext.constants');
@@ -28,7 +29,7 @@ goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
-goog.require('goog.testing.mockmatchers');
+goog.require('goog.ui.Component');
 goog.setTestOnly();
 
 var constants = e2e.ext.constants;

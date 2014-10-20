@@ -18,16 +18,20 @@
  * @fileoverview Tests for the looking glass.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.GlassTest');
 
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.Glass');
+goog.require('e2e.random');
 goog.require('goog.style');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
+goog.require('goog.testing.mockmatchers.ArgumentMatcher');
+goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.setTestOnly();
 
 var constants = e2e.ext.constants;

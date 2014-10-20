@@ -18,6 +18,7 @@
  * @fileoverview Tests for the request throttle.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.api.RequestThrottleTest');
 
 goog.require('e2e.ext.api.RequestThrottle');

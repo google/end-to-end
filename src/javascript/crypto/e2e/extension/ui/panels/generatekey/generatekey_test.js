@@ -18,6 +18,7 @@
  * @fileoverview Tests for the generate key panel.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.GenerateKeyTest');
 
 goog.require('e2e.ext.constants');

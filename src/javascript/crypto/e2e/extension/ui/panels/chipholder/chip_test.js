@@ -18,9 +18,9 @@
  * @fileoverview Tests for the UI chips.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.ChipTest');
 
-goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.panels.Chip');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');

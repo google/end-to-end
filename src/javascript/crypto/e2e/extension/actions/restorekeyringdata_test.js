@@ -18,18 +18,17 @@
  * @fileoverview Tests for restore key UI
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.actions.RestoreKeyringDataTest');
 
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('e2e.ext.actions.RestoreKeyringData');
 goog.require('e2e.ext.constants');
 goog.require('goog.crypt.base64');
-goog.require('goog.testing.Mock');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
-goog.require('goog.testing.mockmatchers');
 goog.require('goog.ui.Component');
 goog.setTestOnly();
 

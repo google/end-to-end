@@ -18,21 +18,21 @@
  * @fileoverview Tests for the GET_KEY_DESCRIPTION action.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.actions.GetKeyDescriptionTest');
 
 goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
-goog.require('goog.testing.mockmatchers');
 goog.require('goog.ui.Component');
 goog.setTestOnly();
 
-var actions = e2e.ext.actions;
 var constants = e2e.ext.constants;
 var mockControl = null;
 var stubs = new goog.testing.PropertyReplacer();
@@ -88,7 +88,7 @@ function testExecute() {
   var callback = mockControl.createFunctionMock('callback');
   callback('');
 
-  var action = new actions.GetKeyDescription();
+  var action = new e2e.ext.actions.GetKeyDescription();
 
   mockControl.$replayAll();
   action.execute(pgpContext, {

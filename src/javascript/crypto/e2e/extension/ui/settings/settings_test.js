@@ -18,24 +18,25 @@
  * @fileoverview Tests for the settings page.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.SettingsTest');
 
 goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.Settings');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.panels.KeyringMgmtFull');
 goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.utils');
-goog.require('e2e.openpgp.KeyRing');
-goog.require('goog.dom');
 goog.require('goog.testing.AsyncTestCase');
-goog.require('goog.testing.Mock');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
+goog.require('goog.testing.mockmatchers.ArgumentMatcher');
+goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.setTestOnly();
 
 var constants = e2e.ext.constants;

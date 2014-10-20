@@ -18,6 +18,7 @@
  * @fileoverview Tests for the common utility methods.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.utilsTest');
 
 goog.require('e2e.ext.constants');
@@ -27,7 +28,8 @@ goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
-goog.require('goog.testing.mockmatchers');
+goog.require('goog.testing.mockmatchers.ArgumentMatcher');
+goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.setTestOnly();
 
 var constants = e2e.ext.constants;

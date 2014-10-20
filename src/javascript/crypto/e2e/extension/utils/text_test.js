@@ -18,8 +18,10 @@
  * @fileoverview Tests for the text utility methods.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.utils.textTest');
 
+goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.utils.text');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
@@ -58,8 +60,8 @@ function testGetPgpAction() {
 
 
 function testExtractValidEmail() {
-'test@example.com, "we <ird>>\'>, <a@a.com>, n<ess" <t2@example.com>' +
-        ', "inv\"<alid <invalid@example.com>, fails#e2e.regexp.vali@dation.com',
+  'test@example.com, "we <ird>>\'>, <a@a.com>, n<ess" <t2@example.com>' +
+      ', "inv\"<alid <invalid@example.com>, fails#e2e.regexp.vali@dation.com',
 
   assertEquals('test@example.com', utils.extractValidEmail('test@example.com'));
   assertEquals('test@example.com',

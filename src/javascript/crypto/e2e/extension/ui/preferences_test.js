@@ -18,6 +18,7 @@
  * @fileoverview Tests for the preferences handler.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.preferencesTest');
 
 goog.require('e2e.ext.constants');

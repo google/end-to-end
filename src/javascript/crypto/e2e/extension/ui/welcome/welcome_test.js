@@ -18,14 +18,16 @@
  * @fileoverview Tests for the welcome page.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.WelcomeTest');
 
 goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.Welcome');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.preferences');
-goog.require('goog.array');
+goog.require('e2e.ext.utils');
 goog.require('goog.dom');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
@@ -33,6 +35,7 @@ goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
+goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.setTestOnly();
 
 var constants = e2e.ext.constants;

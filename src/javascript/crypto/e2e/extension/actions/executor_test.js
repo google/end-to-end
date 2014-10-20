@@ -18,6 +18,7 @@
  * @fileoverview Tests for the action executor.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.actions.ExecutorTest');
 
 goog.require('e2e.ext.actions.Executor');
@@ -26,10 +27,9 @@ goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
-goog.require('goog.testing.mockmatchers');
+goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.setTestOnly();
 
-var actions = e2e.ext.actions;
 var constants = e2e.ext.constants;
 var mockControl = null;
 var stubs = new goog.testing.PropertyReplacer();
@@ -59,7 +59,7 @@ function testExecute() {
   };
   action.execute(pgpContext, request, requestor, callback, errorCallback);
 
-  var executor = new actions.Executor(errorCallback);
+  var executor = new e2e.ext.actions.Executor(errorCallback);
   stubs.set(executor, 'getAction_', mockControl.createFunctionMock());
   executor.getAction_(constants.Actions.USER_SPECIFIED).$returns(action);
 

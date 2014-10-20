@@ -18,19 +18,21 @@
  * @fileoverview Unit tests for the encryption panel for the prompt UI.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.prompt.ImportKeyTest');
 
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.actions.Executor');
+goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.panels.prompt.ImportKey');
+goog.require('goog.dom');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
-goog.require('goog.testing.mockmatchers.ArgumentMatcher');
 goog.require('goog.testing.mockmatchers.SaveArgument');
 
 goog.setTestOnly();

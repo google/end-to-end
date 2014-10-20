@@ -18,12 +18,15 @@
  * @fileoverview Unit tests for the encryption panel for the prompt UI.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.prompt.DecryptVerifyTest');
 
 goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.actions.DecryptVerify');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.ui.panels.prompt.DecryptVerify');
+goog.require('goog.dom');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');

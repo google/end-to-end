@@ -18,6 +18,7 @@
  * @fileoverview Description of this file.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.draftmanagerTest');
 
 goog.require('e2e.ext.ui.draftmanager');

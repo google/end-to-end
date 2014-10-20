@@ -18,9 +18,11 @@
  * @fileoverview Tests for the UI chip holder.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.ChipHolderTest');
 
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.ui.panels.Chip');
 goog.require('e2e.ext.ui.panels.ChipHolder');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.KeyCodes');

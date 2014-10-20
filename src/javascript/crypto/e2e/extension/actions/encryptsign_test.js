@@ -18,14 +18,13 @@
  * @fileoverview Tests for the ENCRYPT_SIGN action.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.actions.EncryptSignTest');
 
 goog.require('e2e');
 goog.require('e2e.ext.actions.EncryptSign');
 goog.require('e2e.ext.constants');
 goog.require('e2e.openpgp.ContextImpl');
-goog.require('e2e.openpgp.asciiArmor');
-goog.require('e2e.openpgp.block.factory');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
@@ -33,13 +32,10 @@ goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.setTestOnly();
 
-var actions = e2e.ext.actions;
 var constants = e2e.ext.constants;
 var mockControl = null;
 var stubs = new goog.testing.PropertyReplacer();
 var testCase = goog.testing.AsyncTestCase.createAndInstall();
-testCase.stepTimeout = 2000;
-goog.testing.TestCase.maxRunTime = 2000;
 
 var PUBLIC_KEY_ASCII =
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
@@ -123,6 +119,7 @@ var PUBLIC_KEY_ASCII_2 =  // user ID of 'Drew Hintz <adhintz@google.com>'
 function setUp() {
   window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
+  testCase.stepTimeout = 2000;
 }
 
 
@@ -141,7 +138,7 @@ function testEncrypt() {
   };
   var plaintext = 'some secret message.';
   var errorCallback = mockControl.createFunctionMock('errorCallback');
-  var action = new actions.EncryptSign();
+  var action = new e2e.ext.actions.EncryptSign();
 
   mockControl.$replayAll();
 
@@ -173,7 +170,7 @@ function testEncryptForSigner() {
   };
   var plaintext = 'some secret message.';
   var errorCallback = mockControl.createFunctionMock('errorCallback');
-  var action = new actions.EncryptSign();
+  var action = new e2e.ext.actions.EncryptSign();
 
   mockControl.$replayAll();
 
@@ -192,16 +189,16 @@ function testEncryptForSigner() {
             }, null, function(encryptedText) {
               testCase.waitForAsync('Decrypting message.');
               pgpContext.verifyDecrypt(pwdCallback, encryptedText).
-              addCallback(function(result) {
-                testCase.waitForAsync('Decoding decrypted message.');
-                e2e.byteArrayToStringAsync(
-                    result.decrypt.data, result.decrypt.options.charset).
-                    addCallback(function(decryptedText) {
-                      assertEquals(plaintext, decryptedText);
-                      mockControl.$verifyAll();
-                      testCase.continueTesting();
-                    }).addErrback(fail);
-              }).addErrback(fail);
+                  addCallback(function(result) {
+                    testCase.waitForAsync('Decoding decrypted message.');
+                    e2e.byteArrayToStringAsync(
+                        result.decrypt.data, result.decrypt.options.charset).
+                        addCallback(function(decryptedText) {
+                          assertEquals(plaintext, decryptedText);
+                          mockControl.$verifyAll();
+                          testCase.continueTesting();
+                        }).addErrback(fail);
+                  }).addErrback(fail);
             }, errorCallback);
           }).addErrback(fail);
     }).addErrback(fail);
@@ -220,7 +217,7 @@ function testEncryptToPassphrase() {
   };
   var plaintext = 'some secret message.';
   var errorCallback = mockControl.createFunctionMock('errorCallback');
-  var action = new actions.EncryptSign();
+  var action = new e2e.ext.actions.EncryptSign();
 
   mockControl.$replayAll();
 
@@ -254,7 +251,7 @@ function testSignOnly() {
   };
   var plaintext = 'some secret message.';
   var errorCallback = mockControl.createFunctionMock('errorCallback');
-  var action = new actions.EncryptSign();
+  var action = new e2e.ext.actions.EncryptSign();
 
   mockControl.$replayAll();
 

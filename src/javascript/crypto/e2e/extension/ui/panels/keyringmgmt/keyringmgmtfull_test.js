@@ -20,13 +20,15 @@
  *
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.KeyringMgmtFullTest');
 
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.ui.panels.KeyringMgmtFull');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
 goog.require('goog.array');
-goog.require('goog.dom');
+goog.require('goog.dom.classlist');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');

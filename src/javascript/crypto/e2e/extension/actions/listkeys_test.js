@@ -18,6 +18,7 @@
  * @fileoverview Tests for the LIST_KEYS action.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.actions.ListKeysTest');
 
 goog.require('e2e.ext.actions.ListKeys');
@@ -28,9 +29,9 @@ goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
+goog.require('goog.testing.mockmatchers.ArgumentMatcher');
 goog.setTestOnly();
 
-var actions = e2e.ext.actions;
 var mockControl = null;
 var stubs = new goog.testing.PropertyReplacer();
 var testCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
@@ -125,7 +126,7 @@ function testExecuteEmpty() {
   var callback = mockControl.createFunctionMock('callback');
   callback(goog.testing.mockmatchers.ignoreArgument);
 
-  var action = new actions.ListKeys();
+  var action = new e2e.ext.actions.ListKeys();
 
   mockControl.$replayAll();
   action.execute(pgpContext, {
@@ -145,7 +146,7 @@ function testExecutePublicKeys() {
     return USER_ID in arg;
   }));
 
-  var action = new actions.ListKeys();
+  var action = new e2e.ext.actions.ListKeys();
 
   mockControl.$replayAll();
   testCase.waitForAsync('Waiting for keys to be populated.');
@@ -170,7 +171,7 @@ function testExecutePrivateKeys() {
     return USER_ID in arg;
   }));
 
-  var action = new actions.ListKeys();
+  var action = new e2e.ext.actions.ListKeys();
 
   mockControl.$replayAll();
   testCase.waitForAsync('Waiting for keys to be populated.');

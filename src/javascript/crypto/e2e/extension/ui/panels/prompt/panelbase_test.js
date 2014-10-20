@@ -18,6 +18,7 @@
  * @fileoverview Unit tests for the panel base for the prompt UI.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.prompt.PanelBaseTest');
 
 goog.require('e2e.ext.constants');

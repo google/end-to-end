@@ -18,6 +18,7 @@
  * @fileoverview Tests for the IMPORT_KEY action.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.actions.ImportKeyTest');
 
 goog.require('e2e.ext.actions.GetKeyDescription');
@@ -29,10 +30,10 @@ goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
+goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.require('goog.ui.Component');
 goog.setTestOnly();
 
-var actions = e2e.ext.actions;
 var constants = e2e.ext.constants;
 var mockControl = null;
 var stubs = new goog.testing.PropertyReplacer();
@@ -100,7 +101,7 @@ function testExecute() {
       pgpContext, request, parentUi, keyDescArg, errorCallback);
 
   mockControl.$replayAll();
-  var action = new actions.GetKeyDescription();
+  var action = new e2e.ext.actions.GetKeyDescription();
   action.execute(pgpContext, request, parentUi, callback, errorCallback);
   keyDescArg.arg('');
 

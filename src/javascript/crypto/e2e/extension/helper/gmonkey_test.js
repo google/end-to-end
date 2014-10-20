@@ -18,10 +18,10 @@
  * @fileoverview Tests for the wrapper of the gmonkey API.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.gmonkeyTest');
 
 goog.require('e2e.ext.gmonkey');
-goog.require('goog.array');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
@@ -130,7 +130,7 @@ function testGetActiveDraft() {
 
 function testSetActiveDraft() {
   gmonkey.setActiveDraft(['foo@example.com', 'noemail', '<a@>',
-      'first,"""last <bar@example.com>'], 'secret message');
+    'first,"""last <bar@example.com>'], 'secret message');
 
   asyncTestCase.waitForAsync('Waiting for the call to gmonkey to complete.');
   window.setTimeout(function() {

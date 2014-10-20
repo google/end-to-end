@@ -18,9 +18,11 @@
  * @fileoverview Tests for the generic dialog.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.dialogs.GenericTest');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
+goog.require('goog.events.KeyCodes');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.ui.Component');

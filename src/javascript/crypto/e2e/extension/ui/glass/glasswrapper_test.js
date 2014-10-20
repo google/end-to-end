@@ -18,9 +18,11 @@
  * @fileoverview Tests for the looking glass wrapper.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.GlassWrapperTest');
 
 goog.require('e2e.ext.ui.GlassWrapper');
+goog.require('goog.crypt.base64');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');

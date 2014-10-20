@@ -18,6 +18,7 @@
  * @fileoverview Tests for the context API.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.api.ApiTest');
 
 goog.require('e2e.ext.api.Api');
@@ -30,6 +31,7 @@ goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
+goog.require('goog.testing.mockmatchers.ArgumentMatcher');
 goog.setTestOnly();
 
 var api = null;

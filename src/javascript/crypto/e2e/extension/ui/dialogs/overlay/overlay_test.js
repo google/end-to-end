@@ -18,14 +18,13 @@
  * @fileoverview Tests for the overlay UI
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.dialogs.OverlayTest');
 
 goog.require('e2e.ext.ui.dialogs.Overlay');
-goog.require('goog.testing.Mock');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
-goog.require('goog.testing.mockmatchers');
 goog.setTestOnly();
 
 var dialog = null;

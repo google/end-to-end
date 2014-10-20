@@ -18,10 +18,12 @@
  * @fileoverview Tests for the DECRYPT_VERIFY action.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.actions.DecryptVerifyTest');
 
 goog.require('e2e.ext.actions.DecryptVerify');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.utils');
 goog.require('e2e.openpgp.ContextImpl');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.factory');
@@ -30,16 +32,13 @@ goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
-goog.require('goog.testing.mockmatchers');
+goog.require('goog.testing.mockmatchers.ArgumentMatcher');
 goog.setTestOnly();
 
-var actions = e2e.ext.actions;
 var constants = e2e.ext.constants;
 var mockControl = null;
 var stubs = new goog.testing.PropertyReplacer();
 var testCase = goog.testing.AsyncTestCase.createAndInstall();
-testCase.stepTimeout = 2000;
-goog.testing.TestCase.maxRunTime = 2000;
 
 var PUBLIC_KEY_ASCII =
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
@@ -109,6 +108,7 @@ function setUp() {
   stubs.setPath('chrome.i18n.getMessage', function() {
     return [].join.call(arguments);
   });
+  testCase.stepTimeout = 2000;
 }
 
 
@@ -131,7 +131,7 @@ function testExecute() {
   var callback = mockControl.createFunctionMock('callback');
   callback(plaintext);
 
-  var action = new actions.DecryptVerify();
+  var action = new e2e.ext.actions.DecryptVerify();
   var encryptionKey = e2e.openpgp.block.factory.parseByteArrayMulti(
       e2e.openpgp.asciiArmor.parse(PUBLIC_KEY_ASCII).data)[0];
 

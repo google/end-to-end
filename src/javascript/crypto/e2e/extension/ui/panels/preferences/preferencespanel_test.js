@@ -18,10 +18,12 @@
  * @fileoverview Tests for the PreferencesPanel.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.PreferencesPanelTest');
 
 goog.require('e2e.ext.ui.panels.PreferencesPanel');
 goog.require('e2e.ext.ui.preferences');
+goog.require('goog.array');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');

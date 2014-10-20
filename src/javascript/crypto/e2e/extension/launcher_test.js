@@ -18,6 +18,7 @@
  * @fileoverview Unit tests for the End-To-End launcher.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.LauncherTest');
 
 goog.require('e2e.ext.Launcher');

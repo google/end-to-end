@@ -18,9 +18,9 @@
  * @fileoverview Tests for the action utility methods.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.utils.actionTest');
 
-goog.require('e2e.cipher.Rsa');
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.utils.action');
 goog.require('e2e.openpgp.asciiArmor');
@@ -29,7 +29,7 @@ goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
-goog.require('goog.testing.mockmatchers');
+goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.setTestOnly();
 
 var launcher = null;

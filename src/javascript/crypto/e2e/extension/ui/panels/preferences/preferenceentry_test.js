@@ -18,15 +18,14 @@
  * @fileoverview Tests for the PreferenceEntry.
  */
 
+/** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.PreferenceEntryTest');
 
 /** @suppress {extraRequire} since the dependent soy files don't do this */
 goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.ui.panels.PreferenceEntry');
 goog.require('goog.testing.MockControl');
-goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
-goog.require('goog.testing.events.Event');
 goog.require('goog.testing.jsunit');
 goog.setTestOnly();
 
