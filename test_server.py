@@ -32,9 +32,9 @@ class TestServerRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
   """Request handler for End-To-End test server."""
 
   DIRECTORY_MAP = {
-      "/src/javascript/closure/soyutils_usegoog.js": "lib/closure-templates/javascript/soyutils_usegoog.js",
-      "/src/javascript/closure/": "lib/closure-library/closure/goog/",
-      "/src/third_party/closure/": "lib/closure-library/third_party/closure/",
+      "/javascript/closure/": "lib/closure-library/closure/goog/",
+      "/javascript/crypto/e2e/": "src/javascript/crypto/e2e/",
+      "/third_party/closure/": "lib/closure-library/third_party/closure/",
   }
 
   def get_test_files(self):
