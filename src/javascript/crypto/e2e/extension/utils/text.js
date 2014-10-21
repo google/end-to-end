@@ -22,6 +22,7 @@ goog.provide('e2e.ext.utils.text');
 
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.constants.Actions');
+goog.require('goog.Uri');
 goog.require('goog.array');
 goog.require('goog.format.EmailAddress');
 goog.require('goog.string');
@@ -116,4 +117,27 @@ utils.extractValidEmail = function(recipient) {
   return email;
 };
 
-});  // goog.scope
+
+/**
+ * Checks whether a URI is an HTTPS ymail origin.
+ * @param {!string} uri
+ * @return {boolean}
+ */
+utils.isYmailOrigin = function(uri) {
+  uri = new goog.Uri(uri);
+  return (uri.getScheme() === 'https'
+          && goog.string.endsWith(uri.getDomain(), '.mail.yahoo.com'));
+};
+
+
+/**
+ * Checks whether a URI is an HTTPS Gmail origin.
+ * @param {!string} uri
+ * @return {boolean}
+ */
+utils.isGmailOrigin = function(uri) {
+  uri = new goog.Uri(uri);
+  return (uri.getScheme() === 'https' &&
+          uri.getDomain() === 'mail.google.com');
+};
+}); // goog.scope

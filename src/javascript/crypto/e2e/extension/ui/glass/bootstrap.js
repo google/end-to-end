@@ -19,23 +19,14 @@
  */
 
 goog.require('e2e.ext.ui.Glass');
+goog.require('e2e.ext.utils.text');
 goog.require('goog.crypt.base64');
 
 goog.provide('e2e.ext.ui.glass.bootstrap');
 
-
-/**
- * The list of origins that can use the looking glass.
- * @type {!Array.<string>}
- * @const
- */
-var LOOKING_GLASS_WHITELIST = [
-  'https://mail.google.com'
-];
-
 // Create the looking glass.
 window.addEventListener('message', function(evt) {
-  if (LOOKING_GLASS_WHITELIST.indexOf(evt.origin) == -1) {
+  if (!e2e.ext.utils.text.isGmailOrigin(evt.origin)) {
     return;
   }
 
