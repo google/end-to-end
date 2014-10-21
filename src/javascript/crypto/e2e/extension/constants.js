@@ -83,6 +83,7 @@ e2e.ext.constants.ElementId = {
   CHIP_HOLDER: 'chipHolder',
   PASSPHRASE_ENCRYPTION_LINK: 'passphraseEncryptionLink',
   FROM_HOLDER: 'fromHolder',
+  SUBJECT_HOLDER: 'subjectHolder',
 
   /* Used to display menus in the UI. */
   MENU_CONTAINER: 'menu-container',

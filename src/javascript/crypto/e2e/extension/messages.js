@@ -38,6 +38,7 @@ var messages = e2e.ext.messages;
  *   action: (e2e.ext.constants.Actions|undefined),
  *   request: boolean,
  *   origin: string,
+ *   subject: (string|undefined),
  *   canInject: boolean
  * }}
  */
@@ -52,6 +53,7 @@ messages.BridgeMessageRequest;
  *   response: boolean,
  *   detach: boolean,
  *   origin: string,
+ *   subject: (string|undefined),
  *   recipients: !Array.<string>
  * }}
  */

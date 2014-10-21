@@ -81,17 +81,20 @@ ext.Launcher = function() {
  *     if this is the final update to the selected content.
  * @param {!function(...)} callback The function to invoke once the content has
  *     been updated.
+ * @param {string=} opt_subject The subject of the message if applicable.
  * @expose
  */
 ext.Launcher.prototype.updateSelectedContent =
-    function(content, recipients, origin, expectMoreUpdates, callback) {
+    function(content, recipients, origin, expectMoreUpdates,
+             callback, opt_subject) {
   this.getActiveTab_(goog.bind(function(tabId) {
     chrome.tabs.sendMessage(tabId, {
       value: content,
       response: true,
       detach: !Boolean(expectMoreUpdates),
       origin: origin,
-      recipients: recipients
+      recipients: recipients,
+      subject: opt_subject
     });
     callback();
   }, this));

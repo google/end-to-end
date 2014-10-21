@@ -118,16 +118,17 @@ utils.getSelectedContent = function(callback, errorCallback, opt_scope) {
  *     been updated.
  * @param {!function(Error)} errorCallback The callback to invoke if an error is
  *     encountered.
+ * @param {string=} opt_subject The subject of the message if applicable.
  * @param {T=} opt_scope Optional. The scope in which the function and the
  *     callbacks will be called.
  * @template T
  */
 utils.updateSelectedContent = function(content, recipients, origin,
-    expectMoreUpdates, callback, errorCallback, opt_scope) {
+    expectMoreUpdates, callback, errorCallback, opt_subject, opt_scope) {
   var scope = opt_scope || goog.global;
   utils.getExtensionLauncher(function(launcher) {
     launcher.updateSelectedContent(content, recipients, origin,
-        expectMoreUpdates, goog.bind(callback, scope));
+        expectMoreUpdates, goog.bind(callback, scope), opt_subject);
   }, errorCallback, opt_scope);
 };
 

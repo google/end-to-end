@@ -100,13 +100,14 @@ goog.inherits(promptPanels.EncryptSign, promptPanels.PanelBase);
 promptPanels.EncryptSign.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
 
-  var origin = this.getContent().origin;
+  var content = this.getContent();
+  var origin = content.origin;
   var signInsertLabel = /^https:\/\/mail\.google\.com$/.test(origin) ?
       chrome.i18n.getMessage('promptEncryptSignInsertIntoGmailLabel') :
       chrome.i18n.getMessage('promptEncryptSignInsertLabel');
 
   soy.renderElement(elem, templates.renderEncrypt, {
-    insertCheckboxEnabled: this.getContent().canInject,
+    insertCheckboxEnabled: content.canInject,
     signerCheckboxTitle: chrome.i18n.getMessage('promptSignMessageAs'),
     fromLabel: chrome.i18n.getMessage('promptFromLabel'),
     passphraseEncryptionLinkTitle: chrome.i18n.getMessage(
@@ -116,7 +117,9 @@ promptPanels.EncryptSign.prototype.decorateInternal = function(elem) {
     cancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction'),
     saveDraftButtonTitle: chrome.i18n.getMessage(
         'promptEncryptSignSaveDraftLabel'),
-    insertButtonTitle: signInsertLabel
+    insertButtonTitle: signInsertLabel,
+    subject: content.subject,
+    subjectLabel: chrome.i18n.getMessage('promptSubjectLabel')
   });
 };
 
@@ -387,9 +390,12 @@ promptPanels.EncryptSign.prototype.encryptSign_ = function() {
 promptPanels.EncryptSign.prototype.insertMessageIntoPage_ = function(origin) {
   var textArea = this.getElement().querySelector('textarea');
   var recipients = this.chipHolder_.getSelectedUids();
+  var subjectHolder = goog.dom.getElement(constants.ElementId.SUBJECT_HOLDER);
+  var subject = subjectHolder ? subjectHolder.value : undefined;
   utils.action.updateSelectedContent(
       textArea.value, recipients, origin, false,
-      goog.partial(goog.dispose, this.getParent()), this.errorCallback_);
+      goog.partial(goog.dispose, this.getParent()), this.errorCallback_,
+      subject);
 };
 
 
@@ -483,7 +489,8 @@ promptPanels.EncryptSign.prototype.saveDraft_ = function(origin, evt) {
     var draft = e2e.openpgp.asciiArmor.markAsDraft(encrypted);
     if (evt.type == goog.events.EventType.CLICK) {
       utils.action.updateSelectedContent(
-          draft, [], origin, true, goog.nullFunction, this.errorCallback_);
+          draft, [], origin, true, goog.nullFunction,
+          this.errorCallback_, undefined);
     } else {
       drafts.saveDraft(draft, origin);
     }
