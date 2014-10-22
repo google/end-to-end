@@ -30,6 +30,24 @@ goog.setTestOnly();
 
 var utils = e2e.ext.utils.text;
 
+var emailString = 'test@example.com, "we <ird>>\'>, <a@a.com>, n<ess"' +
+    '<t2@example.com>, "inv\"<alid <invalid@example.com>, fails#e2e.reg' +
+    'exp.vali@dation.com, <not-an-email>, y <yan@y.com >, "user id" <fo' +
+    'o@b.com>';
+
+var emailArray = ['test@example.com',
+  '"we <ird>>\'>, <a@a.com>, n<ess"<t2@example.com>',
+  '"inv\"<alid <invalid@example.com>',
+  'fails#e2e.regexp.vali@dation.com', '<not-an-email>', 'y <yan@y.com >',
+  '"user id" <foo@b.com>'];
+
+var validRecipients = ['test@example.com',
+  '"we <ird>>\'>, <a@a.com>, n<ess" <t2@example.com>',
+  'y <yan@y.com>', 'user id <foo@b.com>'];
+
+var validEmails = ['test@example.com', 't2@example.com', 'yan@y.com',
+                   'foo@b.com'];
+
 
 function testPrettyTextWrap() {
   var inputStr = '123 456 7890 12 3456 7890';
@@ -82,6 +100,22 @@ function testExtractValidEmail() {
       utils.extractValidEmail('"inv\"<alid <invalid@example.com>'));
   assertEquals(null,
       utils.extractValidEmail('fails#e2e.regexp.vali@dation.com'));
+}
+
+
+function testGetValidEmailAddressesFromString() {
+  assertArrayEquals(validEmails,
+      utils.getValidEmailAddressesFromString(emailString));
+}
+
+
+function testGetValidEmailAddressesFromArray() {
+  assertArrayEquals(validEmails,
+                    utils.getValidEmailAddressesFromArray(
+      emailArray, true));
+  assertArrayEquals(validRecipients,
+                    utils.getValidEmailAddressesFromArray(
+      emailArray, false));
 }
 
 

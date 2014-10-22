@@ -26,7 +26,8 @@ goog.provide('e2e.ext.ui.glass.bootstrap');
 
 // Create the looking glass.
 window.addEventListener('message', function(evt) {
-  if (!e2e.ext.utils.text.isGmailOrigin(evt.origin)) {
+  if (!e2e.ext.utils.text.isGmailOrigin(evt.origin) &&
+      !e2e.ext.utils.text.isYmailOrigin(evt.origin)) {
     return;
   }
 

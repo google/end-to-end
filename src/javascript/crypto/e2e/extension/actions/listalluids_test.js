@@ -15,18 +15,16 @@
  */
 
 /**
- * @fileoverview Tests for the context API.
+ * @fileoverview Tests for the LIST_ALL_UIDS action.
  */
 
 /** @suppress {extraProvide} */
-goog.provide('e2e.ext.api.ApiTest');
+goog.provide('e2e.ext.actions.ListAllUidsTest');
 
-goog.require('e2e.ext.Launcher');
-goog.require('e2e.ext.actions.EncryptSign');
-goog.require('e2e.ext.api.Api');
-goog.require('e2e.ext.api.RequestThrottle');
-goog.require('e2e.ext.constants');
+goog.require('e2e.ext.actions.ListAllUids');
 goog.require('e2e.ext.testingstubs');
+goog.require('e2e.openpgp.ContextImpl');
+goog.require('goog.array');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
@@ -34,16 +32,14 @@ goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
 goog.require('goog.testing.mockmatchers.ArgumentMatcher');
-goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.setTestOnly();
 
-var api = null;
-var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
-var constants = e2e.ext.constants;
-var launcher = null;
 var mockControl = null;
-var mockmatchers = goog.testing.mockmatchers;
 var stubs = new goog.testing.PropertyReplacer();
+var testCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
+
+var USER_ID = 'test 4';
+var USER_ID_2 = 'Drew Hintz <adhintz@google.com>';
 
 var PRIVATE_KEY_ASCII =
     '-----BEGIN PGP PRIVATE KEY BLOCK-----\n' +
@@ -82,7 +78,6 @@ var PRIVATE_KEY_ASCII =
     '=wHzz\n' +
     '-----END PGP PRIVATE KEY BLOCK-----';
 
-
 var PUBLIC_KEY_ASCII =
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
     'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
@@ -104,7 +99,6 @@ var PUBLIC_KEY_ASCII =
     '=nHBL\n' +
     '-----END PGP PUBLIC KEY BLOCK-----';
 
-
 var PUBLIC_KEY_ASCII_2 =  // user ID of 'Drew Hintz <adhintz@google.com>'
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
     'Charset: UTF-8\n' +
@@ -124,158 +118,88 @@ var PUBLIC_KEY_ASCII_2 =  // user ID of 'Drew Hintz <adhintz@google.com>'
 
 
 function setUp() {
-  localStorage.clear();
+  window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
-
-  launcher = new e2e.ext.Launcher();
-  launcher.start();
-
-  stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
-    callback({launcher: launcher});
-  });
-
-  api = new e2e.ext.api.Api();
 }
 
 
 function tearDown() {
   stubs.reset();
   mockControl.$tearDown();
-  api = null;
 }
 
 
-function testInstall() {
-  stubs.setPath(
-      'chrome.runtime.onConnect.addListener', mockControl.createFunctionMock());
-  chrome.runtime.onConnect.addListener(api.requestHandler_);
+function testExecuteEmpty() {
+  var pgpContext = new e2e.openpgp.ContextImpl();
+  pgpContext.setKeyRingPassphrase(''); // No passphrase.
+
+  var errorCallback = mockControl.createFunctionMock('errorCallback');
+  errorCallback(goog.testing.mockmatchers.ignoreArgument);
+
+  var callback = function(result) {
+    assertArrayEquals([], result);
+  };
+
+  var action = new e2e.ext.actions.ListAllUids();
 
   mockControl.$replayAll();
-  api.installApi();
-
-  mockControl.$verifyAll();
+  action.execute(pgpContext, {
+    content: 'private'
+  }, null, callback, errorCallback);
 }
 
 
-function testRemove() {
-  stubs.setPath('chrome.runtime.onConnect.removeListener',
-      mockControl.createFunctionMock());
-  chrome.runtime.onConnect.removeListener(api.requestHandler_);
+function testExecutePublicKeys() {
+  var pgpContext = new e2e.openpgp.ContextImpl();
+  pgpContext.setKeyRingPassphrase(''); // No passphrase.
 
-  mockControl.$replayAll();
-  api.removeApi();
-
-  mockControl.$verifyAll();
-}
-
-
-function testExecuteAction() {
-  var plaintext = 'plaintext message';
-  var encrypted = 'encrypted message';
-
-  var encryptCb = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  stubs.setPath('e2e.ext.actions.EncryptSign.prototype.execute',
-      mockControl.createFunctionMock('encryptSign'));
-  e2e.ext.actions.EncryptSign.prototype.execute(
-      goog.testing.mockmatchers.ignoreArgument,
-      new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-        assertEquals(plaintext, arg.content);
-        return true;
-      }),
-      goog.testing.mockmatchers.ignoreArgument,
-      encryptCb,
-      new goog.testing.mockmatchers.ArgumentMatcher(goog.isFunction));
-
-  var callbackMock = mockControl.createFunctionMock();
-  callbackMock(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    return arg.content == encrypted;
+  var errorCallback = mockControl.createFunctionMock('errorCallback');
+  var callback = mockControl.createFunctionMock('callback');
+  callback(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+    return (goog.array.contains(arg, USER_ID) &&
+            goog.array.contains(arg, USER_ID_2));
   }));
 
+  var action = new e2e.ext.actions.ListAllUids();
+
   mockControl.$replayAll();
-
-  api.executeAction_(callbackMock, {
-    content: plaintext,
-    recipients: ['irrelevant'],
-    currentUser: 'irrelevant',
-    action: constants.Actions.ENCRYPT_SIGN
-  });
-
-  encryptCb.arg(encrypted);
-
-  mockControl.$verifyAll();
+  testCase.waitForAsync('Waiting for keys to be populated.');
+  pgpContext.importKey(goog.nullFunction, PUBLIC_KEY_ASCII).
+      addCallback(function() {
+        pgpContext.importKey(goog.nullFunction, PUBLIC_KEY_ASCII_2).
+            addCallback(function() {
+              action.execute(pgpContext, {
+                content: 'public'
+              }, null, callback, errorCallback);
+              mockControl.$verifyAll();
+              testCase.continueTesting();
+            });
+      });
 }
 
 
-function testUnsupportedAction() {
-  var callbackMock = mockControl.createFunctionMock();
-  callbackMock(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    return arg.error == 'errorUnsupportedAction';
+function testExecutePrivateKeys() {
+  var pgpContext = new e2e.openpgp.ContextImpl();
+  pgpContext.setKeyRingPassphrase(''); // No passphrase.
+
+  var errorCallback = mockControl.createFunctionMock('errorCallback');
+  var callback = mockControl.createFunctionMock('callback');
+  callback(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+    return goog.array.contains(arg, USER_ID);
   }));
 
-  mockControl.$replayAll();
-
-  api.executeAction_(callbackMock, {
-    action: constants.Actions.LIST_KEYS
-  });
-
-  mockControl.$verifyAll();
-}
-
-
-function testThrottle() {
-  stubs.set(api, 'requestThrottle_', new e2e.ext.api.RequestThrottle(0));
-
-  var callbackMock = mockControl.createFunctionMock();
-  callbackMock(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    return arg.error == 'throttleErrorMsg';
-  }));
+  var action = new e2e.ext.actions.ListAllUids();
 
   mockControl.$replayAll();
-  api.executeAction_(callbackMock, {
-    action: constants.Actions.DECRYPT_VERIFY
+  testCase.waitForAsync('Waiting for keys to be populated.');
+  pgpContext.importKey(function(uid, callback) {
+    callback('test');
+  }, PRIVATE_KEY_ASCII).addCallback(function() {
+    action.execute(pgpContext, {
+      content: 'private'
+    }, null, callback, errorCallback);
+    mockControl.$verifyAll();
+    testCase.continueTesting();
   });
-  mockControl.$verifyAll();
-}
-
-
-function testLockedKeyring() {
-  stubs.setPath(
-      'window.launcher.hasPassphrase', mockControl.createFunctionMock());
-  window.launcher.hasPassphrase().$returns(false);
-
-  var callbackMock = mockControl.createFunctionMock();
-  callbackMock(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    assertEquals('glassKeyringLockedError', arg.error);
-    assertFalse(goog.isDef(arg.completedAction));
-    assertFalse(goog.isDef(arg.content));
-    return true;
-  }));
-
-  mockControl.$replayAll();
-  api.executeAction_(callbackMock, {
-    action: constants.Actions.DECRYPT_VERIFY
-  });
-  mockControl.$verifyAll();
-}
-
-
-function testUnlockedKeyring() {
-  stubs.setPath(
-      'window.launcher.hasPassphrase', mockControl.createFunctionMock());
-  window.launcher.hasPassphrase().$returns(true);
-
-  var callbackMock = mockControl.createFunctionMock();
-  callbackMock(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    assertTrue(arg.content);
-    assertEquals(constants.Actions.GET_KEYRING_UNLOCKED, arg.completedAction);
-    assertFalse(goog.isDef(arg.error));
-    return true;
-  }));
-
-  mockControl.$replayAll();
-  api.executeAction_(callbackMock, {
-    action: constants.Actions.GET_KEYRING_UNLOCKED
-  });
-  mockControl.$verifyAll();
 }

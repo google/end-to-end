@@ -35,10 +35,11 @@ var ui = e2e.ext.ui;
 /**
  * Constructor for the looking glass wrapper.
  * @param {Element} targetElem The element that will host the looking glass.
+ * @param {string=} opt_text Optional text to be decrypted in the glass.
  * @constructor
  * @extends {goog.Disposable}
  */
-ui.GlassWrapper = function(targetElem) {
+ui.GlassWrapper = function(targetElem, opt_text) {
   goog.base(this);
 
   /**
@@ -47,7 +48,15 @@ ui.GlassWrapper = function(targetElem) {
    * @private
    */
   this.targetElem_ = targetElem;
-  this.targetElem_.setAttribute('original_content', this.targetElem_.innerText);
+  this.targetElem_.setAttribute('original_content', opt_text ? opt_text :
+                                this.targetElem_.innerText);
+
+  /**
+   * The original text associated with the glass.
+   * @type {(string|undefined)}
+   * @private
+   */
+  this.originalText_ = opt_text;
 
   /**
    * The original children of the target element.
@@ -80,7 +89,8 @@ ui.GlassWrapper.prototype.installGlass = function() {
   goog.style.setSize(glassFrame, goog.style.getSize(this.targetElem_));
   glassFrame.style.border = 0;
 
-  var pgpMessage = this.targetElem_.innerText;
+  var pgpMessage = this.originalText_ ? this.originalText_ :
+      this.targetElem_.innerText;
   this.targetElem_.textContent = '';
   // TODO(radi): Render in a shadow DOM.
   this.targetElem_.appendChild(glassFrame);

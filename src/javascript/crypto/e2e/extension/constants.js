@@ -24,6 +24,8 @@ goog.provide('e2e.ext.constants.BackupCode');
 goog.provide('e2e.ext.constants.CssClass');
 goog.provide('e2e.ext.constants.ElementId');
 goog.provide('e2e.ext.constants.StorageKey');
+goog.provide('e2e.ext.constants.e2ebind.requestActions');
+goog.provide('e2e.ext.constants.e2ebind.responseActions');
 
 
 /**
@@ -46,6 +48,8 @@ e2e.ext.constants.Actions = {
   RESTORE_KEYRING_DATA: 'restore_keyring_data',
   IMPORT_KEY: 'import_key',
   LIST_KEYS: 'list_keys',
+  LIST_ALL_UIDS: 'list_all_uids',
+  GET_KEYRING_UNLOCKED: 'get_keyring_unlocked',
 
   // Intended no-op. Used for closing the prompt UI when other visual elements
   // (e.g. looking glass) would display data.
@@ -99,7 +103,10 @@ e2e.ext.constants.ElementId = {
   WELCOME_FOOTER: 'welcome-footer',
 
   // Chrome notifications
-  NOTIFICATION_SUCCESS: 'e2e-success'
+  NOTIFICATION_SUCCESS: 'e2e-success',
+
+  // e2ebind page elements
+  E2EBIND_ICON: 'endtoend'
 };
 
 
@@ -224,3 +231,29 @@ e2e.ext.constants.BackupCode = {
  * @const
  */
 e2e.ext.constants.BACKUP_CODE_LENGTH = 24;
+
+
+/**
+ * e2ebind API response actions.
+ * @const
+ */
+e2e.ext.constants.e2ebind.responseActions = {
+  HAS_DRAFT: 'has_draft',
+  GET_DRAFT: 'get_draft',
+  SET_DRAFT: 'set_draft',
+  GET_CURRENT_MESSAGE: 'get_current_message'
+};
+
+
+/**
+ * e2ebind API request actions.
+ * @const
+ */
+e2e.ext.constants.e2ebind.requestActions = {
+  START: 'start',
+  INSTALL_READ_GLASS: 'install_read_glass',
+  INSTALL_COMPOSE_GLASS: 'install_compose_glass',
+  VALIDATE_SIGNER: 'validate_signer',
+  VALIDATE_RECIPIENTS: 'validate_recipients',
+  SET_SIGNER: 'set_signer'
+};
