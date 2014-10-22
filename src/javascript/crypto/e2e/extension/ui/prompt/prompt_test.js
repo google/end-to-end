@@ -29,6 +29,7 @@ goog.require('e2e.ext.constants');
 goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.Prompt');
 goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.ui.preferences');
@@ -66,26 +67,11 @@ var utils = e2e.ext.utils;
 function setUp() {
   window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
-
-  stubs.setPath('chrome.browserAction.setBadgeText', goog.nullFunction);
-  stubs.setPath('chrome.browserAction.setTitle', goog.nullFunction);
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
-  stubs.setPath('chrome.extension.getURL', goog.nullFunction);
-  stubs.setPath('chrome.notifications.create', goog.nullFunction);
-  stubs.setPath('chrome.runtime.onConnect.addListener', goog.nullFunction);
-  stubs.setPath('chrome.runtime.onConnect.removeListener', goog.nullFunction);
-  stubs.setPath('chrome.tabs.query', goog.nullFunction);
-  stubs.setPath('chrome.tabs.onUpdated.addListener', goog.nullFunction);
-  stubs.setPath('chrome.tabs.onRemoved.addListener', goog.nullFunction);
-  stubs.setPath('window.confirm', function(msg) { return true;});
+  e2e.ext.testingstubs.initStubs(stubs);
 
   stubs.replace(goog.Timer.prototype, 'start', goog.nullFunction);
-  stubs.replace(window, 'open', goog.nullFunction);
 
   prompt = new e2e.ext.ui.Prompt();
-  //localStorage.clear();
   prompt.pgpLauncher_ = new e2e.ext.Launcher();
   prompt.pgpLauncher_.start();
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {

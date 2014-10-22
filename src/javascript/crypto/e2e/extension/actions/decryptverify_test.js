@@ -23,6 +23,7 @@ goog.provide('e2e.ext.actions.DecryptVerifyTest');
 
 goog.require('e2e.ext.actions.DecryptVerify');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.utils');
 goog.require('e2e.openpgp.ContextImpl');
 goog.require('e2e.openpgp.asciiArmor');
@@ -105,9 +106,7 @@ function setUp() {
   window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
 
-  stubs.setPath('chrome.i18n.getMessage', function() {
-    return [].join.call(arguments);
-  });
+  e2e.ext.testingstubs.initStubs(stubs);
   testCase.stepTimeout = 2000;
 }
 

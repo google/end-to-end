@@ -22,6 +22,7 @@
 goog.provide('e2e.ext.utilsTest');
 
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.utils');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
@@ -41,10 +42,7 @@ var utils = e2e.ext.utils;
 
 function setUp() {
   mockControl = new goog.testing.MockControl();
-
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
+  e2e.ext.testingstubs.initStubs(stubs);
 }
 
 

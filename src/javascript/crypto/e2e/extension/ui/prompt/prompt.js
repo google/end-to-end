@@ -127,7 +127,7 @@ ui.Prompt.prototype.decorateInternal = function(elem) {
   });
 
   var styles = elem.querySelector('link');
-  styles.href = chrome.extension.getURL('prompt_styles.css');
+  styles.href = chrome.runtime.getURL('prompt_styles.css');
 
   utils.action.getExtensionLauncher(function(launcher) {
     this.pgpLauncher_ = launcher || this.pgpLauncher_;

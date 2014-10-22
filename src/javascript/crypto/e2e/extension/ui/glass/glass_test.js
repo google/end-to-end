@@ -22,6 +22,7 @@
 goog.provide('e2e.ext.ui.GlassTest');
 
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.Glass');
 goog.require('e2e.random');
 goog.require('goog.style');
@@ -43,14 +44,9 @@ function setUp() {
   stubs = new goog.testing.PropertyReplacer();
   mockControl = new goog.testing.MockControl();
 
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
+  e2e.ext.testingstubs.initStubs(stubs);
   stubs.setPath('chrome.runtime.getURL', function() {
     return 'chrome-extension://abcd';
-  });
-  stubs.set(window, 'setTimeout', function(callback) {
-    callback();
   });
 }
 

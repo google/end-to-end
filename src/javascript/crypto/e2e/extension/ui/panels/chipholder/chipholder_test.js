@@ -22,6 +22,7 @@
 goog.provide('e2e.ext.ui.panels.ChipHolderTest');
 
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.panels.Chip');
 goog.require('e2e.ext.ui.panels.ChipHolder');
 goog.require('goog.dom.classlist');
@@ -38,9 +39,7 @@ var stubs = new goog.testing.PropertyReplacer();
 
 
 function setUp() {
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
+  e2e.ext.testingstubs.initStubs(stubs);
 
   chipHolder = new e2e.ext.ui.panels.ChipHolder(['1'], ['1', '2', '3']);
   chipHolder.decorate(document.body);

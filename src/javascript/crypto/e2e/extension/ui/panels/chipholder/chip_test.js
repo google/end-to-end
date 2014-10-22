@@ -21,6 +21,7 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.ChipTest');
 
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.panels.Chip');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
@@ -32,9 +33,7 @@ var stubs = new goog.testing.PropertyReplacer();
 
 
 function setUp() {
-  stubs.setPath('chrome.i18n.getMessage', function(value) {
-    return value;
-  });
+  e2e.ext.testingstubs.initStubs(stubs);
 }
 
 

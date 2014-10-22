@@ -22,6 +22,7 @@
 goog.provide('e2e.ext.ui.panels.GenerateKeyTest');
 
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.panels.GenerateKey');
 goog.require('goog.array');
 goog.require('goog.dom');
@@ -42,9 +43,7 @@ function setUp() {
   document.body.textContent = '';
 
   mockControl = new goog.testing.MockControl();
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
+  e2e.ext.testingstubs.initStubs(stubs);
 }
 
 

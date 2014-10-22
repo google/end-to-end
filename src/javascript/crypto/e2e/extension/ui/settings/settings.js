@@ -129,7 +129,7 @@ ui.Settings.prototype.renderTemplate_ = function(pgpKeys) {
   });
 
   var styles = elem.querySelector('link');
-  styles.href = chrome.extension.getURL('settings_styles.css');
+  styles.href = chrome.runtime.getURL('settings_styles.css');
 
   this.addChild(new panels.PreferencesPanel(), true);
 

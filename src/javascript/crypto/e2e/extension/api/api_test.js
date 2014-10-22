@@ -24,6 +24,7 @@ goog.provide('e2e.ext.api.ApiTest');
 goog.require('e2e.ext.api.Api');
 goog.require('e2e.ext.api.RequestThrottle');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
@@ -122,12 +123,7 @@ var PUBLIC_KEY_ASCII_2 =  // user ID of 'Drew Hintz <adhintz@google.com>'
 function setUp() {
   localStorage.clear();
   mockControl = new goog.testing.MockControl();
-
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
-  stubs.setPath('chrome.runtime.onConnect.addListener', function() {});
-  stubs.setPath('chrome.runtime.onConnect.removeListener', function() {});
+  e2e.ext.testingstubs.initStubs(stubs);
 
   api = new e2e.ext.api.Api(new e2e.openpgp.ContextImpl(true));
   api.pgpCtx_.setKeyRingPassphrase('irrelevant');

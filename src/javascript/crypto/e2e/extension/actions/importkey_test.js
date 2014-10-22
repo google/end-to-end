@@ -23,6 +23,7 @@ goog.provide('e2e.ext.actions.ImportKeyTest');
 
 goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
@@ -63,10 +64,7 @@ var PUBLIC_KEY_ASCII =
 
 function setUp() {
   mockControl = new goog.testing.MockControl();
-
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
+  e2e.ext.testingstubs.initStubs(stubs);
 
   var dialogContainer = document.createElement('div');
   dialogContainer.id = constants.ElementId.CALLBACK_DIALOG;

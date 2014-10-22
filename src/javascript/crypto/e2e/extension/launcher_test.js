@@ -23,6 +23,7 @@ goog.provide('e2e.ext.LauncherTest');
 
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.preferences');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
@@ -40,23 +41,10 @@ var stubs = new goog.testing.PropertyReplacer();
 
 
 function setUp() {
+  window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
+  e2e.ext.testingstubs.initStubs(stubs);
 
-  stubs.setPath('chrome.browserAction.setBadgeText', function() {});
-  stubs.setPath('chrome.browserAction.setTitle', function() {});
-  stubs.setPath('chrome.i18n.getMessage', function() {});
-  stubs.setPath('chrome.notifications.clear', function() {});
-  stubs.setPath('chrome.notifications.create', function() {});
-  stubs.setPath('chrome.runtime.onConnect.addListener', function() {});
-  stubs.setPath('chrome.runtime.onConnect.removeListener', function() {});
-  stubs.setPath('chrome.tabs.onUpdated.addListener', function() {});
-  stubs.setPath('chrome.tabs.onRemoved.addListener', function() {});
-  stubs.setPath('chrome.tabs.executeScript', function() {});
-  stubs.setPath('chrome.tabs.query', function(req, callback) {
-    callback([{id: 1}]);
-  });
-  stubs.setPath('chrome.tabs.sendMessage', function() {});
-  localStorage.clear();
   preferences.setWelcomePageEnabled(false);
   launcher = new e2e.ext.Launcher();
   launcher.start();

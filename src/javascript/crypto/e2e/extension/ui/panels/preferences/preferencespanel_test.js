@@ -21,6 +21,7 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.PreferencesPanelTest');
 
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.panels.PreferencesPanel');
 goog.require('e2e.ext.ui.preferences');
 goog.require('goog.array');
@@ -37,9 +38,7 @@ var stubs = null;
 function setUp() {
   window.localStorage.clear();
   stubs = new goog.testing.PropertyReplacer();
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
+  e2e.ext.testingstubs.initStubs(stubs);
 
   panel = new e2e.ext.ui.panels.PreferencesPanel();
 }

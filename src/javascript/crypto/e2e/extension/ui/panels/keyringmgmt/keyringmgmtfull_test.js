@@ -25,6 +25,7 @@ goog.provide('e2e.ext.ui.panels.KeyringMgmtFullTest');
 
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.constants.CssClass');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.panels.KeyringMgmtFull');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
 goog.require('goog.array');
@@ -45,11 +46,7 @@ var testCase = goog.testing.AsyncTestCase.createAndInstall();
 
 function setUp() {
   mockControl = new goog.testing.MockControl();
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
-
-  stubs.setPath('chrome.runtime.getBackgroundPage', goog.nullFunction);
+  e2e.ext.testingstubs.initStubs(stubs);
 
   panel = new e2e.ext.ui.panels.KeyringMgmtFull(
       {}, goog.abstractMethod, goog.abstractMethod, goog.abstractMethod,

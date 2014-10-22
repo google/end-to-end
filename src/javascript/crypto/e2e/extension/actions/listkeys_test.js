@@ -22,6 +22,7 @@
 goog.provide('e2e.ext.actions.ListKeysTest');
 
 goog.require('e2e.ext.actions.ListKeys');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
@@ -100,10 +101,7 @@ var PUBLIC_KEY_ASCII =
 function setUp() {
   window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
-
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
+  e2e.ext.testingstubs.initStubs(stubs);
 }
 
 
