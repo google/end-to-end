@@ -374,7 +374,7 @@ ext.Helper.prototype.enableLookingGlass_ = function() {
  * @private
  */
 ext.Helper.prototype.isGmail_ = function() {
-  return this.getOrigin_() == 'https://mail.google.com';
+  return utils.text.isGmailOrigin(this.getOrigin_());
 };
 
 

@@ -23,6 +23,7 @@ goog.provide('e2e.ext.utils.textTest');
 
 goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.utils.text');
+goog.require('goog.array');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.setTestOnly();
@@ -81,4 +82,33 @@ function testExtractValidEmail() {
       utils.extractValidEmail('"inv\"<alid <invalid@example.com>'));
   assertEquals(null,
       utils.extractValidEmail('fails#e2e.regexp.vali@dation.com'));
+}
+
+
+function testIsGmailOrigin() {
+  var gmailOrigins = ['https://mail.google.com/foo', 'https://mail.google.com',
+    'https://mail.google.com:443/foo#bar'];
+  var nonGmailOrigins = ['http://mail.google.com', 'https://mail.yahoo.com',
+    'https://mail.google.com.evil.com', 'https://foo.mail.google.com'];
+  goog.array.forEach(gmailOrigins, function(uri) {
+    assertTrue(utils.isGmailOrigin(uri));
+  });
+  goog.array.forEach(nonGmailOrigins, function(uri) {
+    assertFalse(utils.isGmailOrigin(uri));
+  });
+}
+
+
+function testIsYmailOrigin() {
+  var ymailOrigins = ['https://example.mail.yahoo.com/foo',
+    'https://us-mg5.mail.yahoo.com', 'https://www.us-mg5.mail.yahoo.com/foo',
+    'https://us-mg999.mail.yahoo.com:443/foo#bar'];
+  var nonYmailOrigins = ['http://mail.google.com', 'http://www.mail.yahoo.com',
+    'https://www.mail.yahoo.com.evil.com', 'https://mail.yahoo.com'];
+  goog.array.forEach(ymailOrigins, function(uri) {
+    assertTrue(utils.isYmailOrigin(uri));
+  });
+  goog.array.forEach(nonYmailOrigins, function(uri) {
+    assertFalse(utils.isYmailOrigin(uri));
+  });
 }
