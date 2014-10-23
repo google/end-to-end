@@ -1,0 +1,33 @@
+--language_in=ECMASCRIPT5
+--jscomp_error=accessControls
+--jscomp_error=ambiguousFunctionDecl
+--jscomp_error=checkDebuggerStatement
+--jscomp_error=checkEventfulObjectDisposal
+--jscomp_error=checkRegExp
+--jscomp_error=checkTypes
+--jscomp_error=checkVars
+--jscomp_error=const
+--jscomp_error=constantProperty
+--jscomp_error=deprecated
+--jscomp_error=duplicate
+--jscomp_error=duplicateMessage
+--jscomp_error=es5Strict
+--jscomp_error=es3
+--jscomp_error=externsValidation
+--jscomp_error=fileoverviewTags
+--jscomp_error=globalThis
+--jscomp_error=internetExplorerChecks
+--jscomp_error=invalidCasts
+--jscomp_error=missingProperties
+--jscomp_error=nonStandardJsDocs
+--jscomp_error=strictModuleDepCheck
+--jscomp_error=undefinedNames
+--jscomp_error=undefinedVars
+--jscomp_error=unknownDefines
+--jscomp_error=uselessCode
+--jscomp_error=visibility
+--externs=lib/chrome_extensions.js
+--only_closure_dependencies
+--manage_closure_dependencies
+--js lib/closure-library/closure/goog/deps.js
+--js build/deps.js

@@ -18,7 +18,8 @@
 #  * @author koto@google.com (Krzysztof Kotowicz)
 #  */
 PYTHON_CMD="python"
-JSCOMPILE_CMD="$PYTHON_CMD lib/closure-library/closure/bin/build/closurebuilder.py -c lib/closure-compiler/compiler.jar"
+JSCOMPILE_CMD="java -jar lib/closure-compiler/compiler.jar --flagfile=compiler.flags"
+
 BUILD_DIR="build"
 BUILD_TPL_DIR="$BUILD_DIR/templates"
 cd ${0%/*}
@@ -33,13 +34,13 @@ e2e_assert_dependencies() {
     exit 1
   fi
   # Check if required files are present.
-  files=( lib/closure-library/closure/bin/build/closurebuilder.py \
-    lib/closure-library \
+  files=(lib/closure-library \
     lib/closure-templates-compiler \
     lib/typedarray \
     lib/zlib.js \
     lib/closure-stylesheets-20111230.jar \
     lib/closure-compiler/compiler.jar \
+    lib/chrome_extensions.js \
   )
   for var in "${files[@]}"
   do
@@ -66,61 +67,71 @@ e2e_build_templates() {
 e2e_assert_templates() {
   if [ ! -d $BUILD_TPL_DIR ]; then
     e2e_build_templates
+  else
+    echo "Using cached templates - ./do.sh clean if you with to rebuild them."
+  fi
+}
+
+e2e_assert_jsdeps() {
+  if [ ! -f "$BUILD_DIR/deps.js" ]; then
+    e2e_generate_jsdeps
   fi
 }
 
 e2e_build_library() {
   e2e_assert_dependencies
   set -e
-  e2e_assert_templates
+  e2e_assert_jsdeps
 
   BUILD_EXT_DIR="$BUILD_DIR/library"
   echo "Building End-To-End library into $BUILD_EXT_DIR ..."
+  rm -rf "$BUILD_EXT_DIR"
   mkdir -p "$BUILD_EXT_DIR"
-  SRC_DIRS=( src lib/closure-library lib/closure-templates-compiler $BUILD_TPL_DIR \
-    lib/zlib.js/src lib/typedarray )
-  # See https://developers.google.com/closure/library/docs/closurebuilder
+  SRC_DIRS=( src lib/closure-library lib/zlib.js/src lib/typedarray )
   jscompile_e2e="$JSCOMPILE_CMD"
   for var in "${SRC_DIRS[@]}"
   do
-    jscompile_e2e+=" --root $var"
+    jscompile_e2e+=" --js='$var/**.js' --js='!$var/**_test.js'"
   done
-  $jscompile_e2e -o compiled -n "e2e.openpgp.ContextImpl" > "$BUILD_EXT_DIR/end-to-end.compiled.js"
-  $jscompile_e2e -o script -n "e2e.openpgp.ContextImpl"  -f --debug \
-      -f --formatting=PRETTY_PRINT > "$BUILD_EXT_DIR/end-to-end.debug.js"
+  jscompile_e2e+=" --js='!src/javascript/crypto/e2e/extension/*.js'"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.openpgp.ContextImpl" --js_output_file "$BUILD_EXT_DIR/end-to-end.compiled.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.openpgp.ContextImpl" --debug --formatting=PRETTY_PRINT --js_output_file "$BUILD_EXT_DIR/end-to-end.debug.js"
+  echo ""
   echo "Done."
 }
 
 e2e_build_extension() {
   e2e_assert_dependencies
   set -e
+  e2e_assert_jsdeps
   e2e_assert_templates
+
   BUILD_EXT_DIR="$BUILD_DIR/extension"
-  mkdir -p "$BUILD_EXT_DIR"
   echo "Building End-To-End extension to $BUILD_EXT_DIR"
+  rm -rf "$BUILD_EXT_DIR"
+  mkdir -p "$BUILD_EXT_DIR"
   SRC_EXT_DIR="src/javascript/crypto/e2e/extension"
   SRC_DIRS=( src lib/closure-library lib/closure-templates-compiler $BUILD_TPL_DIR \
     lib/zlib.js/src lib/typedarray )
 
-  # See https://developers.google.com/closure/library/docs/closurebuilder
   jscompile_e2e="$JSCOMPILE_CMD"
   for var in "${SRC_DIRS[@]}"
   do
-    jscompile_e2e+=" --root $var"
+    jscompile_e2e+=" --js='$var/**.js' --js='!$var/**_test.js'"
   done
   csscompile_e2e="java -jar lib/closure-stylesheets-20111230.jar src/javascript/crypto/e2e/extension/ui/styles/base.css"
   # compile javascript files
   echo "Compiling JS files..."
-  if [ "$1" ]
-  then
-    jscompile_e2e+=" -f --debug -f --formatting=PRETTY_PRINT"
+  if [ "$1" == "debug" ]; then
+    jscompile_e2e+=" --debug --formatting=PRETTY_PRINT"
   fi
-  $jscompile_e2e -o compiled -i "$SRC_EXT_DIR/bootstrap.js" > "$BUILD_EXT_DIR/launcher_binary.js"
-  $jscompile_e2e -o compiled -i "$SRC_EXT_DIR/helper/helper.js" > "$BUILD_EXT_DIR/helper_binary.js"
-  $jscompile_e2e -o compiled -i "$SRC_EXT_DIR/ui/glass/bootstrap.js" > "$BUILD_EXT_DIR/glass_binary.js"
-  $jscompile_e2e -o compiled -i "$SRC_EXT_DIR/ui/prompt/prompt.js" > "$BUILD_EXT_DIR/prompt_binary.js"
-  $jscompile_e2e -o compiled -i "$SRC_EXT_DIR/ui/settings/settings.js" > "$BUILD_EXT_DIR/settings_binary.js"
-  $jscompile_e2e -o compiled -i "$SRC_EXT_DIR/ui/welcome/welcome.js" > "$BUILD_EXT_DIR/welcome_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.bootstrap" --js_output_file "$BUILD_EXT_DIR/launcher_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.Helper" --js_output_file "$BUILD_EXT_DIR/helper_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.glass.bootstrap" --js_output_file "$BUILD_EXT_DIR/glass_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.Prompt" --js_output_file "$BUILD_EXT_DIR/prompt_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.Settings" --js_output_file "$BUILD_EXT_DIR/settings_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.Welcome" --js_output_file "$BUILD_EXT_DIR/welcome_binary.js"
+  echo ""
   # compile css files
   echo "Compiling CSS files..."
   $csscompile_e2e "$SRC_EXT_DIR/ui/glass/glass.css" > "$BUILD_EXT_DIR/glass_styles.css"
@@ -149,14 +160,25 @@ e2e_install_deps() {
   echo "Done."
 }
 
+e2e_generate_jsdeps() {
+  e2e_assert_templates
+  $PYTHON_CMD lib/closure-library/closure/bin/build/depswriter.py \
+    --root_with_prefix="build/templates/ build/templates/" \
+    --root_with_prefix="src/javascript/crypto/e2e/ src/javascript/crypto/e2e/" \
+    --root_with_prefix="lib/closure-templates-compiler/ lib/closure-templates-compiler/" \
+    --root_with_prefix="lib/zlib.js/ lib/zlib.js/" \
+    > "$BUILD_DIR/deps.js"
+
+}
+
 e2e_testserver() {
-  e2e_build_templates
+  e2e_assert_templates
   echo "Generating build/test_js_deps-runfiles.js file..."
   mkdir -p "$BUILD_DIR"
   $PYTHON_CMD lib/closure-library/closure/bin/build/depswriter.py \
     --root_with_prefix="build/templates/ ../../../build/templates/" \
     --root_with_prefix="src/javascript/crypto/e2e/ ../crypto/e2e/" \
-    --root_with_prefix="lib/closure-templates-compiler/ ../../../../lib/closure-templates-compiler" \
+    --root_with_prefix="lib/closure-templates-compiler/ ../../../../lib/closure-templates-compiler/" \
     --root_with_prefix="lib/zlib.js/ ../../../lib/zlib.js/" \
     > "$BUILD_DIR/test_js_deps-runfiles.js"
 
@@ -215,6 +237,9 @@ case "$CMD" in
     ;;
   lint)
     e2e_lint $*;
+    ;;
+  deps)
+    e2e_generate_deps;
     ;;
   *)
     echo "Usage: $0 {build_extension|build_extension_debug|build_library|build_templates|clean|check_deps|install_deps|testserver|lint}"

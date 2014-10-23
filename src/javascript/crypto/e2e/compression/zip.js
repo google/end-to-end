@@ -46,7 +46,7 @@ goog.inherits(e2e.compression.Zip,
 
 /** @inheritDoc */
 e2e.compression.Zip.prototype.decompress = function(compressedData) {
-  var data = (new Zlib.RawInflate(compressedData)).decompress();
+  var data = (new Zlib.RawInflate(compressedData, null)).decompress();
   data = goog.array.clone(data);
   return e2e.async.Result.toResult(data);
 };

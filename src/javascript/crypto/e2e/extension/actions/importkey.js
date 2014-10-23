@@ -20,6 +20,7 @@
 
 goog.provide('e2e.ext.actions.ImportKey');
 
+goog.require('e2e.ext.actions.Action');
 goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.utils.Error');
@@ -36,7 +37,7 @@ var utils = e2e.ext.utils;
 /**
  * Constructor for the action.
  * @constructor
- * @implements {actions.Action.<string, !Array.<string>>}
+ * @implements {e2e.ext.actions.Action.<string, !Array.<string>>}
  */
 actions.ImportKey = function() {};
 

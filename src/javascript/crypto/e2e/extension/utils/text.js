@@ -124,9 +124,9 @@ utils.extractValidEmail = function(recipient) {
  * @return {boolean}
  */
 utils.isYmailOrigin = function(uri) {
-  uri = new goog.Uri(uri);
-  return (uri.getScheme() === 'https' &&
-      goog.string.endsWith(uri.getDomain(), '.mail.yahoo.com'));
+  var googUri = new goog.Uri(uri);
+  return (googUri.getScheme() === 'https' &&
+      goog.string.endsWith(googUri.getDomain(), '.mail.yahoo.com'));
 };
 
 
@@ -136,8 +136,8 @@ utils.isYmailOrigin = function(uri) {
  * @return {boolean}
  */
 utils.isGmailOrigin = function(uri) {
-  uri = new goog.Uri(uri);
-  return (uri.getScheme() === 'https' &&
-          uri.getDomain() === 'mail.google.com');
+  var googUri = new goog.Uri(uri);
+  return (googUri.getScheme() === 'https' &&
+          googUri.getDomain() === 'mail.google.com');
 };
 });  // goog.scope

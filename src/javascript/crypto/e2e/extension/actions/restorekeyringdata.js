@@ -21,6 +21,7 @@
 goog.provide('e2e.ext.actions.RestoreKeyringData');
 
 goog.require('e2e.error.InvalidArgumentsError');
+goog.require('e2e.ext.actions.Action');
 goog.require('e2e.openpgp.KeyRing');
 goog.require('goog.crypt.base64');
 
@@ -32,7 +33,7 @@ var actions = e2e.ext.actions;
 /**
  * Constructor for the action.
  * @constructor
- * @implements {actions.Action.<{data: string, email: string}, string>}
+ * @implements {e2e.ext.actions.Action.<{data: string, email: string}, string>}
  */
 actions.RestoreKeyringData = function() {};
 
