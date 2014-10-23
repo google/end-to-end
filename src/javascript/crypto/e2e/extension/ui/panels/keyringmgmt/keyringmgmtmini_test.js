@@ -23,6 +23,7 @@ goog.provide('e2e.ext.ui.panels.KeyringMgmtMiniTest');
 
 goog.require('e2e.async.Result');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
@@ -43,10 +44,7 @@ var keys = {};
 
 function setUp() {
   mockControl = new goog.testing.MockControl();
-
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
+  e2e.ext.testingstubs.initStubs(stubs);
 
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
     callback({

@@ -22,6 +22,7 @@
 goog.provide('e2e.ext.ui.panels.prompt.PanelBaseTest');
 
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.panels.prompt.PanelBase');
 goog.require('e2e.ext.ui.templates.panels.prompt');
@@ -50,10 +51,7 @@ var templates = e2e.ext.ui.templates.panels.prompt;
 
 function setUp() {
   mockControl = new goog.testing.MockControl();
-
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
+  e2e.ext.testingstubs.initStubs(stubs);
 
   if (!document.getElementById(constants.ElementId.CALLBACK_DIALOG)) {
     var callbackDialog = document.createElement('div');

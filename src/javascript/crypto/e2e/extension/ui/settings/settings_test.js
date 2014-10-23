@@ -24,6 +24,7 @@ goog.provide('e2e.ext.ui.SettingsTest');
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.Settings');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.panels.KeyringMgmtFull');
@@ -74,23 +75,11 @@ var PUBLIC_KEY_BINARY =
 
 function setUp() {
   mockControl = new goog.testing.MockControl();
+  e2e.ext.testingstubs.initStubs(stubs);
 
-  stubs.setPath('chrome.browserAction.setBadgeText', function() {});
-  stubs.setPath('chrome.browserAction.setTitle', function() {});
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
-  stubs.setPath('chrome.tabs.onUpdated.addListener', function() {});
-  stubs.setPath('chrome.tabs.onRemoved.addListener', function() {});
-  stubs.setPath('chrome.extension.getURL', function() {});
-  stubs.setPath('chrome.notifications.clear', function() {});
-  stubs.setPath('chrome.notifications.create', function() {});
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
     callback({launcher: launcher});
   });
-  stubs.setPath('chrome.runtime.onConnect.addListener', function() {});
-  stubs.setPath('chrome.runtime.onConnect.removeListener', function() {});
-  stubs.replace(window, 'confirm', function(msg) { return true;});
 
   page = new e2e.ext.ui.Settings();
   localStorage.clear();

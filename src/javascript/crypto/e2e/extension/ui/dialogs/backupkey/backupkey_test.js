@@ -22,6 +22,7 @@
 goog.provide('e2e.ext.ui.dialogs.BackupKeyTest');
 
 goog.require('e2e.async.Result');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.dialogs.BackupKey');
 goog.require('goog.crypt.base64');
 goog.require('goog.testing.AsyncTestCase');
@@ -38,10 +39,7 @@ var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall();
 
 function setUp() {
   mockControl = new goog.testing.MockControl();
-
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
+  e2e.ext.testingstubs.initStubs(stubs);
 
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
     callback({

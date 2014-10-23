@@ -131,7 +131,7 @@ ui.Welcome.prototype.decorateInternal = function(elem) {
   });
 
   var styles = elem.querySelector('link');
-  styles.href = chrome.extension.getURL('welcome_styles.css');
+  styles.href = chrome.runtime.getURL('welcome_styles.css');
 
   this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
     action: constants.Actions.LIST_KEYS,

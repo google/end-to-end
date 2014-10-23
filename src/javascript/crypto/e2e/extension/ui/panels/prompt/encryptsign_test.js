@@ -26,6 +26,7 @@ goog.require('e2e.ext.actions.DecryptVerify');
 goog.require('e2e.ext.actions.EncryptSign');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.ui.panels.prompt.EncryptSign');
@@ -62,19 +63,7 @@ var utils = e2e.ext.utils;
 function setUp() {
   window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
-
-  stubs.setPath('chrome.browserAction.setBadgeText', goog.nullFunction);
-  stubs.setPath('chrome.browserAction.setTitle', goog.nullFunction);
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
-  stubs.setPath('chrome.extension.getURL', goog.nullFunction);
-  stubs.setPath('chrome.notifications.create', goog.nullFunction);
-  stubs.setPath('chrome.runtime.onConnect.addListener', goog.nullFunction);
-  stubs.setPath('chrome.runtime.onConnect.removeListener', goog.nullFunction);
-  stubs.setPath('chrome.tabs.query', goog.nullFunction);
-  stubs.setPath('chrome.tabs.onUpdated.addListener', goog.nullFunction);
-  stubs.setPath('chrome.tabs.onRemoved.addListener', goog.nullFunction);
+  e2e.ext.testingstubs.initStubs(stubs);
 
   launcher = new e2e.ext.Launcher();
   launcher.start();

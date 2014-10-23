@@ -24,6 +24,7 @@ goog.provide('e2e.ext.ui.WelcomeTest');
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.Welcome');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.preferences');
@@ -107,27 +108,15 @@ var PUBLIC_KEY_ASCII =
 
 function setUp() {
   mockControl = new goog.testing.MockControl();
+  e2e.ext.testingstubs.initStubs(stubs);
 
   localStorage.clear();
   preferences.setWelcomePageEnabled(false);
 
   launcher = new e2e.ext.Launcher();
-  stubs.setPath('chrome.browserAction.setBadgeText', function() {});
-  stubs.setPath('chrome.browserAction.setTitle', function() {});
-  stubs.setPath('chrome.extension.getURL', function() {
-    return '';
-  });
-  stubs.setPath('chrome.i18n.getMessage', function(msg) {
-    return msg;
-  });
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
     callback({launcher: launcher});
   });
-  stubs.setPath('chrome.runtime.onConnect.addListener', function() {});
-  stubs.setPath('chrome.runtime.onConnect.removeListener', function() {});
-  stubs.setPath('chrome.tabs.onUpdated.addListener', function() {});
-  stubs.setPath('chrome.tabs.onRemoved.addListener', function() {});
-
   launcher.start();
   e2e.ext.ui.Welcome.IMAGE_PATH_ = '';
   page = new e2e.ext.ui.Welcome();

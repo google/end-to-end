@@ -22,6 +22,7 @@
 goog.provide('e2e.ext.utils.actionTest');
 
 goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.utils.action');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.factory');
@@ -62,12 +63,7 @@ var PUBLIC_KEY_ASCII =
 function setUp() {
   window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
-
-  stubs.setPath('chrome.browserAction.setBadgeText', goog.nullFunction);
-  stubs.setPath('chrome.browserAction.setTitle', goog.nullFunction);
-  stubs.setPath('chrome.i18n.getMessage', goog.nullFunction);
-  stubs.setPath('chrome.runtime.onConnect.addListener', goog.nullFunction);
-  stubs.setPath('chrome.runtime.onConnect.removeListener', goog.nullFunction);
+  e2e.ext.testingstubs.initStubs(stubs);
 
   launcher = new e2e.ext.Launcher();
   launcher.start();
