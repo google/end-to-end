@@ -33,14 +33,14 @@ goog.require('goog.crypt');
 
 /**
  * DwordArray is an array of 32 bits long big endian numbers.
- * @typedef {Array.<number>}
+ * @typedef {!Array.<number>}
  */
 e2e.DwordArray;
 
 
 /**
  * ByteArray is an array of 8 bits long numbers.
- * @typedef {Array.<number>}
+ * @typedef {!Array.<number>}
  */
 e2e.ByteArray;
 

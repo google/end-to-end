@@ -20,6 +20,8 @@
 
 goog.provide('e2e.ext.actions.GetKeyringBackupData');
 
+goog.require('e2e.ext.actions.Action');
+
 
 goog.scope(function() {
 var actions = e2e.ext.actions;
@@ -29,7 +31,8 @@ var actions = e2e.ext.actions;
 /**
  * Constructor for the action.
  * @constructor
- * @implements {actions.Action.<undefined, e2e.openpgp.KeyringBackupInfo>}
+ * @implements {e2e.ext.actions.Action.<undefined,
+ *     e2e.openpgp.KeyringBackupInfo>}
  */
 actions.GetKeyringBackupData = function() {};
 

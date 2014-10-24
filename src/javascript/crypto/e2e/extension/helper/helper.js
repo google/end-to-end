@@ -147,8 +147,8 @@ ext.Helper.prototype.isEditable_ = function(elem) {
 /**
  * Sets the value into the active element.
  * @param {Element} elem The element where the value must be set.
- * @param {messages.BridgeMessageResponse} msg The response bridge message from
- *     the extension.
+ * @param {e2e.ext.messages.BridgeMessageResponse} msg The response bridge
+ *     message from the extension.
  * @private
  */
 ext.Helper.prototype.setValue_ = function(elem, msg) {
@@ -165,8 +165,8 @@ ext.Helper.prototype.setValue_ = function(elem, msg) {
 
 /**
  * Sets the recipients and message body into a Gmail compose window via gmonkey.
- * @param {messages.BridgeMessageResponse} msg The response bridge message from
- *     the extension.
+ * @param {e2e.ext.messages.BridgeMessageResponse} msg The response bridge
+ *     message from the extension.
  * @private
  */
 ext.Helper.prototype.setGmonkeyValue_ = function(msg) {
@@ -201,8 +201,8 @@ ext.Helper.prototype.runOnce = function() {
 
 /**
  * Retrieves OpenPGP content selected by the user using native browser API.
- * @param {!messages.GetSelectionRequest} selectionRequest The request to get
- *     the user-selected content.
+ * @param {!e2e.ext.messages.GetSelectionRequest} selectionRequest The request
+ *     to get the user-selected content.
  * @param {function(*)} callback A callback to pass the selected content to.
  * @private
  */
@@ -229,8 +229,8 @@ ext.Helper.prototype.getSelectedContentNative_ = function(selectionRequest,
 
 /**
  * Retrieves OpenPGP content selected by the user using GMonkey API.
- * @param {!messages.GetSelectionRequest} selectionRequest The request to get
- *     the user-selected content.
+ * @param {!e2e.ext.messages.GetSelectionRequest} selectionRequest The request
+ *     to get the user-selected content.
  * @param {function(*)} callback A callback to pass the selected content to.
  * @private
  */
@@ -307,7 +307,8 @@ ext.Helper.prototype.getSelectedContent_ = function(req, sender, callback) {
     this.executed_ = true;
   }
 
-  var selectionRequest = /** @type {!messages.GetSelectionRequest} */ (req);
+  var selectionRequest = /** @type {!e2e.ext.messages.GetSelectionRequest} */ (
+      req);
 
   if (!Boolean(this.getSelection_()) && this.isGmail_()) {
     gmonkey.isAvailable(goog.bind(function(isAvailable) {

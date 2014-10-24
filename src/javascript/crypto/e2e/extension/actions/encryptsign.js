@@ -21,6 +21,7 @@
 
 goog.provide('e2e.ext.actions.EncryptSign');
 
+goog.require('e2e.ext.actions.Action');
 goog.require('e2e.ext.utils.Error');
 goog.require('goog.array');
 goog.require('goog.string');
@@ -34,7 +35,7 @@ var utils = e2e.ext.utils;
 /**
  * Constructor for the action.
  * @constructor
- * @implements {actions.Action.<string, string>}
+ * @implements {e2e.ext.actions.Action.<string, string>}
  */
 actions.EncryptSign = function() {};
 

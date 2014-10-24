@@ -20,6 +20,7 @@
 
 goog.provide('e2e.ext.actions.ListKeys');
 
+goog.require('e2e.ext.actions.Action');
 goog.require('e2e.ext.utils.Error');
 goog.require('goog.object');
 
@@ -32,7 +33,7 @@ var utils = e2e.ext.utils;
 /**
  * Constructor for the action.
  * @constructor
- * @implements {actions.Action.<string, !e2e.openpgp.KeyRingMap>}
+ * @implements {e2e.ext.actions.Action.<string, !e2e.openpgp.KeyRingMap>}
  */
 actions.ListKeys = function() {};
 

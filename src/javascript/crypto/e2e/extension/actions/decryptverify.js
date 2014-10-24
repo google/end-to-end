@@ -22,6 +22,7 @@
 goog.provide('e2e.ext.actions.DecryptVerify');
 
 goog.require('e2e');
+goog.require('e2e.ext.actions.Action');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.Error');
 goog.require('e2e.ext.utils.action');
@@ -35,7 +36,7 @@ var utils = e2e.ext.utils;
 /**
  * Constructor for the action.
  * @constructor
- * @implements {actions.Action.<string, string>}
+ * @implements {e2e.ext.actions.Action.<string, string>}
  */
 actions.DecryptVerify = function() {};
 

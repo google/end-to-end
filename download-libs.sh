@@ -54,4 +54,15 @@ if [ ! -f closure-stylesheets-20111230.jar ]; then
   curl https://closure-stylesheets.googlecode.com/files/closure-stylesheets-20111230.jar -O
 fi
 
+if [ ! -f chrome_extensions.js ]; then
+  curl https://raw.githubusercontent.com/google/closure-compiler/master/contrib/externs/chrome_extensions.js -O
+fi
+
+# Temporary fix
+# Soy file bundled with the compiler does not compile with strict settings:
+# lib/closure-templates-compiler/soyutils_usegoog.js:1762: ERROR - element JS_STR_CHARS does not exist on this enum
+cd closure-templates-compiler
+curl https://raw.githubusercontent.com/google/closure-templates/master/javascript/soyutils_usegoog.js -O
+cd ..
+
 cd ..
