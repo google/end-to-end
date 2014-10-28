@@ -21,11 +21,12 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.api.ApiTest');
 
+goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.actions.EncryptSign');
 goog.require('e2e.ext.api.Api');
 goog.require('e2e.ext.api.RequestThrottle');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.testingstubs');
-goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
@@ -33,11 +34,13 @@ goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
 goog.require('goog.testing.mockmatchers.ArgumentMatcher');
+goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.setTestOnly();
 
 var api = null;
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 var constants = e2e.ext.constants;
+var launcher = null;
 var mockControl = null;
 var mockmatchers = goog.testing.mockmatchers;
 var stubs = new goog.testing.PropertyReplacer();
@@ -125,8 +128,14 @@ function setUp() {
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
 
-  api = new e2e.ext.api.Api(new e2e.openpgp.ContextImpl(true));
-  api.pgpCtx_.setKeyRingPassphrase('irrelevant');
+  launcher = new e2e.ext.Launcher();
+  launcher.start();
+
+  stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
+    callback({launcher: launcher});
+  });
+
+  api = new e2e.ext.api.Api();
 }
 
 
@@ -161,122 +170,71 @@ function testRemove() {
 }
 
 
-function testGetEncryptKeys() {
-  populatePgpKeys();
-  var keys = api.getEncryptKeys_(['test 4']);
-  assertEquals(1, keys.length);
-  keys = api.getEncryptKeys_(['test 4', 'test 4', 'Does not exist']);
-  assertEquals(2, keys.length);
-}
+function testExecuteAction() {
+  var plaintext = 'plaintext message';
+  var encrypted = 'encrypted message';
 
-
-function testEncryptAndDecrypt() {
-  var plaintext = 'a secret message';
-
-  populatePgpKeys();
-  asyncTestCase.waitForAsync('Populating keys.');
-  window.setTimeout(function() {
-    asyncTestCase.waitForAsync('Encrypting data.');
-    api.executeAction_(function(encryptedResponse) {
-      assertContains('-----BEGIN PGP MESSAGE-----', encryptedResponse.content);
-      asyncTestCase.waitForAsync('Decrypting data.');
-      api.executeAction_(function(decryptedResponse) {
-        assertEquals(plaintext, decryptedResponse.content);
-        asyncTestCase.continueTesting();
-      }, {
-        content: encryptedResponse.content,
-        currentUser: 'test 4',
-        action: constants.Actions.DECRYPT_VERIFY
-      });
-    }, {
-      content: plaintext,
-      recipients: ['test 4'],
-      currentUser: 'test 4',
-      action: constants.Actions.ENCRYPT_SIGN
-    });
-  }, 500);
-}
-
-
-function testEncryptForSigner() {
-  var plaintext = 'a secret message';
-
-  populatePgpKeys();
-  api.pgpCtx_.importKey(function() {}, PUBLIC_KEY_ASCII_2);
-  asyncTestCase.waitForAsync('Populating keys.');
-  window.setTimeout(function() {
-    asyncTestCase.waitForAsync('Encrypting');
-    api.executeAction_(function(encryptedResponse) {
-      assertContains('-----BEGIN PGP MESSAGE-----', encryptedResponse.content);
-      asyncTestCase.waitForAsync('Decrypting.');
-      api.executeAction_(function(decryptedResponse) {
-        assertEquals(plaintext, decryptedResponse.content);
-        asyncTestCase.continueTesting();
-      }, {
-        content: encryptedResponse.content,
-        currentUser: 'test 4',
-        action: constants.Actions.DECRYPT_VERIFY
-      });
-    }, {
-      content: plaintext,
-      // Specify a recipient so it's not sign-only:
-      recipients: ['Drew Hintz <adhintz@google.com>'],
-      currentUser: 'test 4',
-      action: constants.Actions.ENCRYPT_SIGN
-    });
-  }, 500);
-}
-
-
-function testGetKeyDescription() {
-  asyncTestCase.waitForAsync('Waiting for api response');
-  api.executeAction_(function(response) {
-    assertContains('test 4', response.content[0].uids);
-    asyncTestCase.continueTesting();
-  }, {
-    content: PUBLIC_KEY_ASCII,
-    currentUser: 'test 4',
-    action: constants.Actions.GET_KEY_DESCRIPTION
-  });
-}
-
-
-function testImportKeyAndGetDescription() {
-  asyncTestCase.waitForAsync('Importing');
-  api.executeAction_(function() {
-    var keys = api.getEncryptKeys_(['test 4']);
-    assertEquals(1, keys.length);
-    asyncTestCase.continueTesting();
-  }, {
-    content: PUBLIC_KEY_ASCII,
-    currentUser: '',
-    action: constants.Actions.IMPORT_KEY
-  });
-}
-
-
-function testThrottle() {
-  stubs.set(api, 'runWrappedProcessor_', mockControl.createFunctionMock());
-  stubs.set(
-      api, 'encryptRequestThrottle_', new e2e.ext.api.RequestThrottle(0));
-  stubs.set(
-      api, 'decryptRequestThrottle_', new e2e.ext.api.RequestThrottle(0));
+  var encryptCb = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  stubs.setPath('e2e.ext.actions.EncryptSign.prototype.execute',
+      mockControl.createFunctionMock('encryptSign'));
+  e2e.ext.actions.EncryptSign.prototype.execute(
+      goog.testing.mockmatchers.ignoreArgument,
+      new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+        assertEquals(plaintext, arg.content);
+        return true;
+      }),
+      goog.testing.mockmatchers.ignoreArgument,
+      encryptCb,
+      new goog.testing.mockmatchers.ArgumentMatcher(goog.isFunction));
 
   var callbackMock = mockControl.createFunctionMock();
   callbackMock(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    return arg.error == 'throttleErrorMsg';
-  })).$times(2);
+    return arg.content == encrypted;
+  }));
 
   mockControl.$replayAll();
 
   api.executeAction_(callbackMock, {
+    content: plaintext,
+    recipients: ['irrelevant'],
+    currentUser: 'irrelevant',
     action: constants.Actions.ENCRYPT_SIGN
   });
 
+  encryptCb.arg(encrypted);
+
+  mockControl.$verifyAll();
+}
+
+
+function testUnsupportedAction() {
+  var callbackMock = mockControl.createFunctionMock();
+  callbackMock(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+    return arg.error == 'errorUnsupportedAction';
+  }));
+
+  mockControl.$replayAll();
+
+  api.executeAction_(callbackMock, {
+    action: constants.Actions.LIST_KEYS
+  });
+
+  mockControl.$verifyAll();
+}
+
+
+function testThrottle() {
+  stubs.set(api, 'requestThrottle_', new e2e.ext.api.RequestThrottle(0));
+
+  var callbackMock = mockControl.createFunctionMock();
+  callbackMock(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+    return arg.error == 'throttleErrorMsg';
+  }));
+
+  mockControl.$replayAll();
   api.executeAction_(callbackMock, {
     action: constants.Actions.DECRYPT_VERIFY
   });
-
   mockControl.$verifyAll();
 }
 
@@ -295,15 +253,9 @@ function testLockedKeyring() {
   }));
 
   mockControl.$replayAll();
-  api.executeAction_(callbackMock, {});
+  api.executeAction_(callbackMock, {
+    action: constants.Actions.DECRYPT_VERIFY
+  });
   mockControl.$verifyAll();
 }
 
-
-function populatePgpKeys() {
-  var ctx = api.pgpCtx_;
-  ctx.importKey(function(uid, callback) {
-    callback('test');
-  }, PRIVATE_KEY_ASCII);
-  ctx.importKey(function() {}, PUBLIC_KEY_ASCII);
-}

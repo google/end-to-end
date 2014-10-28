@@ -45,12 +45,13 @@ actions.EncryptSign.prototype.execute =
     function(ctx, request, requestor, callback, errorCallback) {
   var recipients = request.recipients || [];
   var passphrases = request.encryptPassphrases || [];
+  var currentUser = request.currentUser || '';
 
-  if (request.currentUser &&
+  if (currentUser &&
       (recipients.length > 0 || passphrases.length > 0)) {
     // If encrypting the message, always add the sender key for him
     // to be able to decrypt.
-    recipients.push(request.currentUser);
+    recipients.push(currentUser);
   }
 
   this.getEncryptKeys_(ctx, recipients, function(encryptionKeys) {
@@ -63,7 +64,7 @@ actions.EncryptSign.prototype.execute =
       return;
     }
 
-    ctx.searchPrivateKey(request.currentUser).addCallback(function(privKeys) {
+    ctx.searchPrivateKey(currentUser).addCallback(function(privKeys) {
       var signingKey = null;
       if (request.signMessage && privKeys && privKeys.length > 0) {
         // Just choose one private key for now.
