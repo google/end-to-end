@@ -27,6 +27,7 @@ goog.require('e2e');
 goog.require('e2e.BigNum');
 goog.require('e2e.BigNumModulus');
 goog.require('e2e.random');
+goog.require('goog.asserts');
 
 
 
@@ -57,11 +58,11 @@ e2e.cipher.DiffieHellman.prototype.cachedResult_;
  */
 e2e.cipher.DiffieHellman.prototype.generate = function(opt_g) {
   if (opt_g) {
-    assert(this.isValidBase(opt_g));
+    goog.asserts.assert(this.isValidBase(opt_g));
     return this.p_.pow(opt_g, this.x_);
   }
   if (!this.cachedResult_) {
-    assert(this.isValidBase(this.g_));
+    goog.asserts.assert(this.isValidBase(this.g_));
     this.cachedResult_ = this.p_.pow(this.g_, this.x_);
   }
   return this.cachedResult_;
