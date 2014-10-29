@@ -54,6 +54,7 @@ e2e_assert_dependencies() {
 
 e2e_build_templates() {
   e2e_assert_dependencies
+  set -e
   mkdir -p "$BUILD_TPL_DIR"
   rm -rf "$BUILD_TPL_DIR/*"
   # Compile soy templates
@@ -182,9 +183,9 @@ e2e_testserver() {
     --root_with_prefix="lib/zlib.js/ ../../../lib/zlib.js/" \
     > "$BUILD_DIR/test_js_deps-runfiles.js"
 
-  rm "$BUILD_DIR/all_tests.js"
+  rm -f "$BUILD_DIR/all_tests.js"
   echo "Starting the End-To-End test server (Press Ctrl-C to stop)..."
-  $PYTHON_CMD test_server.py
+  $PYTHON_CMD test_server.py $*
   echo "Done."
 }
 
@@ -205,6 +206,21 @@ e2e_lint() {
   fi
 }
 
+e2e_build() {
+  TARGET=$1
+  shift
+  if [ "$TARGET" == "extension" ]; then
+    e2e_build_extension $*;
+  elif [ "$TARGET" == "library" ]; then
+    e2e_build_library $*;
+  elif [ "$TARGET" == "templates" ]; then
+    e2e_build_templates $*;
+  else
+    echo "Invalid build target $TARGET"
+    exit 1
+  fi
+}
+
 RETVAL=0
 
 CMD=$1
@@ -216,6 +232,9 @@ case "$CMD" in
     ;;
   install_deps)
     e2e_install_deps;
+    ;;
+  build)
+    e2e_build $*;
     ;;
   build_extension)
     e2e_build_extension;
@@ -233,7 +252,7 @@ case "$CMD" in
     e2e_build_clean;
     ;;
   testserver)
-    e2e_testserver;
+    e2e_testserver $*;
     ;;
   lint)
     e2e_lint $*;

@@ -64,6 +64,10 @@ module.exports = function(grunt) {
     'shell:doScript:testserver'
   ]);
 
+  grunt.registerTask('lint', [
+    'shell:doScript:lint'
+  ]);
+
   grunt.registerTask('default', [
     'build-extension'
   ]);
