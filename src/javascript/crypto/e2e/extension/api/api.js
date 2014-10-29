@@ -23,15 +23,12 @@
 
 goog.provide('e2e.ext.api.Api');
 
-goog.require('e2e');
+goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.api.RequestThrottle');
 goog.require('e2e.ext.constants.Actions');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.ext.messages.ApiRequest');
-goog.require('goog.Disposable');
-goog.require('goog.array');
-goog.require('goog.asserts');
-goog.require('goog.string');
+goog.require('goog.ui.Component');
 
 goog.scope(function() {
 var api = e2e.ext.api;
@@ -42,20 +39,11 @@ var messages = e2e.ext.messages;
 
 /**
  * Constructor for the context API.
- * @param {!e2e.openpgp.Context} pgpCtx The PGP context used by the
- *     extension.
  * @constructor
- * @extends {goog.Disposable}
+ * @extends {goog.ui.Component}
  */
-api.Api = function(pgpCtx) {
+api.Api = function() {
   goog.base(this);
-
-  /**
-   * The PGP context used by the extension.
-   * @type {!e2e.openpgp.Context}
-   * @private
-   */
-  this.pgpCtx_ = goog.asserts.assert(pgpCtx);
 
   /**
    * The handler to process incoming requests from other parts of the extension.
@@ -69,18 +57,18 @@ api.Api = function(pgpCtx) {
    * @type {!api.RequestThrottle}
    * @private
    */
-  this.decryptRequestThrottle_ = new api.RequestThrottle(
+  this.requestThrottle_ = new api.RequestThrottle(
       api.Api.REQUEST_THRESHOLD_);
 
   /**
-   * A request throttle for incoming encrypt requests.
-   * @type {!api.RequestThrottle}
+   * Executor for the End-to-End actions.
+   * @type {!e2e.ext.actions.Executor}
    * @private
    */
-  this.encryptRequestThrottle_ = new api.RequestThrottle(
-      api.Api.REQUEST_THRESHOLD_);
+  this.actionExecutor_ = new e2e.ext.actions.Executor();
+
 };
-goog.inherits(api.Api, goog.Disposable);
+goog.inherits(api.Api, goog.ui.Component);
 
 
 /**
@@ -140,6 +128,17 @@ api.Api.prototype.executeAction_ = function(callback, req) {
     completedAction: incoming.action
   };
 
+  // Ensure that only certain actions are exposed via the API.
+  switch (incoming.action) {
+    case constants.Actions.ENCRYPT_SIGN:
+    case constants.Actions.DECRYPT_VERIFY:
+      break;
+    default:
+      outgoing.error = chrome.i18n.getMessage('errorUnsupportedAction');
+      callback(outgoing);
+      return;
+  }
+
   if (window.launcher && !window.launcher.hasPassphrase()) {
     callback({
       error: chrome.i18n.getMessage('glassKeyringLockedError')
@@ -147,170 +146,19 @@ api.Api.prototype.executeAction_ = function(callback, req) {
     return;
   }
 
-  switch (incoming.action) {
-    case constants.Actions.ENCRYPT_ONLY:
-    case constants.Actions.SIGN_ONLY:
-    case constants.Actions.ENCRYPT_SIGN:
-      if (!this.encryptRequestThrottle_.canProceed()) {
-        outgoing.error = chrome.i18n.getMessage('throttleErrorMsg');
-        break;
-      }
-
-      outgoing.error = this.runWrappedProcessor_(
-          /** @this api.Api */ function() {
-            var signer = incoming.currentUser || '';
-
-            var signMessage = incoming.action == constants.Actions.SIGN_ONLY ||
-                incoming.action == constants.Actions.ENCRYPT_SIGN;
-
-            var keys;
-            var passphrases;
-            switch (incoming.action) {
-              case constants.Actions.ENCRYPT_ONLY:
-              case constants.Actions.ENCRYPT_SIGN:
-                keys = this.getEncryptKeys_(incoming.recipients || []);
-                passphrases = incoming.encryptPassphrases || [];
-                break;
-              default:
-                keys = [];
-                passphrases = [];
-            }
-
-            this.pgpCtx_
-                .searchPrivateKey(signer)
-                .addCallback(goog.bind(function(privateKeys) {
-                  var signingKey = null;
-                  if (signMessage) {
-                    if (privateKeys && privateKeys.length > 0) {
-                      // Just choose one private key for now.
-                      signingKey = privateKeys[0];
-                    }
-
-                    if (keys.length > 0) {  // if no recipients, do sign-only
-                      goog.array.extend(keys, this.getEncryptKeys_([signer]));
-                    }
-                  }
-
-                  this.pgpCtx_.encryptSign(
-                      incoming.content,
-                      [], // Options.
-                      keys, // Keys to encrypt to.
-                      passphrases, // For symmetrically-encrypted session keys.
-                      signingKey // Key to sign with.
-                  ).addCallback(function(result) {
-                    outgoing.content = result;
-                    callback(outgoing);
-                  });
-                }, this));
-          });
-      break;
-    case constants.Actions.DECRYPT_VERIFY:
-      if (!this.decryptRequestThrottle_.canProceed()) {
-        outgoing.error = chrome.i18n.getMessage('throttleErrorMsg');
-        break;
-      }
-
-      outgoing.error = this.runWrappedProcessor_(
-          /** @this api.Api */ function() {
-            this.pgpCtx_.verifyDecrypt(function(uid, passphraseCallback) {
-              if (incoming.decryptPassphrase) {
-                passphraseCallback(incoming.decryptPassphrase);
-              }
-
-              outgoing.selectedUid = uid;
-              outgoing.retry = true;
-              callback(outgoing);
-            }, incoming.content).addCallback(function(result) {
-              return e2e.byteArrayToStringAsync(
-                  result.decrypt.data,
-                  result.decrypt.options.charset).addCallback(
-                  function(str) {
-                    outgoing.content = str;
-                    callback(outgoing);
-                  });
-            }).addErrback(function(error) {
-              outgoing.error = error.toString();
-              callback(outgoing);
-            });
-          });
-      break;
-    case constants.Actions.GET_KEY_DESCRIPTION:
-      outgoing.error = this.runWrappedProcessor_(
-          /** @this api.Api */ function() {
-            this.pgpCtx_.getKeyDescription(incoming.content).addCallback(
-                function(result) {
-                  outgoing.content = result;
-                  callback(outgoing);
-                }).addErrback(function(error) {
-              outgoing.error = error.toString();
-              callback(outgoing);
-            });
-          });
-      break;
-    case constants.Actions.IMPORT_KEY:
-      outgoing.error = this.runWrappedProcessor_(
-          /** @this api.Api */ function() {
-            this.pgpCtx_.importKey(function(uid, passphraseCallback) {
-              if (incoming.decryptPassphrase) {
-                passphraseCallback(incoming.decryptPassphrase);
-              }
-
-              outgoing.selectedUid = uid;
-              outgoing.retry = true;
-              callback(outgoing);
-            }, incoming.content).addCallback(function(result) {
-              outgoing.content = result.toString();
-              callback(outgoing);
-            });
-          });
-      break;
-  }
-
-  if (outgoing.error) {
+  if (!this.requestThrottle_.canProceed()) {
+    outgoing.error = chrome.i18n.getMessage('throttleErrorMsg');
     callback(outgoing);
+    return;
   }
-};
 
-
-/**
- * Executes the provided processor function into a try/catch block and returns
- * error messages if needed.
- * @param {!function()} processorFunc The processor function to execute.
- * @return {string|undefined} Error messages if any.
- * @private
- */
-api.Api.prototype.runWrappedProcessor_ = function(processorFunc) {
-  try {
-    goog.bind(processorFunc, this).call();
-  } catch (error) {
-    // TODO(radi): i18n
-    return error.message;
-  }
-};
-
-
-/**
- * Parses string and looks up keys for encrypting objects in keyring.
- * @param {!Array.<string>} userIds A list of user IDs to get keys for.
- * @return {!Array.<e2e.openpgp.packet.Key>} Array of key objects.
- * @private
- */
-api.Api.prototype.getEncryptKeys_ = function(userIds) {
-  var keys = [];
-  goog.array.forEach(userIds, function(userId) {
-    var trimmedUid = goog.string.trim(userId);
-    if (trimmedUid) {
-      // TODO(evn): This will break as soon as searchKey becomes really async.
-      this.pgpCtx_.searchPublicKey(trimmedUid).addCallback(
-          goog.bind(function(found) {
-            if (found) {
-              goog.array.extend(keys, found);
-            }
-          }, this));
-    }
-  }, this);
-
-  return keys;
+  this.actionExecutor_.execute(incoming, this, function(resp) {
+    outgoing.content = resp;
+    callback(outgoing);
+  }, function(error) {
+    outgoing.error = error.message;
+    callback(outgoing);
+  });
 };
 
 });  // goog.scope

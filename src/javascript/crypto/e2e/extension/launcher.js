@@ -59,7 +59,7 @@ ext.Launcher = function() {
    * @type {!ext.api.Api}
    * @private
    */
-  this.ctxApi_ = new ext.api.Api(this.pgpContext_);
+  this.ctxApi_ = new ext.api.Api();
 
   /**
    * Whether the launcher was started correctly.
