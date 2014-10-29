@@ -22,8 +22,14 @@ import os
 import os.path
 import SimpleHTTPServer
 import StringIO
+import sys
 
-server_address = ("127.0.0.1", 8000)
+PORT=8000
+if len(sys.argv) > 1:
+  PORT = int(sys.argv[1])
+
+server_address = ("127.0.0.1", PORT)
+
 # ./do.sh testserver generates the file
 DEPS_FILE="build/test_js_deps-runfiles.js"
 ALL_JSTESTS_FILE="build/all_tests.js"
