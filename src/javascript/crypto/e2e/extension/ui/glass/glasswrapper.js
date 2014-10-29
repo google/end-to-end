@@ -20,6 +20,7 @@
 
 goog.provide('e2e.ext.ui.GlassWrapper');
 
+goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.Disposable');
 goog.require('goog.array');
 goog.require('goog.crypt.base64');
@@ -80,10 +81,16 @@ ui.GlassWrapper.prototype.installGlass = function() {
   goog.style.setSize(glassFrame, goog.style.getSize(this.targetElem_));
   glassFrame.style.border = 0;
 
-  var pgpMessage = this.targetElem_.innerText;
+  var pgpMessage = e2e.openpgp.asciiArmor.extractPgpBlock(
+      this.targetElem_.innerText);
+  var surroundings = this.targetElem_.innerText.split(pgpMessage);
   this.targetElem_.textContent = '';
+  this.targetElem_.appendChild(document.createTextNode(surroundings[0]));
+  this.targetElem_.appendChild(document.createElement('p'));
   // TODO(radi): Render in a shadow DOM.
   this.targetElem_.appendChild(glassFrame);
+  this.targetElem_.appendChild(document.createElement('p'));
+  this.targetElem_.appendChild(document.createTextNode(surroundings[1]));
 
   glassFrame.addEventListener('load', goog.bind(function() {
     glassFrame.contentWindow.postMessage(

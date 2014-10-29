@@ -132,6 +132,16 @@ api.Api.prototype.executeAction_ = function(callback, req) {
   switch (incoming.action) {
     case constants.Actions.ENCRYPT_SIGN:
     case constants.Actions.DECRYPT_VERIFY:
+      // Propagate the decryptPassphrase if needed.
+      incoming.passphraseCallback = function(uid, passphraseCallback) {
+        if (incoming.decryptPassphrase) {
+          passphraseCallback(incoming.decryptPassphrase);
+        }
+
+        outgoing.selectedUid = uid;
+        outgoing.retry = true;
+        callback(outgoing);
+      };
       break;
     default:
       outgoing.error = chrome.i18n.getMessage('errorUnsupportedAction');
@@ -156,7 +166,7 @@ api.Api.prototype.executeAction_ = function(callback, req) {
     outgoing.content = resp;
     callback(outgoing);
   }, function(error) {
-    outgoing.error = error.message;
+    outgoing.error = chrome.i18n.getMessage(error.messageId);
     callback(outgoing);
   });
 };

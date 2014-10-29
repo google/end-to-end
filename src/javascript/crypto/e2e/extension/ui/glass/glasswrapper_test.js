@@ -22,6 +22,7 @@
 goog.provide('e2e.ext.ui.GlassWrapperTest');
 
 goog.require('e2e.ext.ui.GlassWrapper');
+goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.crypt.base64');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
@@ -33,6 +34,7 @@ goog.setTestOnly();
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 var elem = null;
 var mockControl = null;
+var originalContent = 'Here is some text to display';
 var stubs = null;
 var wrapper = null;
 
@@ -42,8 +44,7 @@ function setUp() {
   stubs = new goog.testing.PropertyReplacer();
 
   elem = document.createElement('div');
-  elem.appendChild(document.createTextNode('some text'));
-  elem.appendChild(document.createElement('p'));
+  elem.appendChild(document.createTextNode(originalContent));
   document.body.appendChild(elem);
 
   wrapper = new e2e.ext.ui.GlassWrapper(elem);
@@ -62,6 +63,9 @@ function tearDown() {
 }
 
 function testInstallAndRemoveGlass() {
+  stubs.setPath('e2e.openpgp.asciiArmor.extractPgpBlock',
+      mockControl.createFunctionMock('extractPgpBlock'));
+  e2e.openpgp.asciiArmor.extractPgpBlock(originalContent).$returns('some text');
   stubs.setPath(
       'chrome.runtime.getURL', mockControl.createFunctionMock('getURL'));
   chrome.runtime.getURL('glass.html').$returns(window.location.href);
@@ -69,22 +73,24 @@ function testInstallAndRemoveGlass() {
 
   stubs.setPath('goog.crypt.base64.encodeString',
       mockControl.createFunctionMock('encodeString'));
-  goog.crypt.base64.encodeString('some text\n', true);
+  goog.crypt.base64.encodeString('some text', true);
   mockControl.$replayAll();
 
-  assertEquals(2, elem.childNodes.length);
+  assertEquals(1, elem.childNodes.length);
 
   wrapper.installGlass();
-  assertEquals(1, elem.childNodes.length);
+  assertEquals(5, elem.childNodes.length);
   assertNotNull(elem.querySelector('iframe'));
+  assertContains('Here is', elem.innerText);
+  assertContains('to display', elem.innerText);
 
   asyncTestCase.waitForAsync('Waiting for glass to be installed.');
   window.setTimeout(function() {
-    asyncTestCase.continueTesting();
     wrapper.removeGlass();
-    assertEquals(2, elem.childNodes.length);
-    assertEquals('some text\n', elem.innerText);
+    assertEquals(1, elem.childNodes.length);
+    assertEquals(originalContent, elem.innerText);
 
     mockControl.$verifyAll();
+    asyncTestCase.continueTesting();
   }, 500);
 }
