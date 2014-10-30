@@ -92,11 +92,11 @@ e2ebind.MessagingTable_.prototype.getRandomString = function() {
  * @return {string} The hash value.
  */
 e2ebind.MessagingTable_.prototype.add = function(action, opt_callback) {
-  var hash = this.getRandomString();
-  while (this.table[hash]) {
-    // Ensure unqiueness.
+  var hash;
+  do {
+    // Ensure uniqueness.
     hash = this.getRandomString();
-  }
+  } while (this.table.hasOwnProperty(hash) && this.table[hash] !== null);
   this.table[hash] = {
     action: action,
     callback: opt_callback
@@ -113,7 +113,9 @@ e2ebind.MessagingTable_.prototype.add = function(action, opt_callback) {
 */
 e2ebind.MessagingTable_.prototype.get = function(hash, action) {
   var result = null;
-  if (this.table[hash] && this.table[hash].action === action) {
+  if (this.table.hasOwnProperty(hash) &&
+      this.table[hash] !== null &&
+      this.table[hash].action === action) {
     result = this.table[hash];
   }
   this.table[hash] = null;
