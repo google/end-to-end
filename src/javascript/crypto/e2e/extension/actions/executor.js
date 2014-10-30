@@ -25,6 +25,7 @@ goog.require('e2e.ext.actions.EncryptSign');
 goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.actions.GetKeyringBackupData');
 goog.require('e2e.ext.actions.ImportKey');
+goog.require('e2e.ext.actions.ListAllUids');
 goog.require('e2e.ext.actions.ListKeys');
 goog.require('e2e.ext.actions.RestoreKeyringData');
 goog.require('e2e.ext.constants.Actions');
@@ -106,6 +107,8 @@ actions.Executor.prototype.getAction_ = function(actionType) {
       return new actions.GetKeyringBackupData();
     case constants.Actions.IMPORT_KEY:
       return new actions.ImportKey();
+    case constants.Actions.LIST_ALL_UIDS:
+      return new actions.ListAllUids();
     case constants.Actions.LIST_KEYS:
       return new actions.ListKeys();
     case constants.Actions.RESTORE_KEYRING_DATA:

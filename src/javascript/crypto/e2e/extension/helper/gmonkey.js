@@ -22,10 +22,10 @@ goog.provide('e2e.ext.gmonkey');
 
 goog.require('e2e.ext.utils.text');
 goog.require('goog.array');
-goog.require('goog.format.EmailAddress');
 
 goog.scope(function() {
 var gmonkey = e2e.ext.gmonkey;
+var utils = e2e.ext.utils;
 
 
 /**
@@ -92,45 +92,6 @@ gmonkey.isAvailable = function(callback) {
 
 
 /**
- * Extracts valid email addresses out of a string with comma-separated full
- *  email labels (e.g. "John Smith" <john@example.com>, Second
- *  <second@example.org>).
- * @param {string} emailLabels The full email labels
- * @return {!Array.<string>} The extracted valid email addresses.
- * @private
- */
-gmonkey.getValidEmailAddressesFromString_ = function(emailLabels) {
-  var emails = goog.format.EmailAddress.parseList(emailLabels);
-  return goog.array.filter(
-      goog.array.map(
-          goog.array.map(emails, function(email) {return email.toString()}),
-          e2e.ext.utils.text.extractValidEmail),
-      goog.isDefAndNotNull);
-};
-
-
-/**
- * Extracts valid email addresses out of an array with full email labels
- * (e.g. "John Smith" <john@example.com>, Second <second@example.org>).
- * @param {!Array.<string>} recipients List of recipients
- * @return {string} Comma separated list of recipients with valid e-mail
- *     addresses
- * @private
- */
-gmonkey.getValidEmailAddressesFromArray_ = function(recipients) {
-  var list = [];
-  goog.array.forEach(recipients, function(recipient) {
-    var emailAddress = goog.format.EmailAddress.parse(recipient);
-    // Validate e-mail address, but add full recipient record.
-    if (e2e.ext.utils.text.extractValidEmail(emailAddress.getAddress())) {
-      list.push(emailAddress.toString());
-    }
-  });
-  return list.join(', ');
-};
-
-
-/**
  * Gets the last selected message in Gmail.
  * @param {!function(Element)} callback The callback where the element
  *     containing the last selected message should be passed.
@@ -159,8 +120,8 @@ gmonkey.getActiveDraft = function(callback) {
 
     if (goog.isObject(result)) {
       goog.array.extend(recipients,
-          gmonkey.getValidEmailAddressesFromString_(result['to']),
-          gmonkey.getValidEmailAddressesFromString_(result['cc']));
+          utils.text.getValidEmailAddressesFromString(result['to']),
+          utils.text.getValidEmailAddressesFromString(result['cc']));
       // Document.implementation.createHTMLDocument creates a new document
       // in which the scripts are not executing and network requests are not
       // made (in Chrome), so we don't create a XSS risk here.
@@ -202,7 +163,7 @@ gmonkey.setActiveDraft = function(recipients, msgBody, opt_callback) {
     callback = opt_callback;
   }
   gmonkey.callGmonkey_('setActiveDraft', callback, {
-    to: gmonkey.getValidEmailAddressesFromArray_(recipients),
+    to: utils.text.getValidEmailAddressesFromArray(recipients).join(', '),
     body: msgBody
   });
 };

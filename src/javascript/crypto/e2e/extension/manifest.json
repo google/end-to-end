@@ -12,6 +12,12 @@
     "default_icon": "images/icon-128.png",
     "default_popup": "prompt.html"
   },
+  "content_scripts": [
+    {
+      "matches": ["https://*.mail.yahoo.com/*"],
+      "js": ["helper_binary.js"]
+    }
+  ],
   "icons": {
     "16": "images/icon-16.png",
     "48": "images/icon-48.png",

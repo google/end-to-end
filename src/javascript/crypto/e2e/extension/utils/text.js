@@ -119,6 +119,49 @@ utils.extractValidEmail = function(recipient) {
 
 
 /**
+ * Extracts valid email addresses out of a string with comma-separated full
+ *  email labels (e.g. "John Smith" <john@example.com>, Second
+ *  <second@example.org>).
+ * @param {string} emailLabels The full email labels
+ * @return {!Array.<string>} The extracted valid email addresses.
+ */
+utils.getValidEmailAddressesFromString = function(emailLabels) {
+  var emails = goog.format.EmailAddress.parseList(emailLabels);
+  return goog.array.filter(
+      goog.array.map(
+          goog.array.map(emails, function(email) {return email.toString()}),
+          utils.extractValidEmail),
+      goog.isDefAndNotNull);
+};
+
+
+/**
+ * Extracts valid email addresses out of an array with full email labels
+ * (e.g. "John Smith" <john@example.com>, Second <second@example.org>).
+ * @param {!Array.<string>} recipients List of recipients
+ * @param {boolean=} opt_email_only If true, return email addresses instead of
+ *   full recipient records.
+ * @return {!Array.<string>} List of emails/recipients with valid e-mails
+ */
+utils.getValidEmailAddressesFromArray = function(recipients, opt_email_only) {
+  var list = [];
+  goog.array.forEach(recipients, function(recipient) {
+    var emailAddress = goog.format.EmailAddress.parse(recipient);
+    var validEmail = utils.extractValidEmail(emailAddress.getAddress());
+    if (validEmail) {
+      if (opt_email_only) {
+        list.push(validEmail);
+      } else {
+        // Add full recipient record
+        list.push(emailAddress.toString());
+      }
+    }
+  });
+  return list;
+};
+
+
+/**
  * Checks whether a URI is an HTTPS ymail origin.
  * @param {!string} uri
  * @return {boolean}

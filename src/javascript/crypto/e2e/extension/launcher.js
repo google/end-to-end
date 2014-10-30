@@ -24,6 +24,7 @@ goog.provide('e2e.ext.Launcher');
 
 goog.require('e2e.ext.api.Api');
 goog.require('e2e.ext.ui.preferences');
+goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.ContextImpl');
 
 goog.scope(function() {
@@ -31,6 +32,7 @@ var ext = e2e.ext;
 var constants = e2e.ext.constants;
 var messages = e2e.ext.messages;
 var preferences = e2e.ext.ui.preferences;
+var utils = e2e.ext.utils;
 
 
 
@@ -137,9 +139,15 @@ ext.Launcher.prototype.getActiveTab_ = function(callback) {
       this.lastTabId_ = tab.id;
     }
 
-    chrome.tabs.executeScript(tab.id, {file: 'helper_binary.js'}, function() {
+    // NOTE(yan): The helper script is executed automaticaly on ymail pages.
+    if (utils.text.isYmailOrigin(tab.url)) {
       callback(tab.id);
-    });
+    } else {
+      chrome.tabs.executeScript(tab.id, {file: 'helper_binary.js'},
+                                function() {
+                                  callback(tab.id);
+                                });
+    }
   }, this));
 };
 
@@ -161,6 +169,7 @@ ext.Launcher.prototype.start = function(opt_passphrase) {
  * @private
  */
 ext.Launcher.prototype.start_ = function(passphrase) {
+  this.ctxApi_.installApi();
   this.pgpContext_.setKeyRingPassphrase(passphrase);
   if (goog.global.chrome &&
       goog.global.chrome.runtime &&
@@ -170,7 +179,6 @@ ext.Launcher.prototype.start_ = function(passphrase) {
         'Version',
         manifest.name + ' v' + manifest.version);
   }
-  this.ctxApi_.installApi();
   this.started_ = true;
   preferences.initDefaults();
 

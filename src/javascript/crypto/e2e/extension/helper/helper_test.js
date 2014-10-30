@@ -23,6 +23,7 @@ goog.provide('e2e.ext.HelperTest');
 
 goog.require('e2e.ext.Helper');
 goog.require('e2e.ext.constants');
+goog.require('e2e.ext.e2ebind');
 goog.require('e2e.ext.gmonkey');
 goog.require('e2e.ext.utils.text');
 goog.require('goog.array');
@@ -36,8 +37,10 @@ goog.require('goog.testing.mockmatchers.ArgumentMatcher');
 goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.setTestOnly();
 
+
 var constants = e2e.ext.constants;
 var helper = null;
+var e2ebind = e2e.ext.e2ebind;
 var gmonkey = e2e.ext.gmonkey;
 var mockControl = null;
 var stubs = new goog.testing.PropertyReplacer();
@@ -111,6 +114,38 @@ function testSetValueForGmonkey() {
   mockControl.$replayAll();
 
   helper.setGmonkeyValue_({
+    response: true,
+    origin: helper.getOrigin_(),
+    recipients: recipients,
+    value: message,
+    detach: true
+  });
+
+  mockControl.$verifyAll();
+}
+
+
+function testSetValueForE2ebind() {
+  var message = 'some text';
+  var recipients = ['test@example.com'];
+
+  stubs.set(e2ebind, 'setDraft', mockControl.createFunctionMock());
+  var setDraftArg = new goog.testing.mockmatchers.ArgumentMatcher(
+      function(arg) {
+        assertArrayEquals(recipients, arg.to);
+        assertEquals(message, arg.body);
+        return true;
+      });
+  e2ebind.setDraft(setDraftArg);
+
+  stubs.setPath('chrome.runtime.onMessage.removeListener',
+      mockControl.createFunctionMock());
+  chrome.runtime.onMessage.removeListener(
+      goog.testing.mockmatchers.ignoreArgument);
+
+  mockControl.$replayAll();
+
+  helper.setE2ebindValue_({
     response: true,
     origin: helper.getOrigin_(),
     recipients: recipients,
@@ -197,7 +232,7 @@ function testGetSelectedContentStatic() {
 }
 
 
-function testSelectedContentPriority() {
+function testSelectedContentGmonkey() {
   var content = 'some content';
   stubs.set(helper, 'getSelection_', function() {
     return content;
@@ -208,6 +243,31 @@ function testSelectedContentPriority() {
   });
 
   stubs.set(gmonkey, 'hasActiveDraft', mockControl.createFunctionMock());
+
+  var matcher = new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+    assertEquals(content, arg.selection);
+    return true;
+  });
+  var callback = mockControl.createFunctionMock('callback');
+  callback(matcher);
+
+  mockControl.$replayAll();
+  helper.getSelectedContent_({}, {}, callback);
+  mockControl.$verifyAll();
+}
+
+
+function testSelectedContentE2ebind() {
+  var content = 'some content';
+  stubs.set(helper, 'getSelection_', function() {
+    return content;
+  });
+
+  stubs.set(helper, 'isYmail_', function() {
+    return true;
+  });
+
+  stubs.set(e2ebind, 'hasDraft', mockControl.createFunctionMock());
 
   var matcher = new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
     assertEquals(content, arg.selection);
@@ -271,7 +331,6 @@ function testInstallLookingGlass() {
 }
 
 
-
 function testAttachSetValueHandler() {
   var handler = goog.nullFunction;
 
@@ -293,7 +352,7 @@ function testAttachSetValueHandler() {
 }
 
 
-function testDisplayDuringRead() {
+function testDisplayDuringReadGmonkey() {
   var selectionBody = 'some text';
 
   stubs.set(gmonkey, 'isAvailable', function(callback) { callback(true); });
@@ -337,7 +396,7 @@ function testDisplayDuringRead() {
 }
 
 
-function testDisplayDuringWrite() {
+function testDisplayDuringWriteGmonkey() {
   var selectionBody = 'some text';
   var recipients = ['test@example.com'];
 
@@ -384,6 +443,106 @@ function testDisplayDuringWrite() {
 }
 
 
+function testDisplayDuringReadE2ebind() {
+  var selectionBody = 'some text';
+
+  stubs.set(e2ebind, 'started_', true);
+  window.config = {signer: 'yan@example.com'};
+  stubs.set(e2ebind, 'hasDraft', mockControl.createFunctionMock());
+
+  var hasDraftArg = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  e2ebind.hasDraft(hasDraftArg);
+
+  stubs.set(e2ebind, 'getCurrentMessage', mockControl.createFunctionMock());
+  var getCurrentMessageArg =
+      new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  e2ebind.getCurrentMessage(getCurrentMessageArg);
+
+  var callbackMock = mockControl.createFunctionMock();
+  var callbackArg =
+      new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+    assertEquals(constants.Actions.ENCRYPT_SIGN, arg.action);
+    assertEquals(selectionBody, arg.selection);
+    assertEquals(0, arg.recipients.length);
+
+    return true;
+  });
+  callbackMock(callbackArg);
+
+  stubs.set(helper, 'getOrigin_', function() {
+    return 'https://us-mg999.mail.yahoo.com';
+  });
+
+  mockControl.$replayAll();
+
+  helper.getSelectedContent_({
+    pgpAction: 'irrelevant',
+    editableElem: true
+  }, null, callbackMock);
+
+  hasDraftArg.arg(false);
+  getCurrentMessageArg.arg({
+    text: selectionBody
+  });
+
+  mockControl.$verifyAll();
+}
+
+
+function testDisplayDuringWriteE2ebind() {
+  var selectionBody = 'some text';
+  var recipients = ['test@example.com'];
+
+  stubs.set(e2ebind, 'started_', true);
+  window.config = {signer: 'yan@example.com'};
+
+  stubs.set(helper, 'attachSetValueHandler_', mockControl.createFunctionMock());
+  helper.attachSetValueHandler_(
+      new goog.testing.mockmatchers.ArgumentMatcher(goog.isFunction));
+
+  stubs.set(e2ebind, 'hasDraft', mockControl.createFunctionMock());
+  var hasDraftArg = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  e2ebind.hasDraft(hasDraftArg);
+
+  stubs.set(e2ebind, 'getDraft', mockControl.createFunctionMock());
+  var getDraftArg =
+      new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  e2ebind.getDraft(getDraftArg);
+
+  var callbackMock = mockControl.createFunctionMock();
+  var callbackArg =
+      new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+    assertEquals(constants.Actions.ENCRYPT_SIGN, arg.action);
+    assertEquals(selectionBody, arg.selection);
+    assertTrue(goog.array.equals(recipients, arg.recipients));
+
+    return true;
+  });
+  callbackMock(callbackArg);
+
+  stubs.set(helper, 'getOrigin_', function() {
+    return 'https://us-mg5.mail.yahoo.com';
+  });
+
+  mockControl.$replayAll();
+
+  helper.getSelectedContent_({
+    pgpAction: 'irrelevant',
+    editableElem: true
+  }, null, callbackMock);
+
+  hasDraftArg.arg({has_draft: true});
+  getDraftArg.arg({
+    to: recipients,
+    body: selectionBody,
+    cc: [],
+    bcc: []
+  });
+
+  mockControl.$verifyAll();
+}
+
+
 function testOrigin() {
   assertEquals(window.location.origin, helper.getOrigin_());
 }
@@ -402,6 +561,21 @@ function testHelperRunsOnce() {
   assertTrue(helper.isDisposed());
 
   mockControl.$verifyAll();
+}
+
+
+function testE2eBindStarts() {
+  stubs.set(helper, 'isYmail_', function() {
+    return true;
+  });
+
+  stubs.set(e2ebind, 'start', function() {
+    e2ebind.started_ = true;
+  });
+
+  helper.runOnce();
+
+  assertTrue(e2ebind.isStarted());
 }
 
 

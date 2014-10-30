@@ -22,6 +22,7 @@
 goog.provide('e2e.ext.Helper');
 
 goog.require('e2e.ext.constants.Actions');
+goog.require('e2e.ext.e2ebind');
 goog.require('e2e.ext.gmonkey');
 goog.require('e2e.ext.ui.GlassWrapper');
 goog.require('e2e.ext.utils.text');
@@ -33,6 +34,7 @@ goog.require('goog.events.EventType');
 goog.scope(function() {
 var ext = e2e.ext;
 var constants = ext.constants;
+var e2ebind = ext.e2ebind;
 var gmonkey = ext.gmonkey;
 var messages = ext.messages;
 var ui = ext.ui;
@@ -180,6 +182,27 @@ ext.Helper.prototype.setGmonkeyValue_ = function(msg) {
 
 
 /**
+ * Sets recipients and message body into provider's compose window via e2ebind.
+ * @param {messages.BridgeMessageResponse} msg The response bridge message from
+ *     the extension.
+ * @private
+ */
+ext.Helper.prototype.setE2ebindValue_ = function(msg) {
+  if (msg.response && msg.origin == this.getOrigin_()) {
+    e2ebind.setDraft({
+      to: msg.recipients,
+      body: msg.value,
+      subject: msg.subject
+    });
+  }
+  if (msg.detach) {
+    chrome.runtime.onMessage.removeListener(this.setValueHandler_);
+    this.setValueHandler_ = goog.nullFunction;
+  }
+};
+
+
+/**
  * Runs the extension helper (which actually runs inside a content script) once.
  */
 ext.Helper.prototype.runOnce = function() {
@@ -195,6 +218,8 @@ ext.Helper.prototype.runOnce = function() {
 
     /** @type {boolean} */
     window.ENABLED_LOOKING_GLASS = true;
+  } else if (this.isYmail_()) {
+    e2ebind.start();
   }
 };
 
@@ -293,6 +318,83 @@ ext.Helper.prototype.getSelectedContentGmonkey_ = function(selectionRequest,
 
 
 /**
+ * Retrieves OpenPGP content selected by the user using e2ebind API.
+ * @param {!messages.GetSelectionRequest} selectionRequest The request to get
+ *     the user-selected content.
+ * @param {function(*)} callback A callback to pass the selected content to.
+ * @private
+ */
+ext.Helper.prototype.getSelectedContentE2ebind_ = function(selectionRequest,
+                                                           callback) {
+  // Add set_draft handler
+  this.attachSetValueHandler_(goog.bind(this.setE2ebindValue_, this));
+
+  // ComposeGlass already has draft, so abort early
+  if (selectionRequest.composeGlass) {
+    return;
+  }
+
+  var activeElem = this.getActiveElement_();
+  var selection = this.getSelection_() || activeElem.value || '';
+  var recipients = [];
+
+  // Check if we have a draft
+  e2ebind.hasDraft(goog.bind(function(has_draft_result) {
+    if (has_draft_result) {
+      // We have a draft, get_draft from it
+      e2ebind.getDraft(goog.bind(function(get_draft_result) {
+        var selectionBody = e2e.openpgp.asciiArmor
+          .extractPgpBlock(get_draft_result.body);
+        recipients = recipients.concat(get_draft_result.to,
+                                       get_draft_result.cc,
+                                       get_draft_result.bcc);
+
+        callback({
+          action: constants.Actions.ENCRYPT_SIGN,
+          selection: selectionBody,
+          recipients: recipients,
+          subject: get_draft_result.subject,
+          from: '<' + window.config.signer + '>',
+          request: true,
+          origin: this.getOrigin_(),
+          canInject: true
+        });
+      }, this));
+    } else {
+      // No draft, grab current message.
+      e2ebind.getCurrentMessage(goog.bind(function(get_message_result) {
+        var selectionBody = selection;
+        var DOMelem = document.querySelector(get_message_result.elem);
+
+        if (get_message_result.text) {
+          selectionBody = get_message_result.text;
+        } else {
+          if (DOMelem) {
+            selectionBody = e2e.openpgp.asciiArmor.extractPgpBlock(
+                goog.isDef(DOMelem.lookingGlass) ?
+                DOMelem.lookingGlass.getOriginalContent() :
+                DOMelem.innerText);
+          }
+        }
+
+        var action = utils.text.getPgpAction(selectionBody, true);
+
+        callback({
+          action: action,
+          selection: selectionBody,
+          recipients: recipients,
+          from: '<' + window.config.signer + '>',
+          request: true,
+          origin: this.getOrigin_(),
+          canInject: true
+        });
+      }, this));
+    }
+  }, this));
+};
+
+
+/**
  * Retrieves OpenPGP content selected by the user.
  * @param {*} req The request to get the user-selected content.
  * @param {!MessageSender} sender The sender of the initialization request.
@@ -300,17 +402,22 @@ ext.Helper.prototype.getSelectedContentGmonkey_ = function(selectionRequest,
  * @private
  */
 ext.Helper.prototype.getSelectedContent_ = function(req, sender, callback) {
-  if (this.executed_) {
-    goog.dispose(this);
-    return;
-  } else {
-    this.executed_ = true;
+  var isYmail = this.isYmail_();
+  var hasSelection = Boolean(this.getSelection_());
+
+  if (!isYmail) {
+    if (this.executed_) {
+      goog.dispose(this);
+      return;
+    } else {
+      this.executed_ = true;
+    }
   }
 
   var selectionRequest = /** @type {!e2e.ext.messages.GetSelectionRequest} */ (
       req);
 
-  if (!Boolean(this.getSelection_()) && this.isGmail_()) {
+  if (!hasSelection && this.isGmail_()) {
     gmonkey.isAvailable(goog.bind(function(isAvailable) {
       if (isAvailable) {
         this.getSelectedContentGmonkey_(selectionRequest, callback);
@@ -318,11 +425,19 @@ ext.Helper.prototype.getSelectedContent_ = function(req, sender, callback) {
         this.getSelectedContentNative_(selectionRequest, callback);
       }
     }, this));
+  } else if (!hasSelection && isYmail) {
+    if (e2ebind.isStarted()) {
+      this.getSelectedContentE2ebind_(selectionRequest, callback);
+    } else {
+      this.getSelectedContentNative_(selectionRequest, callback);
+    }
   } else {
     this.getSelectedContentNative_(selectionRequest, callback);
   }
 
-  chrome.runtime.onMessage.removeListener(this.getValueHandler_);
+  if (!isYmail) {
+    chrome.runtime.onMessage.removeListener(this.getValueHandler_);
+  }
   return true;
 };
 
@@ -380,6 +495,16 @@ ext.Helper.prototype.isGmail_ = function() {
 
 
 /**
+ * Indicates if the current web app is Yahoo Mail.
+ * @return {boolean} True if ymail. Otherwise false.
+ * @private
+ */
+ext.Helper.prototype.isYmail_ = function() {
+  return utils.text.isYmailOrigin(this.getOrigin_());
+};
+
+
+/**
  * Returns the origin for the current page.
  * @return {string} The origin for the current page.
  * @private
@@ -392,7 +517,10 @@ ext.Helper.prototype.getOrigin_ = function() {
 
 // Create the helper and start it.
 if (!!chrome.extension) {
-  /** @type {!e2e.ext.Helper} */
-  window.helper = new e2e.ext.Helper();
-  window.helper.runOnce();
+  if (!window.helper ||
+      !e2e.ext.utils.text.isYmailOrigin(window.location.origin)) {
+    /** @type {!e2e.ext.Helper} */
+    window.helper = new e2e.ext.Helper();
+    window.helper.runOnce();
+  }
 }
