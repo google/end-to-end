@@ -181,6 +181,7 @@ function testExecuteAction() {
       goog.testing.mockmatchers.ignoreArgument,
       new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
         assertEquals(plaintext, arg.content);
+        assertTrue(goog.isFunction(arg.passphraseCallback));
         return true;
       }),
       goog.testing.mockmatchers.ignoreArgument,
