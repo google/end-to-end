@@ -173,6 +173,7 @@ ui.Prompt.prototype.processSelectedContent_ =
     recipients = contentBlob.recipients || [];
     contentBlob.action = action;
     canInject = contentBlob.canInject;
+    contentBlob.subject = contentBlob.subject || undefined;
   }
 
   if (!this.pgpLauncher_.hasPassphrase() &&

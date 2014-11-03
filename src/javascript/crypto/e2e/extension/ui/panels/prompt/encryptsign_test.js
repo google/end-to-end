@@ -259,6 +259,7 @@ function testSaveDraftIntoPage() {
   var origin = 'http://www.example.com';
   var plaintext = 'plaintext message';
   var encrypted = 'header\n\nencrypted message';
+  var subject = 'some subject';
 
   var encryptCb = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
   stubs.setPath('e2e.ext.actions.EncryptSign.prototype.execute',
@@ -283,20 +284,26 @@ function testSaveDraftIntoPage() {
   stubs.set(e2e.ext.utils.action, 'updateSelectedContent',
       mockControl.createFunctionMock('updateSelectedContent'));
   var contentArg = new goog.testing.mockmatchers.SaveArgument(goog.isString);
+  var subjectArg = new goog.testing.mockmatchers.SaveArgument(function(a) {
+    return (!goog.isDef(a) || goog.isString(a));
+  });
   e2e.ext.utils.action.updateSelectedContent(contentArg, [], origin, true,
       goog.testing.mockmatchers.ignoreArgument,
-      goog.testing.mockmatchers.ignoreArgument);
+      goog.testing.mockmatchers.ignoreArgument, subjectArg);
 
   mockControl.$replayAll();
   panel.setContentInternal({
     request: true,
     selection: plaintext,
     recipients: [USER_ID],
-    origin: origin
+    origin: origin,
+    subject: subject
   });
   panel.render(document.body);
   textArea = document.querySelector('textarea');
   assertEquals(plaintext, textArea.value);
+  subjectInput = document.getElementById(constants.ElementId.SUBJECT_HOLDER);
+  assertEquals(subject, subjectInput.value);
 
   panel.saveDraft_(origin, {type: 'click'});
   encryptCb.arg(encrypted);

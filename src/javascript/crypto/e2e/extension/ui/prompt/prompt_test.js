@@ -372,6 +372,7 @@ function testDecrypt() {
 function testContentInsertedOnEncrypt() {
   var plaintext = 'irrelevant';
   var origin = 'http://www.example.com';
+  var subject = 'encrypted message';
 
   stubs.replace(e2e.ext.utils.text, 'extractValidEmail',
       function(recipient) {
@@ -383,8 +384,11 @@ function testContentInsertedOnEncrypt() {
   stubs.set(prompt.pgpLauncher_, 'updateSelectedContent',
       mockControl.createFunctionMock('updateSelectedContent'));
   var encryptedMsg = new goog.testing.mockmatchers.SaveArgument(goog.isString);
+  var subjectMsg = new goog.testing.mockmatchers.SaveArgument(function(a) {
+    return (!goog.isDef(a) || goog.isString(a));
+  });
   prompt.pgpLauncher_.updateSelectedContent(encryptedMsg, [USER_ID], origin,
-      false, goog.testing.mockmatchers.ignoreArgument);
+      false, goog.testing.mockmatchers.ignoreArgument, subjectMsg);
 
   mockControl.$replayAll();
   populatePgpKeys();
@@ -397,7 +401,8 @@ function testContentInsertedOnEncrypt() {
       selection: plaintext,
       recipients: [USER_ID],
       origin: origin,
-      canInject: true
+      canInject: true,
+      subject: subject
     }, constants.Actions.ENCRYPT_SIGN);
 
     var protectBtn = document.querySelector('button.action');
@@ -409,6 +414,7 @@ function testContentInsertedOnEncrypt() {
       insertBtn.click();
 
       assertContains('-----BEGIN PGP MESSAGE-----', encryptedMsg.arg);
+      assertEquals(subject, subjectMsg.arg);
       mockControl.$verifyAll();
       asyncTestCase.continueTesting();
     }, 500);

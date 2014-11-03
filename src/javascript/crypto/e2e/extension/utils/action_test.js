@@ -120,6 +120,7 @@ function testUpdateSelectedContent() {
   var content = 'irrelevant';
   var recipients = [];
   var origin = 'irrelevant';
+  var subject = 'irrelevant';
   var expectMoreUpdates = false;
   var callback = mockControl.createFunctionMock();
   callback();
@@ -128,11 +129,12 @@ function testUpdateSelectedContent() {
   stubs.set(
       launcher, 'updateSelectedContent', mockControl.createFunctionMock());
   launcher.updateSelectedContent(
-      content, recipients, origin, expectMoreUpdates, callbackArg);
+      content, recipients, origin, expectMoreUpdates, callbackArg, subject);
 
   mockControl.$replayAll();
   utils.updateSelectedContent(
-      content, recipients, origin, expectMoreUpdates, callback);
+      content, recipients, origin, expectMoreUpdates, callback,
+      goog.nullFunction, subject);
   callbackArg.arg();
   mockControl.$verifyAll();
 }
