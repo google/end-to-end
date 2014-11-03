@@ -66,6 +66,14 @@ e2e_build_templates() {
 }
 
 e2e_assert_templates() {
+  # Rebuild the SOY templates if they've been modified
+  for filename in `git diff --name-only master`; do
+    if [[ "$filename" =~ ^.*\.soy$ ]]; then
+        e2e_build_templates
+        break
+    fi
+  done
+
   if [ ! -d $BUILD_TPL_DIR ]; then
     e2e_build_templates
   else
@@ -105,8 +113,7 @@ e2e_build_extension() {
   e2e_assert_dependencies
   set -e
   e2e_assert_jsdeps
-  # always rebuild the SOY templates
-  e2e_build_templates
+  e2e_assert_templates
 
   BUILD_EXT_DIR="$BUILD_DIR/extension"
   echo "Building End-To-End extension to $BUILD_EXT_DIR"
