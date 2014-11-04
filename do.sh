@@ -19,7 +19,7 @@
 #  */
 PYTHON_CMD="python"
 JSCOMPILE_CMD="java -jar lib/closure-compiler/compiler.jar --flagfile=compiler.flags"
-
+CKSUM_CMD="cksum" # chosen because it's available on most Linux/OS X installations
 BUILD_DIR="build"
 BUILD_TPL_DIR="$BUILD_DIR/templates"
 cd ${0%/*}
@@ -52,6 +52,12 @@ e2e_assert_dependencies() {
   echo "All dependencies met."
 }
 
+e2e_get_file_cksum() {
+  # creates a checksum of a given file spec
+  # no-op if $CKSUM_CMD is not available
+  type $CKSUM_CMD >/dev/null 2>&1 && (find src -name $1 | sort | xargs $CKSUM_CMD | $CKSUM_CMD) || true
+}
+
 e2e_build_templates() {
   e2e_assert_dependencies
   set -e
@@ -59,6 +65,8 @@ e2e_build_templates() {
   rm -rf "$BUILD_TPL_DIR/*"
   # Compile soy templates
   echo "Compiling Soy templates..."
+  rm -f "$BUILD_TPL_DIR/cksum"
+  e2e_get_file_cksum '*.soy' > "$BUILD_TPL_DIR/cksum"
   find src -name '*.soy' -exec java -jar lib/closure-templates-compiler/SoyToJsSrcCompiler.jar \
   --shouldProvideRequireSoyNamespaces --shouldGenerateJsdoc --shouldDeclareTopLevelNamespaces --isUsingIjData --srcs {} \
   --outputPathFormat "$BUILD_TPL_DIR/{INPUT_DIRECTORY}{INPUT_FILE_NAME}.js" \;
@@ -69,7 +77,14 @@ e2e_assert_templates() {
   if [ ! -d $BUILD_TPL_DIR ]; then
     e2e_build_templates
   else
-    echo "Using cached templates - ./do.sh clean if you with to rebuild them."
+    # If cmp is unavailable, just ignore the check, instead of exiting
+    type cmp >/dev/null 2>&1 && (e2e_get_file_cksum '*.soy' | cmp "$BUILD_TPL_DIR/cksum" - >/dev/null 2>&1) || true
+    if [ -f "$BUILD_TPL_DIR/cksum" -a $? -eq 0 ] ; then
+      echo "Using previous template build - ./do.sh clean if you with to rebuild the templates."
+    else
+      echo "Template files changed since last build. Rebuilding..."
+      e2e_build_templates
+    fi
   fi
 }
 
@@ -169,7 +184,6 @@ e2e_generate_jsdeps() {
     --root_with_prefix="lib/closure-templates-compiler/ lib/closure-templates-compiler/" \
     --root_with_prefix="lib/zlib.js/ lib/zlib.js/" \
     > "$BUILD_DIR/deps.js"
-
 }
 
 e2e_testserver() {
