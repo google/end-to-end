@@ -68,7 +68,7 @@ function testInstallAndRemoveGlass() {
   e2e.openpgp.asciiArmor.extractPgpBlock(originalContent).$returns('some text');
   stubs.setPath(
       'chrome.runtime.getURL', mockControl.createFunctionMock('getURL'));
-  chrome.runtime.getURL('glass.html').$returns(window.location.href);
+  chrome.runtime.getURL('glass.html').$returns('data:text/html');
   chrome.runtime.getURL('').$returns('*');
 
   stubs.setPath('goog.crypt.base64.encodeString',
@@ -78,19 +78,16 @@ function testInstallAndRemoveGlass() {
 
   assertEquals(1, elem.childNodes.length);
 
-  wrapper.installGlass();
-  assertEquals(5, elem.childNodes.length);
-  assertNotNull(elem.querySelector('iframe'));
-  assertContains('Here is', elem.innerText);
-  assertContains('to display', elem.innerText);
-
   asyncTestCase.waitForAsync('Waiting for glass to be installed.');
-  window.setTimeout(function() {
+  wrapper.installGlass(function() {
+    assertEquals(5, elem.childNodes.length);
+    assertNotNull(elem.querySelector('iframe'));
+    assertContains('Here is', elem.innerText);
+    assertContains('to display', elem.innerText);
     wrapper.removeGlass();
     assertEquals(1, elem.childNodes.length);
     assertEquals(originalContent, elem.innerText);
-
     mockControl.$verifyAll();
     asyncTestCase.continueTesting();
-  }, 500);
+  });
 }

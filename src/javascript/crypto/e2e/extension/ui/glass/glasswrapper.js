@@ -70,13 +70,14 @@ ui.GlassWrapper.prototype.disposeInternal = function() {
 
 /**
  * Installs the looking glass into the hosting page.
+ * @param {function()=} opt_callback Callback function to call when the glass
+ *     frame was loaded.
  */
-ui.GlassWrapper.prototype.installGlass = function() {
+ui.GlassWrapper.prototype.installGlass = function(opt_callback) {
   this.targetElem_.lookingGlass = this;
   goog.array.extend(this.targetElemChildren_, this.targetElem_.childNodes);
 
   var glassFrame = goog.dom.createElement(goog.dom.TagName.IFRAME);
-  glassFrame.src = chrome.runtime.getURL('glass.html');
   glassFrame.scrolling = 'no';
   goog.style.setSize(glassFrame, goog.style.getSize(this.targetElem_));
   glassFrame.style.border = 0;
@@ -96,12 +97,17 @@ ui.GlassWrapper.prototype.installGlass = function() {
     glassFrame.contentWindow.postMessage(
         goog.crypt.base64.encodeString(pgpMessage, true),
         chrome.runtime.getURL(''));
+    if (opt_callback) {
+      opt_callback();
+    }
   }, this), false);
 
   glassFrame.addEventListener('mousewheel', function(evt) {
     evt.stopPropagation();
     evt.preventDefault();
   });
+  // Loading the document after an onload handler has been bound.
+  glassFrame.src = chrome.runtime.getURL('glass.html');
 };
 
 
