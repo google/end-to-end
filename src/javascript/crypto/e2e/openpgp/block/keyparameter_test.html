@@ -1,0 +1,422 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// Author:  kbsriram@google.com (KB Sriram)
+// -->
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>Unit Test of sane key parameters</title>
+<script src="../../../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.signer.all');
+  goog.require('e2e.cipher.all');
+  goog.require('e2e.openpgp.block.all');
+  goog.require('e2e.openpgp.block.factory');
+ </script>
+</head>
+<body>
+<!--
+ Certificate contains a main key with an RSA exponent value of 1.
+ This certificate should be rejected entirely.
+
+# pgpdump -i
+Old: Public Key Packet(tag 6)(267 bytes)
+	Ver 4 - new
+	Public key creation time - Wed Jul 30 14:39:24 PDT 2014
+	Pub alg - RSA Encrypt or Sign(pub 1)
+	RSA n(2048 bits) - 8c b5 1f 89 44 d4 14 ce c3 e0 95 e0 a3 e4 53 f2 d6 aa 99 ed e3 f9 1c c4 23 e8 fe 40 45 5d a6 83 e7 cc 9a f1 31 a5 35 b5 d2 17 e6 59 a0 65 d2 0c d5 2c ca 62 c8 cc d0 6b 7e cb 38 68 9c 62 9a 77 e3 58 5a af e3 da 3e c8 25 0d f5 a7 74 8c aa f7 a1 30 fe 06 e5 24 d9 76 a2 2d 97 e1 61 8e c4 81 bc 28 8b 25 38 7b cb 9c 58 68 10 d6 91 b9 13 4d e2 2d 93 21 0a d2 aa f5 06 0b da 5f 7f 97 6b 94 62 70 70 ec d5 35 66 2a 4f 3e df c9 b4 fd 6c 33 46 54 90 9f 9b 1f 4d df fa f5 96 77 cb 9b a0 43 db 44 25 07 df 16 f3 93 2f 84 b9 af 16 e2 00 91 90 f2 cc 11 84 f2 0f 91 c2 0c ad 09 06 31 cb ad 94 ed 53 76 77 5f 24 7a 1e 02 7f 1f 4a 62 3b 44 07 38 30 9a ef c2 3c 5c 58 e3 c3 ad 76 35 23 0b 0c 62 07 8b 1a 86 ea 92 24 ca e8 fd c2 cd 2a 79 55 f9 c8 a6 8e 37 dd 74 ce 60 e8 c0 4d 13 63 a7
+	RSA e(1 bits) - 01
+Old: User ID Packet(tag 13)(23 bytes)
+	User ID - bad-exponent-rsa-master
+Old: Signature Packet(tag 2)(295 bytes)
+	Ver 4 - new
+	Sig type - Positive certification of a User ID and Public Key packet(0x13).
+	Pub alg - RSA Encrypt or Sign(pub 1)
+	Hash alg - SHA1(hash 2)
+	Hashed Sub: signature creation time(sub 2)(4 bytes)
+		Time - Fri Nov  7 13:39:25 PST 2014
+	Hashed Sub: key flags(sub 27)(1 bytes)
+		Flag - This key may be used to certify other keys
+		Flag - This key may be used to sign data
+	Hashed Sub: preferred symmetric algorithms(sub 11)(1 bytes)
+		Sym alg - AES with 128-bit key(sym 7)
+	Hashed Sub: preferred hash algorithms(sub 21)(1 bytes)
+		Hash alg - SHA256(hash 8)
+	Hashed Sub: features(sub 30)(1 bytes)
+		Flag - Modification detection (packets 18 and 19)
+	Sub: issuer key ID(sub 16)(8 bytes)
+		Key ID - 0x626BA0EB04164FA9
+	Hash left 2 bytes - 41 af
+	RSA m^d mod n(2033 bits) - 01 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 00 30 21 30 09 06 05 2b 0e 03 02 1a 05 00 04 14 41 af b0 c2 c4 74 ab a4 61 ee b4 c9 4c 97 a9 66 33 07 4d 48
+		-> PKCS-1
+Old: Public Subkey Packet(tag 14)(269 bytes)
+	Ver 4 - new
+	Public key creation time - Wed Jul 30 14:39:24 PDT 2014
+	Pub alg - RSA Encrypt or Sign(pub 1)
+	RSA n(2048 bits) - be 7f 68 f1 21 78 06 41 9a d1 e6 cf aa 22 3a 36 fb 45 0b 8f ea e1 d1 a3 31 f0 50 51 a8 90 32 3b 37 d9 15 c5 0d 6a 15 72 31 7b 04 6d 55 44 ef 74 e4 f6 85 bf 84 ff 75 4e 5c bf 2c 4c df ae 3a 54 98 89 ef 14 fd a9 a7 89 73 7a 70 4a ea 37 54 c6 b9 77 0c f7 7d b7 f8 9f 19 67 4b b8 83 f4 1b 2a ca 78 82 92 26 06 33 2e 82 e4 de 09 75 62 49 53 6b 37 45 30 bc 30 83 3d 31 c6 35 0d e1 53 2e d4 d2 3f 10 82 31 52 ac e5 1a b6 6a 13 9f 5c 16 8f 7d 97 84 43 e7 6d 11 95 2d c5 df 7e 27 fe 30 3d bb ca 21 82 5f ca 9a ba d5 98 79 d4 ce d3 82 a7 d1 ca a1 fc cf 43 51 f2 8e ad bc 52 71 4b 2d b8 95 18 65 aa 3f e4 cb 71 59 1b 57 9b 4e 76 b2 3f fe f9 3d 2b e2 2b c8 b7 80 0f 06 b9 04 fa 62 b2 0a e8 3d cf f2 31 e9 f9 68 00 21 12 6c 51 29 1f 4b 65 2f 3d 73 10 df 27 9c 96 e7 ae d2 61 d5 09
+	RSA e(17 bits) - 01 00 01
+Old: Signature Packet(tag 2)(286 bytes)
+	Ver 4 - new
+	Sig type - Subkey Binding Signature(0x18).
+	Pub alg - RSA Encrypt or Sign(pub 1)
+	Hash alg - SHA1(hash 2)
+	Hashed Sub: signature creation time(sub 2)(4 bytes)
+		Time - Fri Nov  7 13:39:25 PST 2014
+	Hashed Sub: key flags(sub 27)(1 bytes)
+		Flag - This key may be used to encrypt communications
+		Flag - This key may be used to encrypt storage
+	Sub: issuer key ID(sub 16)(8 bytes)
+		Key ID - 0x626BA0EB04164FA9
+	Hash left 2 bytes - c2 9e
+	RSA m^d mod n(2033 bits) - 01 ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 00 30 21 30 09 06 05 2b 0e 03 02 1a 05 00 04 14 c2 9e ad 3c c1 70 52 84 f5 26 2c 18 05 9c 88 d5 0f 77 51 4f
+		-> PKCS-1
+
+-->
+<textarea id="BadRSAMasterExponent" style="display:none">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2
+
+mQELBFPZZgwBCACMtR+JRNQUzsPgleCj5FPy1qqZ7eP5HMQj6P5ARV2mg+fMmvEx
+pTW10hfmWaBl0gzVLMpiyMzQa37LOGicYpp341har+PaPsglDfWndIyq96Ew/gbl
+JNl2oi2X4WGOxIG8KIslOHvLnFhoENaRuRNN4i2TIQrSqvUGC9pff5drlGJwcOzV
+NWYqTz7fybT9bDNGVJCfmx9N3/r1lnfLm6BD20QlB98W85MvhLmvFuIAkZDyzBGE
+8g+RwgytCQYxy62U7VN2d18keh4Cfx9KYjtEBzgwmu/CPFxY48OtdjUjCwxiB4sa
+huqSJMro/cLNKnlV+cimjjfddM5g6MBNE2OnAAEBtBdiYWQtZXhwb25lbnQtcnNh
+LW1hc3RlcokBJwQTAQIAEgUCVF08DQIbAwILBwIVCAIeAQAKCRBia6DrBBZPqUGv
+B/EB////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+//////////////////////////////////////8AMCEwCQYFKw4DAhoFAAQUQa+w
+wsR0q6Rh7rTJTJepZjMHTUi5AQ0EU9lmDAEIAL5/aPEheAZBmtHmz6oiOjb7RQuP
+6uHRozHwUFGokDI7N9kVxQ1qFXIxewRtVUTvdOT2hb+E/3VOXL8sTN+uOlSYie8U
+/amniXN6cErqN1TGuXcM9323+J8ZZ0u4g/QbKsp4gpImBjMuguTeCXViSVNrN0Uw
+vDCDPTHGNQ3hUy7U0j8QgjFSrOUatmoTn1wWj32XhEPnbRGVLcXffif+MD27yiGC
+X8qautWYedTO04Kn0cqh/M9DUfKOrbxScUstuJUYZao/5MtxWRtXm052sj/++T0r
+4ivIt4APBrkE+mKyCug9z/Ix6floACESbFEpH0tlLz1zEN8nnJbnrtJh1QkAEQEA
+AYkBHgQYAQIACQUCVF08DQIbDAAKCRBia6DrBBZPqcKeB/EB////////////////
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////
+//////////////////8AMCEwCQYFKw4DAhoFAAQUwp6tPMFwUoT1JiwYBZyI1Q93
+UU8=
+=eHnn
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<!--
+ Certificate contains a subkey with an RSA exponent value of 1.
+ This subkey should be discarded, and the remainder of the certificate
+ should be processed.
+
+# pgpdump -i
+Old: Public Key Packet(tag 6)(269 bytes)
+	Ver 4 - new
+	Public key creation time - Wed Jul 30 14:50:50 PDT 2014
+	Pub alg - RSA Encrypt or Sign(pub 1)
+	RSA n(2048 bits) - b5 7c 98 98 c7 ed b3 a2 91 7c ee e9 1a c2 5b f2 07 99 b8 c2 30 27 22 51 48 19 6c 16 14 a6 06 5c 0b 29 c8 4d e9 93 6b 43 4d a3 67 15 a9 2f 8a e1 b6 53 74 75 e1 fc eb ef 9f 4a de 31 64 01 b9 3f 81 fc c2 8a 6a 10 db b0 47 39 c8 52 58 7c 31 95 da 7a 5c dc be 07 9c f2 c8 01 1d ec fa e0 df 68 10 b4 51 89 0d 73 9e ee 31 4e 27 0b 28 93 79 16 cc 09 d1 e1 b6 13 61 09 c1 c0 4e 29 91 a5 fc 23 8e eb c5 8c 7a 17 72 ca 8d fa ba cf 2a 47 25 e1 0c 39 6c 3d 7e d2 cb f1 e4 af bc 7b 8d 63 74 c6 d4 47 d6 42 fe 0d fa 8f 51 27 a1 03 79 fe 95 c1 e7 5f 32 45 eb 12 01 67 45 c1 d4 84 2d 9c 61 c1 f8 d9 29 67 dc d9 e0 43 a1 1e dc 34 12 46 22 33 be 72 62 92 22 55 3f bf 42 c4 6c 66 59 81 86 be b1 12 bd 36 5f 2c 6e 50 07 77 88 59 ff a3 88 4f 33 63 b5 59 f6 45 b8 bf 83 6e 37 32 18 20 b6 37
+	RSA e(17 bits) - 01 00 01
+Old: User ID Packet(tag 13)(23 bytes)
+	User ID - bad-exponent-rsa-subkey
+Old: Signature Packet(tag 2)(296 bytes)
+	Ver 4 - new
+	Sig type - Positive certification of a User ID and Public Key packet(0x13).
+	Pub alg - RSA Encrypt or Sign(pub 1)
+	Hash alg - SHA1(hash 2)
+	Hashed Sub: signature creation time(sub 2)(4 bytes)
+		Time - Fri Nov  7 13:50:51 PST 2014
+	Hashed Sub: key flags(sub 27)(1 bytes)
+		Flag - This key may be used to certify other keys
+		Flag - This key may be used to sign data
+	Hashed Sub: preferred symmetric algorithms(sub 11)(1 bytes)
+		Sym alg - AES with 128-bit key(sym 7)
+	Hashed Sub: preferred hash algorithms(sub 21)(1 bytes)
+		Hash alg - SHA256(hash 8)
+	Hashed Sub: features(sub 30)(1 bytes)
+		Flag - Modification detection (packets 18 and 19)
+	Sub: issuer key ID(sub 16)(8 bytes)
+		Key ID - 0x82F41E233075242C
+	Hash left 2 bytes - c5 2e
+	RSA m^d mod n(2048 bits) - af a2 87 73 2b 7a b6 48 46 e5 26 25 b7 34 61 8c 16 13 e2 3b 9d 4e 50 b9 ba 7f 4a b0 6b 9c fd 1d 70 a7 17 ec 49 ae b1 c1 c3 56 fc 9f 61 86 b6 5e 51 d8 85 f2 b5 06 01 0e 5b d4 b8 f4 59 58 4d 30 82 ba 67 e6 e9 65 c3 d5 2e d6 c4 5b 81 ab a8 02 ff e4 62 3a c1 2e f2 20 7a 13 c9 06 0b 2c d2 f8 42 27 3b ff 7a 4b 29 75 55 e2 79 e0 98 46 03 d2 04 fe a0 1e 4f 93 98 1a f9 0b b7 2b d7 d8 10 66 4f 8c d1 41 21 8b 37 b0 b9 fc b3 9a 00 f4 ff 5d c6 82 b8 85 12 a9 ef 03 6f f3 4c 47 75 69 17 fb cc ce b6 09 e1 40 28 33 a6 42 b8 74 93 fe b8 4e 6c 6d 6b 95 6a da 74 a5 2c 82 d0 e5 57 34 18 0e 2c 48 47 62 8f 75 3d f0 1a ef 75 a8 4f 9a bd 3f 44 6e 2e 52 f7 58 7d 48 61 e3 cb e1 ef d3 38 79 50 62 f0 3b ac 3a 34 b5 b6 33 ec 20 59 e3 a5 b8 2e 14 6d 19 01 51 68 19 16 b8 57 c5 6c 0a 27 d1
+		-> PKCS-1
+Old: Public Subkey Packet(tag 14)(267 bytes)
+	Ver 4 - new
+	Public key creation time - Wed Jul 30 14:50:50 PDT 2014
+	Pub alg - RSA Encrypt or Sign(pub 1)
+	RSA n(2048 bits) - ae b2 75 1c b3 14 69 97 62 e7 1f 49 b7 11 37 ad 2b be b0 86 ef 16 fd d5 3b 00 ac 40 1b c1 0e 24 aa d8 f0 d4 fd c4 af c2 17 34 29 c9 4a 15 56 75 86 e7 dd a9 00 25 d3 30 e8 ad 0d f4 c3 1f 0f 4d 2f 08 26 35 68 46 6e c0 59 1d fb ee 5b 68 f8 5d a1 fb 47 6a 9b f2 40 9b 65 ee 45 f1 1e ba 01 59 7e 51 b8 af 0f 1d f5 d2 2d 2e 58 8b ef 7d 07 7a 53 65 0d d9 db c2 78 15 0b ab a6 a7 a8 07 55 19 57 11 48 84 0d d5 ea 31 af b7 f0 e7 b0 1d 1c 01 c4 d6 74 66 96 f9 4f f3 1a ce d4 57 b8 12 68 43 8b b8 6b af 6d 77 a1 a3 e2 fe cb 89 83 90 9f 15 71 78 62 66 03 4e 7e c5 55 10 8a 37 ce 4b 94 b9 8b 04 9b 92 e6 ff ac 99 0b fc da 07 4d 50 a0 5a 7a 1e 90 7f f8 3a da 4a 84 05 20 72 3c 8d 82 75 9c 69 3f 27 41 cf 6b 57 8b 9b ed 07 ea 78 39 25 f0 94 e1 2b cd d3 9e 44 56 c9 ce e5 65 5b 95 49
+	RSA e(1 bits) - 01
+Old: Signature Packet(tag 2)(287 bytes)
+	Ver 4 - new
+	Sig type - Subkey Binding Signature(0x18).
+	Pub alg - RSA Encrypt or Sign(pub 1)
+	Hash alg - SHA1(hash 2)
+	Hashed Sub: signature creation time(sub 2)(4 bytes)
+		Time - Fri Nov  7 13:50:51 PST 2014
+	Hashed Sub: key flags(sub 27)(1 bytes)
+		Flag - This key may be used to encrypt communications
+		Flag - This key may be used to encrypt storage
+	Sub: issuer key ID(sub 16)(8 bytes)
+		Key ID - 0x82F41E233075242C
+	Hash left 2 bytes - 06 59
+	RSA m^d mod n(2043 bits) - 04 ea 93 b3 80 a0 97 3b ef e0 f4 a2 42 bb 07 52 07 ba d3 eb ae c6 10 c9 e6 70 72 df d5 29 aa c1 7a a7 2c 11 13 df 52 c0 bf c4 50 70 f1 d7 83 37 ec a4 84 7f 6e ff b5 96 97 46 ed 89 b8 c9 d6 f3 c2 26 bf 67 22 36 15 4d c2 73 67 5f b2 9f 9f cb 15 4c 9a 91 f6 50 13 fa cf 6e 45 10 4f b8 d3 7f 0d 88 7a 9e 1a ac 95 8d 63 72 8a d7 bb d0 24 e2 62 53 0b 83 8b c8 e5 d8 53 b7 7b 6d ee 28 13 dd 23 14 aa 95 2f 5d 43 07 18 0c 65 92 69 85 3f 2d 3d 59 48 d3 24 b7 53 15 54 db 9b 6b 15 04 17 19 03 9a af a4 d7 93 5d 11 6e 95 65 bf 23 75 18 6b 9d 94 cf 54 a0 c1 50 d3 dd a7 03 c2 02 b5 75 e9 41 da 3e f6 75 b6 49 0a ee 20 7b 31 fc 4f 76 76 56 ad 66 a6 da 15 8d 15 6c 10 64 6d 5f 42 6f b5 c3 8a 35 49 4b b8 7c dd 1c f9 e7 83 84 2c ea 4d dd 76 4e d9 27 eb cd f8 f6 ab 7a 55 41 fd 59 bd
+		-> PKCS-1
+-->
+<textarea id="BadRSASubkeyExponent" style="display:none">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2
+
+mQENBFPZaLoBCAC1fJiYx+2zopF87ukawlvyB5m4wjAnIlFIGWwWFKYGXAspyE3p
+k2tDTaNnFakviuG2U3R14fzr759K3jFkAbk/gfzCimoQ27BHOchSWHwxldp6XNy+
+B5zyyAEd7Prg32gQtFGJDXOe7jFOJwsok3kWzAnR4bYTYQnBwE4pkaX8I47rxYx6
+F3LKjfq6zypHJeEMOWw9ftLL8eSvvHuNY3TG1EfWQv4N+o9RJ6EDef6VwedfMkXr
+EgFnRcHUhC2cYcH42Sln3NngQ6Ee3DQSRiIzvnJikiJVP79CxGxmWYGGvrESvTZf
+LG5QB3eIWf+jiE8zY7VZ9kW4v4NuNzIYILY3ABEBAAG0F2JhZC1leHBvbmVudC1y
+c2Etc3Via2V5iQEoBBMBAgASBQJUXT67AhsDAgsHAhUIAh4BAAoJEIL0HiMwdSQs
+xS4IAK+ih3MrerZIRuUmJbc0YYwWE+I7nU5Qubp/SrBrnP0dcKcX7EmuscHDVvyf
+YYa2XlHYhfK1BgEOW9S49FlYTTCCumfm6WXD1S7WxFuBq6gC/+RiOsEu8iB6E8kG
+CyzS+EInO/96Syl1VeJ54JhGA9IE/qAeT5OYGvkLtyvX2BBmT4zRQSGLN7C5/LOa
+APT/XcaCuIUSqe8Db/NMR3VpF/vMzrYJ4UAoM6ZCuHST/rhObG1rlWradKUsgtDl
+VzQYDixIR2KPdT3wGu91qE+avT9Ebi5S91h9SGHjy+Hv0zh5UGLwO6w6NLW2M+wg
+WeOluC4UbRkBUWgZFrhXxWwKJ9G5AQsEU9lougEIAK6ydRyzFGmXYucfSbcRN60r
+vrCG7xb91TsArEAbwQ4kqtjw1P3Er8IXNCnJShVWdYbn3akAJdMw6K0N9MMfD00v
+CCY1aEZuwFkd++5baPhdoftHapvyQJtl7kXxHroBWX5RuK8PHfXSLS5Yi+99B3pT
+ZQ3Z28J4FQurpqeoB1UZVxFIhA3V6jGvt/DnsB0cAcTWdGaW+U/zGs7UV7gSaEOL
+uGuvbXeho+L+y4mDkJ8VcXhiZgNOfsVVEIo3zkuUuYsEm5Lm/6yZC/zaB01QoFp6
+HpB/+DraSoQFIHI8jYJ1nGk/J0HPa1eLm+0H6ng5JfCU4SvN055EVsnO5WVblUkA
+AQGJAR8EGAECAAkFAlRdPrsCGwwACgkQgvQeIzB1JCwGWQf7BOqTs4Cglzvv4PSi
+QrsHUge60+uuxhDJ5nBy39UpqsF6pywRE99SwL/EUHDx14M37KSEf27/tZaXRu2J
+uMnW88Imv2ciNhVNwnNnX7Kfn8sVTJqR9lAT+s9uRRBPuNN/DYh6nhqslY1jcorX
+u9Ak4mJTC4OLyOXYU7d7be4oE90jFKqVL11DBxgMZZJphT8tPVlI0yS3UxVU25tr
+FQQXGQOar6TXk10RbpVlvyN1GGudlM9UoMFQ092nA8ICtXXpQdo+9nW2SQruIHsx
+/E92dlatZqbaFY0VbBBkbV9Cb7XDijVJS7h83Rz554OELOpN3XZO2Sfrzfj2q3pV
+Qf1ZvQ==
+=lu2e
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<!--
+ Certificate contains a main key with an DSA y value of 1.
+ This certificate should be rejected entirely.
+# pgpdump -i
+Old: Public Key Packet(tag 6)(559 bytes)
+	Ver 4 - new
+	Public key creation time - Wed Jul 30 18:02:59 PDT 2014
+	Pub alg - DSA Digital Signature Algorithm(pub 17)
+	DSA p(2048 bits) - a1 52 ad bf 92 93 d2 4f f6 24 5f 46 b6 a2 1f 38 25 4a 35 91 7d 5d fe 02 57 4b 36 38 22 e4 5d d1 9e 10 94 24 e8 e5 04 f5 fa bb 41 9f 35 a9 5d d9 a0 f8 74 ab 42 67 80 9d 68 3d 7b b1 25 81 b0 66 22 2f 67 45 01 6c 09 df 7e ff 67 42 47 73 ac 34 e6 1d 59 fb c0 6b aa 0e 89 e4 36 6b e6 33 9d f7 53 ac 03 4d 50 5b 29 67 f1 7a 69 4c 53 b8 23 3a a1 92 39 06 f3 33 c8 d6 35 7f 98 09 22 ca 61 47 63 f5 94 e3 86 f5 77 5e 2b 00 bd 8a 6d d5 0d b1 72 8f 4c df 94 f0 94 53 b7 bb aa 0d 3a 65 1d 77 14 82 92 21 1e 4d 10 96 69 96 9b c9 cc 60 e3 11 78 4e 4b 91 f8 0a 71 01 af e1 76 e9 4d 09 26 56 4e 51 9a 5b b2 de 80 d6 44 ed 3f 89 51 e8 e2 cb 30 8f 3c 13 29 d8 2a 03 e9 27 6e 6f 4d 6c 4c d8 01 61 18 66 8e 7a 3b d1 3f a3 29 50 f4 97 5c ef 9d 24 28 37 ca 01 fd d6 06 e2 65 c0 d8 3c b1 b7
+	DSA q(256 bits) - bc 0f 7a 30 13 cd c7 df f1 63 b5 dc 1a 28 2e 09 8b 9b e6 4e 1c 36 9e cc 9b 5d 2d fd 0a 34 d6 39
+	DSA g(2042 bits) - 02 ae ac f0 0e 81 14 f6 2b 3e 99 17 63 a0 ba 98 2d 9f 6c c2 65 fc 3c d2 b6 68 02 c7 0b bd 5b 36 95 f3 78 13 1d 20 9d 2a ea 5e 24 5b c3 e2 a0 51 f9 a3 0f 33 d5 d2 9b 6e a2 ed 2c d8 62 14 06 b9 34 f6 6c 12 c3 e4 0a 4b 41 b8 53 1a 4f c4 90 d6 57 09 7d b0 f1 d0 4f 8b 10 07 1e bc cf 21 cb f6 b0 94 88 0f c2 7c 5e d4 dd c1 04 77 cc 13 a7 19 a3 88 78 a1 44 39 ff 25 80 1f 03 c4 d8 34 e3 40 91 2a 64 c6 21 d1 29 b3 89 0b 77 0c 4d fa c3 6a 64 f3 41 52 dd 07 e1 14 55 90 f1 54 67 3c bb ca 15 6f 4e 46 19 4e 74 e1 54 07 95 51 57 16 93 e2 dd fe cb d9 4f 71 81 2f 04 d3 85 de b9 64 95 ac cb 29 24 c9 66 14 8a 07 70 52 6f 02 c3 ac 08 4a fa b9 17 5f 22 58 a6 a5 60 fd 98 c6 24 d2 67 50 1e a4 cc 18 40 ba a4 6b 8c 98 12 83 64 8a 40 4a 9e 40 f2 20 fe 54 b4 88 71 04 7c 95 4b 05 ef 4c
+	DSA y(1 bits) - 01
+Old: User ID Packet(tag 13)(16 bytes)
+	User ID - bad-dsa-y-master
+Old: Signature Packet(tag 2)(106 bytes)
+	Ver 4 - new
+	Sig type - Positive certification of a User ID and Public Key packet(0x13).
+	Pub alg - DSA Digital Signature Algorithm(pub 17)
+	Hash alg - SHA1(hash 2)
+	Hashed Sub: signature creation time(sub 2)(4 bytes)
+		Time - Fri Nov  7 17:02:59 PST 2014
+	Hashed Sub: key flags(sub 27)(1 bytes)
+		Flag - This key may be used to certify other keys
+		Flag - This key may be used to sign data
+	Hashed Sub: preferred symmetric algorithms(sub 11)(1 bytes)
+		Sym alg - AES with 128-bit key(sym 7)
+	Hashed Sub: preferred hash algorithms(sub 21)(1 bytes)
+		Hash alg - SHA256(hash 8)
+	Hashed Sub: features(sub 30)(1 bytes)
+		Flag - Modification detection (packets 18 and 19)
+	Sub: issuer key ID(sub 16)(8 bytes)
+		Key ID - 0xC5281CA2B3E19920
+	Hash left 2 bytes - 6c cf
+	DSA r(256 bits) - a1 bf 7e 08 ff f1 af 12 51 f2 af 6e 33 b5 1d 14 ce 1b 2c 3a c6 c1 b4 74 6f a2 1a cd 5c be c9 5d
+	DSA s(255 bits) - 7e 18 9e 74 61 8d 66 dd c6 2e 97 27 ae a0 e3 df bc ef 77 29 2a ea 75 f9 ed 3d 12 df b3 42 b4 24
+		-> hash(DSA q bits)
+-->
+<textarea id="BadDSAMasterY" style="display:none">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2
+
+mQIvBFPZlcMRCAChUq2/kpPST/YkX0a2oh84JUo1kX1d/gJXSzY4IuRd0Z4QlCTo
+5QT1+rtBnzWpXdmg+HSrQmeAnWg9e7ElgbBmIi9nRQFsCd9+/2dCR3OsNOYdWfvA
+a6oOieQ2a+YznfdTrANNUFspZ/F6aUxTuCM6oZI5BvMzyNY1f5gJIsphR2P1lOOG
+9XdeKwC9im3VDbFyj0zflPCUU7e7qg06ZR13FIKSIR5NEJZplpvJzGDjEXhOS5H4
+CnEBr+F26U0JJlZOUZpbst6A1kTtP4lR6OLLMI88EynYKgPpJ25vTWxM2AFhGGaO
+ejvRP6MpUPSXXO+dJCg3ygH91gbiZcDYPLG3AQC8D3owE83H3/FjtdwaKC4Ji5vm
+Thw2nsybXS39CjTWOQf6Aq6s8A6BFPYrPpkXY6C6mC2fbMJl/DzStmgCxwu9WzaV
+83gTHSCdKupeJFvD4qBR+aMPM9XSm26i7SzYYhQGuTT2bBLD5ApLQbhTGk/EkNZX
+CX2w8dBPixAHHrzPIcv2sJSID8J8XtTdwQR3zBOnGaOIeKFEOf8lgB8DxNg040CR
+KmTGIdEps4kLdwxN+sNqZPNBUt0H4RRVkPFUZzy7yhVvTkYZTnThVAeVUVcWk+Ld
+/svZT3GBLwTThd65ZJWsyykkyWYUigdwUm8Cw6wISvq5F18iWKalYP2YxiTSZ1Ae
+pMwYQLqka4yYEoNkikBKnkDyIP5UtIhxBHyVSwXvTAABAbQQYmFkLWRzYS15LW1h
+c3RlcohqBBMRAgASBQJUXWvDAhsDAgsHAhUIAh4BAAoJEMUoHKKz4ZkgbM8BAKG/
+fgj/8a8SUfKvbjO1HRTOGyw6xsG0dG+iGs1cvsldAP9+GJ50YY1m3cYulyeuoOPf
+vO93KSrqdfntPRLfs0K0JA==
+=Nq55
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+
+<!--
+ Certificate contains a subkey key with an DSA y value of 1.
+ This certificate should be read, but the subkey discarded.
+# pgpdump -i
+Old: Public Key Packet(tag 6)(814 bytes)
+	Ver 4 - new
+	Public key creation time - Thu Jul 31 07:51:36 PDT 2014
+	Pub alg - DSA Digital Signature Algorithm(pub 17)
+	DSA p(2048 bits) - c4 cd 18 c1 68 55 4f 1e cc 82 80 b7 2d 15 d7 1f b6 26 7e c5 ee 4e 2f 3c 80 42 52 f1 26 97 f1 13 eb 26 bc 1c 2f 8b 88 be 9c 3a a8 1a f0 06 54 4f 7d 0b 75 c2 2c ee 34 c2 89 ea 4b d0 7e 8c 46 f1 2e 8b fe 09 3a 91 78 50 c3 cf 1f 4f 94 1c 8d da 17 a1 e1 83 d9 c8 2f c1 ff 36 f0 aa b6 f6 f5 b6 e2 c6 dd e7 b2 d1 95 3f a0 bd 2c 14 15 03 ed 53 d0 1e 29 46 05 16 24 f2 69 52 77 c2 a7 a6 d0 e7 94 26 09 04 2f 86 7c 77 d0 f3 f0 d1 e3 5b 85 43 d5 4c 50 ee 22 f5 b9 18 59 30 42 83 3d dc d6 55 ea 44 b9 3f cc ad 7f f8 f9 35 f9 a5 ed a4 0f fa e0 9a 48 c3 02 d4 08 19 2a b2 98 38 39 42 5d de d2 60 07 5e 9a db 56 5d b7 18 83 fa a6 2f 89 d0 c3 74 69 24 4c 7d b1 e9 a5 7d 3e 9d 15 f7 0b 04 59 58 3d c9 7e 5f 21 24 a7 7c 98 92 ac d9 94 62 22 db 53 cf d5 f7 1d 16 d3 e8 96 cf fe c7 1e 41
+	DSA q(256 bits) - cf f2 1b 77 55 e6 34 fc b5 6b 80 fb 2c c9 b0 0e 47 c9 42 96 ab 49 0b ef e5 99 b5 1d 5b 99 a5 5f
+	DSA g(2045 bits) - 1e ea 83 41 58 da eb 1f 68 fb 63 7b 4b db 02 9c 9f 22 bd 73 a2 d6 07 b7 5a b4 47 ec 2c 0e 1f e9 fb e8 ec 8e 55 16 f2 b7 75 ec 09 8a 07 a8 95 de 2f 67 50 4f 62 46 d9 51 f2 49 2e 6f 8b 8f e8 9c a5 40 c8 cc 54 43 66 13 2f 76 84 0d a2 3e 5f 1d fd 5b 28 10 e1 72 45 6c dd 0d c9 4b c2 d7 99 b9 8f a9 f4 94 f8 47 f1 8c 0e dc 5d f7 f4 5e a0 d9 2e 69 9c 0e 48 86 36 67 bd f1 ad ae b3 84 99 57 20 32 58 c0 9e b7 8c c7 2a af 19 e8 37 17 f6 a1 7a 26 b3 37 52 18 6b be 14 4a 75 1d 40 e3 46 38 4a a0 e9 b3 3c a8 e8 91 28 e2 6d 84 ab c3 cf b3 14 bf 06 02 0a d6 7d 76 fd a7 7c d2 a9 af 76 84 94 5f 49 fd 0d 90 f1 43 a6 83 d0 61 0d 69 16 4d 24 43 57 07 d2 55 f7 bf 62 a1 53 80 42 e9 21 30 92 59 38 c6 67 48 ce fc 45 26 01 e1 03 a8 af 9c 83 e7 a3 61 aa 12 6f 47 9b ff 17 f2 c6 c5 12 0e
+	DSA y(2048 bits) - 92 f5 94 57 8d 46 6d 90 4d 29 46 ce 1e 4d 1b 3e b4 32 b4 23 d4 2b 30 5b 5b b1 b9 7a 18 a4 92 5c a4 ea b5 e8 58 34 a6 59 59 f0 ee 01 f7 d4 46 ec 84 e6 52 83 eb 3b 5b 64 d6 f5 6f be 5c 75 3d 79 b4 8b d6 cc d6 9d 70 79 99 1e 27 58 cd bb 83 0b 44 6c 40 66 e7 42 77 91 bd dc e2 d3 8f 51 85 18 40 1d fc 9b fd 83 25 d6 4c cf 9c 62 8e 51 82 37 d0 6e c4 e3 fe 5c de c2 dd 4f 56 97 b2 60 54 38 df 01 d0 ea 78 e2 d1 fa 46 b3 d2 ee 62 89 de 53 d4 40 f6 02 76 8f 48 fe 2f 99 d3 bf 9c d7 65 25 13 9b a7 9a 48 1f 1a fc 1d fb 02 29 a2 fe d9 0b 08 88 5a 82 23 19 50 bf ff 4d 27 f1 47 32 d9 87 c9 dd ef 61 62 0b 26 73 f4 4c 10 81 f8 97 01 5e 5d e0 4d 79 44 ac 26 17 1e ab 33 b8 c2 75 67 59 cf 57 fa 5d 28 4b 2e 30 e5 4d 0a 44 fe c8 6c f5 71 f0 fb e2 0a 53 9c da 07 0e 5e 87 d4 62 ab 04
+Old: User ID Packet(tag 13)(16 bytes)
+	User ID - bad-dsa-y-subkey
+Old: Signature Packet(tag 2)(106 bytes)
+	Ver 4 - new
+	Sig type - Positive certification of a User ID and Public Key packet(0x13).
+	Pub alg - DSA Digital Signature Algorithm(pub 17)
+	Hash alg - SHA256(hash 8)
+	Hashed Sub: signature creation time(sub 2)(4 bytes)
+		Time - Sat Nov  8 06:51:36 PST 2014
+	Hashed Sub: key flags(sub 27)(1 bytes)
+		Flag - This key may be used to certify other keys
+		Flag - This key may be used to sign data
+	Hashed Sub: preferred symmetric algorithms(sub 11)(1 bytes)
+		Sym alg - AES with 128-bit key(sym 7)
+	Hashed Sub: preferred hash algorithms(sub 21)(1 bytes)
+		Hash alg - SHA256(hash 8)
+	Hashed Sub: features(sub 30)(1 bytes)
+		Flag - Modification detection (packets 18 and 19)
+	Sub: issuer key ID(sub 16)(8 bytes)
+		Key ID - 0xBADB3D7B0A6AC10E
+	Hash left 2 bytes - ba ae
+	DSA r(256 bits) - ce 49 73 fb 97 7e 98 ea 2c 33 b2 8b d7 98 62 47 dd 04 6f 1d d3 02 63 36 a0 4d 50 66 ab ec 42 9c
+	DSA s(254 bits) - 3c d7 8f 41 26 5f fa df 60 29 25 00 c5 41 4b 41 6c 0d 54 14 70 ff 55 b8 11 c9 14 75 e8 36 80 68
+		-> hash(DSA q bits)
+Old: Public Subkey Packet(tag 14)(559 bytes)
+	Ver 4 - new
+	Public key creation time - Thu Jul 31 07:51:36 PDT 2014
+	Pub alg - DSA Digital Signature Algorithm(pub 17)
+	DSA p(2048 bits) - c9 59 bf e0 8d bb 99 b4 e3 96 17 2f 48 04 7f 21 ba 65 84 4a 82 0e ba b1 4c fb a9 51 f5 c6 14 3b eb 70 83 a8 be 72 5e e2 77 c6 6d ba 6b 96 a1 14 be 38 00 ca bd 84 81 25 0c ae ea 30 09 00 12 22 de 7e 7f bd 61 e6 d8 93 c6 b8 11 6c ed 6d 00 13 e4 72 e3 df 64 2f 16 4d e5 28 ce 6c cc f0 18 00 35 01 7d ae c5 5e 14 78 96 8a c6 98 bc 21 04 27 45 eb 90 0e 8e e9 49 1f 3e bc ec 85 49 6b 6a 30 6b 42 11 e0 23 32 14 b6 4b 6e 76 5e fb 28 06 12 bf bd 87 e7 86 08 e6 77 3f 54 f1 8a 0e 68 c9 99 2e 69 97 59 c7 b7 5a 50 70 b0 05 d9 1d 79 fc a3 47 9c 10 2b 2d 6d 83 ad c2 ab de 81 ad d0 c1 64 68 db f3 d4 a7 f5 81 99 8e 82 18 20 3b 46 bb 8f e7 40 e4 a3 65 4c 69 fd e1 f5 27 6a fe c5 0a 4d eb 6f 91 cd 08 11 77 9d 03 81 82 d1 26 de 6c 51 95 21 6f 4b e9 b0 fd dc 5f df e1 dc 67 67 5b 01
+	DSA q(256 bits) - 9c bc fd 9d 29 72 70 1f 9d fd 86 f3 84 44 07 00 bb af c8 d7 79 1c ec 16 6b a0 dc 86 cc a9 38 b7
+	DSA g(2044 bits) - 0e 0c 7b 66 80 a8 92 dd ca 59 ed 35 c9 95 41 13 9b 03 fa 5f 9e ab 0f 3b f2 d6 f2 eb 11 4d 5f 1f 82 6f 9e ef 50 ec a9 d6 1f 6e e2 3c 48 c9 ae 1e ae cc fb 3a 63 db 00 04 e0 10 e2 0a 2a 95 e7 48 12 92 77 29 a3 5d 79 1f cc 60 41 68 56 ad 52 76 32 1f 61 f6 ea 53 43 00 de b4 20 cc 7f ce e9 1c 8a d6 6b b9 42 32 4e 97 ee d7 48 2a 82 ef ce a6 a2 75 de 37 4d 00 d6 ad b0 af 56 c3 b3 02 2d 76 40 32 4a 60 92 b7 31 e2 0c 91 23 3a 8b a9 df f5 2c cd 05 48 6e 59 2e 76 ad 44 e6 41 9f f9 5f 0e 85 5c 1d 99 b5 78 5b d1 33 5e 06 ea 5a 36 cf 14 24 08 98 ca bf 96 a2 43 f3 55 78 44 31 72 56 bd 3a d0 c5 26 ba f5 77 94 93 3c 44 97 29 ad c8 a4 36 cb ab c7 6e ca c3 23 bd 83 bb b0 91 8f 10 70 e2 85 f7 93 bb 3e dd b8 27 d4 cf 03 72 13 47 64 f7 e0 9f a5 4b bf 59 c6 55 9e 5f 9e a5 08 1d 60
+	DSA y(1 bits) - 01
+Old: Signature Packet(tag 2)(193 bytes)
+	Ver 4 - new
+	Sig type - Subkey Binding Signature(0x18).
+	Pub alg - DSA Digital Signature Algorithm(pub 17)
+	Hash alg - SHA256(hash 8)
+	Hashed Sub: signature creation time(sub 2)(4 bytes)
+		Time - Sat Nov  8 06:51:36 PST 2014
+	Hashed Sub: key flags(sub 27)(1 bytes)
+		Flag - This key may be used to sign data
+	Hashed Sub: embedded signature(sub 32)(94 bytes)
+	Ver 4 - new
+	Sig type - Primary Key Binding Signature(0x19).
+	Pub alg - DSA Digital Signature Algorithm(pub 17)
+	Hash alg - SHA1(hash 2)
+	Hashed Sub: signature creation time(sub 2)(4 bytes)
+		Time - Sat Nov  8 06:51:36 PST 2014
+	Sub: issuer key ID(sub 16)(8 bytes)
+		Key ID - 0x3D49C27F4E339F33
+	Hash left 2 bytes - 3d ef
+	DSA r(253 bits) - 1b 06 cf 24 b3 50 80 a7 f3 67 18 e2 e8 13 55 f5 2b 2d fc 84 03 67 62 65 34 b6 24 bb 2f 31 a4 2d
+	DSA s(254 bits) - 28 dd 4c d8 de d9 11 58 9f ad 6d 2e b8 c0 1c 53 e7 74 37 4e c0 fa 75 38 3a ab ba fc 1f 85 24 c0
+		-> hash(DSA q bits)
+	Sub: issuer key ID(sub 16)(8 bytes)
+		Key ID - 0xBADB3D7B0A6AC10E
+	Hash left 2 bytes - 6f 49
+	DSA r(256 bits) - bd 8e 34 68 ab 42 c4 a4 e0 ab a0 cd c2 09 cd 0f 30 73 01 12 d2 03 94 b9 eb ff d7 8f c7 72 d4 35
+	DSA s(255 bits) - 56 f9 ca ac a5 c7 1d 2c 6b c5 9f 00 2b ec e8 ca 0b 76 11 64 79 e8 fa b6 b1 f0 75 8b cc a8 bc ce
+		-> hash(DSA q bits)
+-->
+<textarea id="BadDSASubkeyY" style="display:none">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2
+
+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
+K+zoygt2EWR56Pq2sfB1i8yovM4=
+=hor7
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+
+
+<script>
+function getKey(id) {
+  return e2e.openpgp.block.factory.parseAscii(
+    document.getElementById(id).value);
+}
+
+function testBadRSAMasterExponent() {
+  var must_throw = assertThrows(function() {
+    getKey('BadRSAMasterExponent');
+  });
+  assertTrue(must_throw instanceof e2e.cipher.Error);
+}
+
+function testBadRSASubkeyExponent() {
+  var key = getKey('BadRSASubkeyExponent');
+  assertEquals(1, key.userIds.length);
+  assertEquals(0, key.subKeys.length);
+}
+
+function testBadDSAMasterY() {
+  var must_throw = assertThrows(function() {
+    getKey('BadDSAMasterY');
+  });
+  assertTrue(must_throw instanceof e2e.cipher.Error);
+}
+
+function testBadDSASubkeyY() {
+  var key = getKey('BadDSASubkeyY');
+  assertEquals(1, key.userIds.length);
+  assertEquals(0, key.subKeys.length);
+}
+
+</script>
+</body>
+</html>
