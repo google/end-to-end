@@ -159,8 +159,9 @@ e2e.signer.Dsa.prototype.setKey = function(keyArg, opt_keySize) {
       break;
   }
 
+  var pminus1 = this.p_.subtract(e2e.BigNum.ONE);
   // q should be a divisor of p - 1.
-  if (this.q_.mod(this.p_.subtract(e2e.BigNum.ONE)).isEqual(
+  if (this.q_.mod(pminus1).isEqual(
       e2e.BigNum.ZERO)) {
     throw new e2e.openpgp.error.InvalidArgumentsError(
         'q must be a divisor of p - 1.');
@@ -190,6 +191,17 @@ e2e.signer.Dsa.prototype.setKey = function(keyArg, opt_keySize) {
 
   if (goog.isDefAndNotNull(key['y'])) {
     this.y_ = new e2e.BigNum(key['y']);
+    // NIST SP 800-89 checks for DSA.
+    // 1 < y < p-1
+    if (!this.y_.isBetween(e2e.BigNum.ONE, pminus1)) {
+      throw new e2e.openpgp.error.InvalidArgumentsError(
+          'y must be in the range(1, p-1).');
+    }
+    // y^q = 1 (mod p).
+    if (!this.p_.modPower(this.y_, this.q_).isEqual(e2e.BigNum.ONE)) {
+      throw new e2e.openpgp.error.InvalidArgumentsError(
+          'Invalid public key.');
+    }
     if (goog.isDefAndNotNull(key['x'])) {
       // y == g^x (mod p).
       if (!this.p_.modPower(this.g_, key['x']).isEqual(this.y_)) {

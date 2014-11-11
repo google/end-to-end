@@ -35,6 +35,7 @@ goog.require('e2e.hash.Sha1');
 goog.require('e2e.hash.Sha224');
 goog.require('e2e.hash.Sha256');
 goog.require('e2e.hash.Sha512');
+goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.pkcs.EMSA_PKCS1_v1_5');
 goog.require('e2e.random');
 goog.require('e2e.signer.Algorithm');
@@ -131,6 +132,20 @@ e2e.cipher.Rsa.prototype.setKey = function(key) {
       break;
     default:
       throw new e2e.cipher.Error('Invalid key size.');
+  }
+
+  // A few basic checks on public key values.
+  // 2 < e
+  var e = new e2e.BigNum(key['e']);
+  if (!e2e.BigNum.TWO.isLess(e)) {
+    throw new e2e.openpgp.error.InvalidArgumentsError(
+        'e must be >= 3.');
+  }
+  var n = new e2e.BigNum(key['n']);
+  // e and n are odd numbers.
+  if (e.isEven() || n.isEven()) {
+    throw new e2e.openpgp.error.InvalidArgumentsError(
+        'e and n must be odd numbers.');
   }
 
   // we only use blinding if prime components are known
