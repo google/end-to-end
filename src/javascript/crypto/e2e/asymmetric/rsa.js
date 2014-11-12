@@ -116,9 +116,11 @@ e2e.cipher.Rsa.prototype.setKey = function(key) {
   goog.asserts.assertArray(key['e'], 'Public exponent should be defined.');
   this.modulus = new e2e.BigNumModulus(key['n']);
   var bitLength = this.modulus.getBitLength();
+  // We accept upto 1020 bits to account for implementations that
+  // generate moduli that are a little short of 1024 bits due to
+  // randomness in p and q generation.
   switch (true) {
-    // TODO(evn): Reject < 1024 bit keys (we use them in unit tests).
-    case bitLength <= 1024:
+    case bitLength <= 1024 && bitLength > 1019:
       this.hash_ = new e2e.hash.Sha1;
       break;
     case bitLength <= 2048 && bitLength > 1024:
@@ -131,7 +133,7 @@ e2e.cipher.Rsa.prototype.setKey = function(key) {
       this.hash_ = new e2e.hash.Sha512;
       break;
     default:
-      throw new e2e.cipher.Error('Invalid key size.');
+      throw new e2e.cipher.Error('RSA key size must at least be 1020 bits.');
   }
 
   // A few basic checks on public key values.
@@ -151,8 +153,6 @@ e2e.cipher.Rsa.prototype.setKey = function(key) {
   // we only use blinding if prime components are known
   this.use_blinding = goog.isDef(key['p']) && goog.isDef(key['q']);
 
-  // TODO(adhintz) Throw exception if key size is smaller than 1024 bits.
-  // For this we'll need new test values in rsa_test.html.
   goog.base(this, 'setKey', key, Math.ceil(this.modulus.getBitLength() / 8));
   if (this.use_blinding) { // precompute blinders
     this.blinder_ = e2e.BigNum.ZERO;
