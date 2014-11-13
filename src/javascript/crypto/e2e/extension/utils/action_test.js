@@ -30,6 +30,7 @@ goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.require('goog.testing.mockmatchers');
 goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.setTestOnly();
 
@@ -107,10 +108,11 @@ function testGetSelectedContent() {
 
   var callbackArg = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
   stubs.set(launcher, 'getSelectedContent', mockControl.createFunctionMock());
-  launcher.getSelectedContent(callbackArg);
+  launcher.getSelectedContent(callbackArg,
+      goog.testing.mockmatchers.ignoreArgument);
 
   mockControl.$replayAll();
-  utils.getSelectedContent(callback);
+  utils.getSelectedContent(callback, goog.nullFunction);
   callbackArg.arg();
   mockControl.$verifyAll();
 }
@@ -129,7 +131,8 @@ function testUpdateSelectedContent() {
   stubs.set(
       launcher, 'updateSelectedContent', mockControl.createFunctionMock());
   launcher.updateSelectedContent(
-      content, recipients, origin, expectMoreUpdates, callbackArg, subject);
+      content, recipients, origin, expectMoreUpdates, callbackArg,
+      goog.testing.mockmatchers.ignoreArgument, subject);
 
   mockControl.$replayAll();
   utils.updateSelectedContent(

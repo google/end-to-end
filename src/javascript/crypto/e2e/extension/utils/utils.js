@@ -92,7 +92,7 @@ utils.readFile_ = function(asText, file, callback) {
  * @param {*} error The error to log.
  */
 utils.errorHandler = function(error) {
-  window.console.error(error);
+  console.error(error);
 };
 
 

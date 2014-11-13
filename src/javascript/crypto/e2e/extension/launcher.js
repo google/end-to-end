@@ -71,6 +71,14 @@ ext.Launcher = function() {
 
 
 /**
+ * Delay in ms needed to initialize message listeners in helper.
+ * @type {number}
+ * @const
+ */
+ext.Launcher.HELPER_CALLBACK_DELAY = 50;
+
+
+/**
  * Sets the provided content into the element on the page that the user has
  * selected.
  * Note: This function might not work while debugging the extension.
@@ -81,12 +89,13 @@ ext.Launcher = function() {
  *     if this is the final update to the selected content.
  * @param {!function(...)} callback The function to invoke once the content has
  *     been updated.
+ * @param {!function(Error)} errorCallback The callback to invoke if an error is
+ *     encountered.
  * @param {string=} opt_subject The subject of the message if applicable.
  * @expose
  */
-ext.Launcher.prototype.updateSelectedContent =
-    function(content, recipients, origin, expectMoreUpdates,
-             callback, opt_subject) {
+ext.Launcher.prototype.updateSelectedContent = function(content, recipients,
+    origin, expectMoreUpdates, callback, errorCallback, opt_subject) {
   this.getActiveTab_(goog.bind(function(tabId) {
     chrome.tabs.sendMessage(tabId, {
       value: content,
@@ -95,8 +104,15 @@ ext.Launcher.prototype.updateSelectedContent =
       origin: origin,
       recipients: recipients,
       subject: opt_subject
+    }, function(response) {
+      if (arguments.length == 0 && chrome.runtime.lastError) {
+        errorCallback(new Error(chrome.runtime.lastError.message));
+      } else if (response instanceof Error) {
+        errorCallback(response);
+      } else {
+        callback(response);
+      }
     });
-    callback();
   }, this));
 };
 
@@ -105,14 +121,23 @@ ext.Launcher.prototype.updateSelectedContent =
  * Retrieves the content that the user has selected.
  * @param {!function(...)} callback The callback where the selected content will
  *     be passed.
+ * @param {!function(Error)} errorCallback The callback to invoke if an error is
+ *     encountered.
  * @expose
  */
-ext.Launcher.prototype.getSelectedContent = function(callback) {
+ext.Launcher.prototype.getSelectedContent = function(callback, errorCallback) {
   this.getActiveTab_(goog.bind(function(tabId) {
     chrome.tabs.sendMessage(tabId, {
-      editableElem: true,
       enableLookingGlass: preferences.isLookingGlassEnabled()
-    }, callback);
+    }, function(response) {
+      if (arguments.length == 0 && chrome.runtime.lastError) {
+        errorCallback(new Error(chrome.runtime.lastError.message));
+      } else if (response instanceof Error) {
+        errorCallback(response);
+      } else {
+        callback(response);
+      }
+    });
   }, this));
 };
 
@@ -141,7 +166,9 @@ ext.Launcher.prototype.getActiveTab_ = function(callback) {
     }
 
     chrome.tabs.executeScript(tab.id, {file: 'helper_binary.js'}, function() {
-      callback(tab.id);
+      setTimeout(function() {
+        callback(tab.id);
+      }, ext.Launcher.HELPER_CALLBACK_DELAY);
     });
   }, this));
 };

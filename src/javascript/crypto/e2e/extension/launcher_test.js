@@ -82,6 +82,7 @@ function testGetSelectedContent() {
 function testUpdateSelectedContent() {
   var content = 'some text';
   var origin = 'http://www.example.com';
+  var recipients = ['a@example.com'];
   var executeScriptArg = new mockmatchers.SaveArgument(goog.isFunction);
   stubs.setPath('chrome.tabs.executeScript',
       mockControl.createFunctionMock('executeScript'));
@@ -89,19 +90,21 @@ function testUpdateSelectedContent() {
       mockmatchers.ignoreArgument, executeScriptArg);
 
   var messageArg = new mockmatchers.SaveArgument();
-  var tabIdArg = new mockmatchers.ArgumentMatcher(goog.isNumber);
-  stubs.setPath('chrome.tabs.sendMessage',
-      mockControl.createFunctionMock('sendMessage'));
-  chrome.tabs.sendMessage(tabIdArg, messageArg);
+  stubs.setPath('chrome.tabs.sendMessage', function(tabId, msg, callback)  {
+    assertEquals(msg.value, content);
+    assertEquals(msg.origin, origin);
+    assertArrayEquals(msg.recipients, recipients);
+    callback(true);
+  });
 
   var callbackMock = mockControl.createFunctionMock('callbackMock');
-  callbackMock();
+  callbackMock(true);
 
   mockControl.$replayAll();
 
-  launcher.updateSelectedContent(content, [], origin, false, callbackMock);
+  launcher.updateSelectedContent(content, recipients, origin, false,
+      callbackMock);
   executeScriptArg.arg();
-  assertEquals('Sending incorrect content', content, messageArg.arg.value);
   mockControl.$verifyAll();
 }
 

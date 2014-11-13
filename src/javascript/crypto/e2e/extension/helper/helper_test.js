@@ -31,329 +31,63 @@ goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
-goog.require('goog.testing.mockmatchers');
 goog.require('goog.testing.mockmatchers.ArgumentMatcher');
 goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.setTestOnly();
 
 var constants = e2e.ext.constants;
 var helper = null;
-var gmonkey = e2e.ext.gmonkey;
 var mockControl = null;
 var stubs = new goog.testing.PropertyReplacer();
-
+var gmonkey;
 
 function setUp() {
+  gmonkey = new e2e.ext.gmonkey();
+
   mockControl = new goog.testing.MockControl();
 
   stubs.setPath('chrome.runtime.getURL', function() {});
   stubs.setPath('chrome.runtime.onMessage.addListener', function() {});
   stubs.setPath('chrome.runtime.onMessage.removeListener', function() {});
 
-  helper = new e2e.ext.Helper();
+  helper = new e2e.ext.Helper(gmonkey);
 }
 
 
 function tearDown() {
   stubs.reset();
   helper = null;
-}
-
-
-function testGetActiveElement() {
-  assertEquals('Failed to get active element', document.body,
-      helper.getActiveElement_());
-}
-
-
-function testGetSelection() {
-  assertEquals('Failed to get selection', '', helper.getSelection_());
+  gmonkey = null;
 }
 
 
 function testSetValue() {
-  var removedPortListener = false;
-  stubs.replace(chrome.runtime.onMessage, 'removeListener', function() {
-    removedPortListener = true;
-  });
   var elem = goog.dom.getElement('testDiv');
+  stubs.set(gmonkey, 'lastActiveElem_', elem);
 
-  helper.setValue_(elem, {
+  helper.setValue_({
+    recipients: [],
     response: true,
     detach: true,
     value: '<b>\n</b>',
     origin: helper.getOrigin_()
+  }, function(isSuccess) {
+    assertTrue(isSuccess);
   });
 
-  assertTrue('Failed to remove port listener', removedPortListener);
   assertEquals('<b>\n</b>', elem.innerText);
 }
 
 
-function testSetValueForGmonkey() {
-  var message = 'some text';
-  var recipients = ['test@example.com'];
 
-  stubs.set(gmonkey, 'setActiveDraft', mockControl.createFunctionMock());
-  var setActiveDraftArg =
-      new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    assertTrue(goog.array.equals(recipients, arg));
-
-    return true;
-  });
-  gmonkey.setActiveDraft(setActiveDraftArg, message);
-
-  stubs.setPath('chrome.runtime.onMessage.removeListener',
-      mockControl.createFunctionMock());
-  chrome.runtime.onMessage.removeListener(
-      goog.testing.mockmatchers.ignoreArgument);
-
-  mockControl.$replayAll();
-
-  helper.setGmonkeyValue_({
-    response: true,
-    origin: helper.getOrigin_(),
-    recipients: recipients,
-    value: message,
-    detach: true
-  });
-
-  mockControl.$verifyAll();
-}
-
-
-function testGetSelectedContentInput() {
-  var content = 'some content';
-
-  stubs.set(helper, 'attachSetValueHandler_', mockControl.createFunctionMock());
-  helper.attachSetValueHandler_(
-      new goog.testing.mockmatchers.ArgumentMatcher(goog.isFunction));
-
-  stubs.set(helper, 'getActiveElement_', function() {
-    var input = document.createElement('input');
-    input.value = content;
-    return input;
-  });
-
-  var callback = mockControl.createFunctionMock();
-  callback(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    assertEquals(content, arg.selection);
-
-    return true;
-  }));
-
-  mockControl.$replayAll();
-
-  helper.getSelectedContent_({editableElem: true}, {}, callback);
-
-  mockControl.$verifyAll();
-}
-
-
-function testGetSelectedContentEditable() {
-  var content = 'some content';
-
-  stubs.set(helper, 'attachSetValueHandler_', mockControl.createFunctionMock());
-  helper.attachSetValueHandler_(
-      new goog.testing.mockmatchers.ArgumentMatcher(goog.isFunction));
-
-
-  stubs.replace(e2e.ext.Helper.prototype, 'getActiveElement_', function() {
-    var div = document.createElement('div');
-    div.innerText = content;
-    div.contentEditable = true;
-    return div;
-  });
-
-  var callback = mockControl.createFunctionMock();
-  callback(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    assertEquals(content, arg.selection);
-
-    return true;
-  }));
-
-  mockControl.$replayAll();
-
-  helper.getSelectedContent_({editableElem: true}, {}, callback);
-
-  mockControl.$verifyAll();
-}
-
-
-function testGetSelectedContentStatic() {
-  var content = 'some content';
-  stubs.replace(e2e.ext.Helper.prototype, 'getActiveElement_', function() {
-    var div = document.createElement('div');
-    div.innerText = content;
-    return div;
-  });
-
-  var gotSelection = false;
-  helper.getSelectedContent_({}, {}, function(resp) {
-    assertEquals(0, resp.selection.length);
-    gotSelection = true;
-  });
-  assertTrue(gotSelection);
-}
-
-
-function testSelectedContentPriority() {
-  var content = 'some content';
-  stubs.set(helper, 'getSelection_', function() {
-    return content;
-  });
-
-  stubs.set(helper, 'isGmail_', function() {
-    return true;
-  });
-
-  stubs.set(gmonkey, 'hasActiveDraft', mockControl.createFunctionMock());
-
-  var matcher = new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    assertEquals(content, arg.selection);
-    return true;
-  });
-  var callback = mockControl.createFunctionMock('callback');
-  callback(matcher);
-
-  mockControl.$replayAll();
-  helper.getSelectedContent_({}, {}, callback);
-  mockControl.$verifyAll();
-}
-
-
-function testInstallLookingGlass() {
-  var selectionBody = 'some text';
-
-  stubs.set(gmonkey, 'isAvailable', function(callback) { callback(true); });
-  stubs.set(gmonkey, 'hasActiveDraft', mockControl.createFunctionMock());
-  var hasDraftArg = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  gmonkey.hasActiveDraft(hasDraftArg);
-
-  stubs.set(gmonkey, 'getCurrentMessage', mockControl.createFunctionMock());
-  var getCurrentMessageArg =
-      new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  gmonkey.getCurrentMessage(getCurrentMessageArg);
-
-  stubs.setPath(
-      'e2e.ext.utils.text.getPgpAction', mockControl.createFunctionMock());
-  e2e.ext.utils.text.getPgpAction(selectionBody, true)
-      .$returns(constants.Actions.DECRYPT_VERIFY);
-
-  stubs.set(helper, 'getOrigin_', function() {
-    return 'https://mail.google.com';
-  });
-
-  var callbackMock = mockControl.createFunctionMock();
-  var callbackArg =
-      new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    assertEquals(constants.Actions.NO_OP, arg.action);
-
-    return true;
-  });
-  callbackMock(callbackArg);
-
-  mockControl.$replayAll();
-
-  helper.getSelectedContent_({
-    pgpAction: 'irrelevant',
-    editableElem: true,
-    enableLookingGlass: true
-  }, null, callbackMock);
-
-  hasDraftArg.arg(false);
-
-  var contentElem = document.createElement('div');
-  contentElem.innerText = selectionBody;
-  getCurrentMessageArg.arg(contentElem);
-
-  mockControl.$verifyAll();
-}
-
-
-
-function testAttachSetValueHandler() {
-  var handler = goog.nullFunction;
-
-  stubs.setPath('chrome.runtime.onMessage.removeListener',
-      mockControl.createFunctionMock());
-  chrome.runtime.onMessage.removeListener(
-      new goog.testing.mockmatchers.ArgumentMatcher(goog.isFunction));
-
-  stubs.setPath('chrome.runtime.onMessage.addListener',
-      mockControl.createFunctionMock());
-  chrome.runtime.onMessage.addListener(handler);
-
-  mockControl.$replayAll();
-
-  helper.setValueHandler_ = goog.nullFunction;
-  helper.attachSetValueHandler_(handler);
-
-  mockControl.$verifyAll();
-}
-
-
-function testDisplayDuringRead() {
-  var selectionBody = 'some text';
-
-  stubs.set(gmonkey, 'isAvailable', function(callback) { callback(true); });
-  stubs.set(gmonkey, 'hasActiveDraft', mockControl.createFunctionMock());
-  var hasDraftArg = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  gmonkey.hasActiveDraft(hasDraftArg);
-
-  stubs.set(gmonkey, 'getCurrentMessage', mockControl.createFunctionMock());
-  var getCurrentMessageArg =
-      new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  gmonkey.getCurrentMessage(getCurrentMessageArg);
-
-  var callbackMock = mockControl.createFunctionMock();
-  var callbackArg =
-      new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    assertEquals(constants.Actions.ENCRYPT_SIGN, arg.action);
-    assertEquals(selectionBody, arg.selection);
-    assertEquals(0, arg.recipients.length);
-
-    return true;
-  });
-  callbackMock(callbackArg);
-
-  stubs.set(helper, 'getOrigin_', function() {
-    return 'https://mail.google.com';
-  });
-
-  mockControl.$replayAll();
-
-  helper.getSelectedContent_({
-    pgpAction: 'irrelevant',
-    editableElem: true
-  }, null, callbackMock);
-
-  hasDraftArg.arg(false);
-  getCurrentMessageArg.arg({
-    innerText: selectionBody
-  });
-
-  mockControl.$verifyAll();
-}
-
-
-function testDisplayDuringWrite() {
+function testDisplay() {
   var selectionBody = 'some text';
   var recipients = ['test@example.com'];
 
-  stubs.set(gmonkey, 'isAvailable', function(callback) { callback(true); });
-  stubs.set(helper, 'attachSetValueHandler_', mockControl.createFunctionMock());
-  helper.attachSetValueHandler_(
-      new goog.testing.mockmatchers.ArgumentMatcher(goog.isFunction));
-
-  stubs.set(gmonkey, 'hasActiveDraft', mockControl.createFunctionMock());
-  var hasDraftArg = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  gmonkey.hasActiveDraft(hasDraftArg);
-
-  stubs.set(gmonkey, 'getActiveDraft', mockControl.createFunctionMock());
-  var getActiveDraftArg =
+  stubs.set(gmonkey, 'getSelectedContent', mockControl.createFunctionMock());
+  var getSelectedContentArg =
       new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  gmonkey.getActiveDraft(getActiveDraftArg);
+  gmonkey.getSelectedContent(getSelectedContentArg);
 
   var callbackMock = mockControl.createFunctionMock();
   var callbackArg =
@@ -366,19 +100,13 @@ function testDisplayDuringWrite() {
   });
   callbackMock(callbackArg);
 
-  stubs.set(helper, 'getOrigin_', function() {
-    return 'https://mail.google.com';
-  });
-
   mockControl.$replayAll();
 
   helper.getSelectedContent_({
-    pgpAction: 'irrelevant',
-    editableElem: true
-  }, null, callbackMock);
+    pgpAction: 'irrelevant'
+  }, callbackMock);
 
-  hasDraftArg.arg(true);
-  getActiveDraftArg.arg(recipients, selectionBody);
+  getSelectedContentArg.arg(recipients, selectionBody, true);
 
   mockControl.$verifyAll();
 }
@@ -389,36 +117,9 @@ function testOrigin() {
 }
 
 
-function testHelperRunsOnce() {
-  var callbackMock = mockControl.createFunctionMock();
-  callbackMock(goog.testing.mockmatchers.ignoreArgument);
-
-  mockControl.$replayAll();
-
-  helper.getSelectedContent_({}, {}, callbackMock);
-  assertFalse(helper.isDisposed());
-
-  helper.getSelectedContent_({}, {}, callbackMock);
-  assertTrue(helper.isDisposed());
-
-  mockControl.$verifyAll();
-}
-
-
-function testInputIsEditable() {
-  var elem = document.getElementById('testInput');
-  assertTrue(helper.isEditable_(elem));
-}
-
-
-function testContentEditableIsEditable() {
-  var elem = document.getElementById('testEditable');
-  assertTrue(helper.isEditable_(elem));
-}
-
-
 function testEnableLookingGlass() {
   var selectionBody = 'some text';
+  var elemId = 'some-id';
 
   stubs.set(gmonkey, 'getCurrentMessage', mockControl.createFunctionMock());
   var getCurrentMessageArg =
@@ -442,40 +143,11 @@ function testEnableLookingGlass() {
   helper.enableLookingGlass_();
 
   var contentElem = document.createElement('div');
+  document.body.appendChild(contentElem);
+  contentElem.id = elemId;
   contentElem.innerText = selectionBody;
-  getCurrentMessageArg.arg(contentElem);
-
+  getCurrentMessageArg.arg(elemId);
   assertNotNull(contentElem.querySelector('iframe'));
-
   mockControl.$verifyAll();
-}
-
-
-function testGetActiveElementNoGmonkey() {
-  var content = 'some content';
-
-  stubs.set(helper, 'getActiveElement_', function() {
-    var input = document.createElement('input');
-    input.value = content;
-    return input;
-  });
-
-  stubs.set(gmonkey, 'isAvailable', function(callback) { callback(false); });
-
-  stubs.set(helper, 'getOrigin_', function() {
-    return 'https://mail.google.com';
-  });
-
-  var callback = mockControl.createFunctionMock();
-  callback(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    assertEquals(content, arg.selection);
-
-    return true;
-  }));
-
-  mockControl.$replayAll();
-
-  helper.getSelectedContent_({editableElem: false}, {}, callback);
-
-  mockControl.$verifyAll();
+  document.body.removeChild(contentElem);
 }

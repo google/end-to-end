@@ -29,11 +29,12 @@ goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.Disposable');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
+goog.require('goog.object');
+
 
 goog.scope(function() {
 var ext = e2e.ext;
 var constants = ext.constants;
-var gmonkey = ext.gmonkey;
 var messages = ext.messages;
 var ui = ext.ui;
 var utils = e2e.ext.utils;
@@ -43,9 +44,10 @@ var utils = e2e.ext.utils;
 /**
  * Constructor for the Helper class.
  * @constructor
+ * @param {!e2e.ext.gmonkey} gmonkey Gmonkey instance to use
  * @extends {goog.Disposable}
  */
-ext.Helper = function() {
+ext.Helper = function(gmonkey) {
   goog.base(this);
 
   /**
@@ -53,17 +55,17 @@ ext.Helper = function() {
    * @type {function(...)}
    * @private
    */
-  this.getValueHandler_ = goog.bind(this.getSelectedContent_, this);
+  this.boundMessageHandler_ = goog.bind(this.handleMessage_, this);
+
+  /**
+   * @type {!e2e.ext.gmonkey} Gmonkey instance to send queries through.
+   * @private
+   */
+  this.gmonkey_ = gmonkey;
+
+  chrome.runtime.onMessage.addListener(this.boundMessageHandler_);
 };
 goog.inherits(ext.Helper, goog.Disposable);
-
-
-/**
- * The handler to set a new value into the selected element.
- * @type {function(...)}
- * @private
- */
-ext.Helper.prototype.setValueHandler_ = goog.nullFunction;
 
 
 /**
@@ -76,24 +78,27 @@ ext.Helper.prototype.activeViewListenerKey_ = null;
 
 
 /**
- * A flag indicating whether the helper has already executed or not.
- * @type {boolean}
+ * Handles messages sent from the extension.
+ * @param {!e2e.ext.messages.GetSelectionRequest|
+ *     !e2e.ext.messages.BridgeMessageResponse} req The request.
+ * @param {!MessageSender} sender The sender of the request.
+ * @param {!function(*)} sendResponse A callback function sending the response
+ *     back.
  * @private
  */
-ext.Helper.prototype.executed_ = false;
+ext.Helper.prototype.handleMessage_ = function(req, sender, sendResponse) {
+  if (goog.object.containsKey(req, 'enableLookingGlass')) {
+    this.getSelectedContent_(req, sendResponse);
+  } else if (goog.object.containsKey(req, 'value')) {
+    this.setValue_(req, sendResponse);
+  }
+  return true; // Returns true to mark that the response is sent anynchronously.
+};
 
 
 /** @override */
 ext.Helper.prototype.disposeInternal = function() {
-  if (this.getValueHandler_ != goog.nullFunction) {
-    chrome.runtime.onMessage.removeListener(this.getValueHandler_);
-    this.getValueHandler_ = goog.nullFunction;
-  }
-
-  if (this.setValueHandler_ != goog.nullFunction) {
-    chrome.runtime.onMessage.removeListener(this.setValueHandler_);
-    this.setValueHandler_ = goog.nullFunction;
-  }
+  chrome.runtime.onMessage.removeListener(this.boundMessageHandler_);
 
   if (this.activeViewListenerKey_) {
     goog.events.unlistenByKey(this.activeViewListenerKey_);
@@ -105,86 +110,23 @@ ext.Helper.prototype.disposeInternal = function() {
 
 
 /**
- * Returns the element that is currently in focus on the page.
- * @return {Element} the active element on the page.
- * @private
- */
-ext.Helper.prototype.getActiveElement_ = function() {
-  var activeElement = document.activeElement;
-  try {
-    while (activeElement.contentDocument) {
-      activeElement = activeElement.contentDocument.activeElement;
-    }
-  } catch (e) {}
-
-  return activeElement;
-};
-
-
-/**
- * Returns the current selection that the user has made on the page.
- * @return {string} the current selection on the page.
- * @private
- */
-ext.Helper.prototype.getSelection_ = function() {
-  var currentView =
-      this.getActiveElement_().ownerDocument.defaultView || window;
-  return currentView.getSelection().toString();
-};
-
-
-/**
- * Indicates if an element is editable.
- * @param {Element} elem The element to check.
- * @return {boolean} True if the element is editable.
- * @private
- */
-ext.Helper.prototype.isEditable_ = function(elem) {
-  return elem.value !== undefined || elem.contentEditable == 'true';
-};
-
-
-/**
  * Sets the value into the active element.
- * @param {Element} elem The element where the value must be set.
  * @param {e2e.ext.messages.BridgeMessageResponse} msg The response bridge
  *     message from the extension.
+ * @param {!function(boolean)} sendResponse Function sending back the response.
  * @private
  */
-ext.Helper.prototype.setValue_ = function(elem, msg) {
-  if (msg.response && msg.origin == this.getOrigin_()) {
-    elem.value = msg.value;
-    elem.innerText = msg.value;
-  }
-  if (msg.detach) {
-    chrome.runtime.onMessage.removeListener(this.setValueHandler_);
-    this.setValueHandler_ = goog.nullFunction;
-  }
+ext.Helper.prototype.setValue_ = function(msg, sendResponse) {
+  this.gmonkey_.updateSelectedContent(msg.recipients, msg.value, sendResponse);
 };
 
 
 /**
- * Sets the recipients and message body into a Gmail compose window via gmonkey.
- * @param {e2e.ext.messages.BridgeMessageResponse} msg The response bridge
- *     message from the extension.
+ * Attaches click listener enabling a looking glass for current message in
+ *     Gmail.
  * @private
  */
-ext.Helper.prototype.setGmonkeyValue_ = function(msg) {
-  if (msg.response && msg.origin == this.getOrigin_()) {
-    gmonkey.setActiveDraft(msg.recipients, msg.value);
-  }
-
-  chrome.runtime.onMessage.removeListener(this.setValueHandler_);
-  this.setValueHandler_ = goog.nullFunction;
-};
-
-
-/**
- * Runs the extension helper (which actually runs inside a content script) once.
- */
-ext.Helper.prototype.runOnce = function() {
-  chrome.runtime.onMessage.addListener(this.getValueHandler_);
-
+ext.Helper.prototype.startGlassListener_ = function() {
   if (this.isGmail_() && !window.ENABLED_LOOKING_GLASS) {
     this.activeViewListenerKey_ = goog.events.listen(
         document.body,
@@ -192,154 +134,43 @@ ext.Helper.prototype.runOnce = function() {
         this.enableLookingGlass_,
         true,
         this);
-
-    /** @type {boolean} */
-    window.ENABLED_LOOKING_GLASS = true;
   }
-};
 
-
-/**
- * Retrieves OpenPGP content selected by the user using native browser API.
- * @param {!e2e.ext.messages.GetSelectionRequest} selectionRequest The request
- *     to get the user-selected content.
- * @param {function(*)} callback A callback to pass the selected content to.
- * @private
- */
-ext.Helper.prototype.getSelectedContentNative_ = function(selectionRequest,
-    callback) {
-  var activeElem = this.getActiveElement_();
-  var selection = this.getSelection_() || activeElem.value || '';
-  var canInject = this.isEditable_(activeElem);
-  if (canInject && selectionRequest.editableElem) {
-    this.attachSetValueHandler_(goog.bind(this.setValue_, this, activeElem));
-  }
-  if (selection.length == 0 && canInject) {
-    selection = activeElem.innerText;
-  }
-  callback({
-    selection: e2e.openpgp.asciiArmor.extractPgpBlock(selection),
-    recipients: [],
-    request: true,
-    origin: this.getOrigin_(),
-    canInject: canInject
-  });
-};
-
-
-/**
- * Retrieves OpenPGP content selected by the user using GMonkey API.
- * @param {!e2e.ext.messages.GetSelectionRequest} selectionRequest The request
- *     to get the user-selected content.
- * @param {function(*)} callback A callback to pass the selected content to.
- * @private
- */
-ext.Helper.prototype.getSelectedContentGmonkey_ = function(selectionRequest,
-    callback) {
-  // TODO(radi): Split into smaller methods.
-  this.attachSetValueHandler_(goog.bind(this.setGmonkeyValue_, this));
-  gmonkey.hasActiveDraft(goog.bind(function(hasDraft) {
-    if (hasDraft) {
-      gmonkey.getActiveDraft(goog.bind(function(recipients, msgBody) {
-        var selectionBody =
-            e2e.openpgp.asciiArmor.extractPgpBlock(msgBody);
-        callback({
-          action: constants.Actions.ENCRYPT_SIGN,
-          selection: selectionBody,
-          recipients: recipients,
-          request: true,
-          origin: this.getOrigin_(),
-          canInject: true
-        });
-      }, this));
-    } else {
-      gmonkey.getCurrentMessage(goog.bind(function(messageElem) {
-        var selectionBody;
-
-        if (messageElem) {
-          selectionBody = e2e.openpgp.asciiArmor.extractPgpBlock(
-              goog.isDef(messageElem.lookingGlass) ?
-              messageElem.lookingGlass.getOriginalContent() :
-              messageElem.innerText);
-        } else {
-          selectionBody = this.getSelection_() ||
-              this.getActiveElement_().value || '';
-        }
-
-        var action = utils.text.getPgpAction(selectionBody, true);
-        if (selectionRequest.enableLookingGlass &&
-            messageElem &&
-            !goog.isDef(messageElem.lookingGlass) &&
-            action == constants.Actions.DECRYPT_VERIFY) {
-          var glass = new ui.GlassWrapper(messageElem);
-          this.registerDisposable(glass);
-          glass.installGlass();
-
-          action = constants.Actions.NO_OP;
-        }
-
-        callback({
-          action: action,
-          selection: selectionBody,
-          recipients: [],
-          request: true,
-          origin: this.getOrigin_(),
-          canInject: true
-        });
-      }, this));
-    }
-  }, this));
+  /** @type {boolean} */
+  window.ENABLED_LOOKING_GLASS = true;
 };
 
 
 /**
  * Retrieves OpenPGP content selected by the user.
- * @param {*} req The request to get the user-selected content.
- * @param {!MessageSender} sender The sender of the initialization request.
- * @param {function(*)} callback A callback to pass the selected content to.
+ * @param {!e2e.ext.messages.GetSelectionRequest} req The request to get the
+ *     user-selected content.
+ * @param {!function(e2e.ext.messages.BridgeMessageRequest)} sendResponse
+ *     Function sending back the response.
  * @private
  */
-ext.Helper.prototype.getSelectedContent_ = function(req, sender, callback) {
-  if (this.executed_) {
-    goog.dispose(this);
-    return;
-  } else {
-    this.executed_ = true;
+ext.Helper.prototype.getSelectedContent_ = function(req, sendResponse) {
+  if (req.enableLookingGlass) {
+    this.startGlassListener_();
   }
 
-  var selectionRequest = /** @type {!e2e.ext.messages.GetSelectionRequest} */ (
-      req);
+  var origin = this.getOrigin_();
 
-  if (!Boolean(this.getSelection_()) && this.isGmail_()) {
-    gmonkey.isAvailable(goog.bind(function(isAvailable) {
-      if (isAvailable) {
-        this.getSelectedContentGmonkey_(selectionRequest, callback);
-      } else {
-        this.getSelectedContentNative_(selectionRequest, callback);
-      }
-    }, this));
-  } else {
-    this.getSelectedContentNative_(selectionRequest, callback);
-  }
-
-  chrome.runtime.onMessage.removeListener(this.getValueHandler_);
-  return true;
-};
-
-
-/**
- * Attaches a handler to enable the setting of values inside the page.
- * @param {!function(...)} handler The handler to use when setting values inside
- *     the page.
- * @private
- */
-ext.Helper.prototype.attachSetValueHandler_ = function(handler) {
-  if (this.setValueHandler_) {
-    chrome.runtime.onMessage.removeListener(this.setValueHandler_);
-  }
-
-  this.setValueHandler_ = handler;
-  chrome.runtime.onMessage.addListener(this.setValueHandler_);
+  this.gmonkey_.getSelectedContent(function(recipients, msgBody, canInject) {
+    var selectionBody =
+        e2e.openpgp.asciiArmor.extractPgpBlock(msgBody);
+    var action = utils.text.getPgpAction(selectionBody, true);
+    // Send response back to the extension.
+    var response = /** @type {e2e.ext.messages.BridgeMessageRequest} */ ({
+      selection: selectionBody,
+      recipients: recipients,
+      action: action,
+      request: true,
+      origin: origin,
+      canInject: Boolean(canInject)
+    });
+    sendResponse(response);
+  });
 };
 
 
@@ -352,11 +183,11 @@ ext.Helper.prototype.enableLookingGlass_ = function() {
     return;
   }
 
-  gmonkey.getCurrentMessage(goog.bind(function(messageElem) {
+  this.gmonkey_.getCurrentMessage(goog.bind(function(messageElemId) {
+    var messageElem = document.getElementById(messageElemId);
     if (!messageElem || Boolean(messageElem.lookingGlass)) {
       return;
     }
-
     var selectionBody = e2e.openpgp.asciiArmor.extractPgpBlock(
         messageElem.innerText);
     var action = utils.text.getPgpAction(selectionBody, true);
@@ -391,8 +222,7 @@ ext.Helper.prototype.getOrigin_ = function() {
 });  // goog.scope
 
 // Create the helper and start it.
-if (!!chrome.extension) {
+if (!!chrome.extension && !goog.isDef(window.helper)) {
   /** @type {!e2e.ext.Helper} */
-  window.helper = new e2e.ext.Helper();
-  window.helper.runOnce();
+  window.helper = new e2e.ext.Helper(new e2e.ext.gmonkey());
 }

@@ -53,7 +53,6 @@ goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.setTestOnly();
 
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
-asyncTestCase.stepTimeout = 2000;
 
 var constants = e2e.ext.constants;
 var drafts = e2e.ext.ui.draftmanager;
@@ -65,6 +64,7 @@ var utils = e2e.ext.utils;
 
 
 function setUp() {
+  asyncTestCase.stepTimeout = 2000;
   window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
@@ -388,7 +388,8 @@ function testContentInsertedOnEncrypt() {
     return (!goog.isDef(a) || goog.isString(a));
   });
   prompt.pgpLauncher_.updateSelectedContent(encryptedMsg, [USER_ID], origin,
-      false, goog.testing.mockmatchers.ignoreArgument, subjectMsg);
+      false, goog.testing.mockmatchers.ignoreArgument,
+      goog.testing.mockmatchers.ignoreArgument, subjectMsg);
 
   mockControl.$replayAll();
   populatePgpKeys();

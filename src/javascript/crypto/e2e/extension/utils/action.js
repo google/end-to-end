@@ -100,7 +100,8 @@ utils.getContext = function(callback, errorCallback, opt_scope) {
 utils.getSelectedContent = function(callback, errorCallback, opt_scope) {
   var scope = opt_scope || goog.global;
   utils.getExtensionLauncher(function(launcher) {
-    launcher.getSelectedContent(goog.bind(callback, scope));
+    launcher.getSelectedContent(goog.bind(callback, scope),
+        goog.bind(errorCallback, scope));
   }, errorCallback, opt_scope);
 };
 
@@ -128,7 +129,8 @@ utils.updateSelectedContent = function(content, recipients, origin,
   var scope = opt_scope || goog.global;
   utils.getExtensionLauncher(function(launcher) {
     launcher.updateSelectedContent(content, recipients, origin,
-        expectMoreUpdates, goog.bind(callback, scope), opt_subject);
+        expectMoreUpdates, goog.bind(callback, scope),
+        goog.bind(errorCallback, scope), opt_subject);
   }, errorCallback, opt_scope);
 };
 
