@@ -18,7 +18,7 @@
 #  * @author koto@google.com (Krzysztof Kotowicz)
 #  */
 PYTHON_CMD="python"
-JSCOMPILE_CMD="java -jar lib/closure-compiler/compiler.jar --flagfile=compiler.flags"
+JSCOMPILE_CMD="java -jar lib/closure-compiler/build/compiler.jar --flagfile=compiler.flags"
 CKSUM_CMD="cksum" # chosen because it's available on most Linux/OS X installations
 BUILD_DIR="build"
 BUILD_TPL_DIR="$BUILD_DIR/templates"
@@ -27,6 +27,7 @@ cd ${0%/*}
 e2e_assert_dependencies() {
   # Check if required binaries are present.
   type "$PYTHON_CMD" >/dev/null 2>&1 || { echo >&2 "Python is required to build End-To-End"; exit 1; }
+  type ant >/dev/null 2>&1 || { echo >&2 "Ant is required to build End-To-End"; exit 1; }
   type java >/dev/null 2>&1 || { echo >&2 "Java is required to build End-To-End"; exit 1; }
   jversion=$(java -version 2>&1 | grep version | awk -F '"' '{print $2}')
   if [[ $jversion < "1.7" ]]; then
@@ -39,7 +40,7 @@ e2e_assert_dependencies() {
     lib/typedarray \
     lib/zlib.js \
     lib/closure-stylesheets-20111230.jar \
-    lib/closure-compiler/compiler.jar \
+    lib/closure-compiler/build/compiler.jar \
     lib/chrome_extensions.js \
   )
   for var in "${files[@]}"
