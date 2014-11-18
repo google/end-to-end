@@ -132,6 +132,7 @@ api.Api.prototype.executeAction_ = function(callback, req) {
   switch (incoming.action) {
     case constants.Actions.ENCRYPT_SIGN:
     case constants.Actions.DECRYPT_VERIFY:
+    case constants.Actions.LIST_ALL_UIDS:
       // Propagate the decryptPassphrase if needed.
       incoming.passphraseCallback = function(uid, passphraseCallback) {
         if (incoming.decryptPassphrase) {
