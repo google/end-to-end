@@ -132,8 +132,12 @@ ui.Prompt.prototype.decorateInternal = function(elem) {
   utils.action.getExtensionLauncher(function(launcher) {
     this.pgpLauncher_ = launcher || this.pgpLauncher_;
   }, this.displayFailure_, this);
+  // Ignore the error to also show the prompt for pages for which we cannot
+  // inject code.
   utils.action.getSelectedContent(
-      this.processSelectedContent_, this.displayFailure_, this);
+      this.processSelectedContent_, function(error) {
+        this.processSelectedContent_(null);
+      }, this);
 };
 
 
