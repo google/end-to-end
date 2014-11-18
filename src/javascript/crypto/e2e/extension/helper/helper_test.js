@@ -22,8 +22,8 @@
 goog.provide('e2e.ext.HelperTest');
 
 goog.require('e2e.ext.Helper');
+goog.require('e2e.ext.WebsiteApi');
 goog.require('e2e.ext.constants');
-goog.require('e2e.ext.gmonkey');
 goog.require('e2e.ext.utils.text');
 goog.require('goog.array');
 goog.require('goog.dom');
@@ -39,10 +39,10 @@ var constants = e2e.ext.constants;
 var helper = null;
 var mockControl = null;
 var stubs = new goog.testing.PropertyReplacer();
-var gmonkey;
+var api;
 
 function setUp() {
-  gmonkey = new e2e.ext.gmonkey();
+  api = new e2e.ext.WebsiteApi();
 
   mockControl = new goog.testing.MockControl();
 
@@ -50,20 +50,20 @@ function setUp() {
   stubs.setPath('chrome.runtime.onMessage.addListener', function() {});
   stubs.setPath('chrome.runtime.onMessage.removeListener', function() {});
 
-  helper = new e2e.ext.Helper(gmonkey);
+  helper = new e2e.ext.Helper(api);
 }
 
 
 function tearDown() {
   stubs.reset();
   helper = null;
-  gmonkey = null;
+  api = null;
+  mockControl.$tearDown();
 }
-
 
 function testSetValue() {
   var elem = goog.dom.getElement('testDiv');
-  stubs.set(gmonkey, 'lastActiveElem_', elem);
+  stubs.set(api, 'lastActiveElement_', elem);
 
   helper.setValue_({
     recipients: [],
@@ -78,16 +78,34 @@ function testSetValue() {
   assertEquals('<b>\n</b>', elem.innerText);
 }
 
-
+function testErrorHandler() {
+  var called = false;
+  stubs.replace(console, 'error', function() {
+    called = true;
+  });
+  helper.setValue_({
+    recipients: [],
+    response: true,
+    detach: true,
+    value: '<b>\n</b>',
+    origin: helper.getOrigin_()
+  }, function(error) {
+    assertTrue(error instanceof Error);
+    assertTrue(called);
+  });
+}
 
 function testDisplay() {
   var selectionBody = 'some text';
   var recipients = ['test@example.com'];
 
-  stubs.set(gmonkey, 'getSelectedContent', mockControl.createFunctionMock());
+  stubs.set(api, 'getSelectedContent', mockControl.createFunctionMock());
   var getSelectedContentArg =
       new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  gmonkey.getSelectedContent(getSelectedContentArg);
+  var getSelectedContentArg2 =
+      new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+
+  api.getSelectedContent(getSelectedContentArg, getSelectedContentArg2);
 
   var callbackMock = mockControl.createFunctionMock();
   var callbackArg =
@@ -98,6 +116,7 @@ function testDisplay() {
 
     return true;
   });
+
   callbackMock(callbackArg);
 
   mockControl.$replayAll();
@@ -111,20 +130,21 @@ function testDisplay() {
   mockControl.$verifyAll();
 }
 
-
 function testOrigin() {
   assertEquals(window.location.origin, helper.getOrigin_());
 }
-
 
 function testEnableLookingGlass() {
   var selectionBody = 'some text';
   var elemId = 'some-id';
 
-  stubs.set(gmonkey, 'getCurrentMessage', mockControl.createFunctionMock());
+  stubs.set(api, 'getCurrentMessage', mockControl.createFunctionMock());
   var getCurrentMessageArg =
       new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  gmonkey.getCurrentMessage(getCurrentMessageArg);
+  var getCurrentMessageArg2 =
+      new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+
+  api.getCurrentMessage(getCurrentMessageArg, getCurrentMessageArg2);
 
   stubs.setPath(
       'e2e.ext.utils.text.getPgpAction', mockControl.createFunctionMock());

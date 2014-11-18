@@ -21,8 +21,8 @@
 
 goog.provide('e2e.ext.Helper');
 
+goog.require('e2e.ext.WebsiteApi');
 goog.require('e2e.ext.constants.Actions');
-goog.require('e2e.ext.gmonkey');
 goog.require('e2e.ext.ui.GlassWrapper');
 goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.asciiArmor');
@@ -44,10 +44,10 @@ var utils = e2e.ext.utils;
 /**
  * Constructor for the Helper class.
  * @constructor
- * @param {!e2e.ext.gmonkey} gmonkey Gmonkey instance to use
+ * @param {!e2e.ext.WebsiteApi} api Website API connector instance to use
  * @extends {goog.Disposable}
  */
-ext.Helper = function(gmonkey) {
+ext.Helper = function(api) {
   goog.base(this);
 
   /**
@@ -58,10 +58,11 @@ ext.Helper = function(gmonkey) {
   this.boundMessageHandler_ = goog.bind(this.handleMessage_, this);
 
   /**
-   * @type {!e2e.ext.gmonkey} Gmonkey instance to send queries through.
+   * @type {!e2e.ext.WebsiteApi} Website API connector instance to send queries
+   *     through.
    * @private
    */
-  this.gmonkey_ = gmonkey;
+  this.api_ = api;
 
   chrome.runtime.onMessage.addListener(this.boundMessageHandler_);
 };
@@ -92,7 +93,7 @@ ext.Helper.prototype.handleMessage_ = function(req, sender, sendResponse) {
   } else if (goog.object.containsKey(req, 'value')) {
     this.setValue_(req, sendResponse);
   }
-  return true; // Returns true to mark that the response is sent anynchronously.
+  return true; // Returns true to mark that the response is sent asynchronously.
 };
 
 
@@ -113,11 +114,13 @@ ext.Helper.prototype.disposeInternal = function() {
  * Sets the value into the active element.
  * @param {e2e.ext.messages.BridgeMessageResponse} msg The response bridge
  *     message from the extension.
- * @param {!function(boolean)} sendResponse Function sending back the response.
+ * @param {!function(boolean)|!function(Error)} sendResponse Function sending
+ *     back the response.
  * @private
  */
 ext.Helper.prototype.setValue_ = function(msg, sendResponse) {
-  this.gmonkey_.updateSelectedContent(msg.recipients, msg.value, sendResponse);
+  this.api_.updateSelectedContent(msg.recipients, msg.value, sendResponse,
+      goog.bind(this.errorHandler_, this, sendResponse));
 };
 
 
@@ -145,8 +148,8 @@ ext.Helper.prototype.startGlassListener_ = function() {
  * Retrieves OpenPGP content selected by the user.
  * @param {!e2e.ext.messages.GetSelectionRequest} req The request to get the
  *     user-selected content.
- * @param {!function(e2e.ext.messages.BridgeMessageRequest)} sendResponse
- *     Function sending back the response.
+ * @param {!function(e2e.ext.messages.BridgeMessageRequest)|!function(Error)}
+ *     sendResponse Function sending back the response.
  * @private
  */
 ext.Helper.prototype.getSelectedContent_ = function(req, sendResponse) {
@@ -156,7 +159,7 @@ ext.Helper.prototype.getSelectedContent_ = function(req, sendResponse) {
 
   var origin = this.getOrigin_();
 
-  this.gmonkey_.getSelectedContent(function(recipients, msgBody, canInject) {
+  this.api_.getSelectedContent(function(recipients, msgBody, canInject) {
     var selectionBody =
         e2e.openpgp.asciiArmor.extractPgpBlock(msgBody);
     var action = utils.text.getPgpAction(selectionBody, true);
@@ -170,7 +173,7 @@ ext.Helper.prototype.getSelectedContent_ = function(req, sendResponse) {
       canInject: Boolean(canInject)
     });
     sendResponse(response);
-  });
+  }, goog.bind(this.errorHandler_, this, sendResponse));
 };
 
 
@@ -183,7 +186,7 @@ ext.Helper.prototype.enableLookingGlass_ = function() {
     return;
   }
 
-  this.gmonkey_.getCurrentMessage(goog.bind(function(messageElemId) {
+  this.api_.getCurrentMessage(goog.bind(function(messageElemId) {
     var messageElem = document.getElementById(messageElemId);
     if (!messageElem || Boolean(messageElem.lookingGlass)) {
       return;
@@ -196,7 +199,7 @@ ext.Helper.prototype.enableLookingGlass_ = function() {
       this.registerDisposable(glass);
       glass.installGlass();
     }
-  }, this));
+  }, this), goog.bind(this.errorHandler_, this, goog.nullFunction));
 };
 
 
@@ -219,10 +222,22 @@ ext.Helper.prototype.getOrigin_ = function() {
   return window.location.origin;
 };
 
+
+/**
+ * Error handler, sending the error response back to the caller.
+ * @param  {!function(*)} sendResponse Function sending the response.
+ * @param  {Error} error Error to send.
+ * @private
+ */
+ext.Helper.prototype.errorHandler_ = function(sendResponse, error) {
+  console.error(error);
+  sendResponse(error);
+};
+
 });  // goog.scope
 
 // Create the helper and start it.
 if (!!chrome.extension && !goog.isDef(window.helper)) {
   /** @type {!e2e.ext.Helper} */
-  window.helper = new e2e.ext.Helper(new e2e.ext.gmonkey());
+  window.helper = new e2e.ext.Helper(new e2e.ext.WebsiteApi());
 }

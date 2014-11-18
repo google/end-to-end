@@ -15,94 +15,91 @@
  */
 
 /**
- * @fileoverview A stub method that allows the invocation of gmonkey API calls
- * inside the Javascript context of Gmail.
+ * @fileoverview A stub method that allows the invocation of End-To-End Website
+ * API calls inside the Javascript context of Gmail using gmonkey API provided
+ * by Gmail.
  */
 
 (function() {
   var gmonkeyApi;
 
+
   /**
    * Handles the bootstrap message coming from the extension.
+   * @param {MessageEvent} e bootstrap message sent from the extension.
    */
   var bootstrapMessageHandler = function(e) {
-    if (e.origin == window.location.origin && e.data.api == 'e2e-init' &&
-        e.ports && e.ports.length == 1) {
+    if (e.origin == window.location.origin &&
+        e.data.api == 'e2e-init' &&
+        e.ports &&
+        e.ports.length == 1) {
       e.ports[0].addEventListener('message', messageHandler, false);
       e.ports[0].start();
       e.ports[0].postMessage({
         api: 'e2e-init',
-        result: { 'gmonkey': typeof gmonkey !== 'undefined' }
+        version: 1,
+        available: isApiAvailable()
       });
       window.removeEventListener('message', bootstrapMessageHandler);
     }
   };
 
+
   /**
-   * Initializes channel messaging with End-To-End extension.
+   * Initializes channel messaging with E2E.
    */
   var initChannel = function() {
     window.addEventListener('message', bootstrapMessageHandler, false);
   };
 
-  /**
-   * Returns true if there is an open draft.
-   */
-  var hasDraft = function() {
-    return gmonkeyApi.getMainWindow().getOpenDraftMessages().length > 0;
-  };
 
   /**
-   * Returns the last created open draft. If there is no draft, a new draft is
-   * created.
+   * Sends the result back to E2E.
+   * @param {MessagePort} port Port to send the response through.
+   * @param {Object} request The request object we're sending the response to.
+   * @param {Object} result Result of the request.
    */
-  var getDraft = function(callback) {
-    var draft = gmonkeyApi.getMainWindow().getOpenDraftMessages()[0];
-    if (draft) {
-      callback(draft);
-    } else {
-      if (!hasDraft()) {
-        gmonkeyApi.getMainWindow().createNewCompose();
-      }
-      window.setTimeout(getDraft.bind(this, callback, false), 50);
-    }
-  };
-
-  /**
-   * Sends the result back to the extension.
-   */
-  var sendResult = function(port, request, arg) {
+  var sendResult = function(port, request, result) {
     port.postMessage({
-      api: 'gmonkey',
-      result: arg,
+      result: result,
       requestId: request.id
     });
   };
 
+
   /**
-   * Sends the error message back to the extension.
+   * Sends the error message back to E2E.
+   * @param {MessagePort} port Port to send the response through.
+   * @param {Object} request The request object we're sending the response to.
+   * @param {string} errorMessage The error message.
    */
   var sendError = function(port, request, errorMessage) {
     port.postMessage({
-      api: 'gmonkey',
       error: errorMessage,
       result: null,
       requestId: request.id
     });
   };
 
+  // GMonkey-specific API implementation below.
+
   /**
-   * Handle incoming End-to-End requests, delaying the response until gmonkey
-   * API has loaded.
-   * @param  {MessageEvent} event
+   * Indicates if we should report API availability to E2E.
+   * @return {boolean} True if the API object is available.
+   */
+  var isApiAvailable = function() {
+    return typeof gmonkey !== 'undefined';
+  };
+
+
+  /**
+   * Handles incoming E2E requests, delaying the response until gmonkey API has
+   * loaded.
+   * @param  {MessageEvent} event Event to handle.
    */
   var messageHandler = function(event) {
     var request = event.data;
     var port = event.target;
-    if (request.call == 'isGmonkeyAvailable') {
-      sendResult(port, request, typeof gmonkey !== 'undefined');
-      return;
-    }
     if (gmonkeyApi) { // API is already loaded
       processApiRequest(port, request);
     } else {
@@ -118,11 +115,11 @@
     }
   };
 
+
   /**
-   * Processes request to gmonkey API.
+   * Processes request to E2E Website API.
    * @param  {MessagePort} port port to send the response to
    * @param  {{id:string,call:string,args:Object=}} request incoming request
-   * @return {[type]}         [description]
    */
   var processApiRequest = function(port, request) {
     var args = request.args;
@@ -167,5 +164,32 @@
         sendError(port, request, 'Unsupported API call.');
     }
   };
+
+
+  /**
+   * Returns true if there is an open draft.
+   */
+  var hasDraft = function() {
+    return gmonkeyApi.getMainWindow().getOpenDraftMessages().length > 0;
+  };
+
+
+  /**
+   * Returns the last created open draft. If there is no draft, a new draft is
+   * created.
+   */
+  var getDraft = function(callback) {
+    var draft = gmonkeyApi.getMainWindow().getOpenDraftMessages()[0];
+    if (draft) {
+      callback(draft);
+    } else {
+      if (!hasDraft()) {
+        gmonkeyApi.getMainWindow().createNewCompose();
+      }
+      window.setTimeout(getDraft.bind(this, callback, false), 50);
+    }
+  };
+
   initChannel();
+
 }).call();
