@@ -160,6 +160,21 @@ function testBootstrapWithNotAvailableResponse() {
   });
 }
 
+function testBootstrapTimeout() {
+  stubs.replace(e2e.ext.WebsiteApi.prototype, 'supportsApi_', function() {
+    return true;});
+  // Do not even send the bootstrap message to trigger the timeout.
+  stubs.replace(e2e.ext.WebsiteApi.prototype, 'sendBootstrap_',
+      goog.nullFunction);
+
+  asyncTestCase.stepTimeout = e2e.ext.WebsiteApi.BOOTSTRAP_TIMEOUT + 10;
+  asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
+  e2eapi.bootstrapChannel_(function(available) {
+    assertEquals(false, available);
+    asyncTestCase.continueTesting();
+  });
+}
+
 function testRequestResponseFlow() {
   var requestId;
   var handleResponseFunction = function(response) {
@@ -219,6 +234,31 @@ function testRequestResponseError() {
   e2eapi.sendWebsiteRequest_('foo', fail, handleErrorFunction, 'bar');
 }
 
+function testRequestResponseTimeout() {
+  var requestId;
+  var handleErrorFunction = function(error) {
+    assertTrue(error instanceof Error);
+    assertEquals('Timeout occurred while processing the request.',
+        error.message);
+    assertUndefined(e2eapi.pendingCallbacks_[requestId]);
+    asyncTestCase.continueTesting();
+  };
+
+  e2eapi.port_ = {
+    postMessage: function(request) {
+      // Request was received. Check it, but don't send the response.
+      assertEquals('timeouting', request.call);
+      assertEquals('bar', request.args);
+      requestId = request.id;
+      assertEquals(fail, e2eapi.pendingCallbacks_[requestId].callback);
+      assertEquals(handleErrorFunction,
+          e2eapi.pendingCallbacks_[requestId].errback);
+    }
+  };
+  asyncTestCase.stepTimeout = e2e.ext.WebsiteApi.REQUEST_TIMEOUT + 10;
+  asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
+  e2eapi.sendWebsiteRequest_('timeouting', fail, handleErrorFunction, 'bar');
+}
 
 function testIgnoreUnrelatedResponses() {
   assertFalse(e2eapi.processWebsiteResponse_({data: {requestId: 'unknown'}}));

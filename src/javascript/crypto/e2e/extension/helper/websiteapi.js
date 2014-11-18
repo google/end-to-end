@@ -57,6 +57,22 @@ e2e.ext.WebsiteApi.STUB_INIT_DELAY = 50;
 
 
 /**
+ * Timeout for requests sent to website API connectors (in ms).
+ * @type {number}
+ * @const
+ */
+e2e.ext.WebsiteApi.REQUEST_TIMEOUT = 1000;
+
+
+/**
+ * Timeout for the bootstrap handler in the website to respond (in ms).
+ * @type {number}
+ * @const
+ */
+e2e.ext.WebsiteApi.BOOTSTRAP_TIMEOUT = 100;
+
+
+/**
  * True if API object in web application is available, false otherwise.
  * This can only be determined upon the first call invocation.
  * @type {?boolean}
@@ -170,7 +186,17 @@ e2e.ext.WebsiteApi.prototype.sendWebsiteRequest_ = function(call, callback,
     call: call,
     args: opt_args || {}
   };
-  //TODO(koto): Handle timeouts for individual requests.
+  var timeoutEvent = {
+    data: {
+      error: 'Timeout occurred while processing the request.',
+      requestId: requestId
+    }
+  };
+  // Set a timeout for a function that would simulate an error response.
+  // If the response was processed before the timeout, processWebsiteResponse_
+  // will just silently bail out.
+  setTimeout(goog.bind(this.processWebsiteResponse_, this, timeoutEvent),
+      e2e.ext.WebsiteApi.REQUEST_TIMEOUT);
   port.postMessage(request);
 };
 
@@ -215,22 +241,40 @@ e2e.ext.WebsiteApi.prototype.bootstrapChannel_ = function(onPortReadyCallback) {
     return;
   }
   var channel = new MessageChannel();
+  var bootstrapReceived = false;
   var initChannelListener = goog.bind(function(msgEvent) {
     if (msgEvent.data.api == 'e2e-init' && msgEvent.data.version == 1) {
+      channel.port1.removeEventListener('message', initChannelListener);
+      if (bootstrapReceived) {
+        return;
+      }
+      bootstrapReceived = true;
       this.port_ = msgEvent.target;
       this.apiAvailable_ = msgEvent.data.available;
-      msgEvent.target.addEventListener('message',
-          goog.bind(this.processWebsiteResponse_, this));
-      channel.port1.removeEventListener('message', initChannelListener);
+      if (msgEvent.target) {
+        msgEvent.target.addEventListener('message',
+            goog.bind(this.processWebsiteResponse_, this));
+      }
       onPortReadyCallback(this.apiAvailable_);
     }
   }, this);
 
-  // TODO(koto): handle timeouts for bootstrapping gracefully
-  // (fallback to DOM API).
   channel.port1.addEventListener('message', initChannelListener, false);
   channel.port1.start();
   this.sendBootstrap_(channel.port2);
+  // Set a timeout for a function that would simulate an 'api not available'
+  // response. If the response was processed before the timeout,
+  // initChannelListener will just silently bail out.
+  var timeoutEvent = {
+    data: {
+      api: 'e2e-init',
+      version: 1,
+      available: false
+    },
+    target: null
+  };
+  setTimeout(goog.bind(initChannelListener, this, timeoutEvent),
+      e2e.ext.WebsiteApi.BOOTSTRAP_TIMEOUT);
 };
 
 
