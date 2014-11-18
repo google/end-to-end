@@ -292,8 +292,8 @@ function testGetCurrentMessageGmail() {
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
-    e2eapi.getCurrentMessage(function(id, content) {
-      assertEquals(document.documentElement.id, id);
+    e2eapi.getCurrentMessage(function(selector, content) {
+      assertEquals('#' + document.documentElement.id, selector);
       assertEquals(TEST_CONTENT, content);
       asyncTestCase.continueTesting();
     }, function() {fail('Should not call errback.')});

@@ -186,9 +186,13 @@ ext.Helper.prototype.enableLookingGlass_ = function() {
     return;
   }
 
-  this.api_.getCurrentMessage(goog.bind(function(messageElemId) {
-    var messageElem = document.getElementById(messageElemId);
-    if (!messageElem || Boolean(messageElem.lookingGlass)) {
+  this.api_.getCurrentMessage(goog.bind(function(messageElemSelector) {
+    try {
+      var messageElem = document.querySelector(messageElemSelector);
+      if (!messageElem || Boolean(messageElem.lookingGlass)) {
+        return;
+      }
+    } catch (e) { // document.querySelector might throw.
       return;
     }
     var selectionBody = e2e.openpgp.asciiArmor.extractPgpBlock(

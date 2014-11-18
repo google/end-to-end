@@ -129,7 +129,7 @@
         var message = gmonkeyApi.getCurrentMessage();
         if (message) {
           result = {
-            'id': message.getContentElement().id,
+            'selector': '#' + message.getContentElement().id,
             'body': message.getPlainTextContent()
           };
         }

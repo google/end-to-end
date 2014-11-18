@@ -368,7 +368,7 @@ e2e.ext.WebsiteApi.prototype.getCurrentMessage = function(callback, errback) {
         if (!result) {
           callback(undefined, undefined);
         } else {
-          callback(result.id, result.body);
+          callback(result.selector, result.body);
         }
       }, errback);
     } else {

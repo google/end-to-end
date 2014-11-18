@@ -137,6 +137,7 @@ function testOrigin() {
 function testEnableLookingGlass() {
   var selectionBody = 'some text';
   var elemId = 'some-id';
+  var elemSelector = '#some-id';
 
   stubs.set(api, 'getCurrentMessage', mockControl.createFunctionMock());
   var getCurrentMessageArg =
@@ -166,7 +167,7 @@ function testEnableLookingGlass() {
   document.body.appendChild(contentElem);
   contentElem.id = elemId;
   contentElem.innerText = selectionBody;
-  getCurrentMessageArg.arg(elemId);
+  getCurrentMessageArg.arg(elemSelector);
   assertNotNull(contentElem.querySelector('iframe'));
   mockControl.$verifyAll();
   document.body.removeChild(contentElem);
