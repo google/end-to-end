@@ -38,9 +38,13 @@ fi
 # checkout closure compiler
 if [ ! -d closure-compiler/.git ]; then
   if [ -d closure-compiler ]; then # remove binary release directory
-    rm -rf closure-compiler 
+    rm -rf closure-compiler
   fi
   git clone --depth 1 https://github.com/google/closure-compiler/ closure-compiler
+fi
+
+# build closure compiler
+if [ ! -f closure-compiler/build/compiler.jar ]; then
   cd closure-compiler
   ant jar
   cd ..
