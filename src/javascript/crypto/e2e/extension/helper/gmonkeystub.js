@@ -119,7 +119,7 @@
   /**
    * Processes request to E2E Website API.
    * @param  {MessagePort} port port to send the response to
-   * @param  {{id:string,call:string,args:Object=}} request incoming request
+   * @param  {{id:string,call:string,args}} request incoming request
    */
   var processApiRequest = function(port, request) {
     var args = request.args;
