@@ -85,7 +85,7 @@ e2e.openpgp.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
   var result = new e2e.async.Result;
   var rsaSigner;
   var rsaCipher;
-  crypto.generateKey(aid, false, ['sign', 'verify']).catch (
+  crypto.generateKey(aid, false, ['sign', 'verify']).catch(
       function(e) {
         result.errback(e);
       }).then(function(sigKeyPair) {
@@ -98,7 +98,7 @@ e2e.openpgp.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
           rsaSigner.setWebCryptoKey(sigKeyPair);
 
           aid.name = 'RSAES-PKCS1-v1_5';
-          crypto.generateKey(aid, false, ['encrypt', 'decrypt']).catch (
+          crypto.generateKey(aid, false, ['encrypt', 'decrypt']).catch(
               function(e) {
                 result.errback(e);
               }).then(function(encKeyPair) {
@@ -113,9 +113,9 @@ e2e.openpgp.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
                   rsaCipher.setWebCryptoKey(encKeyPair);
 
                   result.callback([rsaSigner, rsaCipher]);
-                }).catch (function(e) { result.errback(e); });
+                }).catch(function(e) { result.errback(e); });
           });
-        }).catch (function(e) { result.errback(e); });
+        }).catch(function(e) { result.errback(e); });
   });
   return result;
 };

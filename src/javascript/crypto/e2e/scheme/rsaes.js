@@ -52,7 +52,7 @@ e2e.scheme.Rsaes.prototype.encryptWebCrypto = function(plaintext) {
       new Uint8Array(plaintext)
   ).then(
       goog.bind(result.callback, result)
-  ).catch (
+  ).catch(
       goog.bind(result.errback, result));
   return result.addCallback(function(c) {
     return {'c': [].slice.call(new Uint8Array(c))};
@@ -68,7 +68,7 @@ e2e.scheme.Rsaes.prototype.decryptWebCrypto = function(ciphertext) {
       this.key,
       new Uint8Array(ciphertext['c'])
   ).then(
-      goog.bind(result.callback, result)).catch (
+      goog.bind(result.callback, result)).catch(
       goog.bind(result.errback, result));
   return result.addCallback(function(p) {
     return [].slice.call(new Uint8Array(p));
