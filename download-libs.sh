@@ -35,11 +35,19 @@ if [ ! -d zlib.js/.git ]; then
   ln -s ../zlib.js/define/typedarray/use.js typedarray/use.js
 fi
 
-# checkout js compiler
-if [ ! -d closure-compiler ]; then
-  curl https://dl.google.com/closure-compiler/compiler-latest.zip -O # -k --ssl-added-and-removed-here-;-)
-  unzip compiler-latest.zip -d closure-compiler
-  rm compiler-latest.zip
+# checkout closure compiler
+if [ ! -d closure-compiler/.git ]; then
+  if [ -d closure-compiler ]; then # remove binary release directory
+    rm -rf closure-compiler
+  fi
+  git clone --depth 1 https://github.com/google/closure-compiler/ closure-compiler
+fi
+
+# build closure compiler
+if [ ! -f closure-compiler/build/compiler.jar ]; then
+  cd closure-compiler
+  ant jar
+  cd ..
 fi
 
 # checkout closure templates compiler

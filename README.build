@@ -25,7 +25,8 @@ To build End-To-End, the following requirements must be met:
  - git
  - curl
  - unzip
- - Java 1.7
+ - ant
+ - JDK 1.7
  - Python
 
 Usage
