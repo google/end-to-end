@@ -35,6 +35,7 @@ var e2eapi = null;
 var stubs = new goog.testing.PropertyReplacer();
 var RECIPIENTS = ['test@example.com' , 't2@example.com', 'cc@example.com'];
 var TEST_CONTENT = 'TEST';
+var TEST_SUBJECT = 'TEST SUBJECT';
 
 function setUp() {
   e2eapi = new e2e.ext.WebsiteApi();
@@ -48,6 +49,7 @@ function setUp() {
       {name: 'inv\"<alid <invalid@example.com>'},
       {address: 'fails#e2e.regexp.vali@dation.com'}],
     cc: [{address: 'cc@example.com'}],
+    subject: TEST_SUBJECT,
 
     body: 'some text<br>with new<br>lines',
     getToEmails: function() { return this.to; },
@@ -55,7 +57,9 @@ function setUp() {
     getCcEmails: function() { return this.cc; },
     setCcEmails: function(value) { this.cc = value; },
     getPlainTextBody: function() { return this.body.replace(/\<br\>/g, '\n'); },
-    setBody: function(value) { this.body = value; }
+    setBody: function(value) { this.body = value; },
+    getSubject: function() { return this.subject; },
+    setSubject: function(value) { this.subject = value; }
   };
   api = {
     getContentElement: function() { return document.documentElement; },
@@ -63,7 +67,8 @@ function setUp() {
     getCurrentMessage: function() { return api; },
     getMainWindow: function() { return api; },
     getOpenDraftMessages: function() { return [draft]; },
-    getActiveMessage: function() { return api; }
+    getActiveMessage: function() { return api; },
+    SUBJECTS_ENABLED_FOR_TESTS_ONLY: true
   };
   stubs.setPath('gmonkey.load', function(version, callback) {
     callback(api);
@@ -427,9 +432,10 @@ function testGetSelectedContentPriority() {
 function testUpdateSelectedContentPriority() {
   stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
   stubs.replace(e2eapi, 'setActiveDraft_', function(recipients, value,
-      callback, errback) {
+      callback, errback, subject) {
         assertArrayEquals(RECIPIENTS, recipients);
         assertEquals('foo', value);
+        assertEquals('bar', subject);
         asyncTestCase.continueTesting();
       });
   stubs.replace(e2eapi, 'updateSelectedContentDom_', fail);
@@ -437,7 +443,22 @@ function testUpdateSelectedContentPriority() {
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
     e2eapi.updateSelectedContent(RECIPIENTS, 'foo', goog.nullFunction,
-        goog.nullFunction);
+        goog.nullFunction, 'bar');
+  });
+}
+
+function testUpdateSelectedContentWebsite() {
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
+  stubs.replace(e2eapi, 'updateSelectedContentDom_', fail);
+  asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
+  e2eapi.isApiAvailable_(function(available) {
+    assertTrue(available);
+    e2eapi.updateSelectedContent(RECIPIENTS, 'foo', function(success) {
+      assertTrue(success);
+      assertEquals('foo', draft.body);
+      assertEquals('subject bar', draft.subject);
+      asyncTestCase.continueTesting();
+    }, fail, 'subject bar');
   });
 }
 
@@ -447,12 +468,14 @@ function testGetSelectedContentWebsite() {
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
-    e2eapi.getSelectedContentWebsite_(function(recipients, content, canInject) {
-      assertArrayEquals(RECIPIENTS, recipients);
-      assertEquals(draft.body.replace(/\<br\>/g, '\n'), content);
-      assertEquals(true, canInject);
-      asyncTestCase.continueTesting();
-    }, fail);
+    e2eapi.getSelectedContentWebsite_(function(recipients, content, canInject,
+        subject) {
+          assertArrayEquals(RECIPIENTS, recipients);
+          assertEquals(draft.body.replace(/\<br\>/g, '\n'), content);
+          assertEquals(true, canInject);
+          assertEquals(TEST_SUBJECT, subject);
+          asyncTestCase.continueTesting();
+        }, fail);
   });
 }
 

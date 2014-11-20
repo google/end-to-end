@@ -390,8 +390,8 @@ promptPanels.EncryptSign.prototype.encryptSign_ = function() {
 promptPanels.EncryptSign.prototype.insertMessageIntoPage_ = function(origin) {
   var textArea = this.getElement().querySelector('textarea');
   var recipients = this.chipHolder_.getSelectedUids();
-  var subjectHolder = goog.dom.getElement(constants.ElementId.SUBJECT_HOLDER);
-  var subject = subjectHolder ? subjectHolder.value : undefined;
+  var subject = goog.dom.getElement(constants.ElementId.SUBJECT) ?
+      goog.dom.getElement(constants.ElementId.SUBJECT).value : undefined;
   utils.action.updateSelectedContent(
       textArea.value, recipients, origin, false,
       goog.partial(goog.dispose, this.getParent()), this.errorCallback_,
@@ -480,7 +480,8 @@ promptPanels.EncryptSign.prototype.loadSavedDraftOrSelectedContent_ =
 promptPanels.EncryptSign.prototype.saveDraft_ = function(origin, evt) {
   var formText = /** @type {HTMLTextAreaElement} */
       (this.getElement().querySelector('textarea'));
-
+  var subject = goog.dom.getElement(constants.ElementId.SUBJECT) ?
+      goog.dom.getElement(constants.ElementId.SUBJECT).value : undefined;
   this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
     action: constants.Actions.ENCRYPT_SIGN,
     content: formText.value,
@@ -490,7 +491,7 @@ promptPanels.EncryptSign.prototype.saveDraft_ = function(origin, evt) {
     if (evt.type == goog.events.EventType.CLICK) {
       utils.action.updateSelectedContent(
           draft, [], origin, true, goog.nullFunction,
-          this.errorCallback_, undefined);
+          this.errorCallback_, subject);
     } else {
       drafts.saveDraft(draft, origin);
     }

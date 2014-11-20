@@ -302,13 +302,14 @@ function testSaveDraftIntoPage() {
   panel.render(document.body);
   textArea = document.querySelector('textarea');
   assertEquals(plaintext, textArea.value);
-  subjectInput = document.getElementById(constants.ElementId.SUBJECT_HOLDER);
+  subjectInput = document.getElementById(constants.ElementId.SUBJECT);
   assertEquals(subject, subjectInput.value);
 
   panel.saveDraft_(origin, {type: 'click'});
   encryptCb.arg(encrypted);
   assertTrue(e2e.openpgp.asciiArmor.isDraft(contentArg.arg));
   assertContains('encrypted message', contentArg.arg);
+  assertEquals(subject, subjectArg.arg);
   mockControl.$verifyAll();
 }
 

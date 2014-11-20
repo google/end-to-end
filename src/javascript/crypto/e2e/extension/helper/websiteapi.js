@@ -380,8 +380,8 @@ e2e.ext.WebsiteApi.prototype.getCurrentMessage = function(callback, errback) {
 
 /**
  * Gets the active draft in the web application.
- * @param {!function(!Array.<string>,string)} callback The callback to process
- *     the results.
+ * @param {!function(!Array.<string>,string,string)} callback The callback
+ *     to process the results.
  * @param {function(Error)} errback The function that will be called upon error.
  * @suppress {missingProperties}
  * @private
@@ -390,13 +390,15 @@ e2e.ext.WebsiteApi.prototype.getActiveDraft_ = function(callback, errback) {
   this.sendWebsiteRequest_('getActiveDraft', function(result) {
     var recipients = [];
     var body = '';
+    var subject;
     if (goog.isObject(result)) {
       goog.array.extend(recipients,
           e2e.ext.WebsiteApi.getEmailsFromAddressDescriptors_(result['to']),
           e2e.ext.WebsiteApi.getEmailsFromAddressDescriptors_(result['cc']));
-      body = result['body'];
+      body = result['body'] || '';
+      subject = result['subject'];
     }
-    callback(recipients, body);
+    callback(recipients, body, subject);
   }, errback);
 };
 
@@ -420,21 +422,26 @@ e2e.ext.WebsiteApi.prototype.hasActiveDraft_ = function(callback, errback) {
  * @param {function(boolean)} callback A callback to invoke once the draft's
  *     contents have been set.
  * @param {function(Error)} errback The function that will be called upon error.
+ * @param {string=} opt_subject Subject of the message.
  * @private
  */
 e2e.ext.WebsiteApi.prototype.setActiveDraft_ = function(recipients, msgBody,
-    callback, errback) {
-  this.sendWebsiteRequest_('setActiveDraft', callback, errback, {
+    callback, errback, opt_subject) {
+  var message = {
     to: e2e.ext.WebsiteApi.getAddressDescriptorsFromEmails_(recipients),
     body: msgBody
-  });
+  };
+  if (goog.isDef(opt_subject)) {
+    message.subject = opt_subject;
+  }
+  this.sendWebsiteRequest_('setActiveDraft', callback, errback, message);
 };
 
 
 /**
  * Returns currently selected content.
- * @param  {!function(!Array.<string>,string, boolean)} callback A callback
- *     to process the results.
+ * @param  {!function(!Array.<string>,string,boolean,string=)} callback A
+ *     callback to process the results.
  * @param {function(Error)} errback The function that will be called upon error.
  * @expose
  */
@@ -451,8 +458,8 @@ e2e.ext.WebsiteApi.prototype.getSelectedContent = function(callback, errback) {
 
 /**
  * Returns currently selected content using Website API.
- * @param  {!function(!Array.<string>,string, boolean)} callback A callback to
- *     process the results.
+ * @param  {!function(!Array.<string>,string,boolean,string=)} callback A
+ *     callback to process the results.
  * @param {function(Error)} errback The function that will be called upon error.
  * @private
  */
@@ -460,8 +467,8 @@ e2e.ext.WebsiteApi.prototype.getSelectedContentWebsite_ = function(callback,
     errback) {
   this.hasActiveDraft_(goog.bind(function(hasDraft) {
     if (hasDraft) {
-      this.getActiveDraft_(goog.bind(function(recipients, msgBody) {
-        callback(recipients, msgBody, true);
+      this.getActiveDraft_(goog.bind(function(recipients, msgBody, msgSubject) {
+        callback(recipients, msgBody, true, msgSubject);
       }, this), errback);
     } else {
       this.getCurrentMessage(goog.bind(function(messageElemId, messageBody) {
@@ -473,7 +480,7 @@ e2e.ext.WebsiteApi.prototype.getSelectedContentWebsite_ = function(callback,
         } else if (!messageBody) {
           messageBody = this.getActiveSelection_();
         }
-        callback([], messageBody, true);
+        callback([], messageBody, true, undefined);
       }, this), errback);
     }
   }, this), errback);
@@ -482,8 +489,8 @@ e2e.ext.WebsiteApi.prototype.getSelectedContentWebsite_ = function(callback,
 
 /**
  * Returns currently active element in the document.
- * @param  {!function(!Array.<string>,string, boolean)} callback A callback to
- *     process the results.
+ * @param  {!function(!Array.<string>,string, boolean, string=)} callback
+ *     A callback to process the results.
  * @param {function(Error)} errback The function that will be called upon error.
  * @private
  */
@@ -493,7 +500,7 @@ e2e.ext.WebsiteApi.prototype.getSelectedContentDom_ = function(callback,
   var selection = this.getActiveSelection_();
   var canInject = this.isEditable_(activeElem);
   this.lastActiveElement_ = activeElem;
-  callback([], selection, canInject);
+  callback([], selection, canInject, undefined);
 };
 
 
@@ -504,12 +511,13 @@ e2e.ext.WebsiteApi.prototype.getSelectedContentDom_ = function(callback,
  * @param  {function(boolean)} callback Callback to call after content has
  *     been updated.
  * @param {function(Error)} errback The function that will be called upon error.
+ * @param {string=} opt_subject New subject of the message.
  */
 e2e.ext.WebsiteApi.prototype.updateSelectedContent = function(recipients, value,
-    callback, errback) {
+    callback, errback, opt_subject) {
   this.isApiAvailable_(goog.bind(function(available) {
     if (available) {
-      this.setActiveDraft_(recipients, value, callback, errback);
+      this.setActiveDraft_(recipients, value, callback, errback, opt_subject);
     } else {
       this.updateSelectedContentDom_(value, callback, errback);
     }

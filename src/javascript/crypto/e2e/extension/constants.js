@@ -84,6 +84,7 @@ e2e.ext.constants.ElementId = {
   PASSPHRASE_ENCRYPTION_LINK: 'passphraseEncryptionLink',
   FROM_HOLDER: 'fromHolder',
   SUBJECT_HOLDER: 'subjectHolder',
+  SUBJECT: 'subject',
 
   /* Used to display menus in the UI. */
   MENU_CONTAINER: 'menu-container',

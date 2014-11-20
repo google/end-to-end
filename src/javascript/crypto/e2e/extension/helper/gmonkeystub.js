@@ -22,6 +22,7 @@
 
 (function() {
   var gmonkeyApi;
+  // TODO(koto): Remove closure, add unit tests and make that a compiled script.
 
 
   /**
@@ -115,7 +116,6 @@
     }
   };
 
-
   /**
    * Processes request to E2E Website API.
    * @param  {MessagePort} port port to send the response to
@@ -142,6 +142,9 @@
             'cc': draft.getCcEmails(),
             'body': draft.getPlainTextBody()
           };
+          if (gmonkeyApi.SUBJECTS_ENABLED_FOR_TESTS_ONLY) {
+            result.subject = draft.getSubject();
+          }
           sendResult(port, request, result);
         });
         break;
@@ -154,9 +157,15 @@
             draft.setToEmails(args['to']);
           }
 
-          if (args['body']) {
+          if ('body' in args) {
             draft.setBody(args['body']);
           }
+
+          if (gmonkeyApi.SUBJECTS_ENABLED_FOR_TESTS_ONLY &&
+              ('subject' in args)) {
+            draft.setSubject(args['subject']);
+          }
+
           sendResult(port, request, true);
         });
         break;

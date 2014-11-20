@@ -120,7 +120,7 @@ ext.Helper.prototype.disposeInternal = function() {
  */
 ext.Helper.prototype.setValue_ = function(msg, sendResponse) {
   this.api_.updateSelectedContent(msg.recipients, msg.value, sendResponse,
-      goog.bind(this.errorHandler_, this, sendResponse));
+      goog.bind(this.errorHandler_, this, sendResponse), msg.subject);
 };
 
 
@@ -159,21 +159,23 @@ ext.Helper.prototype.getSelectedContent_ = function(req, sendResponse) {
 
   var origin = this.getOrigin_();
 
-  this.api_.getSelectedContent(function(recipients, msgBody, canInject) {
-    var selectionBody =
-        e2e.openpgp.asciiArmor.extractPgpBlock(msgBody);
-    var action = utils.text.getPgpAction(selectionBody, true);
-    // Send response back to the extension.
-    var response = /** @type {e2e.ext.messages.BridgeMessageRequest} */ ({
-      selection: selectionBody,
-      recipients: recipients,
-      action: action,
-      request: true,
-      origin: origin,
-      canInject: Boolean(canInject)
-    });
-    sendResponse(response);
-  }, goog.bind(this.errorHandler_, this, sendResponse));
+  this.api_.getSelectedContent(function(recipients, msgBody, canInject,
+      msgSubject) {
+        var selectionBody =
+            e2e.openpgp.asciiArmor.extractPgpBlock(msgBody);
+        var action = utils.text.getPgpAction(selectionBody, true);
+        // Send response back to the extension.
+        var response = /** @type {e2e.ext.messages.BridgeMessageRequest} */ ({
+          selection: selectionBody,
+          recipients: recipients,
+          action: action,
+          request: true,
+          origin: origin,
+          subject: msgSubject,
+          canInject: Boolean(canInject)
+        });
+        sendResponse(response);
+      }, goog.bind(this.errorHandler_, this, sendResponse));
 };
 
 

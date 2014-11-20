@@ -40,7 +40,9 @@ textarea:focus,
 #pgpKeySelect:hover,
 #pgpKeySelect:focus,
 #fromHolder:hover,
-#fromHolder:focus {
+#fromHolder:focus,
+#subjectHolder:hover,
+#subjectHolder:focus {
   border: 1px solid #0c0c0c;
   outline: none;
 }
@@ -81,7 +83,7 @@ textarea:focus,
 }
 
 #pgpKeySelect,
-#fromHolder {
+#fromHolder, #subjectHolder {
   border: 1px solid #acacac;
   color: #acacac;
   line-height: 18px;
@@ -94,11 +96,16 @@ textarea:focus,
 }
 
 #fromHolder > div:first-child,
+#subjectHolder > div:first-child,
+#subjectHolder > input,
 #pgpKeySelect > .uid-chips > input,
 #pgpKeySelect > .uid-chips > span {
   margin-left: 7px;
 }
 
+#subjectHolder > div:first-child {
+  float: left;
+}
 
 #pgpKeySelect:focus,
 #fromHolder:focus {
@@ -108,6 +115,22 @@ textarea:focus,
 
 #pgpKeySelect input,
 #pgpKeySelect input:hover,
+#pgpKeySelect input:focus,
+#subjectHolder input,
+#subjectHolder input:hover,
+#subjectHolder input:focus {
+  border: 0;
+  display: inline-block;
+  overflow: hidden;
+  padding: 0;
+  width: 100px;
+}
+
+#subjectHolder #subject {
+  width: 590px;
+}
+
+#pgpKeySelect input:hover,
 #pgpKeySelect input:focus {
   border: 0;
   display: inline-block;
@@ -115,6 +138,7 @@ textarea:focus,
   padding: 0;
   width: 100px;
 }
+
 
 #pgpKeySelect > .uid-chips,
 #pgpKeySelect > .uid-chips div {
