@@ -98,6 +98,84 @@
         assertEquals(e2e.byteArrayToNumber([0x01, 0x02, 0x03, 0x04]), 16909060);
       }
 
+
+      // Tests from
+      // http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt
+      function testUTF8Conversion() {
+        var samples = [
+          {'inp': [0x0], 'out': '\u0000'},
+          {'inp': [0xc2, 0x80], 'out': '\u0080'},
+          {'inp': [0xe0, 0xa0, 0x80], 'out': '\u0800'},
+          {'inp': [0xf0, 0x90, 0x80, 0x80], 'out': '\ud800\udc00'},
+          {'inp': [0x7f], 'out': '\u007f'},
+          {'inp': [0xdf, 0xbf], 'out': '\u07ff'},
+          {'inp': [0xef, 0xbf, 0xbf], 'out': '\uffff'},
+          {'inp': [0xf4, 0x8f, 0xbf, 0xbf], 'out': '\udbff\udfff'},
+          {'inp': [0xed, 0x9f, 0xbf], 'out': '\ud7ff'},
+          {'inp': [0xee, 0x80, 0x80], 'out': '\ue000'},
+          {'inp': [0xf0, 0x9d, 0x8c, 0x86], 'out': '\ud834\udf06'}
+        ];
+        goog.array.forEach(
+          samples,
+          function(sample) {
+            var str = e2e.byteArrayToString(sample.inp);
+            assertEquals(sample.out, str);
+            var enc = e2e.stringToByteArray(sample.out);
+            assertArrayEquals(sample.inp, enc);
+          });
+      }
+
+
+      // Tests from
+      // http://www.cl.cam.ac.uk/~mgk25/ucs/examples/UTF-8-test.txt
+      // Malformed sequences should be replaced as appropriate.
+      function testMalformedUTF8Replacement() {
+        var samples = [
+          [0x80],
+          [0xbf],
+          [0x80, 0xbf],
+          [0x80, 0xbf, 0x80],
+          [0x80, 0xbf, 0x80, 0xbf],
+          [0xc0, 0xaf],
+          [0xe0, 0x80, 0xaf],
+          [0xf0, 0x80, 0x80, 0xaf],
+          [0xf8, 0x80, 0x80, 0x80, 0xaf],
+          [0xfc, 0x80, 0x80, 0x80, 0x80, 0xaf]
+        ];
+        goog.array.forEach(
+          samples,
+          function(sample) {
+            var str = e2e.byteArrayToString(sample);
+            var len = str.length;
+            assertEquals(len, sample.length);
+            for (var i = 0; i < len; i++) {
+              assertEquals(str.charCodeAt(i), 0xfffd);
+            }
+          });
+      }
+
+
+      // These javascript strings don't have a valid utf-8
+      // encoding.
+      function testInvalidUTF8Encoding() {
+        var samples= [
+          '\ud800',
+          '\udbff',
+          '\udc00',
+          '\udfff',
+          '\ud800\ud800'
+        ];
+        goog.array.forEach(
+          samples,
+          function(sample) {
+            var mustThrow = assertThrows(function() {
+              var enc = e2e.stringToByteArray(sample);
+            });
+            assertTrue(mustThrow instanceof e2e.error.InvalidArgumentsError);
+          });
+      }
+
+
       function testMojibakeNotTextDecoder() {
         asyncTest.waitForAsync('Waiting for byteArrayToString.');
         e2e.USE_TEXT_DECODER = false;

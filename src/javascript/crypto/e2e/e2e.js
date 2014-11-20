@@ -208,6 +208,8 @@ e2e.byteArrayToStringAsync = function(bytes, opt_charset) {
 
 /**
  * Converts a string into a UTF-8 encoded byte array.
+ * Throws {@code e2e.error.InvalidArgumentsError} if the string
+ * contains unencodable codepoints (eg: surrogate characters.)
  * @param {string} stringInput The string to convert.
  * @return {!e2e.ByteArray} The UTF-8 byte representation of the string.
  */
@@ -216,18 +218,81 @@ e2e.stringToByteArray = function(stringInput) {
   var out = [], p = 0;
   for (var i = 0; i < stringInput.length; i++) {
     var c = stringInput.charCodeAt(i);
-    if (c < 128) {
+    // If present, convert surrogate pairs to Unicode code points
+    // From Section 3.7 of the Unicode Standard:
+    // If <H,L> is a surrogate pair,
+    // N = (H - 0xD800)*0x400 + (L - 0xDC00) + 0x10000
+    // See:
+    // http://unicode.org/versions/Unicode3.0.0/ch03.pdf
+    // and the String.charCodeAt() documentation
+    // http://goo.gl/d4oFPv
+    if (e2e.isHighSurrogate_(c)) {
+      i++;
+      // charCodeAt() returns NaN if i >= stringInput.length
+      var low = stringInput.charCodeAt(i);
+      if (isNaN(low) || !e2e.isLowSurrogate_(low)) {
+        throw new e2e.error.InvalidArgumentsError(
+            'Cannot encode string to utf-8.');
+      }
+      c = ((c - 0xd800) * 0x400) + (low - 0xdc00) + 0x10000;
+    }
+    else if (e2e.isLowSurrogate_(c)) {
+      throw new e2e.error.InvalidArgumentsError(
+          'Cannot encode string to utf-8.');
+    }
+
+    // Convert a code point into utf-8
+    // See:
+    // http://tools.ietf.org/html/rfc3629#section-3
+    // for the encoding procedure.
+    if (c <= 0x7f) {
+      // one byte encoding
+      // 0xxxxxxx
       out[p++] = c;
-    } else if (c < 2048) {
-      out[p++] = (c >> 6) | 192;
-      out[p++] = (c & 63) | 128;
+    } else if (c <= 0x7ff) {
+      // two byte encoding
+      // 110xxxxx 10xxxxxx
+      out[p++] = (c >> 6) | 0xc0;
+      out[p++] = (c & 0x3f) | 0x80;
+    } else if (c <= 0xffff) {
+      // three byte encoding
+      // 1110xxxx 10xxxxxx 10xxxxxx
+      out[p++] = (c >> 12) | 0xe0;
+      out[p++] = ((c >> 6) & 0x3f) | 0x80;
+      out[p++] = (c & 0x3f) | 0x80;
+    } else if (c <= 0x10ffff) {
+      // four byte encoding
+      // 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+      out[p++] = ((c >> 18) & 0x7) | 0xf0;
+      out[p++] = ((c >> 12) & 0x3f) | 0x80;
+      out[p++] = ((c >> 6) & 0x3f) | 0x80;
+      out[p++] = (c & 0x3f) | 0x80;
     } else {
-      out[p++] = (c >> 12) | 224;
-      out[p++] = ((c >> 6) & 63) | 128;
-      out[p++] = (c & 63) | 128;
+      throw new e2e.error.InvalidArgumentsError(
+          'Cannot encode character codes > 0x10ffff');
     }
   }
   return out;
+};
+
+
+/**
+ * @param {!number} code The character code
+ * @return {!boolean} true if it is a high surrogate
+ * @private
+ */
+e2e.isHighSurrogate_ = function(code) {
+  return 0xd800 <= code && code <= 0xdbff;
+};
+
+
+/**
+ * @param {!number} code The character code
+ * @return {!boolean} true if it is a low surrogate
+ * @private
+ */
+e2e.isLowSurrogate_ = function(code) {
+  return 0xdc00 <= code && code <= 0xdfff;
 };
 
 
