@@ -1,0 +1,57 @@
+<!-- Copyright 2012 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<html>
+<head>
+<title>Unit Test of e2e.packet.UserId</title>
+<script src="../../../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.openpgp.packet.UserId');
+  goog.require('e2e.openpgp.parse');
+</script>
+</head>
+<body>
+<script>
+  function intToBytes(v) {
+    var ret = [];
+    ret.push((v >>> 24) & 0xff);
+    ret.push((v >>> 16) & 0xff);
+    ret.push((v >>> 8) & 0xff);
+    ret.push(v & 0xff);
+    return ret;
+  }
+
+  // Test that utf-8 encoded UserIds are correctly handled.
+  function testUTF8Encoding() {
+    // A string within the Basic Multilingual Plane
+    var body = [0x49, 0x20, 0xe2, 0x99, 0xa1, 0x20, 0x65, 0x32, 0x65];
+    var uid = e2e.openpgp.packet.UserId.parse(body);
+    assertEquals('I \u2661 e2e', uid.userId);
+    var expectedSigningBytes = goog.array.flatten(
+        0xb4, intToBytes(body.length), body);
+    assertArrayEquals(expectedSigningBytes, uid.getBytesToSign());
+    // A string outside the Basic Multilingual Plane.
+    body = [0x54, 0x68, 0x65, 0x20, 0xf0, 0x9d, 0x8c, 0x86];
+    uid = e2e.openpgp.packet.UserId.parse(body);
+    assertEquals('The \ud834\udf06', uid.userId);
+    expectedSigningBytes = goog.array.flatten(
+        0xb4, intToBytes(body.length), body);
+    assertArrayEquals(expectedSigningBytes, uid.getBytesToSign());
+  }
+</script>
+</body>
+</html>

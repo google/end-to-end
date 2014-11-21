@@ -331,10 +331,11 @@ e2e.openpgp.packet.UserId.prototype.getSignatureAttributes_ = function(key) {
  * @protected
  */
 e2e.openpgp.packet.UserId.prototype.getBytesToSign = function() {
+  var data = e2e.stringToByteArray(this.userId);
   return goog.array.flatten(
-      0xB4,
-      e2e.dwordArrayToByteArray([this.userId.length]),
-      e2e.stringToByteArray(this.userId)
+      0xB4, // v4 User ID certifications must hash this constant first
+      e2e.dwordArrayToByteArray([data.length]),
+      data
   );
 };
 
