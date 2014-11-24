@@ -162,6 +162,7 @@ e2e.ecc.DomainParam.fromCurve = function(curveName) {
   switch (curveName) {
     case e2e.ecc.PrimeCurve.P_256:
     case e2e.ecc.PrimeCurve.P_384:
+    case e2e.ecc.PrimeCurve.P_521:
       result = e2e.ecc.DomainParam.NIST.fromCurve(curveName);
       break;
     case e2e.ecc.PrimeCurve.CURVE_25519:
