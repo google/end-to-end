@@ -22,6 +22,7 @@
 goog.provide('e2e.openpgp.packet.SignatureSub');
 
 goog.require('e2e');
+goog.require('e2e.debug.Console');
 goog.require('e2e.openpgp.parse');
 goog.require('goog.array');
 goog.require('goog.structs.Map');
@@ -130,6 +131,8 @@ e2e.openpgp.packet.SignatureSub.parse = function(data) {
     type = /** @type {e2e.openpgp.packet.SignatureSub.Type} */ (
         type & 0x7F);
     var body = data.splice(0, packetLength - 1);
+    e2e.openpgp.packet.SignatureSub.console_.info(
+        '    Sub', type, ' (' + body.length + ') bytes', body);
 
     packets.push(new e2e.openpgp.packet.SignatureSub(type, critical, body,
                                                      packetLengthBytes));
@@ -268,3 +271,10 @@ e2e.openpgp.packet.SignatureSub.KeyFlags = {
   'AUTHENTICATION': 0x20,
   'SHARED': 0x80
 };
+
+
+/**
+ * @private {e2e.debug.Console}
+ */
+e2e.openpgp.packet.SignatureSub.console_ =
+    e2e.debug.Console.getConsole('e2e.openpgp.packet.SignatureSub');

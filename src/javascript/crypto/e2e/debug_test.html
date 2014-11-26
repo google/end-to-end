@@ -1,0 +1,100 @@
+<!-- Copyright 2012 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.debug</title>
+<script src="../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.debug.Console');
+  goog.require('e2e.debug.ConsoleHandler');
+</script>
+<script>
+  function tearDown() {
+    e2e.debug.Console.setHandler(null);
+    e2e.debug.Console.setLevel(e2e.debug.Console.Level.OFF);
+  }
+  /**
+   * Tests that levels are properly set.
+   */
+  function testConsoleLevel() {
+    var myconsole = e2e.debug.Console.getConsole('my.console');
+    assertEquals(myconsole, e2e.debug.Console.consoles_['my.console']);
+
+    e2e.debug.Console.setLevel(e2e.debug.Console.Level.OFF);
+    assertEquals(myconsole.debug, goog.nullFunction);
+    assertEquals(myconsole.info, goog.nullFunction);
+    assertEquals(myconsole.warn, goog.nullFunction);
+    assertEquals(myconsole.error, goog.nullFunction);
+
+    e2e.debug.Console.setLevel(e2e.debug.Console.Level.INFO);
+    assertEquals(myconsole.debug, goog.nullFunction);
+    // Only makes sense only when we have a console.
+    if (goog.global['console']) {
+      assertNotEquals(myconsole.info, goog.nullFunction);
+      assertNotEquals(myconsole.warn, goog.nullFunction);
+      assertNotEquals(myconsole.error, goog.nullFunction);
+    }
+    else {
+      assertEquals(myconsole.info, goog.nullFunction);
+      assertEquals(myconsole.warn, goog.nullFunction);
+      assertEquals(myconsole.error, goog.nullFunction);
+    }
+  }
+
+  /**
+   * Tests ConsoleHandlers are called when appropriate.
+   */
+  function testConsoleHandler() {
+    var msgs = {'debug': [], 'info': [], 'warn': [], 'error': []};
+    var maker = function(typ) {
+      return function() {
+        msgs[typ].push(arguments);
+      };
+    };
+    var dummyHandler = new e2e.debug.ConsoleHandler();
+    dummyHandler.handleDebug = maker('debug');
+    dummyHandler.handleInfo = maker('info');
+    dummyHandler.handleWarn = maker('warn');
+    dummyHandler.handleError = maker('error');
+
+    var cons = e2e.debug.Console.getConsole('my.handler');
+    e2e.debug.Console.setHandler(dummyHandler);
+    e2e.debug.Console.setLevel(e2e.debug.Console.Level.OFF);
+    cons.debug('Hello, world');
+    assertEquals(0, msgs.debug.length);
+
+    e2e.debug.Console.setLevel(e2e.debug.Console.Level.DEBUG);
+    cons.debug('Hello, world', new Error('an error'));
+    assertEquals(1, msgs.debug.length);
+    var dbg = msgs.debug[0];
+    assertEquals(3, dbg.length);
+    assertEquals('my.handler', dbg[0]);
+    assertEquals('Hello, world', dbg[1]);
+    assertTrue(dbg[2] instanceof Error);
+    assertEquals('an error', dbg[2].message);
+
+    e2e.debug.Console.setLevel(e2e.debug.Console.Level.INFO);
+    cons.debug('Hello, another world');
+    cons.info('Hello, from info');
+    assertEquals(1, msgs.debug.length);
+    assertEquals(1, msgs.info.length);
+    var info = msgs.info[0];
+    assertEquals('my.handler', info[0]);
+    assertEquals('Hello, from info', info[1]);
+    e2e.debug.Console.setHandler(null);
+  }
+
+</script>

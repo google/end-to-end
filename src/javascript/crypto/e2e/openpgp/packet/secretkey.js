@@ -23,6 +23,7 @@
 goog.provide('e2e.openpgp.packet.SecretKey');
 
 goog.require('e2e.cipher.factory');
+goog.require('e2e.debug.Console');
 goog.require('e2e.openpgp.EncryptedCipher');
 goog.require('e2e.openpgp.S2k');
 goog.require('e2e.openpgp.constants');
@@ -136,15 +137,27 @@ e2e.openpgp.packet.SecretKey.parse = function(body) {
           kd);
       algId = body.shift();
       s2k = e2e.openpgp.S2k.parse(body);
+      e2e.openpgp.packet.SecretKey.console_.info(
+          '  key-derivation', kd);
+      e2e.openpgp.packet.SecretKey.console_.info(
+          '  Sym alg', algId);
+      e2e.openpgp.packet.SecretKey.console_.info(
+          '    S2K-type', s2k.type);
       break;
     case e2e.openpgp.EncryptedCipher.KeyDerivationType.PLAINTEXT:
       kd = /** @type {e2e.openpgp.EncryptedCipher.KeyDerivationType} */ (
           kd);
+      e2e.openpgp.packet.SecretKey.console_.info(
+          '  key-derivation', kd);
       encrypted = false;
       break;
     default:
       algId = kd;
       kd = e2e.openpgp.EncryptedCipher.KeyDerivationType.MD5;
+      e2e.openpgp.packet.SecretKey.console_.info(
+          '  key-derivation', kd);
+      e2e.openpgp.packet.SecretKey.console_.info(
+          '  Sym alg', algId);
       break;
   }
   if (encrypted) {
@@ -165,6 +178,13 @@ e2e.openpgp.packet.SecretKey.parse = function(body) {
       pubkey.keyId);
 };
 
+
+/**
+ * @type {!e2e.debug.Console}
+ * @private
+ */
+e2e.openpgp.packet.SecretKey.console_ =
+    e2e.debug.Console.getConsole('e2e.openpgp.packet.SecretKey');
 
 e2e.openpgp.packet.factory.add(
     e2e.openpgp.packet.SecretKey);

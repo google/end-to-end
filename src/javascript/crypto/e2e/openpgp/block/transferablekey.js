@@ -21,6 +21,7 @@
 
 goog.provide('e2e.openpgp.block.TransferableKey');
 
+goog.require('e2e.debug.Console');
 goog.require('e2e.openpgp.block.Block');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.SignatureError');
@@ -216,6 +217,8 @@ e2e.openpgp.block.TransferableKey.prototype.processSignatures = function() {
   // Process user IDs
   for (i = this.userIds.length - 1; i >= 0; i--) {
     if (!this.userIds[i].verifySignatures(signingKey)) {
+      e2e.openpgp.block.TransferableKey.console_.warn(
+          'No valid signatures found for ', this.userIds[i].userId);
       this.userIds.splice(i, 1);
     }
   }
@@ -344,3 +347,11 @@ e2e.openpgp.block.TransferableKey.prototype.toKeyObject = function(
         [] : this.serialize())
   };
 };
+
+
+/**
+ * @type {!e2e.debug.Console}
+ * @private
+ */
+e2e.openpgp.block.TransferableKey.console_ =
+    e2e.debug.Console.getConsole('e2e.openpgp.block.TransferableKey');

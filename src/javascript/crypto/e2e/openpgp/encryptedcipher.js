@@ -32,6 +32,7 @@ goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.AsymmetricCipher');
 goog.require('e2e.ciphermode.Cfb');
+goog.require('e2e.debug.Console');
 goog.require('e2e.hash.Md5');
 goog.require('e2e.hash.Sha1');
 goog.require('e2e.openpgp');
@@ -301,6 +302,8 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey = function(
   if (!this.locked_) {
     return;
   }
+  e2e.openpgp.EncryptedCipher.console_.info(
+      'Unlocking key with derivation type', this.keyDerivation_);
   // Special casing for unencrypted keys.
   if (this.keyDerivation_ ==
       e2e.openpgp.EncryptedCipher.KeyDerivationType.PLAINTEXT) {
@@ -360,6 +363,8 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKeyWithSha1Checksum_ =
   var sha1 = new e2e.hash.Sha1;
   var hash = /** @type {!e2e.ByteArray} */ (sha1.hash(key));
   if (!e2e.compareByteArray(chk, hash)) {
+    e2e.openpgp.EncryptedCipher.console_.info(
+        'Shasum mismatch, assuming wrong passphrase.');
     throw new e2e.openpgp.error.WrongPassphraseError();
   }
   this.unlockKey_(key);
@@ -377,6 +382,8 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKeyWithNumericChecksum_ =
   var checksum = data.slice(-2);
   if (!e2e.compareByteArray(checksum,
       e2e.openpgp.calculateNumericChecksum(key))) {
+    e2e.openpgp.EncryptedCipher.console_.info(
+        'Numeric checksum mismatch, assuming wrong passphrase.');
     throw new e2e.openpgp.error.WrongPassphraseError();
   }
   this.unlockKey_(key);
@@ -408,6 +415,8 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey_ = function(keyBytes) {
       keyData.privKey = e2e.openpgp.Mpi.parse(key);
       break;
     default:
+      e2e.openpgp.EncryptedCipher.console_.warn(
+          'Unknown cipher algorithm', this.cipher_.algorithm);
       throw new e2e.openpgp.error.InvalidArgumentsError('Unknown algorithm');
   }
   // TODO(user): Figure out what loc this is once multiple locs are supported.
@@ -504,3 +513,10 @@ e2e.openpgp.EncryptedCipher.LockedKeyError = function(cipher) {
 };
 goog.inherits(e2e.openpgp.EncryptedCipher.LockedKeyError,
               e2e.openpgp.error.Error);
+
+
+/**
+ * @private {!e2e.debug.Console}
+ */
+e2e.openpgp.EncryptedCipher.console_ = e2e.debug.Console.getConsole(
+    'e2e.openpgp.EncryptedCipher');

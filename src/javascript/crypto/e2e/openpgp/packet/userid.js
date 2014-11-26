@@ -25,7 +25,7 @@ goog.require('e2e');
 /** @suppress {extraRequire} intentional import */
 goog.require('e2e.compression.all');
 goog.require('e2e.compression.factory');
-
+goog.require('e2e.debug.Console');
 goog.require('e2e.hash.Algorithm');
 /** @suppress {extraRequire} intentional import */
 goog.require('e2e.hash.all');
@@ -83,6 +83,8 @@ e2e.openpgp.packet.UserId.prototype.tag = 13;
  */
 e2e.openpgp.packet.UserId.parse = function(data) {
   var userId = e2e.byteArrayToString(data);
+  e2e.openpgp.packet.UserId.console_.info(
+      '  User ID', userId);
   data = [];
   return new e2e.openpgp.packet.UserId(userId);
 };
@@ -156,6 +158,8 @@ e2e.openpgp.packet.UserId.prototype.verifySignatureInternal_ = function(
     var signatureVerified = signature.verify(signedData,
         goog.asserts.assertObject(signer));
   } catch (e) {
+    e2e.openpgp.packet.UserId.console_.warn(
+        'Unable to verify signature for ', this.userId, e);
     // Ignore signatures that throw unsupported errors (e.g. weak hash
     // algorithms) and expired signatures.
     if (e instanceof e2e.openpgp.error.UnsupportedError) {
@@ -339,5 +343,12 @@ e2e.openpgp.packet.UserId.prototype.getBytesToSign = function() {
   );
 };
 
+
+/**
+ * @type {!e2e.debug.Console}
+ * @private
+ */
+e2e.openpgp.packet.UserId.console_ =
+    e2e.debug.Console.getConsole('e2e.openpgp.packet.UserId');
 
 e2e.openpgp.packet.factory.add(e2e.openpgp.packet.UserId);

@@ -27,6 +27,7 @@ goog.require('e2e');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.Rsa');
+goog.require('e2e.debug.Console');
 /** @suppress {extraRequire} force loading of all hash functions */
 goog.require('e2e.hash.all');
 goog.require('e2e.hash.factory');
@@ -252,6 +253,8 @@ e2e.openpgp.packet.Signature.prototype.getHashAlgorithm = function() {
 /** @inheritDoc */
 e2e.openpgp.packet.Signature.parse = function(data) {
   var version = data.shift();
+  e2e.openpgp.packet.Signature.console_.info(
+      'Signature packet Ver ', version);
   if (version == 0x03 || version == 0x02) {
     var hashedMaterialLength = data.shift();
     if (hashedMaterialLength != 0x05) {
@@ -268,6 +271,14 @@ e2e.openpgp.packet.Signature.parse = function(data) {
     var hashAlgorithm = /** @type {e2e.hash.Algorithm} */ (
         e2e.openpgp.constants.getAlgorithm(
         e2e.openpgp.constants.Type.HASH, data.shift()));
+    e2e.openpgp.packet.Signature.console_.info(
+        '  Sig type ', signatureType);
+    e2e.openpgp.packet.Signature.console_.info(
+        '  Pub alg ', pubKeyAlgorithm);
+    e2e.openpgp.packet.Signature.console_.info(
+        '  Hash alg ', hashAlgorithm);
+    e2e.openpgp.packet.Signature.console_.info(
+        '  Issuer ID ', signerKeyId);
   } else if (version == 0x04) {
     var signatureType =
         /** @type {e2e.openpgp.packet.Signature.SignatureType} */(
@@ -278,10 +289,20 @@ e2e.openpgp.packet.Signature.parse = function(data) {
     var hashAlgorithm = /** @type {e2e.hash.Algorithm} */ (
         e2e.openpgp.constants.getAlgorithm(
         e2e.openpgp.constants.Type.HASH, data.shift()));
+    e2e.openpgp.packet.Signature.console_.info(
+        '  Sig type ', signatureType);
+    e2e.openpgp.packet.Signature.console_.info(
+        '  Pub alg ', pubKeyAlgorithm);
+    e2e.openpgp.packet.Signature.console_.info(
+        '  Hash alg ', hashAlgorithm);
     var hashedSubpacketLength = e2e.byteArrayToWord(
         data.splice(0, 2));
+    e2e.openpgp.packet.Signature.console_.info(
+        '  Hashed subpackets');
     var hashedSubpackets = e2e.openpgp.packet.SignatureSub.parse(
         data.splice(0, hashedSubpacketLength));
+    e2e.openpgp.packet.Signature.console_.info(
+        '  Unhashed subpackets');
     var unhashedSubpacketLength = e2e.byteArrayToWord(
         data.splice(0, 2));
     var unhashedSubpackets = e2e.openpgp.packet.SignatureSub.parse(
@@ -290,6 +311,7 @@ e2e.openpgp.packet.Signature.parse = function(data) {
     throw new e2e.openpgp.error.UnsupportedError(
         'Unsupported signature packet version:' + version);
   }
+
   var leftTwoBytes = data.splice(0, 2);
   var signature = {
     's': []
@@ -304,6 +326,8 @@ e2e.openpgp.packet.Signature.parse = function(data) {
       signature['s'] = e2e.openpgp.Mpi.parse(data);
       break;
     default:  // Unsupported signature algorithm.
+      e2e.openpgp.packet.Signature.console_.warn(
+          'Unsupported Signature Algorithm', pubKeyAlgorithm);
       return null;
   }
   return new e2e.openpgp.packet.Signature(
@@ -568,3 +592,10 @@ e2e.openpgp.packet.Signature.RevocationReason = {
   'KEY_RETIRED': 0x03,
   'USER_ID_INVALID': 0x04
 };
+
+
+/**
+ * @private {e2e.debug.Console}
+ */
+e2e.openpgp.packet.Signature.console_ =
+    e2e.debug.Console.getConsole('e2e.openpgp.packet.Signature');

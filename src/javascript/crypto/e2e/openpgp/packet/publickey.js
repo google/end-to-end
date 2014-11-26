@@ -26,6 +26,7 @@ goog.require('e2e');
 goog.require('e2e.algorithm.KeyLocations');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.factory');
+goog.require('e2e.debug.Console');
 goog.require('e2e.hash.Md5');
 goog.require('e2e.hash.Sha1');
 goog.require('e2e.openpgp.Mpi');
@@ -162,6 +163,8 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
     throw new e2e.openpgp.error.UnsupportedError(
         'Deprecated key packet version.');
   }
+  e2e.openpgp.packet.PublicKey.console_.info(
+      '  Ver', version);
   var timestamp = e2e.byteArrayToDwordArray(body.splice(0, 4))[0];
   if (version == 3 || version == 2) {
     var daysUntilExpiration = e2e.byteArrayToWord(body.splice(0, 2));
@@ -169,6 +172,8 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
   var cipherId = body.shift();
   var cipherAlgorithm = e2e.openpgp.constants.getAlgorithm(
       e2e.openpgp.constants.Type.PUBLIC_KEY, cipherId);
+  e2e.openpgp.packet.PublicKey.console_.info(
+      '  Pub alg', cipherAlgorithm);
   var cipher;
   var keyData = {};
   keyData.loc = e2e.algorithm.KeyLocations.JAVASCRIPT;
@@ -260,7 +265,8 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
     fingerprint = /** @type {!e2e.ByteArray} */ (md5.hash(
         goog.array.concat(keyData['n'], keyData['e'])));
   }
-
+  e2e.openpgp.packet.PublicKey.console_.info(
+      '  Fingerprint', fingerprint);
   return new e2e.openpgp.packet.PublicKey(version, timestamp,
                                           goog.asserts.assertObject(cipher),
                                           fingerprint, keyId);
@@ -282,5 +288,13 @@ e2e.openpgp.packet.PublicKey.calculateFingerprint = function(pubKey) {
   var sha1 = new e2e.hash.Sha1();
   return /** @type {!e2e.ByteArray} */ (sha1.hash(fingerprintData));
 };
+
+
+/**
+ * @type {!e2e.debug.Console}
+ * @private
+ */
+e2e.openpgp.packet.PublicKey.console_ =
+    e2e.debug.Console.getConsole('e2e.openpgp.packet.PublicKey');
 
 e2e.openpgp.packet.factory.add(e2e.openpgp.packet.PublicKey);

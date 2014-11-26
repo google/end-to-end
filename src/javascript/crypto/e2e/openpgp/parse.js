@@ -22,6 +22,7 @@
 
 goog.provide('e2e.openpgp.parse');
 
+goog.require('e2e.debug.Console');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.factory');
 goog.require('goog.array');
@@ -231,9 +232,20 @@ e2e.openpgp.parse.parseSerializedPacket = function(data) {
     body = e2e.openpgp.parse.getBodyOldFormatPacket_(
         ptype & (1 << e2e.openpgp.parse.P_TAG_OLD_PACKET_SHIFT_) - 1, data);
     ptype = ptype >>> e2e.openpgp.parse.P_TAG_OLD_PACKET_SHIFT_;
+    e2e.openpgp.parse.console_.info(
+        'Old: (tag ' + ptype + ') (' + body.length + ' bytes)');
   } else {
     body = e2e.openpgp.parse.getBodyNewFormatPacket_(data);
+    e2e.openpgp.parse.console_.info(
+        'New: (tag ' + ptype + ') (' + body.length + ' bytes)');
   }
   // Call the specific parser depending on the tag.
   return e2e.openpgp.packet.factory.parse(ptype, body);
 };
+
+
+/**
+ * @private {!e2e.debug.Console}
+ */
+e2e.openpgp.parse.console_ = e2e.debug.Console.getConsole(
+    'e2e.openpgp.parse');
