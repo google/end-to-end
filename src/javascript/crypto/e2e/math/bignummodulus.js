@@ -413,7 +413,7 @@ e2e.BigNumModulus.prototype.montMulNormalize_ = function(c, n) {
 
 /**
  * Computes RR = 1 << (2 * |modulus|), the Montgomery constant.
- * @return {e2e.BigNum} The computed RR.
+ * @return {!e2e.BigNum} The computed RR.
  * @private
  */
 e2e.BigNumModulus.prototype.computeRR_ = function() {
