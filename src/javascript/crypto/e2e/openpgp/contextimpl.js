@@ -67,6 +67,8 @@ e2e.openpgp.ContextImpl = function() {
   this.armorHeaders_ = {};
 
   this.keyServerUrl = e2e.openpgp.ContextImpl.KEY_SERVER_URL || undefined;
+
+  this.errors_ = [];
 };
 
 
@@ -78,6 +80,18 @@ e2e.openpgp.ContextImpl.KEY_SERVER_URL = '';
 
 /** @override */
 e2e.openpgp.ContextImpl.prototype.armorOutput = true;
+
+
+/** @override */
+e2e.openpgp.ContextImpl.prototype.verboseErrors = false;
+
+
+/**
+ * Stores all errors thrown.
+ * @type {Array.<{time: number, error: Error}>}
+ * @private
+ */
+e2e.openpgp.ContextImpl.prototype.errors_ = null;
 
 
 /** @override */
@@ -96,6 +110,38 @@ e2e.openpgp.ContextImpl.prototype.setArmorHeader = function(name, value) {
  * @private
  */
 e2e.openpgp.ContextImpl.prototype.keyRing_ = null;
+
+
+/**
+ * Strips data from results as specified by verboseErrors.
+ * @param {T} res The result to strip errors from.
+ * @return {T} The result with stripped errors.
+ * @template {T}
+ */
+e2e.openpgp.ContextImpl.prototype.stripErrors_ = function(res) {
+  if (this.verboseErrors) {
+    return res;
+  }
+  return res.addErrback(function(e) {
+    this.errors_.push({
+        "time": new Date().getTime(),
+        "error": e
+    });
+    return new Error('OpenPGP Error');
+  }, this);
+};
+
+
+/**
+ * Returns the list of errors captured in the context, and forgets
+ * them (call it before and after a call that needs to be debugged).
+ * @return {Array.<{date: number, error: Error}>}
+ */
+e2e.openpgp.ContextImpl.prototype.flushAllErrors = function() {
+ var errors = this.errors_;
+ this.errors_ = [];
+ return errors;
+};
 
 
 /** @inheritDoc */
@@ -141,6 +187,17 @@ e2e.openpgp.ContextImpl.prototype.getKeyDescription = function(key) {
 
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.importKey = function(
+    passphraseCallback, key) {
+  return this.stripErrors_(
+    this.importKey_(passphraseCallback, key));
+};
+
+
+/**
+ * Private implementation of the import key operation
+ * @private
+ */
+e2e.openpgp.ContextImpl.prototype.importKey_ = function(
     passphraseCallback, key) {
   if (typeof key == 'string') {
     key = e2e.openpgp.asciiArmor.parse(key).data;
@@ -242,6 +299,18 @@ e2e.openpgp.ContextImpl.prototype.verifyClearSign_ = function(
 
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.verifyDecrypt = function(
+    passphraseCallback, encryptedMessage) {
+  return this.stripErrors_(this.verifyDecrypt_(
+    passphraseCallback, encryptedMessage));
+};
+
+
+/**
+ * Private implementation of verify/decrypt. Decides whether
+ * to verify or decrypt or both.
+ * @private
+ */
+e2e.openpgp.ContextImpl.prototype.verifyDecrypt_ = function(
     passphraseCallback, encryptedMessage) {
   var encryptedData, charset;
   if (typeof encryptedMessage == 'string') {
@@ -349,6 +418,18 @@ e2e.openpgp.ContextImpl.prototype.verifyMessage_ = function(
 
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.encryptSign = function(
+    plaintext, options, encryptionKeys, passphrases, opt_signatureKey) {
+  return this.stripErrors_(this.encryptSign_(
+    plaintext, options, encryptionKeys, passphrases, opt_signatureKey));
+};
+
+
+/**
+ * Private implementation of encryptSign. Decides whether to encrypt
+ * or sign, or both.
+ * @private
+ */
+e2e.openpgp.ContextImpl.prototype.encryptSign_ = function(
     plaintext, options, encryptionKeys, passphrases, opt_signatureKey) {
   var signatureKeyBlock;
   if (opt_signatureKey) {

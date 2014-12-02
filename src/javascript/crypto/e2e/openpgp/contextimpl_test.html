@@ -329,6 +329,7 @@ var mockControl_;
 function setUp() {
   localStorage.clear();
   context = new e2e.openpgp.ContextImpl(true);  // armorOutput
+  context.verboseErrors = true;
   context.setKeyRingPassphrase(KEY_PW);
   mockControl_ = new goog.testing.MockControl();
 }

@@ -931,6 +931,7 @@ VbjYFJxk9Uhl17tfTMSJFTnwB4pouBtUa2+7hRyx9/Tdc04fJDJHzhwz1lZWLg/+
   function setUp() {
     localStorage.clear();
     context = new e2e.openpgp.ContextImpl();
+    context.verboseErrors = true;
     context.setKeyRingPassphrase('');
   }
 
