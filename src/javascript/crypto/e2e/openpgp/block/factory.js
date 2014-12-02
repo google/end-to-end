@@ -37,6 +37,7 @@ goog.require('e2e.openpgp.packet.EncryptedSessionKey');
 goog.require('e2e.openpgp.packet.LiteralData');
 goog.require('e2e.openpgp.packet.Marker');
 goog.require('e2e.openpgp.packet.OnePassSignature');
+goog.require('e2e.openpgp.packet.PrivateUse');
 goog.require('e2e.openpgp.packet.PublicKey');
 goog.require('e2e.openpgp.packet.SecretKey');
 goog.require('e2e.openpgp.packet.Signature');
@@ -160,7 +161,8 @@ e2e.openpgp.block.factory.parseByteArrayMulti = function(data, opt_charset) {
 
 
 /**
- * Parses packets out of a ByteArray. Does not modify the ByteArray.
+ * Parses packets out of a ByteArray, while skipping any
+ * private-use packets. Does not modify the ByteArray.
  * @param {!e2e.ByteArray} data ByteArray to parse into packets.
  * @return {!Array.<!e2e.openpgp.packet.Packet>} The packets extracted.
  */
@@ -169,7 +171,7 @@ e2e.openpgp.block.factory.byteArrayToPackets = function(data) {
   var byteStream = new e2e.openpgp.ByteStream(data);
   while (byteStream.length) {
     var packet = e2e.openpgp.parse.parseSerializedPacket(byteStream);
-    if (packet) {
+    if (packet && !(packet instanceof e2e.openpgp.packet.PrivateUse)) {
       packets.push(packet);
     }
   }

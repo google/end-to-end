@@ -1,0 +1,46 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.packet.PrivateUse</title>
+<script src="../../../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.testing.jsunit');
+  goog.require('goog.array');
+  goog.require('e2e.openpgp.packet.PrivateUse60');
+  goog.require('e2e.openpgp.packet.PrivateUse61');
+  goog.require('e2e.openpgp.packet.PrivateUse62');
+  goog.require('e2e.openpgp.packet.PrivateUse63');
+  goog.require('e2e.openpgp.parse');
+</script>
+<script>
+  // Test that we correctly parse and serialize all private-use packets
+  function testPrivateUsePackets() {
+    var body = [0x64, 0x75, 0x6d, 0x6d, 0x79, 0x20, 0x64, 0x61, 0x74, 0x61];
+    doCheck(0xfc, body, e2e.openpgp.packet.PrivateUse60);
+    doCheck(0xfd, body, e2e.openpgp.packet.PrivateUse61);
+    doCheck(0xfe, body, e2e.openpgp.packet.PrivateUse62);
+    doCheck(0xff, body, e2e.openpgp.packet.PrivateUse63);
+  }
+
+  function doCheck(hdr, body, typ) {
+    var raw = goog.array.flatten([hdr, 0x0a], body);
+    var packet = e2e.openpgp.parse.parseSerializedPacket(raw);
+    assertTrue(packet instanceof typ);
+    assertEquals(hdr & e2e.openpgp.parse.P_TAG_VALUE_MASK_, packet.tag);
+    assertArrayEquals(body, packet.data);
+    assertArrayEquals(body, packet.serializePacketBody());
+  }
+</script>
