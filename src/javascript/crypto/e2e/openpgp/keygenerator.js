@@ -34,7 +34,7 @@ goog.require('goog.crypt.base64');
 
 
 /**
- * Generates a key pair on the default curve and uses it to construct
+ * Generates a key pair on secp256r1 and uses it to construct
  * an ECDSA object.
  * @param {!e2e.ByteArray=} opt_privateKey  An optional already known
  *     private key. If not given, a random key will be created.
@@ -49,7 +49,7 @@ e2e.openpgp.keygenerator.newEcdsaWithP256 = function(
 
 
 /**
- * Generates a key pair on the default curve and uses it to construct
+ * Generates a key pair on secp256r1 and uses it to construct
  * an ECDH object.
  * @param {!e2e.ByteArray=} opt_privateKey  An optional already known
  *     private key. If not given, a random key will be created.
@@ -61,6 +61,38 @@ e2e.openpgp.keygenerator.newEcdhWithP256 = function(
       e2e.ecc.PrimeCurve.P_256, opt_privateKey);
   key['kdfInfo'] = [
     0x3, 0x1, 0x8 /* SHA256 Algo ID*/, 0x7 /* AES-128 Algo ID */];
+  return new e2e.cipher.Ecdh(e2e.cipher.Algorithm.ECDH, key);
+};
+
+
+/**
+ * Generates a key pair on secp384r1 and uses it to construct
+ * an ECDSA object.
+ * @param {!e2e.ByteArray=} opt_privateKey  An optional already known
+ *     private key. If not given, a random key will be created.
+ * @return {!e2e.signer.Ecdsa}
+ */
+e2e.openpgp.keygenerator.newEcdsaWithP384 = function(
+    opt_privateKey) {
+  var key = e2e.ecc.Protocol.generateKeyPair(
+      e2e.ecc.PrimeCurve.P_384, opt_privateKey);
+  return new e2e.signer.Ecdsa(e2e.signer.Algorithm.ECDSA, key);
+};
+
+
+/**
+ * Generates a key pair on secp384r1 and uses it to construct
+ * an ECDH object.
+ * @param {!e2e.ByteArray=} opt_privateKey  An optional already known
+ *     private key. If not given, a random key will be created.
+ * @return {!e2e.cipher.Ecdh}
+ */
+e2e.openpgp.keygenerator.newEcdhWithP384 = function(
+    opt_privateKey) {
+  var key = e2e.ecc.Protocol.generateKeyPair(
+      e2e.ecc.PrimeCurve.P_384, opt_privateKey);
+  key['kdfInfo'] = [
+    0x3, 0x1, 0x9 /* SHA384 Algo ID*/, 0x8 /* AES-256 Algo ID */];
   return new e2e.cipher.Ecdh(e2e.cipher.Algorithm.ECDH, key);
 };
 
@@ -85,7 +117,7 @@ e2e.openpgp.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
   var result = new e2e.async.Result;
   var rsaSigner;
   var rsaCipher;
-  crypto.generateKey(aid, false, ['sign', 'verify']).catch(
+  crypto.generateKey(aid, false, ['sign', 'verify']).catch (
       function(e) {
         result.errback(e);
       }).then(function(sigKeyPair) {
@@ -98,7 +130,7 @@ e2e.openpgp.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
           rsaSigner.setWebCryptoKey(sigKeyPair);
 
           aid.name = 'RSAES-PKCS1-v1_5';
-          crypto.generateKey(aid, false, ['encrypt', 'decrypt']).catch(
+          crypto.generateKey(aid, false, ['encrypt', 'decrypt']).catch (
               function(e) {
                 result.errback(e);
               }).then(function(encKeyPair) {
@@ -113,9 +145,9 @@ e2e.openpgp.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
                   rsaCipher.setWebCryptoKey(encKeyPair);
 
                   result.callback([rsaSigner, rsaCipher]);
-                }).catch(function(e) { result.errback(e); });
+                }).catch (function(e) { result.errback(e); });
           });
-        }).catch(function(e) { result.errback(e); });
+        }).catch (function(e) { result.errback(e); });
   });
   return result;
 };
