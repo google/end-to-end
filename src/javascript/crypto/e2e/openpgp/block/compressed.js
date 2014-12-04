@@ -53,19 +53,21 @@ e2e.openpgp.block.Compressed.prototype.serializeMessage = function() {
 
 
 /**
- * Extracts a block from the compressed data.
- * @return {!e2e.openpgp.block.Block}
+ * Extracts a Message from the compressed data.
+ * @return {!e2e.openpgp.block.Message}
+ * TODO(user) gpg accepts compressed keyrings, add additional
+ * methods as needed.
  */
-e2e.openpgp.block.Compressed.prototype.getBlock = function() {
+e2e.openpgp.block.Compressed.prototype.getMessage = function() {
   this.compressedPacket_.decompress();
   var data = this.compressedPacket_.data;
   // TODO(user): Can this be refactored to avoid the circular dependency?
   /** @suppress {missingRequire} We assume the factory is already present. */
-  var decryptedBlock = e2e.openpgp.block.factory.parseByteArrayMulti(data);
-  if (decryptedBlock.length != 1) {
-    throw new e2e.openpgp.error.ParseError('Invalid compressed block.');
+  var message = e2e.openpgp.block.factory.parseByteArrayMessage(data);
+  if (!message) {
+    throw new e2e.openpgp.error.ParseError('Empty compressed block.');
   }
-  return decryptedBlock[0];
+  return message;
 };
 
 
@@ -77,7 +79,7 @@ e2e.openpgp.block.Compressed.prototype.getLiteralMessage = function() {
       throw new e2e.openpgp.error.ParseError(
           'input data with too deeply nested packets');
     }
-    msgBlock = msgBlock.getBlock();
+    msgBlock = msgBlock.getMessage();
     currentLevel++;
   }
   return msgBlock.getLiteralMessage();

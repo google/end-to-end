@@ -35,11 +35,8 @@ goog.require('e2e.openpgp.KeyRing');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.EncryptedMessage');
 goog.require('e2e.openpgp.block.LiteralMessage');
-goog.require('e2e.openpgp.block.Message');
-goog.require('e2e.openpgp.block.TransferableKey');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
-goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.PassphraseError');
 /** @suppress {extraRequire} force loading of all signers */
 goog.require('e2e.signer.all');
@@ -130,7 +127,8 @@ e2e.openpgp.ContextImpl.prototype.getKeyDescription = function(key) {
     if (typeof key == 'string') {
       key = e2e.openpgp.asciiArmor.parse(key).data;
     }
-    var blocks = e2e.openpgp.block.factory.parseByteArrayMulti(key);
+    var blocks = e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(
+        key, true);
     return e2e.async.Result.toResult(
         e2e.openpgp.block.factory.extractKeys(blocks));
   } catch (e) {
@@ -145,9 +143,9 @@ e2e.openpgp.ContextImpl.prototype.importKey = function(
   if (typeof key == 'string') {
     key = e2e.openpgp.asciiArmor.parse(key).data;
   }
-  var blocks = e2e.openpgp.block.factory.parseByteArrayMulti(key);
+  var blocks = e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(
+      key, true);
   var importedBlocksResult = goog.array.map(blocks, function(block) {
-    goog.asserts.assertInstanceof(block, e2e.openpgp.block.TransferableKey);
     return this.tryToImportKey_(passphraseCallback, block);
   }, this);
   var allResults =
@@ -271,18 +269,14 @@ e2e.openpgp.ContextImpl.prototype.verifyDecrypt = function(
 e2e.openpgp.ContextImpl.prototype.verifyDecryptInternal = function(
     passphraseCallback, encryptedMessage, opt_charset) {
   try {
-    var block = e2e.openpgp.block.factory.parseByteArray(
+    var block = e2e.openpgp.block.factory.parseByteArrayMessage(
         encryptedMessage, opt_charset);
     if (block instanceof e2e.openpgp.block.EncryptedMessage) {
       var keyCallback = goog.bind(this.keyRing_.getSecretKey, this.keyRing_);
       return block.decrypt(keyCallback, passphraseCallback).addCallback(
           this.processLiteralMessage_, this);
     } else {
-      if (block instanceof e2e.openpgp.block.Message) {
-        return this.processLiteralMessage_(block);
-      } else {
-        throw new e2e.openpgp.error.ParseError('Invalid message block.');
-      }
+      return this.processLiteralMessage_(block);
     }
   } catch (e) {
     return e2e.async.Result.toError(e);

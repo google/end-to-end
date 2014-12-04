@@ -718,7 +718,7 @@ function testNestingLimitOnDecryption() {
 
   // simulate a compressed block quine - see CVE-2013-4402
   var mock = mockControl_.createMethodMock(e2e.openpgp.block.Compressed.prototype,
-                                          'getBlock');
+                                          'getMessage');
   mock().$times(contextInc.MAX_COMPRESSION_NESTING_LEVEL)
         .$returns(new e2e.openpgp.block.Compressed());
   mockControl_.$replayAll();
@@ -907,4 +907,3 @@ function testGetKeyDescription() {
   }).addErrback(fail);
 }
 </script>
-

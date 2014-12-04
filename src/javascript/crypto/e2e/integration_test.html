@@ -1022,7 +1022,7 @@ function testEncryptionWithSignatures() {
           assertTrue(decryptedBlocks[0] instanceof e2e.openpgp.block.Compressed);
 
           // And it was a LiteralMessage.
-          var decompressed = decryptedBlocks[0].getBlock();
+          var decompressed = decryptedBlocks[0].getMessage();
           assertTrue(decompressed instanceof e2e.openpgp.block.LiteralMessage);
 
           // Message was decompressed correctly.

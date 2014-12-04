@@ -22,16 +22,98 @@
   goog.require('goog.testing.jsunit');
   goog.require('e2e.cipher.Aes');
   goog.require('e2e.cipher.Algorithm');
+  goog.require('e2e.cipher.Error');
   goog.require('e2e.cipher.Rsa');
   goog.require('e2e.cipher.factory');
   goog.require('e2e.compression.all');
+  goog.require('e2e.hash.Sha1');
   goog.require('e2e.openpgp.EncryptedCipher');
   goog.require('e2e.openpgp.S2k');
+  goog.require('e2e.openpgp.asciiArmor');
   goog.require('e2e.openpgp.block.all');
   goog.require('e2e.openpgp.block.factory');
-  goog.require('e2e.hash.Sha1');
+  goog.require('e2e.openpgp.packet.Signature');
+  goog.require('e2e.openpgp.packet.UserId');
 </script>
+<textarea id="SmallRSAPublicKeyPacket" style="display:none">
+-----BEGIN PGP ARMORED FILE-----
+Version: GnuPG v1
+Comment: Use "gpg --dearmor" for unpacking
+
+mG0EU/o5NgEDAMOG0nCsTGXWd8S9lvY6804VtlA9BD+7HYmc56lyNA4P5lBHD/B0
+BQIJtq9nadZ9ggnYQhy26DRMGuDpIQaZ0HhtgsXfrDIQdiaWBU1Dhuuj6MNyq54E
+gLeOSuwQb+cT0wARAQAB
+=MZ6s
+-----END PGP ARMORED FILE-----
+</textarea>
+<textarea id="UserIDPacket" style="display:none">
+-----BEGIN PGP ARMORED FILE-----
+Version: GnuPG v1
+
+tBBzbWFsbC1yc2EtbWFzdGVy
+=x6IC
+-----END PGP ARMORED FILE-----
+</textarea>
+<textarea id="RSASignaturePacket" style="display:none">
+-----BEGIN PGP ARMORED FILE-----
+Version: GnuPG v1
+
+iKgEEwECABIFAlR+AT4CGwMCCwcCFQgCHgEACgkQ/LnCIvzh8C572AP7BKLEK9ZD
+xP3V9fPgwzSczNueS0u7knKpTE51Y8Xh1s/+GkLtTUoep5JOpJ/17hjVWRrxni27
+jJ1mSHjzNeUvO+EcNOgvqKXisPyuvWY9PJUGjVy84SoSI6xG0GOgg6fOO6Wh/jzd
+vUSHEmCH1hvXIGVkjXJDoTeUFX0xmYRE30E=
+=vHP8
+-----END PGP ARMORED FILE-----
+</textarea>
+<textarea id="ElGamalSignaturePacket" style="display:none">
+-----BEGIN PGP ARMORED FILE-----
+Version: GnuPG v1
+
+iQE/AwUQN4qCbaNldhxA9FnnEAOMdwSfc28FsuhUjqbZ+Qh+qT8MBY1qujdh18LF
+juG2nnuCDBADwQDXxEy69LKLI1ndig1FQDyo/5K8DP3wWFnsC6YctacCsVM8Z/kF
+3BqeKAxk6wZt50jlj5XYqmuLdEaH9xKziZyXzU3z6Y31fkqXSwVlzHbWJ6oQfHLk
+PgagJqkuaK5OLVFupZEKFMiQ3bmtyzXe/jYVZgSfeTaJ8CIGwEIGnkjHEH9SU43Z
+L+T11CRxLozWAnU4UTlfyr7JwK1MAy+AbW+755rHtsIb8eOA9RTZCT7ip5vazg4K
+UDIvQCXdP2j7smoRtKegutgRUMnny5CdRLEK5VNGZBnI3bKPdASpmay8u144hZnb
+s5ZFSR4rrNTnWoaW1ECJkVoQwoTXvFNCUNJ2aKjy8iD8TQ==
+=b/1f
+-----END PGP ARMORED FILE-----
+</textarea>
+<textarea id="SmallRSAKeyBlock" style="display:none">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1
+
+mG0EU/o5NgEDAMOG0nCsTGXWd8S9lvY6804VtlA9BD+7HYmc56lyNA4P5lBHD/B0
+BQIJtq9nadZ9ggnYQhy26DRMGuDpIQaZ0HhtgsXfrDIQdiaWBU1Dhuuj6MNyq54E
+gLeOSuwQb+cT0wARAQABtBBzbWFsbC1yc2EtbWFzdGVyiIgEEwECABIFAlR+DzcC
+GwMCCwcCFQgCHgEACgkQHjK/7rQW+j2BHgMAutNx2bO2ZokFz0zHptkVzdGbu7aJ
+gHRv6Kyhu4nlybXC/nLdTf1M2lwq/NJGOuGa+5/PjkTFqExEALBV8oMjKYGopHk6
+aqpRTIYk0ovAicOF3bIM/D3uy6s+uQugCBMu
+=s/5y
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<textarea id="OkRSAKeyBlock" style="display:none">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1
+
+mI0EU/o8SwEEALkvOE64xctaf8YlRDlxpoyMxEoVE0iBT9o7wYPRyth/hqGKD8rT
+F2t/FCF3bmJnxdZvitElcp7UxQyVgeMwlhMIJSj9CtHwHRiZ6CY9gp8Swh1srlsU
+VoZqGJGHgt4GKM9YPL6NCpFHdZhqp1COWUpeBrefvEtJTbNDjJuG+uw9ABEBAAG0
+CnJzYS1tYXN0ZXKIqAQTAQIAEgUCVH4SSwIbAwILBwIVCAIeAQAKCRC3IbqhsdLn
+K8FpA/0R/aQx8ebgQ3E0ouia06AyHRTY5SNnWRELzAP3f1H+aFVrI11iBjPvc3pK
+Jbnh68mtlDNWIi1pJBrWHNwOBg0Spj8Jbt8iK8Tr/E8Wn09C1vn+xJYNMUh4tjEl
+z2DimuS4AefmevwVtuJH1FcSgdxcw9iGbsapeGC9JuVC0VK58w==
+=/7L/
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+
 <script>
+
+function getBytes(id) {
+  return e2e.openpgp.asciiArmor.parse(
+      document.getElementById(id).value).data;
+}
+
 
 function testParsePublicKey() {
   var packets = [
@@ -39,7 +121,7 @@ function testParsePublicKey() {
         e2e.cipher.factory.get(e2e.cipher.Algorithm.RSA)),
     new e2e.openpgp.packet.UserId('first userid')
   ];
-  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  var block = e2e.openpgp.block.factory.parseTransferableKey(packets);
   assertTrue(block instanceof e2e.openpgp.block.TransferablePublicKey);
   assertEquals(0, packets.length);
 }
@@ -54,7 +136,7 @@ function testPublicKeyExtraPackets() {
         e2e.cipher.factory.get(e2e.cipher.Algorithm.RSA)),
     new e2e.openpgp.packet.UserId('second userid')
   ];
-  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  var block = e2e.openpgp.block.factory.parseTransferableKey(packets);
   assertTrue(block instanceof e2e.openpgp.block.TransferablePublicKey);
   assertEquals(2, packets.length);
 }
@@ -76,7 +158,7 @@ function testParseSecretKey() {
     new e2e.openpgp.packet.PublicKey(4, 0,
         e2e.cipher.factory.get(e2e.cipher.Algorithm.RSA))
   ];
-  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  var block = e2e.openpgp.block.factory.parseTransferableKey(packets);
   assertTrue(block instanceof e2e.openpgp.block.TransferableSecretKey);
   assertEquals(1, packets.length);
 }
@@ -88,7 +170,7 @@ function testParseEncryptedMessage() {
     new e2e.openpgp.packet.EncryptedData([]),
     new e2e.openpgp.packet.UserId('unused packet')
   ];
-  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  var block = e2e.openpgp.block.factory.parseMessage(packets);
   assertTrue(block instanceof e2e.openpgp.block.EncryptedMessage);
   assertEquals(1, packets.length);
 }
@@ -99,7 +181,7 @@ function testParseLiteralMessage() {
                                            [], 0, []),
     new e2e.openpgp.packet.UserId('unused packet')
   ];
-  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  var block = e2e.openpgp.block.factory.parseMessage(packets);
   assertTrue(block instanceof e2e.openpgp.block.LiteralMessage);
   assertEquals(1, packets.length);
 }
@@ -114,9 +196,9 @@ function testParseCompressedMessage() {
     e2e.openpgp.packet.Compressed.construct(literal.serialize())
   ];
 
-  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  var block = e2e.openpgp.block.factory.parseMessage(packets);
   assertTrue(block instanceof e2e.openpgp.block.Compressed);
-  assertArrayEquals(block.getBlock().getLiteralMessage().getData(), msg);
+  assertArrayEquals(block.getMessage().getLiteralMessage().getData(), msg);
 }
 
 
@@ -126,15 +208,73 @@ function testParsingLeavesByteArrayIntact() {
         e2e.openpgp.packet.LiteralData.Format.UTF8, [], 0, []),
     new e2e.openpgp.packet.UserId('unused packet')
   ];
-  var block = e2e.openpgp.block.factory.parseBlock(packets);
+  var block = e2e.openpgp.block.factory.parseMessage(packets);
   assertTrue(block instanceof e2e.openpgp.block.LiteralMessage);
   assertEquals(1, packets.length);
 
   var serialization = block.serialize();
   var serializationClone = goog.array.clone(serialization);
-  var parsedPackets = e2e.openpgp.block.factory.parseByteArrayMulti(
+  var parsedPackets = e2e.openpgp.block.factory.parseByteArrayMessage(
       serialization);
   assertArrayEquals(serialization, serializationClone);
+}
+
+
+// Tests that unsupported or bad packets are skipped
+// on request, while the good ones are retained.
+function testSkippedPackets() {
+  var packetBytes =
+      goog.array.concat(
+          getBytes('SmallRSAPublicKeyPacket'),
+          getBytes('UserIDPacket'),
+          getBytes('RSASignaturePacket'),
+          getBytes('ElGamalSignaturePacket'),
+          getBytes('RSASignaturePacket'));
+
+  // Normally, this should just fail on the first packet.
+  var mustThrow = assertThrows(function() {
+    e2e.openpgp.block.factory.byteArrayToPackets(packetBytes);
+  });
+  assertTrue(mustThrow instanceof e2e.cipher.Error);
+
+  // We should skip the first and fourth packet, and return the
+  // remaining packets.
+  var packets =
+      e2e.openpgp.block.factory.byteArrayToPackets(packetBytes, true);
+  assertEquals(3, packets.length);
+  assertTrue(packets[0] instanceof e2e.openpgp.packet.UserId);
+  assertTrue(packets[1] instanceof e2e.openpgp.packet.Signature);
+  assertTrue(packets[2] instanceof e2e.openpgp.packet.Signature);
+}
+
+// Tests that keyrings can be partially loaded on request, even if
+// they contain unsupported keys.
+
+function testPartialKeyringImport() {
+  var bytes =
+      goog.array.concat(
+          getBytes('SmallRSAKeyBlock'),
+          getBytes('OkRSAKeyBlock'),
+          getBytes('RSASignaturePacket'));
+  var keys =
+      e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(bytes, true);
+  assertEquals(1, keys.length);
+  keys[0].processSignatures();
+  assertEquals(1, keys[0].userIds.length);
+  assertEquals("rsa-master", keys[0].userIds[0].userId);
+
+  // Should be the same if we reverse the sequence of keys.
+  bytes =
+      goog.array.concat(
+          getBytes('OkRSAKeyBlock'),
+          getBytes('RSASignaturePacket'),
+          getBytes('SmallRSAKeyBlock'));
+  keys =
+      e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(bytes, true);
+  assertEquals(1, keys.length);
+  keys[0].processSignatures();
+  assertEquals(1, keys[0].userIds.length);
+  assertEquals("rsa-master", keys[0].userIds[0].userId);
 }
 
 </script>

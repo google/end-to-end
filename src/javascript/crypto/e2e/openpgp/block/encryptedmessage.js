@@ -303,13 +303,10 @@ e2e.openpgp.block.EncryptedMessage.prototype.decryptMessage_ = function(
   var decryptedData = this.encryptedData.data;
   // TODO(user): Can this be refactored to avoid the circular dependency?
   /** @suppress {missingRequire} We assume the factory is already present. */
-  var decryptedBlocks = e2e.openpgp.block.factory.parseByteArrayMulti(
+  var message = e2e.openpgp.block.factory.parseByteArrayMessage(
       decryptedData, this.getCharset());
-  if (decryptedBlocks.length == 1) {
-    var decryptedBlock = decryptedBlocks[0];
-    if (decryptedBlock instanceof e2e.openpgp.block.Message) {
-      return decryptedBlock;
-    }
+  if (message) {
+    return message;
   }
   throw new e2e.openpgp.error.ParseError('Invalid decrypted message.');
 };

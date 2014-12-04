@@ -513,7 +513,7 @@ e2e.openpgp.KeyRing.prototype.lockSecretKey_ = function(key) {
   if (key instanceof e2e.openpgp.block.TransferableSecretKey) {
     var serialized = key.serialize();
     var parsed = /** @type {!e2e.openpgp.block.TransferableSecretKey} */ (
-        e2e.openpgp.block.factory.parseByteArray(serialized));
+        e2e.openpgp.block.factory.parseByteArrayTransferableKey(serialized));
     parsed.unlock();
     var success = false;
     if (this.passphrase_) {
@@ -967,7 +967,7 @@ e2e.openpgp.KeyRing.prototype.objectToPrivKeyRing_ = function(s) {
     return goog.array.map(keys, function(key) {
       var block;
       try {
-        block = e2e.openpgp.block.factory.parseByteArray(
+        block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
             goog.crypt.base64.decodeStringToByteArray(key));
       } catch (e) {
         if (e instanceof e2e.openpgp.error.ParseError) {
@@ -977,7 +977,8 @@ e2e.openpgp.KeyRing.prototype.objectToPrivKeyRing_ = function(s) {
           var uidPacket = new e2e.openpgp.packet.UserId(uid);
           var serialized = [].concat(
               keyPacket.serialize()).concat(uidPacket.serialize());
-          block = e2e.openpgp.block.factory.parseByteArray(serialized);
+          block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
+              serialized);
         }
       }
       if (!(block instanceof e2e.openpgp.block.TransferableSecretKey)) {
@@ -1002,7 +1003,7 @@ e2e.openpgp.KeyRing.prototype.objectToPubKeyRing_ = function(s) {
     return goog.array.map(keys, function(key) {
       var block;
       try {
-        block = e2e.openpgp.block.factory.parseByteArray(
+        block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
             goog.crypt.base64.decodeStringToByteArray(key));
       } catch (e) {
         // TODO(evn): Delete this code before launch.
@@ -1013,7 +1014,8 @@ e2e.openpgp.KeyRing.prototype.objectToPubKeyRing_ = function(s) {
           var uidPacket = new e2e.openpgp.packet.UserId(uid);
           var serialized = [].concat(
               keyPacket.serialize()).concat(uidPacket.serialize());
-          block = e2e.openpgp.block.factory.parseByteArray(serialized);
+          block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
+              serialized);
         }
       }
       if (!(block instanceof e2e.openpgp.block.TransferablePublicKey)) {
