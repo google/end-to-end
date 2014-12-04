@@ -43,6 +43,7 @@ goog.require('e2e.signer.all');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.async.DeferredList');
+goog.require('goog.storage.mechanism.HTML5LocalStorage');
 goog.require('goog.structs');
 goog.require('goog.structs.Map');
 
@@ -54,8 +55,10 @@ goog.require('goog.structs.Map');
  *     user interface, to call the base OpenPGP library.
  * @constructor
  * @implements {e2e.openpgp.Context}
+ * @param {goog.storage.mechanism.Mechanism=} opt_keyRingStorageMechanism
+ *     mechanism for storing keyring data. Defaults to HTML5 local storage.
  */
-e2e.openpgp.ContextImpl = function() {
+e2e.openpgp.ContextImpl = function(opt_keyRingStorageMechanism) {
   /**
    * List of headers to add to armored messages (Version, Comment, etc).
    * @type {!Object.<string>}
@@ -64,6 +67,14 @@ e2e.openpgp.ContextImpl = function() {
   this.armorHeaders_ = {};
 
   this.keyServerUrl = e2e.openpgp.ContextImpl.KEY_SERVER_URL || undefined;
+
+  /**
+   * Mechanism for storing keyring data.
+   * @type {!goog.storage.mechanism.Mechanism}
+   * @private
+   */
+  this.keyRingStorageMechanism_ = opt_keyRingStorageMechanism ||
+      new goog.storage.mechanism.HTML5LocalStorage();
 };
 
 
@@ -98,7 +109,8 @@ e2e.openpgp.ContextImpl.prototype.keyRing_ = null;
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.setKeyRingPassphrase = function(
     passphrase) {
-  this.keyRing_ = new e2e.openpgp.KeyRing(passphrase, this.keyServerUrl);
+  this.keyRing_ = new e2e.openpgp.KeyRing(passphrase,
+      this.keyRingStorageMechanism_, this.keyServerUrl);
 };
 
 

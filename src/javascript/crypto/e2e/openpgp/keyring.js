@@ -62,7 +62,6 @@ goog.require('goog.crypt.Sha256');
 goog.require('goog.crypt.base64');
 goog.require('goog.iter');
 goog.require('goog.object');
-goog.require('goog.storage.mechanism.HTML5LocalStorage');
 goog.require('goog.structs.Map');
 
 
@@ -73,12 +72,14 @@ goog.require('goog.structs.Map');
  * be stored in browser's local storage, and shall be encrypted if the user
  * provides a passphrase.
  * @param {string} passphrase The passphrase used to encrypt the keyring.
+ * @param {!goog.storage.mechanism.Mechanism} storageMechanism persistent
+ *    storage mechanism.
  * @param {string=} opt_keyServerUrl The optional http key server url. If not
  *    specified then only support key operation locally.
  * @constructor
  */
-e2e.openpgp.KeyRing = function(passphrase, opt_keyServerUrl) {
-  this.localStorage_ = new goog.storage.mechanism.HTML5LocalStorage();
+e2e.openpgp.KeyRing = function(passphrase, storageMechanism, opt_keyServerUrl) {
+  this.localStorage_ = storageMechanism;
   if (goog.isDefAndNotNull(opt_keyServerUrl)) {
     this.keyClient_ = new e2e.openpgp.KeyClient(opt_keyServerUrl);
   }
@@ -91,7 +92,7 @@ e2e.openpgp.KeyRing = function(passphrase, opt_keyServerUrl) {
 
 /**
  * The local storage to persist key data.
- * @type {goog.storage.mechanism.HTML5LocalStorage}
+ * @type {!goog.storage.mechanism.Mechanism}
  * @private
  */
 e2e.openpgp.KeyRing.prototype.localStorage_;

@@ -328,7 +328,7 @@ var mockControl_;
 
 function setUp() {
   localStorage.clear();
-  context = new e2e.openpgp.ContextImpl(true);  // armorOutput
+  context = new e2e.openpgp.ContextImpl();
   context.setKeyRingPassphrase(KEY_PW);
   mockControl_ = new goog.testing.MockControl();
 }
@@ -586,7 +586,7 @@ function testEncryptSymmetricRetry() {
     callback(KEY_PW + passwordCount);
   };
   localStorage.clear();
-  var contextInc = new e2e.openpgp.ContextImpl(true);  // armorOutput
+  var contextInc = new e2e.openpgp.ContextImpl();
   contextInc.setKeyRingPassphrase(KEY_PW);
 
   var plaintext = 'plaintext for symmetric';
@@ -673,7 +673,7 @@ function testParseErrorsDontAskForPassphrase() {
     callback(KEY_PW);
   };
   localStorage.clear();
-  var contextInc = new e2e.openpgp.ContextImpl(true);  // armorOutput
+  var contextInc = new e2e.openpgp.ContextImpl();
   contextInc.setKeyRingPassphrase(KEY_PW);
 
   var plaintext = 'plaintext for symmetric';
@@ -703,7 +703,7 @@ function testParseErrorsDontAskForPassphrase() {
 
 function testNestingLimitOnDecryption() {
   localStorage.clear();
-  var contextInc = new e2e.openpgp.ContextImpl(true);  // armorOutput
+  var contextInc = new e2e.openpgp.ContextImpl();
   contextInc.setKeyRingPassphrase(KEY_PW);
 
   var plaintext = 'plaintext for symmetric';
@@ -825,14 +825,14 @@ function testImportSecretKeyCallbackCalled() {
 function testSetPassphraseImportExportImportSecretKey() {
   // Set passphrase, import a key, export it, and try to import it again.
   localStorage.clear();
-  var context = new e2e.openpgp.ContextImpl(true);
+  var context = new e2e.openpgp.ContextImpl();
   context.setKeyRingPassphrase(KEY_PW);
   asyncTestCase.waitForAsync('Waiting for first import of key.');
   context.importKey(passwordCallback, privateKeyAscii).addCallback(function() {
     asyncTestCase.continueTesting();
     context.exportKeyring(true).addCallback(function(kr) {
       localStorage.clear();
-      var context = new e2e.openpgp.ContextImpl(true);
+      var context = new e2e.openpgp.ContextImpl();
       context.setKeyRingPassphrase(KEY_PW);
       asyncTestCase.waitForAsync('Waiting for second import of key.');
       var counter = 0;
@@ -853,14 +853,14 @@ function testSetPassphraseImportExportImportSecretKey() {
 function testSetPassphraseImportExportChangePassphraseImportSecretKey() {
   // Set passphrase, import a key, export it, change passphrase and try to import it again.
   localStorage.clear();
-  var context = new e2e.openpgp.ContextImpl(true);
+  var context = new e2e.openpgp.ContextImpl();
   context.setKeyRingPassphrase(KEY_PW);
   asyncTestCase.waitForAsync('Waiting for first import of key.');
   context.importKey(passwordCallback, privateKeyAscii).addCallback(function() {
     asyncTestCase.continueTesting();
     context.exportKeyring(true).addCallback(function(kr) {
       localStorage.clear();
-      var context = new e2e.openpgp.ContextImpl(true);
+      var context = new e2e.openpgp.ContextImpl();
       context.setKeyRingPassphrase('omg');
       asyncTestCase.waitForAsync('Waiting for second import of key.');
       var counter;
