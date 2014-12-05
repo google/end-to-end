@@ -116,6 +116,7 @@
     }
   };
 
+
   /**
    * Processes request to E2E Website API.
    * @param  {MessagePort} port port to send the response to
@@ -124,6 +125,8 @@
   var processApiRequest = function(port, request) {
     var args = request.args;
     switch (request.call) {
+      case 'ready':
+        break; // Ignore. Gmonkey does not initiate requests.
       case 'getCurrentMessage':
         var result = null;
         var message = gmonkeyApi.getCurrentMessage();

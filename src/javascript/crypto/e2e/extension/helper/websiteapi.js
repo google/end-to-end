@@ -20,6 +20,8 @@
 
 goog.provide('e2e.ext.WebsiteApi');
 goog.provide('e2e.ext.WebsiteApi.EmailAddressDescriptor');
+goog.provide('e2e.ext.WebsiteApi.Request');
+goog.provide('e2e.ext.WebsiteApi.Response');
 
 goog.require('e2e.ext.utils.text');
 goog.require('goog.array');
@@ -46,6 +48,20 @@ e2e.ext.WebsiteApi = function() {
  * @typedef {{name: (string|undefined), address: (string)}}
  */
 e2e.ext.WebsiteApi.EmailAddressDescriptor;
+
+
+/**
+ * Website API request.
+ * @typedef {{id:string,call:string,args}}
+ */
+e2e.ext.WebsiteApi.Request;
+
+
+/**
+ * Website API response.
+ * @typedef {{result:*,error:*,requestId:string}}
+ */
+e2e.ext.WebsiteApi.Response;
 
 
 /**
@@ -193,9 +209,9 @@ e2e.ext.WebsiteApi.prototype.sendWebsiteRequest_ = function(call, callback,
     }
   };
   // Set a timeout for a function that would simulate an error response.
-  // If the response was processed before the timeout, processWebsiteResponse_
+  // If the response was processed before the timeout, processWebsiteMessage_
   // will just silently bail out.
-  setTimeout(goog.bind(this.processWebsiteResponse_, this, timeoutEvent),
+  setTimeout(goog.bind(this.processWebsiteMessage_, this, timeoutEvent),
       e2e.ext.WebsiteApi.REQUEST_TIMEOUT);
   port.postMessage(request);
 };
@@ -253,9 +269,12 @@ e2e.ext.WebsiteApi.prototype.bootstrapChannel_ = function(onPortReadyCallback) {
       this.apiAvailable_ = msgEvent.data.available;
       if (msgEvent.target) {
         msgEvent.target.addEventListener('message',
-            goog.bind(this.processWebsiteResponse_, this));
+            goog.bind(this.processWebsiteMessage_, this));
       }
       onPortReadyCallback(this.apiAvailable_);
+      if (this.apiAvailable_) {
+        this.sendWebsiteRequest_('ready', goog.nullFunction, goog.nullFunction);
+      }
     }
   }, this);
 
@@ -291,15 +310,50 @@ e2e.ext.WebsiteApi.prototype.sendBootstrap_ = function(port) {
 
 
 /**
- * Processes response from an API request sent to the web application.
+ * Processes messages from the web application.
  * @param  {MessageEvent} event Event sent over MessageChannel from the web
  *     application.
  * @private
- * @return {boolean} True if response matched a request.
+ * @return {boolean} True if message was a response matching a request.
  */
-e2e.ext.WebsiteApi.prototype.processWebsiteResponse_ = function(event) {
-  var response =
-      /** @type {{result:*,error:*,requestId:string}} */ (event.data);
+e2e.ext.WebsiteApi.prototype.processWebsiteMessage_ = function(event) {
+  if (event.data.requestId) {
+    // It's a response to E2E-initiated website API request.
+    var response =
+        /** @type {e2e.ext.WebsiteApi.Response} */ (event.data);
+    return this.processWebsiteResponse_(response);
+  } else if (event.data.id) {
+    // It's a web application-initiated website API request.
+    var request =
+        /** @type {e2e.ext.WebsiteApi.Request} */ (event.data);
+    this.handleWebsiteRequest_(/** @type {MessagePort} */ (event.target),
+        request);
+    return false;
+  } else {
+    return false;
+  }
+};
+
+
+/**
+ * Handles an incoming Website API request.
+ * @param  {MessagePort} port Port to send the response to.
+ * @param  {e2e.ext.WebsiteApi.Request} request Incoming request.
+ * @private
+ */
+e2e.ext.WebsiteApi.prototype.handleWebsiteRequest_ = function(port, request) {
+  // For now, no incoming requests are supported.
+  this.sendWebsiteErrorResponse_(port, request, 'Not supported.');
+};
+
+
+/**
+ * Processes an incoming response for a locally-initiated Website API request.
+ * @param {e2e.ext.WebsiteApi.Response} response API response.
+ * @return {boolean} True if message was a response matching a request.
+ * @private
+ */
+e2e.ext.WebsiteApi.prototype.processWebsiteResponse_ = function(response) {
   if (!goog.object.containsKey(this.pendingCallbacks_, response.requestId)) {
     return false;
   }
@@ -311,6 +365,23 @@ e2e.ext.WebsiteApi.prototype.processWebsiteResponse_ = function(event) {
     callbacks.callback(response.result);
   }
   return true;
+};
+
+
+/**
+ * Sends an error response for a web application initiated API request.
+ * @param  {MessagePort} port Port to send the response to.
+ * @param  {e2e.ext.WebsiteApi.Request} request Incoming request.
+ * @param {string} errorMessage The error message.
+ * @private
+ */
+e2e.ext.WebsiteApi.prototype.sendWebsiteErrorResponse_ = function(port,
+    request, errorMessage) {
+  port.postMessage({
+    error: errorMessage,
+    result: null,
+    requestId: request.id
+  });
 };
 
 

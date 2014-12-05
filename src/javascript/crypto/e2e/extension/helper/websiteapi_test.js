@@ -197,7 +197,7 @@ function testRequestResponseFlow() {
           e2eapi.pendingCallbacks_[requestId].callback);
       assertEquals(fail, e2eapi.pendingCallbacks_[requestId].errback);
       // Simulate response
-      assertTrue(e2eapi.processWebsiteResponse_({
+      assertTrue(e2eapi.processWebsiteMessage_({
         data: {
           requestId: requestId,
           result: 'booboo'
@@ -227,7 +227,7 @@ function testRequestResponseError() {
       assertEquals(handleErrorFunction,
           e2eapi.pendingCallbacks_[requestId].errback);
       // Simulate response
-      assertTrue(e2eapi.processWebsiteResponse_({
+      assertTrue(e2eapi.processWebsiteMessage_({
         data: {
           requestId: requestId,
           error: 'booboo'
@@ -266,7 +266,7 @@ function testRequestResponseTimeout() {
 }
 
 function testIgnoreUnrelatedResponses() {
-  assertFalse(e2eapi.processWebsiteResponse_({data: {requestId: 'unknown'}}));
+  assertFalse(e2eapi.processWebsiteMessage_({data: {requestId: 'unknown'}}));
 }
 
 
@@ -582,5 +582,24 @@ function testUpdateSelectedContentDomTextarea() {
         asyncTestCase.continueTesting();
       }, fail);
     }, fail);
+  });
+}
+
+function testWebsiteInitiatedRequest() {
+  var port_ = {
+    postMessage: function(response) {
+      assertEquals(null, response.result);
+      assertEquals('foo', response.requestId);
+      assertEquals('Not supported.', response.error);
+      asyncTestCase.continueTesting();
+    }
+  };
+  asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
+  e2eapi.processWebsiteMessage_({
+    target: port_,
+    data: {
+      id: 'foo',
+      call: 'unsupported'
+    }
   });
 }
