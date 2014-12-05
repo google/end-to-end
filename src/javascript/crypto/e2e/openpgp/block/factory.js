@@ -254,11 +254,9 @@ e2e.openpgp.block.factory.parseMessage = function(packets) {
         'Unexpected packet in message block', firstPacket);
     throw new Error('Not a valid message block.');
   }
-  // TODO(user) fix test cases as needed before enabling
-  // this check.
-  // if (packets.length > 0) {
-  //    throw new Error('Unexpected packets following message block.');
-  // }
+  if (packets.length > 0) {
+    throw new Error('Unexpected packets following message block.');
+  }
   return block;
 };
 

@@ -164,26 +164,59 @@ function testParseSecretKey() {
 }
 
 function testParseEncryptedMessage() {
+  // Construct a message with an invalid trailer.
   var packets = [
     new e2e.openpgp.packet.SymmetricKey(4, e2e.cipher.Algorithm.AES256,
         [], new e2e.openpgp.SimpleS2K(new e2e.hash.Sha1)),
     new e2e.openpgp.packet.EncryptedData([]),
     new e2e.openpgp.packet.UserId('unused packet')
   ];
+  // Test that we detect this.
+  var mustThrow = assertThrows(function() {
+    e2e.openpgp.block.factory.parseMessage(packets);
+  });
+  assertEquals(
+      'Unexpected packets following message block.', mustThrow.message);
+  // Regardless, ensure we only consumed two packets
+  assertEquals(1, packets.length);
+
+  // Remove trailer, and try again.
+  packets = [
+    new e2e.openpgp.packet.SymmetricKey(4, e2e.cipher.Algorithm.AES256,
+        [], new e2e.openpgp.SimpleS2K(new e2e.hash.Sha1)),
+    new e2e.openpgp.packet.EncryptedData([])
+  ];
+
   var block = e2e.openpgp.block.factory.parseMessage(packets);
   assertTrue(block instanceof e2e.openpgp.block.EncryptedMessage);
-  assertEquals(1, packets.length);
+  // We should have consumed everything as well.
+  assertEquals(0, packets.length);
 }
 
 function testParseLiteralMessage() {
   var packets = [
-    new e2e.openpgp.packet.LiteralData(e2e.openpgp.packet.LiteralData.Format.UTF8,
-                                           [], 0, []),
+    new e2e.openpgp.packet.LiteralData(
+        e2e.openpgp.packet.LiteralData.Format.UTF8, [], 0, []),
     new e2e.openpgp.packet.UserId('unused packet')
+  ];
+  // Message blocks with trailing content should be rejected.
+  var mustThrow = assertThrows(function() {
+    e2e.openpgp.block.factory.parseMessage(packets);
+  });
+  assertEquals(
+      'Unexpected packets following message block.', mustThrow.message);
+  // Regardless, confirm we only consumed one packet.
+  assertEquals(1, packets.length);
+
+  // Try again, without the trailing packet.
+  packets = [
+    new e2e.openpgp.packet.LiteralData(
+        e2e.openpgp.packet.LiteralData.Format.UTF8, [], 0, [])
   ];
   var block = e2e.openpgp.block.factory.parseMessage(packets);
   assertTrue(block instanceof e2e.openpgp.block.LiteralMessage);
-  assertEquals(1, packets.length);
+  // And we should have consumed everything.
+  assertEquals(0, packets.length);
 }
 
 
@@ -199,24 +232,65 @@ function testParseCompressedMessage() {
   var block = e2e.openpgp.block.factory.parseMessage(packets);
   assertTrue(block instanceof e2e.openpgp.block.Compressed);
   assertArrayEquals(block.getMessage().getLiteralMessage().getData(), msg);
+
+  // compressed packets with a nested invalid message block should be
+  // rejected when its content is requested. This compressed packet
+  // contains two literal data packets, which is an invalid message
+  // block.
+  packets = [
+    e2e.openpgp.packet.Compressed.construct(
+        goog.array.concat(literal.serialize(), literal.serialize()))
+  ];
+  // the packet sequence should parse
+  block = e2e.openpgp.block.factory.parseMessage(packets);
+  assertTrue(block instanceof e2e.openpgp.block.Compressed);
+  // but obtaining the nested message block should fail.
+  var mustThrow = assertThrows(function() {
+    block.getMessage();
+  });
+  assertEquals(
+      'Unexpected packets following message block.', mustThrow.message);
 }
 
 
 function testParsingLeavesByteArrayIntact() {
+  // Construct packet sequence with invalid message block.
   var packets = [
     new e2e.openpgp.packet.LiteralData(
         e2e.openpgp.packet.LiteralData.Format.UTF8, [], 0, []),
     new e2e.openpgp.packet.UserId('unused packet')
   ];
-  var block = e2e.openpgp.block.factory.parseMessage(packets);
-  assertTrue(block instanceof e2e.openpgp.block.LiteralMessage);
+  var mustThrow = assertThrows(function() {
+    e2e.openpgp.block.factory.parseMessage(packets);
+  });
+  assertEquals(
+      'Unexpected packets following message block.', mustThrow.message);
+  // Regardless, only one packet should be consumed.
   assertEquals(1, packets.length);
 
+  // New sequence with valid message block.
+  var packets = [
+    new e2e.openpgp.packet.LiteralData(
+        e2e.openpgp.packet.LiteralData.Format.UTF8, [], 0, [])
+  ];
+  var block = e2e.openpgp.block.factory.parseMessage(packets);
+  assertTrue(block instanceof e2e.openpgp.block.LiteralMessage);
+  assertArrayEquals([], block.getData());
+  // All packets must be consumed.
+  assertEquals(0, packets.length);
+
+  // serialize parsed message into bytearray, parse back bytearray,
+  // check that we didn't disturb the bytearray, and that we got back
+  // the same message.
   var serialization = block.serialize();
   var serializationClone = goog.array.clone(serialization);
-  var parsedPackets = e2e.openpgp.block.factory.parseByteArrayMessage(
+  var reparsedBlock = e2e.openpgp.block.factory.parseByteArrayMessage(
       serialization);
+  // bytearray should stay undisturbed.
   assertArrayEquals(serialization, serializationClone);
+  // message block should be the same as before.
+  assertTrue(reparsedBlock instanceof e2e.openpgp.block.LiteralMessage);
+  assertArrayEquals(reparsedBlock.getData(), block.getData());
 }
 
 
