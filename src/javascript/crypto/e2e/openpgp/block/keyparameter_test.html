@@ -121,7 +121,7 @@ UU8=
  Certificate contains a subkey with an RSA exponent value of 1.
  This subkey should be discarded, and the remainder of the certificate
  should be processed.
- TODO(user) Test when we're ready to skip mangled subkeys.
+ TODO(kbs) Test when we're ready to skip mangled subkeys.
 # pgpdump -i
 Old: Public Key Packet(tag 6)(269 bytes)
     Ver 4 - new
@@ -269,7 +269,7 @@ vO93KSrqdfntPRLfs0K0JA==
 <!--
  Certificate contains a subkey key with an DSA y value of 1.
  This certificate should be read, but the subkey discarded.
- TODO(user) Test when we're ready to skip mangled subkeys.
+ TODO(kbs) Test when we're ready to skip mangled subkeys.
 # pgpdump -i
 Old: Public Key Packet(tag 6)(814 bytes)
     Ver 4 - new
