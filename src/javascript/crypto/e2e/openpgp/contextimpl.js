@@ -140,9 +140,10 @@ e2e.openpgp.ContextImpl.prototype.getKeyDescription = function(key) {
       key = e2e.openpgp.asciiArmor.parse(key).data;
     }
     var blocks = e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(
-        key, true);
+        key, true /* skip keys with errors */);
     return e2e.async.Result.toResult(
-        e2e.openpgp.block.factory.extractKeys(blocks));
+        e2e.openpgp.block.factory.extractKeys(
+            blocks, true /* skip keys with errors */));
   } catch (e) {
     return e2e.async.Result.toError(e);
   }
@@ -156,7 +157,7 @@ e2e.openpgp.ContextImpl.prototype.importKey = function(
     key = e2e.openpgp.asciiArmor.parse(key).data;
   }
   var blocks = e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(
-      key, true);
+      key, true /* skip keys with errors */);
   var importedBlocksResult = goog.array.map(blocks, function(block) {
     return this.tryToImportKey_(passphraseCallback, block);
   }, this);

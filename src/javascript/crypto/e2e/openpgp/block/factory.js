@@ -455,14 +455,25 @@ e2e.openpgp.block.factory.byteArrayToPackets = function(data, opt_skiponerror) {
  *     results in the UI, where serialization is not needed.
  * @param {!Array.<!e2e.openpgp.block.TransferableKey>} blocks Blocks
  *     to extract keys from.
+ * @param {boolean=} opt_skiponerror true to skip keys with errors,
+ *     and defaults to false.
  * @return {!e2e.openpgp.Keys} Extracted Keys.
  */
-e2e.openpgp.block.factory.extractKeys = function(blocks) {
+e2e.openpgp.block.factory.extractKeys = function(blocks, opt_skiponerror) {
   /** @type {!e2e.openpgp.Keys} */
   var keys = [];
   for (var b = 0; b < blocks.length; b++) {
-    blocks[b].processSignatures();
-    keys.push(blocks[b].toKeyObject(true));
+    var block = blocks[b];
+    try {
+      block.processSignatures();
+      keys.push(block.toKeyObject(true));
+    } catch (e) {
+      if (opt_skiponerror) {
+        e2e.openpgp.block.factory.console_.warn('Discarding key', e.message);
+      } else {
+        throw e;
+      }
+    }
   }
   return keys;
 };

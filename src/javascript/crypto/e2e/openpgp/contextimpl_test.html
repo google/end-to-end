@@ -312,6 +312,58 @@ Lz6REnkw4cB5lruzwwiTO7ZqHZg=
 =WAJG
 -----END PGP PUBLIC KEY BLOCK-----
 </textarea>
+<!--
+Two keys in a keyring, but one has only weak signatures.
+
+:public key packet:
+  version 3, algo 1, created 1417737631, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [5 bits]
+  keyid: BE8DC9C2C7A82461
+:user ID packet: "abc@def.com"
+:signature packet: algo 1, keyid BE8DC9C2C7A82461
+  version 3, created 1417737631, md5len 5, sigclass 0x10
+  digest algo 1, begin of digest 32 c1
+  data: [1023 bits]
+:public key packet:
+  version 4, algo 1, created 1408908363, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+  keyid: B721BAA1B1D2E72B
+:user ID packet: "rsa-master"
+:signature packet: algo 1, keyid B721BAA1B1D2E72B
+  version 4, created 1417548363, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest c1 69
+  hashed subpkt 2 len 4 (sig created 2014-12-02)
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 1 (pref-sym-algos: 7)
+  hashed subpkt 21 len 1 (pref-hash-algos: 8)
+  hashed subpkt 30 len 1 (features: 01)
+  subpkt 16 len 8 (issuer key ID B721BAA1B1D2E72B)
+  data: [1021 bits]
+-->
+<textarea id="skipKeyBlocks">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1
+
+mQCNA1SA9Z8AAAEEAKIXRwS5KCk6H7gi9DGAOlEiNkIxnoC6BxmIYiv6Mr3PRScj
+/L0w7Q/uocZVKLUp6BK11FYWA9t5QtLW4Jr1o2nHFvaU/GpQJSy0mAIrg3wlW3Aq
+GHKZfzUVjkAeOuYYy7lOCpIKTmQnM5uiiso/v5rQVTTnh2E+Qr6NycLHqCRhAAUR
+tAthYmNAZGVmLmNvbYkAlQMFEFSA9Z++jcnCx6gkYQEBMsED/3EGVTBWO/jq1x3C
+CyBm//Yrg98qe86NMwdmIhPx9Pnsa5TCPsXea132W4eoWLDKlzhJe65PX2/W1DIk
+/za6YMeNzRkkbyvPKnZg6plKQDvfaX6LqyX752+DAFZ76EGeJI4wNWR/wh1S49Hr
+7PCfaYY10Sfes4D8KMcNN9nReNbUmI0EU/o8SwEEALkvOE64xctaf8YlRDlxpoyM
+xEoVE0iBT9o7wYPRyth/hqGKD8rTF2t/FCF3bmJnxdZvitElcp7UxQyVgeMwlhMI
+JSj9CtHwHRiZ6CY9gp8Swh1srlsUVoZqGJGHgt4GKM9YPL6NCpFHdZhqp1COWUpe
+BrefvEtJTbNDjJuG+uw9ABEBAAG0CnJzYS1tYXN0ZXKIqAQTAQIAEgUCVH4SSwIb
+AwILBwIVCAIeAQAKCRC3IbqhsdLnK8FpA/0R/aQx8ebgQ3E0ouia06AyHRTY5SNn
+WRELzAP3f1H+aFVrI11iBjPvc3pKJbnh68mtlDNWIi1pJBrWHNwOBg0Spj8Jbt8i
+K8Tr/E8Wn09C1vn+xJYNMUh4tjElz2DimuS4AefmevwVtuJH1FcSgdxcw9iGbsap
+eGC9JuVC0VK58w==
+=KNea
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+
 <script>
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 asyncTestCase.stepTimeout = 10000;
@@ -904,6 +956,21 @@ function testGetKeyDescription() {
         assertTrue(e instanceof e2e.openpgp.error.Error);
         asyncTestCase.continueTesting();
       });
+  }).addErrback(fail);
+}
+
+
+function testSkipWeakKeys() {
+  var keyring = document.getElementById('skipKeyBlocks').value;
+  asyncTestCase.waitForAsync('Waiting for skipped key blocks.');
+  var description = context.getKeyDescription(keyring).addCallback(function(
+      description) {
+    asyncTestCase.continueTesting();
+    assertEquals(1, description.length);
+    assertArrayEquals(['rsa-master'], description[0].uids);
+    assertEquals(
+        'bc763e9f85ef740d6190ab6cb721baa1b1d2e72b',
+        goog.crypt.byteArrayToHex(description[0].key.fingerprint));
   }).addErrback(fail);
 }
 </script>
