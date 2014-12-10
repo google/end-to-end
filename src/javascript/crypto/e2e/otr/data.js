@@ -22,7 +22,6 @@
 
 goog.provide('e2e.otr.Data');
 
-goog.require('e2e');
 goog.require('e2e.otr');
 goog.require('e2e.otr.Serializable');
 goog.require('e2e.otr.Storable');

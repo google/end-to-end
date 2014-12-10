@@ -22,7 +22,6 @@
 
 goog.provide('e2e.otr.util.aes128ctr');
 
-goog.require('e2e');
 goog.require('e2e.cipher.Aes');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.ciphermode.Ctr');

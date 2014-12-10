@@ -22,7 +22,6 @@
 
 goog.provide('e2e.otr.message.DhCommit');
 
-goog.require('e2e');
 goog.require('e2e.cipher.DiffieHellman');
 goog.require('e2e.hash.Sha256');
 goog.require('e2e.otr');

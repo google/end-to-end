@@ -22,7 +22,6 @@
 
 goog.provide('e2e.otr.message.RevealSignature');
 
-goog.require('e2e');
 goog.require('e2e.hash.Sha256');
 goog.require('e2e.otr');
 goog.require('e2e.otr.Data');

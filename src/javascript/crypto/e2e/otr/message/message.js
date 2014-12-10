@@ -22,7 +22,6 @@
 
 goog.provide('e2e.otr.message.Message');
 
-goog.require('e2e');
 
 
 goog.scope(function() {

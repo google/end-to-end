@@ -22,7 +22,6 @@
 
 goog.provide('e2e.otr.message.DhKey');
 
-goog.require('e2e');
 goog.require('e2e.cipher.DiffieHellman');
 goog.require('e2e.otr');
 goog.require('e2e.otr.Mpi');
