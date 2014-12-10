@@ -131,8 +131,10 @@
         var result = null;
         var message = gmonkeyApi.getCurrentMessage();
         if (message) {
+          var escapedId = message.getContentElement().id
+              .replace(/(\\|")/g, '\\$1');
           result = {
-            'selector': '#' + message.getContentElement().id,
+            'selector': '[id="' + escapedId + '"]',
             'body': message.getPlainTextContent()
           };
         }

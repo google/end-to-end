@@ -42,7 +42,7 @@ function setUp() {
   stubs.setPath('chrome.runtime.getURL', function(filename) {
     return './' + filename;
   });
-  document.documentElement.id = 'test_id';
+  document.documentElement.id = 'test_id\\"with"quo\\tes';
   draft = {
     to: [{address: 'test@example.com'},
       {name: 'we <ird>>\'>, <a@a.com>, n<ess', address: 't2@example.com'},
@@ -298,7 +298,7 @@ function testGetCurrentMessageGmail() {
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
     e2eapi.getCurrentMessage(function(selector, content) {
-      assertEquals('#' + document.documentElement.id, selector);
+      assertEquals(document.documentElement, document.querySelector(selector));
       assertEquals(TEST_CONTENT, content);
       asyncTestCase.continueTesting();
     }, function() {fail('Should not call errback.')});
