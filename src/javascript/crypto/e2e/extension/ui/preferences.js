@@ -48,7 +48,7 @@ preferences.initDefaults = function() {
 
   if (undefined == window.localStorage.getItem(
       constants.StorageKey.ENABLE_LOOKING_GLASS)) {
-    preferences.setLookingGlassEnabled(true);
+    preferences.setLookingGlassEnabled(false);
   }
 };
 
