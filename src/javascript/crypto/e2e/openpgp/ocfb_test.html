@@ -36,16 +36,14 @@
                       plaintext,
                       deciphered);
   }
-  function testConsistencyNoResync() {
-    e2e.random.seedRandomBytesWebCrypto(256);
-    var aes = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128,
-                                         {key:goog.array.repeat(0x77, 16)});
+  function testNoResyncDecryptThrows() {
+    var aes = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128, {key:goog.array.repeat(0x77, 16)});
     var aesocfb = new e2e.openpgp.Ocfb(aes, false);
     var plaintext = goog.array.repeat(0x66, 51);
-    var ciphertext = e2e.async.Result.getValue(aesocfb.encrypt(plaintext));
-    var deciphered = e2e.async.Result.getValue(aesocfb.decrypt(ciphertext));
-    assertArrayEquals("Consistency in encrypting/decrypting.",
-                      plaintext,
-                      deciphered);
+    var ciphertext = goog.crypt.hexToByteArray(
+      "f26a24f487a3abd4d81f8072a1a2924364beba531a6b855f0239cda666eecf3f47c98dc52ea3bfd607" +
+      "73f1a40b182577789c0149d3010d84d90f85001e755b79eaaa67a52f");
+    assertThrows("OpenPGP-CFB resync=false throws.",
+        function () { aesocfb.decrypt(ciphertext); } );
   }
 </script>

@@ -27,11 +27,13 @@ goog.require('e2e.async.Result');
 goog.require('e2e.cipher.factory');
 goog.require('e2e.ciphermode.Cfb');
 goog.require('e2e.hash.Sha1');
+goog.require('e2e.openpgp.InsecureSymmetricAlgorithm');
 goog.require('e2e.openpgp.Ocfb');
 goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.DecryptError');
 goog.require('e2e.openpgp.error.ParseError');
+goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.openpgp.packet.EncryptedData');
 goog.require('e2e.openpgp.packet.factory');
 goog.require('e2e.random');
@@ -61,6 +63,10 @@ e2e.openpgp.packet.SymmetricallyEncrypted.prototype.tag = 9;
 /** @inheritDoc */
 e2e.openpgp.packet.SymmetricallyEncrypted.prototype.decrypt =
     function(algorithm, keyObj) {
+  if (!e2e.openpgp.InsecureSymmetricAlgorithm.hasOwnProperty(algorithm)) {
+    throw new e2e.openpgp.error.UnsupportedError(
+        'Only legacy ciphers can be encrypted without integrity protection.');
+  }
   var cipher = /** @type {e2e.cipher.SymmetricCipher} */ (
       e2e.openpgp.constants.getInstance(
           e2e.openpgp.constants.Type.SYMMETRIC_KEY, algorithm, keyObj));
@@ -145,6 +151,22 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.prototype.decrypt =
 e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.construct = function(
     innerPacket, cipher) {
   var prefix = e2e.random.getRandomBytes(cipher.blockSize);
+  return e2e.openpgp.packet.SymmetricallyEncryptedIntegrity
+      .constructWithPrefix_(innerPacket, cipher, prefix);
+};
+
+
+/**
+ * Makes a Symmetrically Encrypted Integrity-protected packet containing the
+ * specified plaintext packet. Does the encryption and creates the MDC.
+ * @param {!e2e.ByteArray} innerPacket The unencrypted inner packet.
+ * @param {!e2e.cipher.SymmetricCipher} cipher The cipher to use for encryption.
+ * @param {!e2e.ByteArray} prefix The random prefix.
+ * @return {e2e.openpgp.packet.SymmetricallyEncryptedIntegrity}
+ * @private
+ */
+e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.constructWithPrefix_ =
+    function(innerPacket, cipher, prefix) {
   var plaintext = goog.array.concat(prefix,
       prefix[prefix.length - 2],  // Last two bytes of prefix are repeated.
       prefix[prefix.length - 1],

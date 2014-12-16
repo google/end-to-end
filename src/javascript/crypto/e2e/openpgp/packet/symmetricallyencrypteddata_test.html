@@ -1,0 +1,45 @@
+<!-- Copyright 2014 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.openpgp.SymmetricallyEncrypted and
+  e2e.openpg.SymmetricallyEncryptedIntegrity</title>
+<script src="../../../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.cipher.Aes');
+  goog.require('e2e.cipher.Des');
+  goog.require('e2e.openpgp.packet.SymmetricallyEncrypted');
+  goog.require('e2e.openpgp.packet.SymmetricallyEncryptedIntegrity');
+  goog.require('e2e.random');
+  goog.require('goog.array');
+  goog.require('goog.crypt');
+  goog.require('goog.testing.jsunit');
+</script>
+<script>
+  function testSeiIsRandomized() {
+    var aes = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES128,
+      {key:goog.array.repeat(0x77, 16)});
+
+    var payload = e2e.stringToByteArray("test");
+    var packet1 = e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.construct(
+        payload, aes).serializePacketBody();
+    var packet2 = e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.construct(
+        payload, aes).serializePacketBody();
+    assertFalse("The prefix is not random with p ~ 1-2^-128",
+        goog.array.equals(packet1, packet2));
+    assertTrue("Two encryptions of the same payload produced encryptions of "
+        + "differengt lengths.", packet1.length === packet2.length);
+  }
+</script>

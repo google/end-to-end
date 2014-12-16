@@ -168,65 +168,13 @@ function testDecryptionZIPMD5BLOWFISH() {
   result = messageBlock.eskPackets[0].decryptSessionKey(
       privateKeyBlock.packets[3].cipher.getKey());
   messageBlock.encryptedData.decrypt(messageBlock.eskPackets[0].symmetricAlgorithm,
-                                            messageBlock.eskPackets[0].getSessionKey());
+                                     messageBlock.eskPackets[0].getSessionKey());
   var decrypted_packet = e2e.openpgp.parse.parseSerializedPacket(
       messageBlock.encryptedData.data);
   decrypted_packet.decompress();
   var decompressed_packet = e2e.openpgp.parse.parseSerializedPacket(decrypted_packet.data);
   assertEquals(e2e.byteArrayToString(decompressed_packet.data),
                'hello world new\n');
-}
-
-/**
- * Tests decryption with a simple message and key made by evn@google.com.
- * Uses CAST5.
- */
-function testDecryptionSimple() {
-  var message =
-    '-----BEGIN PGP MESSAGE-----\n' +
-    'Version: haneWIN JavascriptPG v2.0\n' +
-    '\n' +
-    'hIwDPgpnp2BW/IEBA/9x4WCm9OKX8Y43KMEOXuy0zuoBzUIjSUk7P7AnnZQV\n' +
-    'OjD14sg8Yk4shnOoBjxwXe8kyqQZLzoLR6NUBQk47vteMVkZx72HXJf5npqE\n' +
-    'eE1/GkpKUaWhBd4bYTK/Ed8uMWc85pC0lu9WNmn/F3Qie2P73tVNBKeXCUIo\n' +
-    '2akUkBhdyKQtsqszOGyONIC8pNhGo3eohEtTNVwqzjmLDeEKmJg6yJqNiUAx\n' +
-    'dKvwjg6CY3l2\n' +
-    '=SoLd\n' +
-    '-----END PGP MESSAGE-----';
-  var messageBlock = e2e.openpgp.block.factory.parseAscii(message);
-
-  var key =
-    '-----BEGIN PGP PRIVATE KEY BLOCK-----\n' +
-    'Version: BCPG C# v1.6.1.0\n' +
-    '\n' +
-    'lQHsBE6R408BBADSSbEiJ21/y+7uKqxWi1aT4YzNaZjV2roZEoQdSEqtnWJpE7sW\n' +
-    'ESKx6KqkvFCApKl2tHVkLwjjyJA4HbzWZpH2vREfFVeL4r0OFykvmbLUoEOKJLNT\n' +
-    'QMNd3/PWSGcW5CX6WKeYCQ0jqNDBRKtmvGdLWY3gi9UI55K4+HCLdj2m5wARAQAB\n' +
-    '/wMDAiLRJsUTRAvpYL/usCC7NiH2lmhjrUuNyfGDaAA/uXEPSj918tZsHFxGomHJ\n' +
-    '3jU8TGaWEtpkh3Z0V9nziv08XrJuZ8eE3T5gD/DiwCgskhNShuq94bsio7REW/Ic\n' +
-    'fv6FMjU/dTprByVbZAlU+mQTsQAaYk/4CHqFPCYprgIEFoVij0iOzvYeM4/kWHsA\n' +
-    'HO0PMoop/TbxlgiV1NYbVGYjzGkR6JAxgAutjyE03ydif7uLCwWa0FOAHRt71LJ5\n' +
-    'oRjigVxVh/k+6XLsl5nYhhomxA5yA8FnKEY1pzhtAuxnc4GFad+LqrZzTwMBe/u9\n' +
-    'IzNlSvP7U2YfRXmiEUX9d0jIblJu8yoej6Y/BMbf2KAKekgN8hKrcygwL1mhVZ+3\n' +
-    'YaQCx6GeN/52VXtn2bJQ7l6AAjMQlEaAcEc1opY+Yfa/4Fu3IujkuJ6I7TRxFMWy\n' +
-    'jONu8vkfaaUrbCZurE6BtBF0ZXN0QHRlc3QuZXhhbXBsZYicBBABAgAGBQJOkeNP\n' +
-    'AAoJED4KZ6dgVvyB1mID/R/lVuN+zeTGcj3bjn6Ep0QWJGdmw8AMFQ3xx65rmpQL\n' +
-    'Rq1NsRCz/syj4aRCPni/rwrUe0pWF6zAqJz97LpB/07ei6Hadjbz9nGqxOjo/n8U\n' +
-    'ixPKLMzKqY1JCKM6r5YZabd3xXVpQt0PfBuaFLtBeH6K7LfgYYkqgZwZGJNQlhVW\n' +
-    '=D1+C\n' +
-    '-----END PGP PRIVATE KEY BLOCK-----';
-  var privateKeyBlock = e2e.openpgp.block.factory.parseAscii(key);
-
-  var passphrase = e2e.stringToByteArray('test');
-  privateKeyBlock.keyPacket.cipher.unlockKey(passphrase);
-  result = messageBlock.eskPackets[0].decryptSessionKey(
-      privateKeyBlock.keyPacket.cipher.getKey());
-  messageBlock.encryptedData.decrypt(messageBlock.eskPackets[0].symmetricAlgorithm,
-                                            messageBlock.eskPackets[0].getSessionKey());
-  var decrypted_packet = e2e.openpgp.parse.parseSerializedPacket(
-      messageBlock.encryptedData.data);
-  assertEquals(e2e.byteArrayToString(decrypted_packet.data),
-               'hello, world.\r\n');
 }
 
 /**

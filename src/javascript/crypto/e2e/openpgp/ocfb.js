@@ -24,6 +24,7 @@ goog.provide('e2e.openpgp.Ocfb');
 
 goog.require('e2e.ciphermode.Cfb');
 goog.require('e2e.ciphermode.CipherMode');
+goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.random');
 
 
@@ -73,12 +74,13 @@ e2e.openpgp.Ocfb.prototype.encrypt = function(data, opt_iv) {
 
 /** @inheritDoc */
 e2e.openpgp.Ocfb.prototype.decrypt = function(data, opt_iv) {
-  var iv;
   if (this.resync) {
-    iv = data.slice(2, this.cipher.blockSize + 2);
+    var iv = data.slice(2, this.cipher.blockSize + 2);
+    data = data.slice(this.cipher.blockSize + 2);
+    return this.cfb.decrypt(data, iv);
   } else {
-    iv = data.slice(0, this.cipher.blockSize);
+    throw new e2e.openpgp.error.UnsupportedError(
+        'OpenPGP-CFB mode with no resynchronization is not supported ' +
+        'without a modification detection code.');
   }
-  data = data.slice(this.cipher.blockSize + 2);
-  return this.cfb.decrypt(data, iv);
 };

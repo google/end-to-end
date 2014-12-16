@@ -19,6 +19,7 @@
  */
 
 goog.provide('e2e.openpgp');
+goog.provide('e2e.openpgp.InsecureSymmetricAlgorithm');
 goog.provide('e2e.openpgp.SignatureDigestAlgorithm');
 
 goog.require('e2e');
@@ -36,6 +37,26 @@ e2e.openpgp.SignatureDigestAlgorithm = {
   'SHA384': 'SHA384',
   'SHA512': 'SHA512',
   'SHA224': 'SHA224'
+};
+
+
+/**
+ * List of symmetric algorithms allowed for symmetrically encrypted packets
+ * without a modification detection code. I.e., Tag 9 packets.
+ *
+ * This mitigates the impact of downgrade attacks that strip integrity
+ * protection: If a user never encrypts a packet using a weak cipher algorithm,
+ * they will never produce the necessary data to carry out such an attack.
+ *
+ * (These are the only ciphers for which GnuPG, by default, emits a plain
+ * Tag 9 packet under its present default settings.)
+ * @enum {string}
+ */
+e2e.openpgp.InsecureSymmetricAlgorithm = {
+  'CAST5': 'CAST5',
+  'IDEA': 'IDEA',
+  'TRIPLE_DES': 'TRIPLE_DES',
+  'BLOWFISH': 'BLOWFISH'
 };
 
 
