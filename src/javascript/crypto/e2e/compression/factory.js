@@ -36,7 +36,7 @@ e2e.compression.factory.compressionAlgorithms_ = {};
 
 /**
  * Registers a class for a specific algorithm.
- * @param {function(new:e2e.compression.Compression, ...[*])}
+ * @param {function(new:e2e.compression.Compression, ...*)}
  *    compression The constructor of the cipher.
  * @param {e2e.compression.Algorithm=} opt_algorithm The algorithm to
  *     register it to, if different from the prototype name.

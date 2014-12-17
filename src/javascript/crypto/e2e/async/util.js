@@ -22,7 +22,7 @@ goog.provide('e2e.async.util');
 
 /**
  * Wraps a function within a port.
- * @param {function(...[*]):*} callback The callback to use.
+ * @param {function(...*):*} callback The callback to use.
  * @return {MessagePort} The port that wrapps the callback.
  */
 e2e.async.util.wrapFunction = function(callback) {
@@ -46,7 +46,7 @@ e2e.async.util.wrapFunction = function(callback) {
 /**
  * Unwraps a function from a port.
  * @param {MessagePort} port The port that is wrapping the function.
- * @return {function(...[*]):*} A function that calls the wrapped function.
+ * @return {function(...*):*} A function that calls the wrapped function.
  */
 e2e.async.util.unwrapFunction = function(port) {
   return function() {
