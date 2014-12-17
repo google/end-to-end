@@ -109,7 +109,7 @@ e2e.ecc.Ecdsa.prototype.signForTestingOnly = function(message, k) {
 
 /**
  * Generates the ECDSA signature using the provided per-message secret.
- * Returns null in the very rare case that r or s evalutes to 0, and we need
+ * Returns null in the very rare case that r or s evaluates to 0, and we need
  * to try a different nonce.
  *
  * @param {!e2e.ByteArray} digest The digest of the message being signed.

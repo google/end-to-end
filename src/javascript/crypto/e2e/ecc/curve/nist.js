@@ -39,7 +39,7 @@ goog.require('goog.asserts');
  * @constructor
  * @extends {e2e.ecc.curve.Curve}
  * @param {!e2e.BigPrimeNum} q The modulus of the prime field.
- * @param {!e2e.BigNum} b The B cofficient in the elliptic equation,
+ * @param {!e2e.BigNum} b The B coefficient in the elliptic equation,
  *     represented as an array of bytes in little-endian order.
  */
 e2e.ecc.curve.Nist = function(q, b) {

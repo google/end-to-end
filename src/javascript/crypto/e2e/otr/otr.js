@@ -71,7 +71,7 @@ e2e.otr.implements = function(childCtor, interfaceCtor) {
  * @return {boolean} Whether the implementation implements the interface.
  */
 e2e.otr.implementationof = function(implementation, interfaceCtor) {
-  // get construcotr if instance of class.
+  // get constructor if instance of class.
   if (implementation.constructor != Function) {
     implementation = implementation.constructor;
   }

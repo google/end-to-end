@@ -44,7 +44,7 @@ goog.inherits(e2e.openpgp.block.TransferableSecretKey,
 /**
  * Attempts to unlock all key packets with the given passphrase.
  * @param {!e2e.ByteArray=} opt_passphrase The passphrase.
- * @return {boolean} Whether the unlocking was succesful.
+ * @return {boolean} Whether the unlocking was successful.
  */
 e2e.openpgp.block.TransferableSecretKey.prototype.unlock =
     function(opt_passphrase) {
@@ -63,7 +63,7 @@ e2e.openpgp.block.TransferableSecretKey.prototype.unlock =
 /**
  * Attempts to lock all key packets with the given passphrase.
  * @param {!e2e.ByteArray=} opt_passphrase The passphrase.
- * @return {boolean} Whether the locking was succesful.
+ * @return {boolean} Whether the locking was successful.
  */
 e2e.openpgp.block.TransferableSecretKey.prototype.lock =
     function(opt_passphrase) {

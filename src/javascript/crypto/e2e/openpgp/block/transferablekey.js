@@ -121,7 +121,7 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
   }
   while (packet instanceof e2e.openpgp.packet.UserId ||
       packet instanceof e2e.openpgp.packet.UserAttribute) {
-    // Be compatible with GnuPG that creates invalid OpenPGP blocks interwining
+    // Be compatible with GnuPG that creates invalid OpenPGP blocks intertwining
     // UserId and UserAttribute sequences. According to
     // http://tools.ietf.org/html/rfc4880#section-11.1 UserId sequences should
     // always come first. See Issue #33.

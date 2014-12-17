@@ -45,7 +45,7 @@ e2e.BigNumModulus = function(modulus, opt_RR) {
 
   // TODO(thaidn): do we really need to drop leading zeros here?
   this.dropLeadingZeros();
-  // Modulus specific initalization.
+  // Modulus specific initialization.
   this.inverseModulus_ = this.computeInverseModulus_();
   if (goog.isDef(opt_RR)) {
     this.RR_ = new e2e.BigNum(opt_RR);

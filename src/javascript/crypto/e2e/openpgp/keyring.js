@@ -722,7 +722,7 @@ e2e.openpgp.KeyRing.prototype.searchPublicKeyRemote_ = function(email) {
  * @param {!e2e.openpgp.KeyRingType} keyRing The keyring to add the keys to.
  * @param {!e2e.ByteArray=} opt_passphrase The passphrase used to
  *     protect the key.
- * @return {boolean} If the key import was succesful.
+ * @return {boolean} If the key import was successful.
  * @private
  */
 e2e.openpgp.KeyRing.prototype.importKey_ = function(

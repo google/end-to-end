@@ -1162,7 +1162,7 @@ hqeQ/ApkdW1teSBkYXRh/wpkdW1teSBkYXRh/gpkdW1teSBkYXRh
     runTestFor('InboundRsaSignGnupg1_4_11', assertCorrectlySigned, msgRegex);
   }
 
-  function testInboundInterwinedUserAttributeAndUserId() {
+  function testInboundIntertwinedUserAttributeAndUserId() {
     var key = document.getElementById('InboundKeyGnuPg1_UserAttribute').value;
     asyncTest.waitForAsync('Waiting for import.');
     context.importKey(function(uid, cb) {

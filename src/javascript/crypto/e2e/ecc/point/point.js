@@ -15,7 +15,7 @@
  */
 
 /**
- * @fileoverview Abstact representation of a point on a generic elliptic curve
+ * @fileoverview Abstract representation of a point on a generic elliptic curve
  * defined over a prime field.
  *
  * @author thaidn@google.com (Thai Duong).

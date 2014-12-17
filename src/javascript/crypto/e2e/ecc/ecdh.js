@@ -90,7 +90,7 @@ e2e.ecc.Ecdh.prototype.alice = function(opt_bobPubKey) {
 
 
 /**
- * Acts as Bob in the one-pass ECDH protocol. Bob receives Alice's empheral
+ * Acts as Bob in the one-pass ECDH protocol. Bob receives Alice's ephemeral
  *     public key from which he derives the shared secret using his private key
  *     b by computing S = bA = baG = aB.
  *     The public key used here is Alice's ephemeral public key. The private
