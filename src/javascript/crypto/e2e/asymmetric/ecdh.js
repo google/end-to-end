@@ -59,7 +59,7 @@ goog.inherits(e2e.cipher.Ecdh, e2e.AlgorithmImpl);
 
 
 /**
- * Internal ECDH implemenation.
+ * Internal ECDH implementation.
  * @type {e2e.ecc.Ecdh}
  * @private
  */

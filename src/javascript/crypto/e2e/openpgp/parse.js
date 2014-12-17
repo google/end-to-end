@@ -100,7 +100,7 @@ e2e.openpgp.parse.isOldFormatPacket_ = function(ptag) {
 
 
 /**
- * Minumum value for a two bytes packet length.
+ * Minimum value for a two bytes packet length.
  * @type {number}
  * @const
  */
@@ -108,7 +108,7 @@ e2e.openpgp.parse.TWO_BYTE_LENGTH_MIN = 192;
 
 
 /**
- * Minumum value for a partial body length.
+ * Minimum value for a partial body length.
  * @type {number}
  * @const
  * @private

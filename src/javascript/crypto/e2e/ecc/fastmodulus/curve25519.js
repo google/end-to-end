@@ -17,7 +17,7 @@
 /**
  * @fileoverview
  *
- * Fast modulus implemention for the Curve25519 prime 2^255 - 19
+ * Fast modulus implementation for the Curve25519 prime 2^255 - 19
  *
  * @author fy@google.com (Frank Yellin)
  */

@@ -79,7 +79,7 @@ e2e.openpgp.calculateNumericChecksum = function(data) {
 
 
 /**
- * The checksum modulus used for checksum as specificed in RFC 4880 Sec 5.5.3.
+ * The checksum modulus used for checksum as specified in RFC 4880 Sec 5.5.3.
  * @const {number}
  */
 e2e.openpgp.CHECKSUM_MOD = 65536;

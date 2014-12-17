@@ -97,7 +97,7 @@ e2e.ecc.Ed25519.prototype.sign = function(message) {
  */
 e2e.ecc.Ed25519.prototype.signForTestingOnly = function(message,
     nonce) {
-  // Signing is already deterministic, so we don't need a special determnistic
+  // Signing is already deterministic, so we don't need a special deterministic
   // form for testing.
   return this.sign(message);
 };

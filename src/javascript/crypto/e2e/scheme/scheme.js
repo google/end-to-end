@@ -59,7 +59,7 @@ e2e.scheme.Scheme = function(cipher) {
     goog.asserts.assert(goog.isDefAndNotNull(this.key));
   } else if (this.useHardwareCrypto) {
     /* TODO(user): when cl/70331225 is submitted and integrated into e2e,
-     * replace with the apropriate.
+     * replace with the appropriate.
      */
     throw new e2e.openpgp.error.UnsupportedError(
         "API to hardware isn't done yet!");

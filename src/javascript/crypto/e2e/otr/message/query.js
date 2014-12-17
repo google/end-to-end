@@ -100,7 +100,7 @@ e2e.otr.message.Query.parse = function(str) {
           ret |= versions.V3;
           break;
         default:
-          // spec: ignore unknown version identifiers for future compatability.
+          // spec: ignore unknown version identifiers for future compatibility.
       }
     }
     if (s.next() != '?') {
