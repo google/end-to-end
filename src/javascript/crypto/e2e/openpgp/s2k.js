@@ -284,7 +284,7 @@ e2e.openpgp.SimpleS2K.prototype.type = e2e.openpgp.S2k.Type.SIMPLE;
 e2e.openpgp.SimpleS2K.prototype.getKey = function(passphrase, length) {
   var hashed = [], original_length = length;
   while (length > 0) {
-    // Hash the passphrase repeatedly by appending 0's at the begining.
+    // Hash the passphrase repeatedly by appending 0's at the beginning.
     var checksum = this.hash.hash(passphrase);
     passphrase.unshift(0);
     length -= checksum.length;

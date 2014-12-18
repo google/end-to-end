@@ -230,7 +230,7 @@ e2e.cipher.Ecdh.prototype.getKeyWrapper_ = function(secret) {
       this.key['kdfInfo'][3]));
   var keyWrapper = new e2e.cipher.AesKeyWrap(wrapPrimitive);
   // This condition has been implicitly checked in the constructor, still can't
-  // hurt to explictly double check it again here.
+  // hurt to explicitly double check it again here.
   goog.asserts.assert(
       derivedKey.length >= wrapPrimitive.keySize,
       'KDF: invalid params');

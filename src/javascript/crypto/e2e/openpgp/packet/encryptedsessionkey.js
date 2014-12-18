@@ -58,7 +58,7 @@ goog.inherits(e2e.openpgp.packet.EncryptedSessionKey,
 /**
  * Decrypts the encrypted session key.
  * @param {e2e.cipher.key.Key} key The key to decrypt the session key.
- * @return {e2e.async.Result.<boolean>} True if decryption suceeded.
+ * @return {e2e.async.Result.<boolean>} True if decryption succeeded.
  */
 e2e.openpgp.packet.EncryptedSessionKey.prototype.decryptSessionKey =
     goog.abstractMethod;

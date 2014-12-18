@@ -389,7 +389,7 @@ e2e.openpgp.block.factory.parseAllTransferableKeys = function(
       }
     } catch (e) {
       if (opt_skiponerror) {
-        // discards packets upto the next keyblock
+        // discards packets up to the next keyblock
         e2e.openpgp.block.factory.skipToNextKey_(packets);
       } else {
         throw e;
