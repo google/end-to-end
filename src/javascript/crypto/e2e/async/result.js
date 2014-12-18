@@ -71,7 +71,7 @@ e2e.async.Result.getValue = function(result) {
     });
     if (fired)
       return ret;
-    throw new Error('Fired result didnt return synchronously.');
+    throw new Error('Fired result didn\'t return synchronously.');
   }
   throw new Error('Result is still pending.');
 };

@@ -127,7 +127,7 @@ e2e.ecc.Element.prototype.add = function(that) {
 
 /**
  * Subtracts this by another element, and returns the result.
- * @param {!e2e.ecc.Element} that The element to substract.
+ * @param {!e2e.ecc.Element} that The element to subtract.
  * @return {!e2e.ecc.Element}
  */
 e2e.ecc.Element.prototype.subtract = function(that) {

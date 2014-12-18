@@ -116,7 +116,7 @@ e2e.cipher.Rsa.prototype.setKey = function(key) {
   goog.asserts.assertArray(key['e'], 'Public exponent should be defined.');
   this.modulus = new e2e.BigNumModulus(key['n']);
   var bitLength = this.modulus.getBitLength();
-  // We accept upto 1020 bits to account for implementations that
+  // We accept up to 1020 bits to account for implementations that
   // generate moduli that are a little short of 1024 bits due to
   // randomness in p and q generation.
   switch (true) {
