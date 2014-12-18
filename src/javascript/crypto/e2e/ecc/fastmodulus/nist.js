@@ -17,8 +17,8 @@
 /**
  * @fileoverview
  *
- * Fast modulus implementations for the two NIST primes P_256 and P_384 that take
- * advantage of special properties of those numbers.
+ * Fast modulus implementations for the two NIST primes P_256 and P_384 that
+ * take advantage of special properties of those numbers.
  *
  * @author fy@google.com (Frank Yellin)
  */
