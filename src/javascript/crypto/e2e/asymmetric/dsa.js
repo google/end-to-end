@@ -320,7 +320,7 @@ e2e.signer.Dsa.prototype.generatePerMessageSecret_ = function() {
   if (nonceLength != 28 /* 160-bit q */ &&
       nonceLength != 36 /* 224-bit q */ &&
       nonceLength != 40 /* 256-bit q */) {
-    new e2e.openpgp.error.InvalidArgumentsError(
+    throw new e2e.openpgp.error.InvalidArgumentsError(
         'Cannot generate random nonce: invalid nonce length.');
   }
   var nonce = new e2e.BigNum(
