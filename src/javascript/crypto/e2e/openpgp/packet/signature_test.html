@@ -82,11 +82,24 @@ function testSignDSA() {
 
   var data = e2e.stringToByteArray('hello world dsa');
 
-  // Wait for both to finish before proceeding.
+  // Wait for checks to finish before proceeding.
   asyncTestCase.waitForSignals(2, "Waiting for DSA signatures");
 
+  var attributes = {};
+
+  // Ensure we get an error if we don't add the SIGNATURE_CREATION_TIME
+  // attribute.
+  var mustThrow = assertThrows(function() {
+      e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
+        e2e.openpgp.packet.Signature.SignatureType.TEXT, attributes);
+  });
+  assertTrue(mustThrow instanceof e2e.openpgp.error.InvalidArgumentsError);
+
+  attributes.SIGNATURE_CREATION_TIME = e2e.dwordArrayToByteArray(
+        [Math.floor(new Date().getTime() / 1e3)]);
+
   e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
-      e2e.openpgp.packet.Signature.SignatureType.TEXT).addCallback(
+      e2e.openpgp.packet.Signature.SignatureType.TEXT, attributes).addCallback(
     function(sigPacket) {
       assertTrue('Verify success',
                  sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
@@ -105,7 +118,7 @@ function testSignDSA() {
 
   var data = [0, 1, 2, 3];
   e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
-      e2e.openpgp.packet.Signature.SignatureType.BINARY).addCallback(
+      e2e.openpgp.packet.Signature.SignatureType.BINARY, attributes).addCallback(
     function(sigPacket) {
         assertTrue('Verify success',
             sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
@@ -159,8 +172,13 @@ function testSignECDSA() {
 
   var data = e2e.stringToByteArray('hello world ecdsa');
   asyncTestCase.waitForSignals(2, "Waiting for ECDSA signatures");
+  var attributes = {
+      'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
+        [Math.floor(new Date().getTime() / 1e3)])
+  };
+
   e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
-      e2e.openpgp.packet.Signature.SignatureType.TEXT).addCallback(
+      e2e.openpgp.packet.Signature.SignatureType.TEXT, attributes).addCallback(
     function(sigPacket) {
       assertTrue('Verify success',
                  sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
@@ -179,7 +197,7 @@ function testSignECDSA() {
 
   var data = [0, 1, 2, 3];
   e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
-      e2e.openpgp.packet.Signature.SignatureType.TEXT).addCallback(
+      e2e.openpgp.packet.Signature.SignatureType.TEXT, attributes).addCallback(
     function(sigPacket) {
       assertTrue('Verify success',
                   sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
@@ -301,8 +319,13 @@ function testSignRSA() {
 
   var data = e2e.stringToByteArray('hello world rsa');
   asyncTestCase.waitForSignals(2, "Waiting for RSA signatures");
+
+  var attributes = {
+      'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
+        [Math.floor(new Date().getTime() / 1e3)])
+  };
   e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
-      e2e.openpgp.packet.Signature.SignatureType.TEXT).addCallback(
+      e2e.openpgp.packet.Signature.SignatureType.TEXT, attributes).addCallback(
     function(sigPacket) {
       assertTrue('Verify success',
           sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
@@ -321,7 +344,7 @@ function testSignRSA() {
 
   var data = [0, 1, 2, 3];
   e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
-      e2e.openpgp.packet.Signature.SignatureType.TEXT).addCallback(
+      e2e.openpgp.packet.Signature.SignatureType.TEXT, attributes).addCallback(
     function(sigPacket) {
       assertTrue('Verify success',
                  sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));

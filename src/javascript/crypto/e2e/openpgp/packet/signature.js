@@ -79,6 +79,8 @@ e2e.openpgp.packet.Signature = function(
     opt_hashedSubpackets, opt_unhashedSubpackets,
     opt_signerKeyId, opt_creationTime) {
   goog.base(this);
+
+  var creationTime;
   if (version == 0x04) {
     /**
      * Hashed signature subpackets.
@@ -93,6 +95,15 @@ e2e.openpgp.packet.Signature = function(
       e2e.openpgp.packet.SignatureSub.populateAttribute(
           this.attributes, subpacket, false);
     }, this);
+
+    // rfc 4880: 5.2.3.4 - signature creation time MUST be present
+    // within the hashed area.
+    if (!this.attributes.hasOwnProperty('SIGNATURE_CREATION_TIME')) {
+      throw new e2e.openpgp.error.InvalidArgumentsError(
+          'Missing signature timestamp.');
+    }
+    creationTime = this.attributes.SIGNATURE_CREATION_TIME;
+
     /**
      * Non hashed signature subpackets.
      * @type {!Array.<!e2e.openpgp.packet.SignatureSub>}
@@ -123,16 +134,12 @@ e2e.openpgp.packet.Signature = function(
       throw new e2e.openpgp.error.InvalidArgumentsError(
           'Missing key data.');
     }
+    creationTime = opt_creationTime;
     /**
      * ID of the key that generated this signature..
      * @type {!e2e.ByteArray}
      */
     this.signerKeyId = opt_signerKeyId;
-    /**
-     * Creation time of the signature.
-     * @type {number}
-     */
-    this.creationTime = opt_creationTime;
   } else {
     throw new e2e.openpgp.error.InvalidArgumentsError(
         'Invalid Signature Packet version.');
@@ -142,6 +149,11 @@ e2e.openpgp.packet.Signature = function(
    * @type {number}
    */
   this.version = version;
+  /**
+   * Creation time of the signature.
+   * @type {number}
+   */
+  this.creationTime = creationTime;
   /**
    * Type of the signature.
    * @type {!e2e.openpgp.packet.Signature.SignatureType}
@@ -454,17 +466,24 @@ e2e.openpgp.packet.Signature.prototype.isCertificationSignature = function() {
  * @param {!e2e.openpgp.packet.SecretKey} key Key to sign with.
  * @param {!e2e.ByteArray} data Data to sign.
  * @param {!e2e.openpgp.packet.Signature.SignatureType} signatureType
- * @param {Object.<string, number|!e2e.ByteArray>=} opt_attributes
- *     The signature attributes.
+ * @param {!Object.<string, number|!e2e.ByteArray>} attributes
+ *     The signature attributes. The SIGNATURE_CREATION_TIME attribute must
+ *     always be present within it.
  * @param {Object.<string, number|!e2e.ByteArray>=}
  *     opt_untrustedAttributes The signature untrusted attributes.
  * @return {!e2e.async.Result.<!e2e.openpgp.packet.Signature>} Signature packet.
  */
 e2e.openpgp.packet.Signature.construct = function(
-    key, data, signatureType, opt_attributes, opt_untrustedAttributes) {
+    key, data, signatureType, attributes, opt_untrustedAttributes) {
   // Described in RFC4880 section 5.2.4.
-  var hashedSubpackets = opt_attributes ?
-      e2e.openpgp.packet.SignatureSub.construct(opt_attributes) : [];
+  // 5.2.3.4 - SIGNATURE_CREATION_TIME must be present as a hashed attribute.
+  if (!attributes.hasOwnProperty('SIGNATURE_CREATION_TIME')) {
+    throw new e2e.openpgp.error.InvalidArgumentsError(
+        'Missing required SIGNATURE_CREATION_TIME attribute.');
+  }
+
+  var hashedSubpackets = e2e.openpgp.packet.SignatureSub.construct(attributes);
+
   var unhashedSubpackets = opt_untrustedAttributes ?
       e2e.openpgp.packet.SignatureSub.construct(opt_untrustedAttributes) :
       [];

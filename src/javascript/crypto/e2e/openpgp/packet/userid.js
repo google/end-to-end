@@ -290,7 +290,7 @@ e2e.openpgp.packet.UserId.prototype.certifyBy = function(key) {
  * Returns key certification signature attributes, including End-to-End
  * algorithm preferences.
  * @param {e2e.openpgp.packet.SecretKey} key
- * @return {Object.<string, number|!e2e.ByteArray>}  Attributes
+ * @return {!Object.<string, number|!e2e.ByteArray>}  Attributes
  * @private
  */
 e2e.openpgp.packet.UserId.prototype.getSignatureAttributes_ = function(key) {
