@@ -88,6 +88,9 @@ e2e.openpgp.constants.NAME_TO_ID[
     e2e.cipher.Algorithm.RSA] = 1;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.PUBLIC_KEY][
+    e2e.cipher.Algorithm.RSA_ENCRYPT] = 2;
+e2e.openpgp.constants.NAME_TO_ID[
+    e2e.openpgp.constants.Type.PUBLIC_KEY][
     e2e.cipher.Algorithm.ELGAMAL] = 16;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.PUBLIC_KEY][
@@ -157,6 +160,9 @@ e2e.openpgp.constants.NAME_TO_ID[
     e2e.signer.Algorithm.RSA] = 1;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SIGNER][
+    e2e.signer.Algorithm.RSA_SIGN] = 3;
+e2e.openpgp.constants.NAME_TO_ID[
+    e2e.openpgp.constants.Type.SIGNER][
     e2e.signer.Algorithm.DSA] = 17;
 e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.SIGNER][
@@ -193,13 +199,6 @@ e2e.openpgp.constants.ID_TO_NAME[
     e2e.openpgp.constants.Type.PUBLIC_KEY] = goog.object.transpose(
     e2e.openpgp.constants.NAME_TO_ID[
     e2e.openpgp.constants.Type.PUBLIC_KEY]);
-// RSA is special in that it has algorithm ids 1, 2 and 3 registered.
-e2e.openpgp.constants.ID_TO_NAME[
-    e2e.openpgp.constants.Type.PUBLIC_KEY][2] =
-    e2e.cipher.Algorithm.RSA;
-e2e.openpgp.constants.ID_TO_NAME[
-    e2e.openpgp.constants.Type.PUBLIC_KEY][3] =
-    e2e.cipher.Algorithm.RSA;
 e2e.openpgp.constants.ID_TO_NAME[
     e2e.openpgp.constants.Type.SYMMETRIC_KEY] = goog.object.transpose(
     e2e.openpgp.constants.NAME_TO_ID[

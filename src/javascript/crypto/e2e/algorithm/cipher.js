@@ -53,6 +53,7 @@ e2e.cipher.Algorithm = {
   'TWOFISH': 'TWOFISH',
   // Asymmetric Ciphers
   'RSA': 'RSA',
+  'RSA_ENCRYPT': 'RSA_ENCRYPT',
   'ELGAMAL': 'ELGAMAL',
   'ECDH': 'ECDH'
 };

@@ -37,4 +37,6 @@ goog.require('e2e.cipher.Idea');
 /** @suppress {extraRequire} intentional import */
 goog.require('e2e.cipher.Rsa');
 /** @suppress {extraRequire} intentional import */
+goog.require('e2e.cipher.RsaEncrypt');
+/** @suppress {extraRequire} intentional import */
 goog.require('e2e.cipher.TripleDes');

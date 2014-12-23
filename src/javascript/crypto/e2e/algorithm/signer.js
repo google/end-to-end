@@ -44,7 +44,8 @@ goog.require('goog.debug.Error');
 e2e.signer.Algorithm = {
   'DSA': 'DSA',
   'ECDSA': 'ECDSA',
-  'RSA': 'RSA'
+  'RSA': 'RSA',
+  'RSA_SIGN': 'RSA_SIGN'
 };
 
 

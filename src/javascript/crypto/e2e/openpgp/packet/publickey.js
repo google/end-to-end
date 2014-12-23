@@ -83,6 +83,8 @@ e2e.openpgp.packet.PublicKey.prototype.serializePacketBody =
   var keyData;
   switch (this.cipher.algorithm) {
     case e2e.cipher.Algorithm.RSA:
+    case e2e.cipher.Algorithm.RSA_ENCRYPT:
+    case e2e.signer.Algorithm.RSA_SIGN:
       keyData = goog.array.flatten(
           e2e.openpgp.Mpi.serialize(keyObj['n']),
           e2e.openpgp.Mpi.serialize(keyObj['e']));
@@ -180,12 +182,20 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
   // TODO(user): Clean up these types, add loc fields when b/16299258 is fixed.
   switch (cipherAlgorithm) {
     case e2e.cipher.Algorithm.RSA:
+    case e2e.cipher.Algorithm.RSA_ENCRYPT:
+    case e2e.signer.Algorithm.RSA_SIGN:
       var n = e2e.openpgp.Mpi.parse(body);
       var e = e2e.openpgp.Mpi.parse(body);
       keyData = /** @type {!e2e.cipher.key.Rsa} */({
         'n': goog.array.clone(n),
         'e': goog.array.clone(e)});
-      cipher = e2e.cipher.factory.require(cipherAlgorithm, keyData);
+      if (cipherAlgorithm == e2e.signer.Algorithm.RSA_SIGN) {
+        cipher = e2e.signer.factory.require(
+            /** @type {!e2e.signer.Algorithm} */ (cipherAlgorithm), keyData);
+      } else {
+        cipher = e2e.cipher.factory.require(
+            /** @type {!e2e.cipher.Algorithm} */ (cipherAlgorithm), keyData);
+      }
       break;
     case e2e.cipher.Algorithm.ELGAMAL:
       var p = e2e.openpgp.Mpi.parse(body);

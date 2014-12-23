@@ -217,6 +217,7 @@ e2e.openpgp.packet.Signature.prototype.serializePacketBody = function() {
   var sig = this.signature;
   switch (this.pubKeyAlgorithm) {
     case e2e.cipher.Algorithm.RSA:
+    case e2e.signer.Algorithm.RSA_SIGN:
       goog.array.extend(serialized,
           e2e.openpgp.Mpi.serialize(sig['s']));
       break;
@@ -330,6 +331,7 @@ e2e.openpgp.packet.Signature.parse = function(data) {
   };
   switch (pubKeyAlgorithm) {
     case e2e.signer.Algorithm.RSA:
+    case e2e.signer.Algorithm.RSA_SIGN:
       signature['s'] = e2e.openpgp.Mpi.parse(data);
       break;
     case e2e.signer.Algorithm.DSA:

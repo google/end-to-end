@@ -57,9 +57,12 @@ goog.require('goog.asserts');
  * @extends {e2e.AlgorithmImpl}
  */
 e2e.cipher.Rsa = function(algorithm, opt_key) {
-  goog.asserts.assert(algorithm == e2e.cipher.Algorithm.RSA,
+  goog.asserts.assert(
+      algorithm == e2e.cipher.Algorithm.RSA ||
+      algorithm == e2e.cipher.Algorithm.RSA_ENCRYPT ||
+      algorithm == e2e.signer.Algorithm.RSA_SIGN,
       'Algorithm should be RSA.');
-  goog.base(this, e2e.cipher.Algorithm.RSA, opt_key);
+  goog.base(this, algorithm, opt_key);
 };
 goog.inherits(e2e.cipher.Rsa, e2e.AlgorithmImpl);
 
@@ -162,6 +165,18 @@ e2e.cipher.Rsa.prototype.setKey = function(key) {
 
 /** @inheritDoc */
 e2e.cipher.Rsa.prototype.encrypt = function(plaintext) {
+  return this.encryptInternal_(plaintext);
+};
+
+
+/**
+ * Encrypts the given data using the current cipher and key.
+ * @param {!e2e.ByteArray} plaintext The data to encrypt.
+ * @return {!e2e.cipher.ciphertext.AsymmetricAsync}
+ *     The result of encryption.
+ * @private
+ */
+e2e.cipher.Rsa.prototype.encryptInternal_ = function(plaintext) {
   goog.asserts.assertArray(this.key['e'], 'Public exponent should be defined.');
   /** @type {!e2e.cipher.ciphertext.Rsa} */
   var ciphertext = {c: this.modulus.pow(plaintext, this.key['e'])};
@@ -215,6 +230,19 @@ e2e.cipher.Rsa.prototype.calculateBlindingNonces_ = function() {
 
 /** @inheritDoc */
 e2e.cipher.Rsa.prototype.decrypt = function(ciphertext) {
+  return this.decryptInternal_(ciphertext);
+};
+
+
+/**
+ * Decrypts the given data using the current cipher and key.
+ * @param {!e2e.cipher.ciphertext.Asymmetric} ciphertext The encrypted
+ *     data.
+ * @return {!e2e.async.Result.<!e2e.ByteArray>} The result of
+ *     decryption.
+ * @private
+ */
+e2e.cipher.Rsa.prototype.decryptInternal_ = function(ciphertext) {
   goog.asserts.assertArray(this.key['d'],
       'Private exponent should be defined.');
   goog.asserts.assertArray(ciphertext['c'],
@@ -249,7 +277,7 @@ e2e.cipher.Rsa.prototype.sign = function(data) {
   var signature = {
     'hashValue': this.getHash().hash(data),
     'r': undefined,
-    's': e2e.async.Result.getValue(this.decrypt({'c': paddedHash}))
+    's': e2e.async.Result.getValue(this.decryptInternal_({'c': paddedHash}))
   };
   return e2e.async.Result.toResult(signature);
 };
@@ -263,7 +291,7 @@ e2e.cipher.Rsa.prototype.verify = function(data, sig) {
       this.keySize - 1,
       true);
   var encodedSignedHash = e2e.async.Result.getValue(
-      this.encrypt(sig['s']))['c'];
+      this.encryptInternal_(sig['s']))['c'];
   return e2e.async.Result.toResult(
       e2e.compareByteArray(encodedActualHash, encodedSignedHash));
 };

@@ -401,6 +401,8 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey_ = function(keyBytes) {
   var keyData = this.cipher_.getKey();
   switch (this.cipher_.algorithm) {
     case e2e.cipher.Algorithm.RSA:
+    case e2e.cipher.Algorithm.RSA_ENCRYPT:
+    case e2e.signer.Algorithm.RSA_SIGN:
       keyData.d = e2e.openpgp.Mpi.parse(key);
       keyData.p = e2e.openpgp.Mpi.parse(key);
       keyData.q = e2e.openpgp.Mpi.parse(key);

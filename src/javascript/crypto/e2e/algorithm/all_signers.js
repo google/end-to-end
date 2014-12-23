@@ -25,3 +25,5 @@ goog.provide('e2e.signer.all');
 goog.require('e2e.signer.Dsa');
 /** @suppress {extraRequire} intentional import */
 goog.require('e2e.signer.Ecdsa');
+/** @suppress {extraRequire} intentional import */
+goog.require('e2e.signer.RsaSign');

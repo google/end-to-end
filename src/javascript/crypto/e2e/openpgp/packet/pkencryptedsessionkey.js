@@ -145,6 +145,7 @@ e2e.openpgp.packet.PKEncryptedSessionKey.prototype.
       e2e.openpgp.constants.getId(this.algorithm));
   switch (this.algorithm) {
     case e2e.cipher.Algorithm.RSA:
+    case e2e.cipher.Algorithm.RSA_ENCRYPT:
       goog.array.extend(body, this.encryptedKey['c']);
       break;
     case e2e.cipher.Algorithm.ELGAMAL:
@@ -180,7 +181,8 @@ e2e.openpgp.packet.PKEncryptedSessionKey.construct = function(publicKey,
   m = m.concat(
       e2e.openpgp.calculateNumericChecksum(sessionKey));
   var encryptedResult;
-  if (publicKey.cipher.algorithm == e2e.cipher.Algorithm.RSA) {
+  if ((publicKey.cipher.algorithm == e2e.cipher.Algorithm.RSA) ||
+      (publicKey.cipher.algorithm == e2e.cipher.Algorithm.RSA_ENCRYPT)) {
     var cipher = /** @type {e2e.cipher.Rsa} */(publicKey.cipher);
     var rsaes = new e2e.scheme.Rsaes(cipher);
     encryptedResult = rsaes.encrypt(m);
@@ -216,6 +218,7 @@ e2e.openpgp.packet.PKEncryptedSessionKey.createPacketForKey_ =
   var encryptedKey;
   switch (publicKey.cipher.algorithm) {
     case e2e.cipher.Algorithm.RSA:
+    case e2e.cipher.Algorithm.RSA_ENCRYPT:
       encryptedKey = {
         'c': e2e.openpgp.Mpi.serialize(encrypted['c'])
       };
@@ -265,6 +268,7 @@ e2e.openpgp.packet.PKEncryptedSessionKey.parse = function(body) {
       {});
   switch (algorithm) {
     case e2e.cipher.Algorithm.RSA:
+    case e2e.cipher.Algorithm.RSA_ENCRYPT:
       encryptedKey['c'] = e2e.openpgp.Mpi.parse(body);
       break;
     case e2e.cipher.Algorithm.ELGAMAL:

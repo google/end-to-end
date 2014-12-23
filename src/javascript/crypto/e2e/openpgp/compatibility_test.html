@@ -969,6 +969,115 @@ hqeQ/ApkdW1teSBkYXRh/wpkdW1teSBkYXRh/gpkdW1teSBkYXRh
 =RIw0
 -----END PGP PUBLIC KEY BLOCK-----
 </textarea>
+<!--
+  Tests that we can import, decrypt and verify signatures made
+  by keys with the RSA-s and RSA-e algorithm ids.
+:secret key packet:
+  version 4, algo 3, created 1410288017, expires 0
+  skey[0]: [1024 bits]
+  skey[1]: [17 bits]
+  iter+salt S2K, algo: 7, SHA1 protection, hash: 8, salt: cb18e77884f2f055
+  protect count: 65536 (96)
+  protect IV:  22 71 f7 18 af 70 d3 bd 9d 60 c2 ae d9 46 9b 67
+  encrypted stuff follows
+  keyid: 04C78703EFBF9416
+:user ID packet: "rsa-rsa-default"
+:signature packet: algo 3, keyid 04C78703EFBF9416
+  version 4, created 1418928017, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest a7 ca
+  hashed subpkt 2 len 4 (sig created 2014-12-18)
+  hashed subpkt 11 len 1 (pref-sym-algos: 7)
+  hashed subpkt 21 len 1 (pref-hash-algos: 8)
+  hashed subpkt 30 len 1 (features: 01)
+  subpkt 16 len 8 (issuer key ID 04C78703EFBF9416)
+  data: [1022 bits]
+:secret sub key packet:
+  version 4, algo 2, created 1410288017, expires 0
+  skey[0]: [1024 bits]
+  skey[1]: [17 bits]
+  iter+salt S2K, algo: 7, SHA1 protection, hash: 8, salt: cb18e77884f2f055
+  protect count: 65536 (96)
+  protect IV:  7a 12 8c 19 24 dc 3b 71 cf 6e e9 61 99 db 60 b5
+  encrypted stuff follows
+  keyid: D768A4153A7326C3
+:signature packet: algo 3, keyid 04C78703EFBF9416
+  version 4, created 1410288017, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest 21 4a
+  hashed subpkt 2 len 4 (sig created 2014-09-09)
+  subpkt 16 len 8 (issuer key ID 04C78703EFBF9416)
+  data: [1020 bits]
+-->
+<textarea id="RSAVariantAlgorithms">
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+Version: GnuPG v1
+
+lQIGBFQPSZEDBACa+JwIqOqEtTYyaLrIoGghGUFjy87u0tkh9fO90ZJSiRHHseUV
+3OiGVAnhYdu72KRojFbB59/PY52WI+MXWxvKhrHRKuTk+/mlt9VJP0aNp0T0rPxN
+E60tgzmP/CDX3wLfgvO8Bfku3EGzxHhjigU3JlhqqsV+K2bAT5d1cWoMcQARAQAB
+/gcDCMsY53iE8vBVYCJx9xivcNO9nWDCrtlGm2euydlp5MCZULhFBdUt4/jaB80G
+/9oCSF5/5VOibbk5d0feuY7to031oS4rOCZMlsjisfD8v9kVfc38aN7c32DdmfJs
+M5Cujqx0vwwYPnU99dZeCfXIskEsCgLeEeCi3daAa3jgQOJqGVTp3Nu7MQqBaa6N
+ybbkQs9qbHHON+t+S0+119Q+m6Fh3E7/FgLoFWwNxanQWDpK4qximayeOI8NyOQT
+3urrKB36ldcuOXuLn3vpAvfZALos0Y9fLuzMzkYgQ8ghweLkbH01r4GUykjLM7jb
+kLEB0ihHuRDvwgy77MvkrgqoOReMRYDzgWTisiSVj8OQRhzZ4nHYiyPMKAqUuAhh
+DNB/X9fA9FSkdf3S3JZMypuZdqsLf9+fqGSsJ0wXD6O0TXoAnoJpKHcp3Py+ps1h
++SFqw/2/PKoJShgRXCwbzEO+YTgqNAtTfFHas5BrY45ggTxGug+XMSC0D3JzYS1y
+c2EtZGVmYXVsdIilBBMDAgAPBQJUkx+RAgsHAhUIAh4BAAoJEATHhwPvv5QWp8oD
+/jDlPbR4AgpEwLqYOI5dUO0gQoG2G+2JK2qCNuy8SMTMBfiPz1TW62HnmOFz1wWR
+gwNwIl4+F1qC4o8nxORIKyXJBngUhekSifWoWPyMzp2om7Ipta/dQjKUwZV2fVSt
+iqqK1u7l1t0pYLs3Giy8V0PAflDKkVIZqw9xCJegK6RanQIGBFQPSZECBACROoHb
+3Ayw3PzuW/gZYf/Hv3wEcXAwaUibDhPOp+zdj673txWte7AU9k9aTwzogd2JkL+q
+RwtWnxR2+ap7BWP+Wkt5qfs7JjVtC9qA+L0mNEEZyiMwYd90Gb9g4uZCnxTSDhoD
+KL5rMlyEmWHgMLJyw0kk27IB4xkfH6ncn+wWhwARAQAB/gcDCMsY53iE8vBVYHoS
+jBkk3Dtxz27pYZnbYLVyQjSsT+O55w8fU/kx88txHbyuljhIKK/R66/ejErGOP6v
+yKptsEnjglZjspyNWd4K4cxx9mkdo/2iNcrvH96pDprmWs1hQEqae8kUmx52daCS
+ljT+VPrEv1iDgDoJ3QpQ5x56EQnb5w0LYYshOFpWeQuvuklRwIjvSAVcZ6sNm2lB
+N+uwgjH/Gw+I3i7yoSHiQucfUpqrmczsDxQ0LrfdWeBKTFLjqgNzDiOAh8RSX3A6
+0j7nAKZVqWwC3WInGs1YxdBmQ5nCioCaplOLlJmc2+HMGQmFqjoSxdul1RGCt0D8
+QVsaU3n/zIbOnf1vLYTYWyALg/KbV4j40STSHA2zQm772X2BxAOP6wzERbXJ1MUt
+o1Zt7aYRtU6MBc739H32XtxoGbyIGmAxUUBljUq+oMk5BoZo2YuCD4nk48ry+lrR
+UrxgQ1AVisxye9dLSXekE4MCCGP1ysMjnCGInAQYAwIABgUCVA9JkQAKCRAEx4cD
+77+UFiFKA/wOG2PxB1iDtDeLAUfOP0zMx6qBQfWCyWldKze/bom5SwbLT42+Aks9
+B0RU6JKdd8WfwTlJyQeM56aUe1wPwVHBe+zTG+XvsYree3rQHFEgHTN3KEPHc6Ec
+QqrhcYJ4IBFau0avBvi7QjsSOvePvIKFO/DuDIECRpLZjRW+VKisag==
+=hU9G
+-----END PGP PRIVATE KEY BLOCK-----
+</textarea>
+<!--
+  Message signed by, and encrypted to the private key above.
+:encrypted data packet:
+  length: 237
+  mdc_method: 2
+gpg: encrypted with 1024-bit RSA-E key, ID 3A7326C3, created 2014-09-09
+      "rsa-rsa-default"
+:compressed packet: algo=1
+:onepass_sig packet: keyid 04C78703EFBF9416
+  version 3, sigclass 0x00, digest 8, pubkey 3, last=1
+:literal data packet:
+  mode b (62), created 1418941207, name="hello.txt",
+  raw data: 5 bytes
+:signature packet: algo 3, keyid 04C78703EFBF9416
+  version 4, created 1418941207, md5len 0, sigclass 0x00
+  digest algo 8, begin of digest 25 31
+  hashed subpkt 2 len 4 (sig created 2014-12-18)
+  subpkt 16 len 8 (issuer key ID 04C78703EFBF9416)
+  data: [1023 bits]
+-->
+<textarea id="RSAVariantAlgorithmsMessage">
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1
+
+hIwD12ikFTpzJsMCA/45blJctJzKPQ1n5IUiCaOqEB4x+Vd1XviFD6mYqCnIbu2n
+zA6KdVDmdA865N/PUwDzvUIijvIOCZtcm+YjYewzQZ92O9JNqxvfIGdTILxL5LOd
+k9N07DMjIN+b4vh/2H2E8bWctYrni48qG7oR85F80h9InPxlRc/y0aS0wo26GdLA
+LQECgYWF77t7FVRBIPewfJHlacJsgqJFeuFw2K1SYYMGB9kbcdUJbkKzD0AX5gco
+WGoSlEPhoTMin20KQ48mochf6qEL+jI1XCPTAlwURm0Ifd4bthLzfApVFtCbc+f8
+66AKIGi7nnZIwdApN6GalEql6hH5KEiR/s7eNfZ3ZHig2oi4W03nSCiDbHE50GD4
+jF0vUEorTLm0Si2rG7adQNWJL+HgLSdS9vvG7kI3vla5lnpTlvcbuxTDGHl3JYoz
+zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
+=UCdE
+-----END PGP MESSAGE-----
+</textarea>
 
 <script>
   goog.require('goog.async.DeferredList');
@@ -1308,6 +1417,27 @@ hqeQ/ApkdW1teSBkYXRh/wpkdW1teSBkYXRh/gpkdW1teSBkYXRh
         assertArrayEquals(['with-experimental'], importedUids);
         asyncTest.continueTesting();
     });
+  }
+
+  function testRSAVariantAlgorithms() {
+    var key = document.getElementById('RSAVariantAlgorithms').value;
+    var message = document.getElementById('RSAVariantAlgorithmsMessage').value;
+    var pw = function(uid, cb) {
+        cb('test');
+    };
+    asyncTest.waitForAsync('Waiting for import.');
+    context.importKey(pw, key).addCallback(function(uids) {
+        assertArrayEquals(['rsa-rsa-default'], uids);
+        asyncTest.waitForAsync('Waiting for decrypt.');
+        context.verifyDecrypt(pw, message).addCallback(
+            function(result) {
+                assertEquals(
+                    'hello', e2e.byteArrayToString(result.decrypt.data));
+                assertEquals(1418941207, result.decrypt.options.creationTime);
+                assertEquals('hello.txt', result.decrypt.options.filename);
+                asyncTest.continueTesting();
+            }).addErrback(fail);
+       });
   }
 
 </script>
