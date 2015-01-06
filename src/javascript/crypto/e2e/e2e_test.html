@@ -272,4 +272,71 @@
         assertArrayEquals([0, 0, 0, 0], e2e.incrementByteArray(x));
         assertArrayEquals([0, 0, 0, 0], x);
       }
+
+      function testImmutableArray() {
+
+        // Check methods do the right thing with empty values.
+        var safe = new e2e.ImmutableArray([]);
+        assertEquals(0, safe.size());
+        assertTrue(typeof(safe.get(0)) == 'undefined');
+        e2e.ImmutableArray.forEach(safe,
+          function(e) {
+            fail('Should not be called.');
+          });
+
+        // Check we can intialize with arrays and safearrays.
+        safe = new e2e.ImmutableArray([1, 2, 3]);
+        assertEquals(3, safe.size());
+        var safe2 = new e2e.ImmutableArray(safe);
+        assertEquals(3, safe2.size());
+        // Elements should be the same.
+        e2e.ImmutableArray.forEach(safe,
+          function(v, idx) {
+            assertEquals(safe2.get(idx), v);
+          });
+
+        // check that push works as expected.
+        var safe2 = e2e.ImmutableArray.pushCopy(safe, 4);
+        assertEquals(3, safe.size());
+        assertTrue(typeof(safe.get(3)) == 'undefined');
+        assertEquals(3, safe.get(2));
+        assertEquals(4, safe2.size());
+        assertEquals(4, safe2.get(3));
+
+        // Check concatenation works as expected.
+        safe2 = e2e.ImmutableArray.concat(safe, new e2e.ImmutableArray([4, 5]));
+        assertEquals(3, safe.size());
+        assertEquals(5, safe2.size());
+        for (var i = 0; i < 5; i++) {
+          assertEquals(i + 1, safe2.get(i));
+        }
+
+        // Check forEach works as expected on the index.
+        var checkidx = 0;
+        e2e.ImmutableArray.forEach(safe2, function(v, idx) {
+          assertEquals(checkidx, idx);
+          assertEquals(idx + 1, v);
+          checkidx++;
+        });
+
+        // Check splice works as expected.
+        safe2 = e2e.ImmutableArray.spliceCopy(safe, 1, 1);
+        assertEquals(3, safe.size());
+        assertEquals(2, safe2.size());
+        assertEquals(1, safe2.get(0));
+        assertEquals(3, safe2.get(1));
+        safe2 = e2e.ImmutableArray.spliceCopy(safe, 1, 1, 5);
+        assertEquals(3, safe.size());
+        assertEquals(3, safe2.size());
+        assertEquals(1, safe2.get(0));
+        assertEquals(5, safe2.get(1));
+        assertEquals(3, safe2.get(2));
+
+        // Check state is stored as expected.
+        assertTrue(typeof(safe.getState()) == 'undefined');
+        assertTrue((new e2e.ImmutableArray(safe, true)).getState());
+        assertFalse((new e2e.ImmutableArray(safe, false)).getState());
+        assertEquals(42, (new e2e.ImmutableArray(safe, 42)).getState());
+      }
+
 </script>

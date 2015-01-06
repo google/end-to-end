@@ -24,6 +24,7 @@
 goog.provide('e2e');
 goog.provide('e2e.ByteArray');
 goog.provide('e2e.DwordArray');
+goog.provide('e2e.ImmutableArray');
 
 goog.require('e2e.async.Result');
 goog.require('e2e.error.InvalidArgumentsError');
@@ -383,4 +384,143 @@ e2e.incrementByteArray = function(n) {
     return n;
   };
   return fn(n);
+};
+
+
+
+/**
+ * A ImmutableArray is a collection that just offers indexed access to its
+ * elements, and a limited set of (static) operations that do not
+ * mutate the collection. It can also store an optional "state" object
+ * that may be retrieved later on. The reference to this state cannot
+ * be modified through public methods.
+ *
+ * @param {!e2e.ImmutableArray<T>|!Array<T>|!goog.array.ArrayLike} elements
+ * @param {S=} opt_state opaque data that may be retrieved via the
+ *     getState() method.
+ * @template T,S
+ * @constructor
+ */
+e2e.ImmutableArray = function(elements, opt_state) {
+
+  /**
+   * An underlying array which holds elements in our collection.
+   * @type {!Array<T>}
+   * @private
+   */
+  this.elements_ = (elements instanceof e2e.ImmutableArray) ?
+      goog.array.toArray(elements.elements_) :
+      goog.array.toArray(elements);
+
+  /**
+   * An optional opaque state object that can be stored along
+   * with this array.
+   * @type {S|undefined}
+   * @private
+   */
+  this.state_ = opt_state;
+};
+
+
+/**
+ * Returns the element at the provided index, or undefined if it
+ * does not exist.
+ * @param {number} index the index into the collection
+ * @return {!T|undefined} the element at the index.
+ */
+e2e.ImmutableArray.prototype.get = function(index) {
+  return this.elements_[index];
+};
+
+
+/**
+ * @return {number} number of elements in the collection.
+ */
+e2e.ImmutableArray.prototype.size = function() {
+  return this.elements_.length;
+};
+
+
+/**
+ * Returns the state provided in the constructor, if any.
+ * @return {S|undefined} the state
+ */
+e2e.ImmutableArray.prototype.getState = function() {
+  return this.state_;
+};
+
+
+/**
+ * Returns a new ImmutableArray after appending the argument to a provided
+ * ImmutableArray. Note that the state in the returned ImmutableArray is
+ * undefined.
+ * @param {!e2e.ImmutableArray<T>} arr the source array.
+ * @param {!T} element the element to append to the collection.
+ * @return {!e2e.ImmutableArray<T>} the new ImmutableArray
+ * @template T
+ */
+e2e.ImmutableArray.pushCopy = function(arr, element) {
+  return new e2e.ImmutableArray(goog.array.concat(arr.elements_, element));
+};
+
+
+/**
+ * Create a new ImmutableArray after removing/adding some elements from a
+ * provided ImmutableArray. Note that the state in the returned ImmutableArray
+ * is undefined.
+ * @param {!e2e.ImmutableArray<T>} arr the source array.
+ * @param {number} index The index at which to start changing the array.
+ * @param {number} howMany How many elements to remove (0 means no removal.)
+ * @param {...T} var_args Optional, additional elements to insert into the
+ *     array.
+ * @return {!e2e.ImmutableArray<T>} the result ImmutableArray.
+ * @template T
+ */
+e2e.ImmutableArray.spliceCopy = function(arr, index, howMany, var_args) {
+  // swap in a clone before passing it to the destructive splice operator.
+  var elements = goog.array.clone(arr.elements_);
+  arguments[0] = elements;
+  goog.array.splice.apply(goog.array, arguments);
+  return new e2e.ImmutableArray(elements);
+};
+
+
+/**
+ * Retuns a new ImmutableArray that is the concatenation
+ * all its arguments. Note that the state in the returned ImmutableArray is
+ * undefined.
+ * @param {...!e2e.ImmutableArray<T>} var_args
+ * @return {!e2e.ImmutableArray<T>} the result ImmutableArray
+ * @template T
+ */
+e2e.ImmutableArray.concat = function(var_args) {
+  var result = [];
+  for (var i = 0; i < arguments.length; i++) {
+    result = goog.array.concat(result, arguments[i].elements_);
+  }
+  return new e2e.ImmutableArray(result);
+};
+
+
+/**
+ * Calls a function for each element in the provided ImmutableArray. Skips
+ * holes in the array.
+ *
+ * @param {e2e.ImmutableArray<T>} sarray ImmutableArray over which to iterate.
+ * @param {function(this: S, T, number): ?} f The function to call for every
+ *     element. This function takes 2 arguments (the element and the index).
+ *     The return value is ignored.
+ * @param {S=} opt_obj The object to be used as the value of 'this' within f.
+ * @template T,S
+ */
+e2e.ImmutableArray.forEach = function(sarray, f, opt_obj) {
+  // We don't use goog.array.forEach directly, as it potentially
+  // offers access to the underlying array.
+  var arr = sarray.elements_;
+  var len = arr.length;
+  for (var i = 0; i < len; i++) {
+    if (i in arr) {
+      f.call(opt_obj, arr[i], i);
+    }
+  }
 };
