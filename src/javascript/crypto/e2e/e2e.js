@@ -480,7 +480,7 @@ e2e.ImmutableArray.spliceCopy = function(arr, index, howMany, var_args) {
   // swap in a clone before passing it to the destructive splice operator.
   var elements = goog.array.clone(arr.elements_);
   arguments[0] = elements;
-  goog.array.splice.apply(goog.array, arguments);
+  goog.array.splice.apply(null, arguments);
   return new e2e.ImmutableArray(elements);
 };
 
