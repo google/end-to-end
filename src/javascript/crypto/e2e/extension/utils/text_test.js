@@ -53,6 +53,8 @@ function testGetPgpAction() {
       utils.getPgpAction('some text', false));
   assertEquals(e2e.ext.constants.Actions.DECRYPT_VERIFY,
       utils.getPgpAction('-----BEGIN PGP MESSAGE-----', true));
+  assertEquals(e2e.ext.constants.Actions.DECRYPT_VERIFY,
+      utils.getPgpAction('-----BEGIN PGP SIGNED MESSAGE-----', true));
   assertEquals(e2e.ext.constants.Actions.IMPORT_KEY,
       utils.getPgpAction('-----BEGIN PGP PUBLIC KEY BLOCK-----', true));
   assertEquals(e2e.ext.constants.Actions.IMPORT_KEY,
