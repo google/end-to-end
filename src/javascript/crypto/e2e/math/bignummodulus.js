@@ -48,11 +48,11 @@ e2e.BigNumModulus = function(modulus, opt_RR) {
   // Modulus specific initialization.
   this.inverseModulus_ = this.computeInverseModulus_();
   if (goog.isDef(opt_RR)) {
-    this.RR_ = new e2e.BigNum(opt_RR);
+    this.rr_ = new e2e.BigNum(opt_RR);
   } else {
-    this.RR_ = this.computeRR_();
+    this.rr_ = this.computeRR_();
   }
-  this.R_ = this.montMul1_(this.RR_);
+  this.R_ = this.montMul1_(this.rr_);
 
   /**
    * @private
@@ -220,7 +220,7 @@ e2e.BigNumModulus.prototype.residue = function(value) {
  * @private
  */
 e2e.BigNumModulus.prototype.modMul_ = function(a, b) {
-  var bR = this.montMul_(b, this.RR_);
+  var bR = this.montMul_(b, this.rr_);
   var r = this.montMul_(a, bR);
   return r;
 };
@@ -234,7 +234,7 @@ e2e.BigNumModulus.prototype.modMul_ = function(a, b) {
  */
 e2e.BigNumModulus.prototype.modExp3_ = function(base) {
   // accu = base * RR * 1/R = base * R mod this.
-  var accu = this.montMul_(base, this.RR_);
+  var accu = this.montMul_(base, this.rr_);
   // result = accu * accu * 1/R = base^2 * R mod this.
   var square = this.montMul_(accu, accu);
   // result = square * base * 1/R = base^3 mod this.
@@ -252,7 +252,7 @@ e2e.BigNumModulus.prototype.modExp3_ = function(base) {
  */
 e2e.BigNumModulus.prototype.modExp_ = function(input, exp) {
   // base = input * RR * 1/R = input * R mod M
-  var base = this.montMul_(input, this.RR_);
+  var base = this.montMul_(input, this.rr_);
   // Compute exponent window, 4 bits wide.
   var lookup = new Array(16);
   // lookup[0] = 1 * R mod M
