@@ -451,16 +451,24 @@ e2e.ImmutableArray.prototype.getState = function() {
 
 
 /**
- * Returns a new ImmutableArray after appending the argument to a provided
- * ImmutableArray. Note that the state in the returned ImmutableArray is
- * undefined.
- * @param {!e2e.ImmutableArray<T>} arr the source array.
+ * Returns a new ImmutableArray after appending an element to
+ * a provided ImmutableArray.  If the source array is null or
+ * undefined, it will return an array containing just the
+ * element. Note that the returned ImmutableArray will have
+ * its state set to undefined.
+ *
+ * @param {e2e.ImmutableArray<T>} arr the source array.
  * @param {!T} element the element to append to the collection.
  * @return {!e2e.ImmutableArray<T>} the new ImmutableArray
  * @template T
  */
 e2e.ImmutableArray.pushCopy = function(arr, element) {
-  return new e2e.ImmutableArray(goog.array.concat(arr.elements_, element));
+  if (goog.isDefAndNotNull(arr)) {
+    return new e2e.ImmutableArray(
+        goog.array.concat(arr.elements_, element));
+  } else {
+    return new e2e.ImmutableArray([element]);
+  }
 };
 
 

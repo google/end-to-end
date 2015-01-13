@@ -728,6 +728,141 @@ aDYh
 -----END PGP PUBLIC KEY BLOCK-----
 </textarea>
 <!--
+Three signatures on a uid, with one revocation signature. However, the
+latest signature is a certification, which should mark the key as
+being certified for the provided userid.
+:public key packet:
+  version 4, algo 1, created 1412023581, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+  keyid: 57CC7CB355BA0491
+:user ID packet: "should-not-expire"
+:signature packet: algo 1, keyid 57CC7CB355BA0491
+  version 4, created 1412023581, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest 6f a0
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 1 (pref-sym-algos: 7)
+  hashed subpkt 21 len 1 (pref-hash-algos: 8)
+  hashed subpkt 30 len 1 (features: 01)
+  critical hashed subpkt 2 len 4 (sig created 2014-09-29)
+  subpkt 16 len 8 (issuer key ID 57CC7CB355BA0491)
+  data: [1023 bits]
+:signature packet: algo 1, keyid 57CC7CB355BA0491
+  version 4, created 1419799581, md5len 0, sigclass 0x30
+  digest algo 2, begin of digest 7b 8b
+  critical hashed subpkt 2 len 4 (sig created 2014-12-28)
+  subpkt 16 len 8 (issuer key ID 57CC7CB355BA0491)
+  data: [1023 bits]
+:signature packet: algo 1, keyid 57CC7CB355BA0491
+  version 4, created 1420231581, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest 2d fc
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 1 (pref-sym-algos: 7)
+  hashed subpkt 21 len 1 (pref-hash-algos: 8)
+  hashed subpkt 30 len 1 (features: 01)
+  critical hashed subpkt 2 len 4 (sig created 2015-01-02)
+  subpkt 16 len 8 (issuer key ID 57CC7CB355BA0491)
+  data: [1023 bits]
+-->
+<textarea id="ValidUid">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1
+
+mI0EVCnFHQEEAKDhazuhtDroMEiRVfLu2F/mAe/zgvtK+YuVyHWp2bDj+sYamlc+
+2ZentqbE0D7YHxw5lhbX+U/Qv2k1zDxakKKs+Dr8gbsYFI4ha/kXuztQTta+50Pc
+5C8zmsx73mIJ/VO/NT+a3wkr/N0OeHcDd1ZPA5rDup57TlmkjlZzm/3rABEBAAG0
+EXNob3VsZC1ub3QtZXhwaXJliKgEEwECABICGwMCCwcCFQgCHgEFglQpxR0ACgkQ
+V8x8s1W6BJFvoAP/S29CS1hLzTFFN60RRZxMxcDevHOxIb5SsrfFAuyo4rEtHZi/
+cf3OgNGOIe5vrTwUrIu91RT7Y/2GaC5cuotrutBjjSLb/ZfkUB7ZRbh5v/xOqZpl
+aNVGtxVIPj6DJhObeSFrzDvrpIsyb973E+1rq5OEcMhPnhlILiv58sC5ozKInAQw
+AQIABgWCVKBsHQAKCRBXzHyzVboEkXuLA/9eV5SD9SGCm1b/V9jQ8BA5f5K0XDnM
+d99ZoYI8RbH94k092CDT3oAAWdEG4VTtr4FJDldMUCwDLfZZnGqbDHQSTmnzxIGV
+g0PF8LaTcemN8hLmUFvyEl/Vt9kg8msQuYY4HLqa9UZK8vS1zQVb0N3pPwgZ8q8a
+7tycbupcNFJFooioBBMBAgASAhsDAgsHAhUIAh4BBYJUpwOdAAoJEFfMfLNVugSR
+LfwD/1XSqH1GfPRsGd1viG36/QyZ5bOoiqqQlCyaICEyC3+Qd8/uP7iLrFVAY9Rz
+5DDBOZKzZlHt0Wv85sNdO13gH6cIsikmHalkuO7+F9GesM7MXzZxO0J0mKjLEe65
+Ra3p0vRrD2DhwUd9gHm0KwJy7vEQAoh7b3nz789PZNcVbddz
+=dGzQ
+-----END PGP PUBLIC KEY BLOCK-----
+
+</textarea>
+
+<!--
+Three signatures on a uid, with one recovation signature. However, the
+latest signature is a revocation, which should remove the userid from
+the key.
+:public key packet:
+  version 4, algo 1, created 1412024512, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+  keyid: 50F20BB38F54BB0B
+:user ID packet: "should-revoke"
+:signature packet: algo 1, keyid 50F20BB38F54BB0B
+  version 4, created 1412024512, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest ef 9f
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 1 (pref-sym-algos: 7)
+  hashed subpkt 21 len 1 (pref-hash-algos: 8)
+  hashed subpkt 30 len 1 (features: 01)
+  critical hashed subpkt 2 len 4 (sig created 2014-09-29)
+  subpkt 16 len 8 (issuer key ID 50F20BB38F54BB0B)
+  data: [1024 bits]
+:signature packet: algo 1, keyid 50F20BB38F54BB0B
+  version 4, created 1420232512, md5len 0, sigclass 0x30
+  digest algo 2, begin of digest b2 84
+  critical hashed subpkt 2 len 4 (sig created 2015-01-02)
+  subpkt 16 len 8 (issuer key ID 50F20BB38F54BB0B)
+  data: [1024 bits]
+:signature packet: algo 1, keyid 50F20BB38F54BB0B
+  version 4, created 1419800512, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest a0 0d
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 1 (pref-sym-algos: 7)
+  hashed subpkt 21 len 1 (pref-hash-algos: 8)
+  hashed subpkt 30 len 1 (features: 01)
+  critical hashed subpkt 2 len 4 (sig created 2014-12-28)
+  subpkt 16 len 8 (issuer key ID 50F20BB38F54BB0B)
+  data: [1024 bits]
+:user ID packet: "good"
+:signature packet: algo 1, keyid 50F20BB38F54BB0B
+  version 4, created 1420664512, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest cd 33
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 1 (pref-sym-algos: 7)
+  hashed subpkt 21 len 1 (pref-hash-algos: 8)
+  hashed subpkt 30 len 1 (features: 01)
+  critical hashed subpkt 2 len 4 (sig created 2015-01-07)
+  subpkt 16 len 8 (issuer key ID 50F20BB38F54BB0B)
+  data: [1023 bits]
+-->
+<textarea id="RevokedUid">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1
+Comment: Use "gpg --dearmor" for unpacking
+
+mI0EVCnIwAEEAMOAK0ih0zqegWYOKd5MnQaqiR7aFuvUOPmD8usq1eaL7o2LfzkI
+sUDHVPuQWqgExvbV0BhB3pqpWc1POPIj9RqaBuVbDRh3/h9nXb4D+ZieAmLG0vrf
+nGhTO4v78Wrr4b37ggJVoPQp2vRQH2alUjMvOmoM33Yr+22hIkzHIosbABEBAAG0
+DXNob3VsZC1yZXZva2WIqAQTAQIAEgIbAwILBwIVCAIeAQWCVCnIwAAKCRBQ8guz
+j1S7C++fBACYMFGYCyFkCL+oNP8MZsC4NqdHjb4jHVSKD1T7vpNs+J5nsJABcNz1
+4U5LiVteQWK+ommchV9LdKNl40axhnXsfAixz7UTA2ArypHaPAP8xv/hAP0wXcn5
+5jHxSk4M4rAUH2y+IU2+r8YZNvLCZNKO9kppfSuYDyw5pbs8bMv5BIicBDABAgAG
+BYJUpwdAAAoJEFDyC7OPVLsLsoQEAIQlekZqSr/AGg7D9gIQx/l6xXGY7732slQa
+cLPZr8Szht2hc31dOICB8erMo2HdsitXOYB5rNloY33FB48NQGOEU/e8ephpgzni
+WSztbBX5SVrNgi5mrZlAX98KYhOMb1XvB3lacZZY7sqhmjjdM5m6hyPjYGoxDUyE
+PGvnNOpXiKgEEwECABICGwMCCwcCFQgCHgEFglSgb8AACgkQUPILs49UuwugDQQA
+lEpsMAtyHW/p2sxiFplHMtOsAsJ1rsRNTKUzGLNCQWNsRAgZwY7J+g2DcIiPxf17
+8bpPlESkYIXgzeyABfJqzSsgQqXvyXCoG0XbZ9Y2az/F2BitLAdph3IDcGv2cPch
+rm0+J/vPh6eS9Uh8EY6k+iJI0MkX7KbwvwWTGPiTpbO0BGdvb2SIqAQTAQIAEgIb
+AwILBwIVCAIeAQWCVK2ewAAKCRBQ8guzj1S7C80zA/9XK4F390WiFWj3Atb8lRQB
+fOowa+GGd61is0ohXZNk7E4p5US1ozqOIcrggVKs4k4NckTQnpylIPn5csWEeIJK
+HE7RIOSyiEU+ksoJDoGuZqgo0V6C5lGeDqUg1u/bcQcwkE6f/QahD/C9uBGou5SY
+VKxljMH6lfwqdGT6xNa5qQ==
+=KIyw
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+
+<!--
 Subkey with an expired binding signature
 :public key packet:
   version 4, algo 1, created 1400631183, expires 0
@@ -922,6 +1057,26 @@ function getKey(id) {
       document.getElementById(id).value);
 }
 
+function getUidCertifications(uid) {
+  var ret = [];
+  uid.forEachSignature_(function(sig) {
+    if (sig.isCertificationSignature()) {
+      ret.push(sig);
+    }
+  });
+  return ret;
+}
+
+function getUidRevocations(uid) {
+  var ret = [];
+  uid.forEachSignature_(function(sig) {
+    if (sig.signatureType ==
+        e2e.openpgp.packet.Signature.SignatureType.CERTIFICATION_REVOCATION) {
+      ret.push(sig);
+    }
+  });
+  return ret;
+}
 
 function testSigningSubkey() {
   var key = getKey('SigningSubkey');
@@ -1056,43 +1211,75 @@ function testGnupgRevokedUid() {
   var key = getKey('RevokedUserId');
   var foreignKeyId = [106, 105, 167, 16, 15, 140, 92, 71];
   assertEquals(2, key.userIds.length);
-  assertEquals(2, key.userIds[0].certifications_.length);
-  assertEquals(2, key.userIds[1].certifications_.length);
-  assertEquals(1, key.userIds[0].revocations_.length);
-  assertEquals(0, key.userIds[1].revocations_.length);
-  // Self-signatures
-  assertArrayEquals(key.keyPacket.keyId,
-      key.userIds[0].certifications_[0].getSignerKeyId());
-  assertArrayEquals(key.keyPacket.keyId,
-      key.userIds[1].certifications_[0].getSignerKeyId());
-  // Revocation self-signature
-  assertArrayEquals(key.keyPacket.keyId,
-      key.userIds[0].revocations_[0].getSignerKeyId());
-  // Foreign signatures
-  assertArrayEquals(foreignKeyId,
-      key.userIds[0].certifications_[1].getSignerKeyId());
-  assertArrayEquals(foreignKeyId,
-      key.userIds[1].certifications_[1].getSignerKeyId());
+
+  // Helper function - checks that all the signatures for a given
+  // keyid in the uid signature map are in fact issued by the
+  // keyid. Also returns a count of the number of certification
+  // and revocation signatures for that keyid.
+  var checkUidMap = function(uid, keyid) {
+    var keyidString = e2e.openpgp.packet.UserId.keyIdToString_(keyid);
+    var arr = uid.keyIdSignatureMap_[keyidString];
+    var result = { certificationCount: 0, revocationCount: 0};
+    for (var i = arr.size() - 1; i >= 0; i--) {
+      var signature = arr.get(i);
+      assertArrayEquals(keyid, signature.getSignerKeyId());
+      if (signature.isCertificationSignature()) {
+        result.certificationCount++;
+      } else {
+        assertEquals(
+          e2e.openpgp.packet.Signature.SignatureType.CERTIFICATION_REVOCATION,
+          signature.signatureType);
+        result.revocationCount++;
+      }
+    }
+    return result;
+  };
+
+  // revoked-userid should have one certification, one revocation
+  // signature from the primary key, and one certification
+  // from the foreign key.
+  var result = checkUidMap(key.userIds[0], key.keyPacket.keyId);
+  assertEquals(1, result.certificationCount);
+  assertEquals(1, result.revocationCount);
+  result = checkUidMap(key.userIds[0], foreignKeyId);
+  assertEquals(1, result.certificationCount);
+  assertEquals(0, result.revocationCount);
+
+
+  // non-revoked-uid should have one signature from the primary key,
+  // and one from the foreign key.
+  result = checkUidMap(key.userIds[1], key.keyPacket.keyId);
+  assertEquals(1, result.certificationCount);
+  assertEquals(0, result.revocationCount);
+  result = checkUidMap(key.userIds[1], foreignKeyId);
+  assertEquals(1, result.certificationCount);
+  assertEquals(0, result.revocationCount);
+
   // Apply signatures
   key.processSignatures();
   assertEquals(1, key.userIds.length);
-  assertEquals(2, key.userIds[0].certifications_.length);
-  assertArrayEquals(key.keyPacket.keyId,
-      key.userIds[0].certifications_[0].getSignerKeyId());
-  assertArrayEquals(foreignKeyId,
-      key.userIds[0].certifications_[1].getSignerKeyId());
-  assertEquals(0, key.userIds[0].revocations_.length);
+  assertEquals('non-revoked-uid <non-revoked-uid@example.com>',
+               key.userIds[0].userId);
+  result = checkUidMap(key.userIds[0], key.keyPacket.keyId);
+  assertEquals(1, result.certificationCount);
+  assertEquals(0, result.revocationCount);
+  result = checkUidMap(key.userIds[0], foreignKeyId);
+  assertEquals(1, result.certificationCount);
+  assertEquals(0, result.revocationCount);
 
   // Check that signature tampering is detected
   key = getKey('RevokedUserId');
-  key.userIds[0].revocations_[0].signature.s[0] ^= 0x01;
+
+  var revocations = getUidRevocations(key.userIds[0]);
+  revocations[0].signature.s[0] ^= 0x01;
   assertThrows(function() {
     key.processSignatures();
   });
 
   // Check that signatures by unknown keys are ignored.
   key = getKey('RevokedUserId');
-  key.userIds[0].revocations_[0].untrustedAttributes.ISSUER[0] ^= 0x01;
+  revocations = getUidRevocations(key.userIds[0]);
+  revocations[0].untrustedAttributes.ISSUER[0] ^= 0x01;
   key.processSignatures();
   assertEquals(2, key.userIds.length);
 };
@@ -1104,7 +1291,7 @@ function testGnupgUserAttr() {
   key.processSignatures();
   assertEquals(1, key.userIds.length);
   assertEquals(1, key.userAttributes.length);
-  key.userAttributes[0].certifications_ = [];
+  key.userAttributes[0].keyIdSignatureMap_ = {};
   // Lack of certification removes User Attribute, but does not throw error.
   key.processSignatures();
   assertEquals(0, key.userAttributes.length);
@@ -1126,12 +1313,30 @@ function testKeyUsageFlags() {
 function testExpiredUid() {
   var key = getKey('ExpiredUid');
   assertEquals(2, key.userIds.length);
-  assertEquals(86400, key.userIds[0].getCertifications()[0].attributes.
+  assertEquals(86400, getUidCertifications(key.userIds[0])[0].attributes.
       SIGNATURE_EXPIRATION_TIME);
   key.processSignatures();
   // Expired User ID gets rejected
   assertEquals(1, key.userIds.length);
   assertEquals('good-key', key.userIds[0].userId);
+}
+
+function testValidUid() {
+  var key = getKey('ValidUid');
+  assertEquals(1, key.userIds.length);
+  key.processSignatures();
+  assertEquals(1, key.userIds.length);
+  assertEquals('should-not-expire', key.userIds[0].userId);
+  // Only the latest certification signature should remain.
+  assertEquals(1, key.userIds[0].keyIdSignatureMap_['57cc7cb355ba0491'].size());
+}
+
+function testRevokedUid() {
+  var key = getKey('RevokedUid');
+  assertEquals(2, key.userIds.length);
+  key.processSignatures();
+  assertEquals(1, key.userIds.length);
+  assertEquals('good', key.userIds[0].userId);
 }
 
 function testExpiredSubkey() {

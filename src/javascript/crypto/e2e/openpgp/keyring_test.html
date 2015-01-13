@@ -234,6 +234,15 @@ function tearDown() {
   mockControl.$tearDown();
 }
 
+function getUidCertifications(uid) {
+  var ret = [];
+  uid.forEachSignature_(function(sig) {
+    if (sig.isCertificationSignature()) {
+      ret.push(sig);
+    }
+  });
+  return ret;
+}
 
 function testGeneration() {
   keyRing.generateKey(
@@ -254,8 +263,9 @@ function testGeneration() {
   assertEquals(1, pubKeys[1].userIds.length);
   var userIdPacket = pubKeys[1].userIds[0];
   assertEquals('<ecc@example.com>', userIdPacket.userId);
-  assertEquals(1, userIdPacket.getCertifications().length);
-  var certification = userIdPacket.getCertifications()[0];
+  var certs = getUidCertifications(userIdPacket);
+  assertEquals(1, certs.length);
+  var certification = certs[0];
   assertTrue(
       certification.attributes.PREFERRED_COMPRESSION_ALGORITHMS.length > 0);
   assertContains(
@@ -285,7 +295,7 @@ function testGeneration() {
 
   var ecdsaPrivKey = privKeys[0].keyPacket;
   var ecdhPrivKey = privKeys[0].subKeys[0];
-  certification = privKeys[0].userIds[0].getCertifications()[0];
+  certification = getUidCertifications(privKeys[0].userIds[0])[0];
   assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPrivKey.cipher.algorithm);
   assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPrivKey.cipher.algorithm);
   assertEquals(0x01, certification.attributes.FEATURES); // MDC

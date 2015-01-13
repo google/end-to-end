@@ -36,6 +36,16 @@
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 asyncTestCase.stepTimeout = 10000;
 
+function getUidCertifications(uid) {
+  var ret = [];
+  uid.forEachSignature_(function(sig) {
+    if (sig.isCertificationSignature()) {
+      ret.push(sig);
+    }
+  });
+  return ret;
+}
+
 function testSignDSA() {
   var publicKeyAscii =  // 1024bit DSA key
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
@@ -240,16 +250,17 @@ function testKeySignatureParsing() {
       key.keyPacket.keyId);
 
   // User ID certification signature
-  assertEquals(1, key.userIds[0].certifications_.length);
+  var certifications = getUidCertifications(key.userIds[0]);
+  assertEquals(1, certifications.length);
   assertEquals(e2e.openpgp.packet.Signature.SignatureType.POSITIVE_USER_ID,
-      key.userIds[0].certifications_[0].signatureType);
-  assertFalse(Boolean(key.userIds[0].certifications_[0].attributes.
+      certifications[0].signatureType);
+  assertFalse(Boolean(certifications[0].attributes.
       KEY_FLAG_ENCRYPT_COMMUNICATION));
-  assertFalse(Boolean(key.userIds[0].certifications_[0].attributes.
+  assertFalse(Boolean(certifications[0].attributes.
       KEY_FLAG_ENCRYPT_STORAGE));
-  assertTrue(Boolean(key.userIds[0].certifications_[0].attributes.
+  assertTrue(Boolean(certifications[0].attributes.
       KEY_FLAG_SIGN));
-  assertArrayEquals(key.userIds[0].certifications_[0].getSignerKeyId(),
+  assertArrayEquals(certifications[0].getSignerKeyId(),
       key.keyPacket.keyId);
 }
 

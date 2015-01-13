@@ -302,6 +302,10 @@
         assertEquals(3, safe.get(2));
         assertEquals(4, safe2.size());
         assertEquals(4, safe2.get(3));
+        // Test behavior when the provided array is null.
+        safe2 = e2e.ImmutableArray.pushCopy(null, 4);
+        assertEquals(1, safe2.size());
+        assertEquals(4, safe2.get(0));
 
         // Check concatenation works as expected.
         safe2 = e2e.ImmutableArray.concat(safe, new e2e.ImmutableArray([4, 5]));
