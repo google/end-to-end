@@ -42,7 +42,6 @@ goog.require('e2e.openpgp.Mpi');
 goog.require('e2e.openpgp.block.TransferablePublicKey');
 goog.require('e2e.openpgp.block.TransferableSecretKey');
 goog.require('e2e.openpgp.block.factory');
-goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.SerializationError');
 goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.openpgp.keygenerator');
@@ -382,7 +381,7 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(email,
 
 /**
  * @param {string} email The email to associate the key with.
- * @param {{privKey: (Array|null), pubKey: (Array|null)}} keyData
+ * @param {{privKey: Array, pubKey: Array}} keyData
  * @return {!Array.<!e2e.openpgp.block.TransferableKey>}
  * @private
  */
@@ -966,22 +965,8 @@ e2e.openpgp.KeyRing.prototype.decrypt_ = function(ciphertext) {
 e2e.openpgp.KeyRing.prototype.objectToPrivKeyRing_ = function(s) {
   var obj = goog.object.map(s, function(keys, uid) {
     return goog.array.map(keys, function(key) {
-      var block;
-      try {
-        block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
-            goog.crypt.base64.decodeStringToByteArray(key));
-      } catch (e) {
-        if (e instanceof e2e.openpgp.error.ParseError) {
-          // Perhaps the user used has and old-format packet keyring.
-          var keyPacket = e2e.openpgp.packet.SecretKey.parse(
-              goog.crypt.base64.decodeStringToByteArray(key));
-          var uidPacket = new e2e.openpgp.packet.UserId(uid);
-          var serialized = [].concat(
-              keyPacket.serialize()).concat(uidPacket.serialize());
-          block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
-              serialized);
-        }
-      }
+      var block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
+          goog.crypt.base64.decodeStringToByteArray(key));
       if (!(block instanceof e2e.openpgp.block.TransferableSecretKey)) {
         throw new Error('Unexpected block in keyring.');
       }
@@ -1002,23 +987,8 @@ e2e.openpgp.KeyRing.prototype.objectToPrivKeyRing_ = function(s) {
 e2e.openpgp.KeyRing.prototype.objectToPubKeyRing_ = function(s) {
   var obj = goog.object.map(s, function(keys, uid) {
     return goog.array.map(keys, function(key) {
-      var block;
-      try {
-        block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
-            goog.crypt.base64.decodeStringToByteArray(key));
-      } catch (e) {
-        // TODO(evn): Delete this code before launch.
-        if (e instanceof e2e.openpgp.error.ParseError) {
-          // Perhaps the user used has and old-format packet keyring.
-          var keyPacket = e2e.openpgp.packet.PublicKey.parse(
-              goog.crypt.base64.decodeStringToByteArray(key));
-          var uidPacket = new e2e.openpgp.packet.UserId(uid);
-          var serialized = [].concat(
-              keyPacket.serialize()).concat(uidPacket.serialize());
-          block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
-              serialized);
-        }
-      }
+      var block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
+          goog.crypt.base64.decodeStringToByteArray(key));
       if (!(block instanceof e2e.openpgp.block.TransferablePublicKey)) {
         throw new Error('Unexpected block in keyring.');
       }
@@ -1063,7 +1033,7 @@ e2e.openpgp.KeyRing.prototype.restoreKeyring = function(data, email) {
 
 /**
  * Extracts serialized key data contained in a crypto object.
- * @param {{privKey: (Array|null), pubKey: (Array|null)}} keyData The map
+ * @param {{privKey: Array, pubKey: Array}} keyData The map
  *     to store the extracted data.
  * @param {!e2e.cipher.Cipher|!e2e.signer.Signer} cryptor
  *     The crypto object to extract key material.
