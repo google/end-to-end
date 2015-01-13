@@ -278,7 +278,7 @@ e2e.openpgp.asciiArmor.encodeClearSign = function(message, opt_headers) {
 
 
 /**
- * Encode data as ASCII Armor.
+ * Encode data as ASCII Armor, with a trailing new line characters (\r\n).
  * Specified in RFC 4880 Section 6.2.
  * @param {string} type Descriptive type, such as "MESSAGE".
  * @param {!e2e.ByteArray} payload The data to encode.
@@ -310,7 +310,8 @@ e2e.openpgp.asciiArmor.encode = function(type, payload, opt_headers) {
       '',
       e2e.openpgp.asciiArmor.encodeRadix64_(payload),
       '=' + checksum,
-      '-----END PGP ' + type + '-----'
+      '-----END PGP ' + type + '-----',
+      ''
   ).join('\r\n');
 };
 

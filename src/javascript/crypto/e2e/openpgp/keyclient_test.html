@@ -21,6 +21,7 @@
 <script>
   goog.require('goog.array');
   goog.require('goog.net.XhrIo');
+  goog.require('goog.string');
   goog.require('goog.testing.AsyncTestCase');
   goog.require('goog.testing.jsunit');
   goog.require('goog.testing.net.XhrIo');
@@ -86,16 +87,17 @@ var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 //     keyid: 9D5B4273A2D3A7E8
 // :user ID packet: "testkey <testkey@key.server>"
 
-var keyText =
-  '-----BEGIN%20PGP%20PUBLIC%20KEY%20BLOCK-----%0D%0A'+
-  'Charset%3A%20UTF-8%0D%0A'+
-  '%0D%0A'+
-  'xv8AAACNBFRia38BBAC0DdZTANfhMM1JcXEqYC3QBV2ibJ1F%2BOWSrPQVnC6Q%2FwqM%0D%0A'+
-  'Hq9tHgCu8c6UuDFuo6PlGDZu7ERHY0vcOqOPtw4%2BI4yo0HZ64LU0VGBbYjTlwwgJ%0D%0A'+
-  'pDjqCj6l0UW248BBkaJ8%2F0YUdcQRCqiciJJd0ssIBi%2F1GspsemY%2ByrVRzIg5BwAR%0D%0A'+
-  'AQABzf8AAAAcdGVzdGtleSA8dGVzdGtleUBrZXkuc2VydmVyPg%3D%3D%0D%0A'+
-  '%3D4WG6%0D%0A'+
-  '-----END%20PGP%20PUBLIC%20KEY%20BLOCK-----';
+var keyText = goog.string.urlEncode(goog.array.flatten(
+    '-----BEGIN PGP PUBLIC KEY BLOCK-----',
+    'Charset: UTF-8',
+    '',
+    'xv8AAACNBFRia38BBAC0DdZTANfhMM1JcXEqYC3QBV2ibJ1F+OWSrPQVnC6Q/wqM',
+    'Hq9tHgCu8c6UuDFuo6PlGDZu7ERHY0vcOqOPtw4+I4yo0HZ64LU0VGBbYjTlwwgJ',
+    'pDjqCj6l0UW248BBkaJ8/0YUdcQRCqiciJJd0ssIBi/1GspsemY+yrVRzIg5BwAR',
+    'AQABzf8AAAAcdGVzdGtleSA8dGVzdGtleUBrZXkuc2VydmVyPg==',
+    '=4WG6',
+    '-----END PGP PUBLIC KEY BLOCK-----',
+    '').join('\r\n'));
 
 /** @type {goog.testing.PropertyReplacer} */
 var stubs = new goog.testing.PropertyReplacer();
