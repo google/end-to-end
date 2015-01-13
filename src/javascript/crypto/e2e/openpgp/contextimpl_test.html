@@ -874,6 +874,16 @@ function testImportSecretKeyCallbackCalled() {
 }
 
 
+function testImportsKeyUsesAllArmors() {
+  asyncTestCase.waitForAsync('Waiting for import private key.');
+  var bothKeys = publicKeyAscii + publicKeyAsciiOther;
+  context.importKey(passwordCallback, bothKeys).addCallback(function(uids) {
+    assertEquals(2, uids.length);
+    asyncTestCase.continueTesting();
+  }).addErrback(fail);
+}
+
+
 function testSetPassphraseImportExportImportSecretKey() {
   // Set passphrase, import a key, export it, and try to import it again.
   localStorage.clear();

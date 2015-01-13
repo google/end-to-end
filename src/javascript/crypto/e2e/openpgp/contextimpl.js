@@ -37,6 +37,7 @@ goog.require('e2e.openpgp.block.EncryptedMessage');
 goog.require('e2e.openpgp.block.LiteralMessage');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
+goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.PassphraseError');
 /** @suppress {extraRequire} force loading of all signers */
 goog.require('e2e.signer.all');
@@ -137,10 +138,13 @@ e2e.openpgp.ContextImpl.prototype.isKeyRingEncrypted = function() {
 e2e.openpgp.ContextImpl.prototype.getKeyDescription = function(key) {
   try {
     if (typeof key == 'string') {
-      key = e2e.openpgp.asciiArmor.parse(key).data;
+      key = this.extractByteArrayFromArmorText_(key);
     }
     var blocks = e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(
         key, true /* skip keys with errors */);
+    if (blocks.length == 0) {
+      throw new e2e.openpgp.error.ParseError('No valid key blocks found.');
+    }
     return e2e.async.Result.toResult(
         e2e.openpgp.block.factory.extractKeys(
             blocks, true /* skip keys with errors */));
@@ -150,14 +154,33 @@ e2e.openpgp.ContextImpl.prototype.getKeyDescription = function(key) {
 };
 
 
+/**
+ * @private
+ * @param {string} text String with one or more armor messages.
+ * @return {!e2e.ByteArray} Serialized keys
+ */
+e2e.openpgp.ContextImpl.prototype.extractByteArrayFromArmorText_ = function(
+    text) {
+  var messages = e2e.openpgp.asciiArmor.parseAll(text);
+  var bytes = [];
+  goog.array.forEach(messages, function(armor) {
+    goog.array.extend(bytes, armor.data);
+  });
+  return bytes;
+};
+
+
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.importKey = function(
     passphraseCallback, key) {
   if (typeof key == 'string') {
-    key = e2e.openpgp.asciiArmor.parse(key).data;
+    key = this.extractByteArrayFromArmorText_(key);
   }
   var blocks = e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(
       key, true /* skip keys with errors */);
+  if (blocks.length == 0) {
+    throw new e2e.openpgp.error.ParseError('No valid key blocks found.');
+  }
   var importedBlocksResult = goog.array.map(blocks, function(block) {
     return this.tryToImportKey_(passphraseCallback, block);
   }, this);

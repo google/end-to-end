@@ -97,7 +97,9 @@ e2e.openpgp.Context.prototype.isKeyRingEncrypted;
 
 
 /**
- * Parses key blocks and returns a structured description of the keys.
+ * Parses key blocks in binary or ASCII armor encoding, and returns a structured
+ * description of the keys.
+ * All ASCII armors from the string will be processed.
  * @param {!e2e.ByteArray|string} key Key(s) to get the description of.
  * @return {!e2e.openpgp.KeyResult} Description of the keys.
  * @expose
@@ -106,10 +108,11 @@ e2e.openpgp.Context.prototype.getKeyDescription;
 
 
 /**
- * Imports an armor encoded, or pure PGP key into the Context.
+ * Imports an armor encoded, or pure PGP key(s) into the Context.
+ * All ASCII armors from the string will be processed.
  * @param {function(string, function(string))} passphraseCallback This callback
  *     is used for requesting an action-specific passphrase from the user.
- * @param {!e2e.ByteArray|string} key The key to import.
+ * @param {!e2e.ByteArray|string} key The key(s) to import.
  * @return {!e2e.openpgp.ImportKeyResult} List of user IDs that were
  *     successfully imported.
  * @expose

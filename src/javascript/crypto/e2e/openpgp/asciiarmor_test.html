@@ -30,13 +30,59 @@
   function testParse() {
     var a = '-----BEGIN PGP MESSAGE-----\n' +
         'Version: OpenPrivacy 0.99\n' +
+        'Charset: some-charset\n' +
         '\n' +
         'yDgBO22WxBHv7O8X7O/jygAEzol56iUKiXmV+XmpCtmpqQUKiQrFqclFqUDBovzS\n' +
         'vBSFjNSiVHsuAA==\n' +
         '=njUN\n' +
         '-----END PGP MESSAGE-----';
-    var data = e2e.openpgp.asciiArmor.parse(a).data;
-    assertEquals('Data length correct', 58, data.length);
+    var message = e2e.openpgp.asciiArmor.parse(a);
+    assertEquals('Data length correct', 58, message.data.length);
+    assertEquals('Charset correct', 'some-charset', message.charset);
+    assertEquals('Message type correct', 'MESSAGE', message.type);
+    assertEquals('Start offset correct', 0, message.startOffset);
+    assertEquals('End offset correct', a.length, message.endOffset);
+    var prefix = "PREFIX\n";
+    var suffix = "\nSUFFIX";
+    var mangled = prefix + a + suffix;
+    message = e2e.openpgp.asciiArmor.parse(mangled);
+    assertEquals('Data length correct', 58, message.data.length);
+    assertEquals('Start offset correct', prefix.length, message.startOffset);
+    assertEquals('End offset correct', prefix.length + a.length, message.endOffset);
+    assertEquals(a, mangled.substring(message.startOffset, message.endOffset));
+    assertThrows(function() {
+      e2e.openpgp.asciiArmor.parse("NO-NEWLINE-PREFIX" + a);
+    });
+    assertThrows(function() {
+      e2e.openpgp.asciiArmor.parse(a + "NO-NEWLINE-SUFFIX");
+    });
+  }
+
+
+  function testParseAll() {
+    var a = '-----BEGIN PGP MESSAGE-----\n' +
+        'Version: OpenPrivacy 0.99\n' +
+        '\n' +
+        'yDgBO22WxBHv7O8X7O/jygAEzol56iUKiXmV+XmpCtmpqQUKiQrFqclFqUDBovzS\n' +
+        'vBSFjNSiVHsuAA==\n' +
+        '=njUN\n' +
+        '-----END PGP MESSAGE-----';
+    var messages = e2e.openpgp.asciiArmor.parseAll("HERE BE NO ARMORS");
+    assertEquals(0, messages.length);
+    var three = a + '\n' + a + '\n' + a + '\n';
+    messages = e2e.openpgp.asciiArmor.parseAll(three);
+    assertEquals(3, messages.length);
+    assertEquals(a, three.substring(messages[0].startOffset,
+        messages[0].endOffset));
+    assertEquals(a, three.substring(messages[1].startOffset,
+        messages[1].endOffset));
+    assertEquals(a, three.substring(messages[2].startOffset,
+        messages[2].endOffset));
+    assertEquals(58, messages[0].data.length);
+    assertEquals(58, messages[1].data.length);
+    assertEquals(58, messages[2].data.length);
+    assertEquals(0, messages[0].startOffset);
+    assertEquals(three.length - 1, messages[2].endOffset);
   }
 
 

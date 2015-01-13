@@ -90,47 +90,85 @@ e2e.openpgp.asciiArmor.NEW_LINE_ = '[\\t\\u00a0 ]?\\r?\\n';
 
 
 /**
- * Parses ASCII Armor.
+ * Parses the first ASCII Armor in a string.
  * Specified in RFC 4880 Section 6.2.
  * Throws a {@code e2e.openpgp.error.ParseError} if the Armor is invalid.
  * @param {string} text The text to parse as ASCII Armor.
  * @return {!e2e.openpgp.ArmoredMessage} The parsed message.
  */
 e2e.openpgp.asciiArmor.parse = function(text) {
-  // The 0x80 bit is always set for the Packet Tag for OpenPGP packets.
-  if (text.charCodeAt(0) >= 0x80) {  // Not ASCII Armored.
-    return {'data': goog.crypt.stringToByteArray(text)};
+  var armors = e2e.openpgp.asciiArmor.parseAll(text, 1);
+  if (armors.length !== 1) {
+    throw new e2e.openpgp.error.ParseError('ASCII Armor not found.');
   }
-  var start = text.indexOf('-----BEGIN PGP ');
+  return armors[0];
+};
+
+
+/**
+ * Parses all ASCII Armors present in a string.
+ * Specified in RFC 4880 Section 6.2.
+ * Throws a {@code e2e.openpgp.error.ParseError} if the Armor is invalid.
+ * @param {string} text The text to parse as ASCII Armor.
+ * @param {number=} opt_limit Stop parsing once opt_limit armors have been
+ *     parsed.
+ * @return {!Array.<!e2e.openpgp.ArmoredMessage>} The parsed message.
+ */
+e2e.openpgp.asciiArmor.parseAll = function(text, opt_limit) {
+  // The 0x80 bit is always set for the Packet Tag for OpenPGP packets.
+  if (text.charCodeAt(0) >= 0x80) {
+    // Not ASCII Armored. Treat as a binary OpenPGP block
+    return [{
+      'data': goog.crypt.stringToByteArray(text),
+      'type': 'BINARY',
+      'startOffset': 0,
+      'endOffset': text.length
+    }];
+  }
+  if (text.indexOf('-----BEGIN PGP ') == -1) {
+    return [];
+  }
+
   var armor, newLine = e2e.openpgp.asciiArmor.NEW_LINE_;
   // TODO(adhintz) Switch away from regex to line-by-line parsing.
-  if (start > -1) {
-    armor = text.substr(start).match(new RegExp(
-        '^-----BEGIN PGP ([^-]+)-----' + newLine +
-        '((?:[A-Za-z]+:[ ][^\\n]+' + newLine + ')*)' + newLine + // headers
-        '((?:[a-zA-Z0-9/+]+=*' + newLine + ')*)' + // body
-        '(?:=([a-zA-Z0-9/+]+))?' + newLine + // checksum
-        '(?:' + newLine + ')*-----END PGP \\1-----(?:' + newLine + '|$)'));
-    if (!armor) {
-      throw new e2e.openpgp.error.ParseError('invalid ASCII armor format');
+  var armorRe = new RegExp(
+      '(^|' + newLine + ')-----BEGIN PGP ([^-]+)-----' + newLine +
+      '((?:[A-Za-z]+:[ ][^\\n]+' + newLine + ')*)' + newLine + // headers
+      '((?:[a-zA-Z0-9/+]+=*' + newLine + ')*)' + // body
+      '(?:=([a-zA-Z0-9/+]+))?' + newLine + // checksum
+      '(?:' + newLine + ')*-----END PGP \\2-----($|' + newLine + ')', 'gm');
+  var validArmors = [], payload, checksum, calculatedChecksum, prefixNewline,
+      suffixNewline, charset, charsetMatch;
+  while ((!goog.isDef(opt_limit) || opt_limit > 0) &&
+         goog.isDefAndNotNull(armor = armorRe.exec(text))) {
+    prefixNewline = armor[1];
+    suffixNewline = armor[6];
+    payload = e2e.openpgp.asciiArmor.decodeRadix64_(armor[4]);
+    checksum = e2e.openpgp.asciiArmor.decodeRadix64_(armor[5]);
+    calculatedChecksum = [e2e.openpgp.asciiArmor.crc24_(payload)];
+    calculatedChecksum = e2e.dwordArrayToByteArray(calculatedChecksum);
+    calculatedChecksum = calculatedChecksum.slice(-3);
+    if (calculatedChecksum.join('') != checksum.join('')) {
+      throw new e2e.openpgp.error.ParseError(
+          'ASCII Armor checksum incorrect.');
     }
-  } else {
-    throw new e2e.openpgp.error.ParseError('ASCII Armor not found');
+    charsetMatch = armor[3].match(/^Charset: ([^\r\n]+)\r?\n/im);
+    if (charsetMatch) {
+      charset = charsetMatch[1].toLowerCase().match(/[\w-]+/)[0] || 'utf-8';
+    } else {
+      charset = undefined;
+    }
+    validArmors.push({
+      'data': payload,
+      'charset': charset,
+      'type': armor[2],
+      'startOffset': armor.index + prefixNewline.length,
+      'endOffset': armorRe.lastIndex - suffixNewline.length});
+    if (goog.isDef(opt_limit)) {
+      opt_limit--;
+    }
   }
-  var payload = e2e.openpgp.asciiArmor.decodeRadix64_(armor[3]);
-  var checksum = e2e.openpgp.asciiArmor.decodeRadix64_(armor[4]);
-  var calculatedChecksum = [e2e.openpgp.asciiArmor.crc24_(payload)];
-  calculatedChecksum = e2e.dwordArrayToByteArray(calculatedChecksum);
-  calculatedChecksum = calculatedChecksum.slice(-3);
-  if (calculatedChecksum.join('') != checksum.join('')) {
-    throw new e2e.openpgp.error.ParseError(
-        'ASCII Armor checksum incorrect.');
-  }
-  var charset, charsetMatch = armor[2].match(/^Charset: ([^\r\n])\r?\n/im);
-  if (charsetMatch) {
-    charset = charsetMatch[0].toLowerCase().match(/[\w-]+/)[0] || 'utf-8';
-  }
-  return {'data': payload, 'charset': charset};
+  return validArmors;
 };
 
 

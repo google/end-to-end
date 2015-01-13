@@ -151,7 +151,8 @@ e2e.openpgp.KeyResult;
 
 /**
  * Armored OpenPGP message.
- * @typedef {?{data: !e2e.ByteArray, charset: (string|undefined)}}
+ * @typedef {?{data: !e2e.ByteArray, charset: (string|undefined),
+ *     type: string, startOffset: number, endOffset: number}}
  */
 e2e.openpgp.ArmoredMessage;
 
