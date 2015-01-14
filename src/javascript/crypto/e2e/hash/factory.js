@@ -36,7 +36,7 @@ e2e.hash.factory.hashes_ = {};
 
 /**
  * Registers a class for a specific algorithm.
- * @param {function(new:e2e.hash.Hash, ...[*])} hash The constructor of
+ * @param {function(new:e2e.hash.Hash, ...*)} hash The constructor of
  *     the cipher.
  * @param {e2e.hash.Algorithm=} opt_algorithm The algorithm to register
  *     it to, if different from the prototype name.
