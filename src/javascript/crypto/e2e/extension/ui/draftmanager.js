@@ -79,12 +79,13 @@ draftmanager.clearDraft = function(origin) {
  * @private
  */
 draftmanager.getAllDrafts_ = function() {
-  var serialized = window.localStorage.getItem(
-      constants.StorageKey.LAST_SAVED_DRAFT) || '{}';
-
-  // NOTE(radi): Wrapping in try/catch for backwards compatibility.
-  var allDrafts = {};
   try {
+    var serialized = window.localStorage.getItem(
+        constants.StorageKey.LAST_SAVED_DRAFT) || '{}';
+
+    // NOTE(radi): Wrapping in try/catch for backwards compatibility.
+    var allDrafts = {};
+
     allDrafts = window.JSON.parse(serialized);
   } catch (e) {}
 
@@ -100,8 +101,10 @@ draftmanager.getAllDrafts_ = function() {
  * @private
  */
 draftmanager.persistAllDrafts_ = function(drafts) {
-  window.localStorage.setItem(
-      constants.StorageKey.LAST_SAVED_DRAFT, window.JSON.stringify(drafts));
+  try {
+    window.localStorage.setItem(
+        constants.StorageKey.LAST_SAVED_DRAFT, window.JSON.stringify(drafts));
+  } catch (e) {}
 };
 
 });  // goog.scope

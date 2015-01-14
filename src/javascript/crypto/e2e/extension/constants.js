@@ -159,9 +159,7 @@ e2e.ext.constants.CssClass = {
 
 
 /**
- * The keys used to persist data into local storage.
- * If the key exists in localStorage, then the preference is set, regardless
- * of the value.
+ * The keys used to persist data into preferences storage.
  * @enum {string}
  */
 e2e.ext.constants.StorageKey = {

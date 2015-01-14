@@ -21,7 +21,8 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.api.ApiTest');
 
-goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.AppLauncher');
+goog.require('e2e.ext.ExtensionLauncher');
 goog.require('e2e.ext.actions.EncryptSign');
 goog.require('e2e.ext.api.Api');
 goog.require('e2e.ext.api.RequestThrottle');
@@ -35,12 +36,14 @@ goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
 goog.require('goog.testing.mockmatchers.ArgumentMatcher');
 goog.require('goog.testing.mockmatchers.SaveArgument');
+goog.require('goog.testing.storage.FakeMechanism');
 goog.setTestOnly();
 
 var api = null;
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 var constants = e2e.ext.constants;
-var launcher = null;
+var extensionLauncher = null;
+var storage = null;
 var mockControl = null;
 var mockmatchers = goog.testing.mockmatchers;
 var stubs = new goog.testing.PropertyReplacer();
@@ -124,15 +127,15 @@ var PUBLIC_KEY_ASCII_2 =  // user ID of 'Drew Hintz <adhintz@google.com>'
 
 
 function setUp() {
-  localStorage.clear();
+  storage = new goog.testing.storage.FakeMechanism();
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
 
-  launcher = new e2e.ext.Launcher();
-  launcher.start();
+  extensionLauncher = new e2e.ext.ExtensionLauncher(storage);
+  extensionLauncher.start();
 
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
-    callback({launcher: launcher});
+    callback({launcher: extensionLauncher});
   });
 
   api = new e2e.ext.api.Api();
@@ -260,3 +263,50 @@ function testLockedKeyring() {
   mockControl.$verifyAll();
 }
 
+
+function testWithAppLauncher() {
+  extensionLauncher = null;
+  stubs.setPath('chrome.app.runtime.onLaunched.addListener', goog.nullFunction);
+
+  appLauncher = new e2e.ext.AppLauncher(storage);
+  appLauncher.start();
+
+  stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
+    callback({launcher: appLauncher});
+  });
+
+  var plaintext = 'plaintext message';
+  var encrypted = 'encrypted message';
+
+  var encryptCb = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
+  stubs.setPath('e2e.ext.actions.EncryptSign.prototype.execute',
+      mockControl.createFunctionMock('encryptSign'));
+  e2e.ext.actions.EncryptSign.prototype.execute(
+      goog.testing.mockmatchers.ignoreArgument,
+      new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+        assertEquals(plaintext, arg.content);
+        assertTrue(goog.isFunction(arg.passphraseCallback));
+        return true;
+      }),
+      goog.testing.mockmatchers.ignoreArgument,
+      encryptCb,
+      new goog.testing.mockmatchers.ArgumentMatcher(goog.isFunction));
+
+  var callbackMock = mockControl.createFunctionMock();
+  callbackMock(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
+    return arg.content == encrypted;
+  }));
+
+  mockControl.$replayAll();
+
+  api.executeAction_(callbackMock, {
+    content: plaintext,
+    recipients: ['irrelevant'],
+    currentUser: 'irrelevant',
+    action: constants.Actions.ENCRYPT_SIGN
+  });
+
+  encryptCb.arg(encrypted);
+
+  mockControl.$verifyAll();
+}

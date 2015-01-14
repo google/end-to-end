@@ -18,37 +18,65 @@
  * @fileoverview Handles the user's preferences inside the extension.
  */
 
-goog.provide('e2e.ext.ui.preferences');
+goog.provide('e2e.ext.Preferences');
 
 goog.require('e2e.ext.constants.StorageKey');
 
+
+
+/**
+ * Class to handle user's preferences.
+ * @constructor
+ * @param {!goog.storage.mechanism.Mechanism} storage mechanism for storing
+ *     preferences data.
+ */
+e2e.ext.Preferences = function(storage) {
+
+  /**
+   * Mechanism for storing preferences.
+   * @type {!goog.storage.mechanism.Mechanism}
+   * @private
+   */
+  this.storage_ = storage;
+};
+
 goog.scope(function() {
 var constants = e2e.ext.constants;
-var preferences = e2e.ext.ui.preferences;
+
+
+/**
+ * @param {string} key
+ * @return {?string}
+ * @expose
+ */
+e2e.ext.Preferences.prototype.getItem = function(key) {
+  return this.storage_.get(key);
+};
 
 
 /**
  * Initializes the default preferences.
+ * @expose
  */
-preferences.initDefaults = function() {
-  if (undefined == window.localStorage.getItem(
+e2e.ext.Preferences.prototype.initDefaults = function() {
+  if (null === this.getItem(
       constants.StorageKey.ENABLE_WELCOME_SCREEN)) {
-    preferences.setWelcomePageEnabled(true);
+    this.setWelcomePageEnabled(true);
   }
 
-  if (undefined == window.localStorage.getItem(
+  if (null === this.getItem(
       constants.StorageKey.ENABLE_ACTION_SNIFFING)) {
-    preferences.setActionSniffingEnabled(true);
+    this.setActionSniffingEnabled(true);
   }
 
-  if (undefined == window.localStorage.getItem(
+  if (null === this.getItem(
       constants.StorageKey.ENABLE_AUTO_SAVE)) {
-    preferences.setAutoSaveEnabled(true);
+    this.setAutoSaveEnabled(true);
   }
 
-  if (undefined == window.localStorage.getItem(
+  if (null === this.getItem(
       constants.StorageKey.ENABLE_LOOKING_GLASS)) {
-    preferences.setLookingGlassEnabled(false);
+    this.setLookingGlassEnabled(false);
   }
 };
 
@@ -56,9 +84,10 @@ preferences.initDefaults = function() {
 /**
  * Enables/disables the welcome page.
  * @param {boolean} enable True if the page is to be enabled.
+ * @expose
  */
-preferences.setWelcomePageEnabled = function(enable) {
-  window.localStorage.setItem(
+e2e.ext.Preferences.prototype.setWelcomePageEnabled = function(enable) {
+  this.storage_.set(
       constants.StorageKey.ENABLE_WELCOME_SCREEN, enable.toString());
 };
 
@@ -66,9 +95,10 @@ preferences.setWelcomePageEnabled = function(enable) {
 /**
  * Indicates whether the welcome page is enabled.
  * @return {boolean} True if the welcome is enabled.
+* @expose
  */
-preferences.isWelcomePageEnabled = function() {
-  return 'true' == window.localStorage.getItem(
+e2e.ext.Preferences.prototype.isWelcomePageEnabled = function() {
+  return 'true' == this.storage_.get(
       constants.StorageKey.ENABLE_WELCOME_SCREEN);
 };
 
@@ -76,9 +106,10 @@ preferences.isWelcomePageEnabled = function() {
 /**
  * Enables/disables PGP action guessing.
  * @param {boolean} enable True if guess is to be enabled.
+ * @expose
  */
-preferences.setActionSniffingEnabled = function(enable) {
-  window.localStorage.setItem(
+e2e.ext.Preferences.prototype.setActionSniffingEnabled = function(enable) {
+  this.storage_.set(
       constants.StorageKey.ENABLE_ACTION_SNIFFING, enable.toString());
 };
 
@@ -86,9 +117,10 @@ preferences.setActionSniffingEnabled = function(enable) {
 /**
  * Indicates whether PGP action guessing is enabled.
  * @return {boolean} True if enabled.
+ * @expose
  */
-preferences.isActionSniffingEnabled = function() {
-  return 'true' == window.localStorage.getItem(
+e2e.ext.Preferences.prototype.isActionSniffingEnabled = function() {
+  return 'true' == this.storage_.get(
       constants.StorageKey.ENABLE_ACTION_SNIFFING);
 };
 
@@ -96,9 +128,10 @@ preferences.isActionSniffingEnabled = function() {
 /**
  * Enables/disables auto-save for drafts.
  * @param {boolean} enable True if auto-save is to be enabled.
+ * @expose
  */
-preferences.setAutoSaveEnabled = function(enable) {
-  window.localStorage.setItem(
+e2e.ext.Preferences.prototype.setAutoSaveEnabled = function(enable) {
+  this.storage_.set(
       constants.StorageKey.ENABLE_AUTO_SAVE, enable.toString());
 };
 
@@ -106,9 +139,10 @@ preferences.setAutoSaveEnabled = function(enable) {
 /**
  * Indicates whether auto-save is enabled for drafts.
  * @return {boolean} True if enabled.
+ * @expose
  */
-preferences.isAutoSaveEnabled = function() {
-  return 'true' == window.localStorage.getItem(
+e2e.ext.Preferences.prototype.isAutoSaveEnabled = function() {
+  return 'true' == this.storage_.get(
       constants.StorageKey.ENABLE_AUTO_SAVE);
 };
 
@@ -116,9 +150,10 @@ preferences.isAutoSaveEnabled = function() {
 /**
  * Enables/disables the looking glass.
  * @param {boolean} enable True if the looking glass is to be enabled.
+ * @expose
  */
-preferences.setLookingGlassEnabled = function(enable) {
-  window.localStorage.setItem(
+e2e.ext.Preferences.prototype.setLookingGlassEnabled = function(enable) {
+  this.storage_.set(
       constants.StorageKey.ENABLE_LOOKING_GLASS, enable.toString());
 };
 
@@ -126,9 +161,10 @@ preferences.setLookingGlassEnabled = function(enable) {
 /**
  * Indicates whether the looking glass is enabled.
  * @return {boolean} True if enabled.
+ * @expose
  */
-preferences.isLookingGlassEnabled = function() {
-  return 'true' == window.localStorage.getItem(
+e2e.ext.Preferences.prototype.isLookingGlassEnabled = function() {
+  return 'true' == this.storage_.get(
       constants.StorageKey.ENABLE_LOOKING_GLASS);
 };
 

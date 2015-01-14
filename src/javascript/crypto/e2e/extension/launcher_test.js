@@ -21,32 +21,32 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.LauncherTest');
 
-goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.ExtensionLauncher');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.testingstubs');
-goog.require('e2e.ext.ui.preferences');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
+goog.require('goog.testing.storage.FakeMechanism');
 goog.setTestOnly();
 
 var constants = e2e.ext.constants;
 var launcher = null;
 var mockControl = null;
 var mockmatchers = goog.testing.mockmatchers;
-var preferences = e2e.ext.ui.preferences;
 var stubs = new goog.testing.PropertyReplacer();
+var fakeStorage;
 
 
 function setUp() {
-  window.localStorage.clear();
+  fakeStorage = new goog.testing.storage.FakeMechanism();
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
 
-  preferences.setWelcomePageEnabled(false);
-  launcher = new e2e.ext.Launcher();
+  launcher = new e2e.ext.ExtensionLauncher(fakeStorage);
+  launcher.getPreferences().setWelcomePageEnabled(false);
   launcher.start();
 }
 
@@ -110,13 +110,13 @@ function testUpdateSelectedContent() {
 
 
 function testBadPassphrase() {
-  var l1 = new e2e.ext.Launcher();
+  var l1 = new e2e.ext.ExtensionLauncher();
   l1.start('somesecret');
   // generate a key to ensure the keyring isn't empty.
   l1.getContext().generateKey(
       'ECDSA', 256, 'ECDH', 256, 'name', '', 'n@e.c', 253402243200);
   assertThrows('Wrong passphrase should throw exception.', function() {
-    var l2 = new e2e.ext.Launcher();
+    var l2 = new e2e.ext.ExtensionLauncher();
     l2.start('fail');
   });
 }
@@ -128,17 +128,17 @@ function testStart() {
       mockControl.createFunctionMock('setKeyRingPassphrase'));
   launcher.pgpContext_.setKeyRingPassphrase(passphrase);
 
-  stubs.setPath('e2e.ext.ui.preferences.initDefaults',
+  stubs.set(launcher.preferences_, 'initDefaults',
       mockControl.createFunctionMock('initDefaults'));
-  e2e.ext.ui.preferences.initDefaults();
+  launcher.preferences_.initDefaults();
 
-  stubs.set(launcher, 'showWelcomeScreen_',
-      mockControl.createFunctionMock('showWelcomeScreen_'));
-  launcher.showWelcomeScreen_();
+  stubs.set(launcher, 'showWelcomeScreen',
+      mockControl.createFunctionMock('showWelcomeScreen'));
+  launcher.showWelcomeScreen();
 
-  stubs.set(launcher, 'updatePassphraseWarning_',
-      mockControl.createFunctionMock('updatePassphraseWarning_'));
-  launcher.updatePassphraseWarning_();
+  stubs.set(launcher, 'updatePassphraseWarning',
+      mockControl.createFunctionMock('updatePassphraseWarning'));
+  launcher.updatePassphraseWarning();
 
   stubs.set(launcher.ctxApi_, 'installApi',
       mockControl.createFunctionMock('installApi'));
@@ -166,13 +166,13 @@ function testGetLastTab() {
   });
 
   var returnedIds = 0;
-  launcher.getActiveTab_(function(returnedId) {
+  launcher.getActiveTab(function(returnedId) {
     assertEquals(tabId, returnedId);
     returnedIds++;
     tabs.splice(0, tabs.length);
   });
 
-  launcher.getActiveTab_(function(returnedId) {
+  launcher.getActiveTab(function(returnedId) {
     assertEquals(tabId, returnedId);
     returnedIds++;
   });
@@ -187,8 +187,7 @@ function testShowWelcomeScreenEnabled() {
     openedWindow = true;
   });
 
-  window.localStorage.removeItem(constants.StorageKey.DISABLE_WELCOME_SCREEN);
-  preferences.setWelcomePageEnabled(true);
+  launcher.getPreferences().setWelcomePageEnabled(true);
   launcher.start();
   assertTrue('Failed to open the welcome screen', openedWindow);
 }
@@ -200,7 +199,7 @@ function testShowWelcomeScreenDisabled() {
     openedWindow = true;
   });
 
-  preferences.setWelcomePageEnabled(false);
+  launcher.getPreferences().setWelcomePageEnabled(false);
   launcher.start();
   assertFalse('Incorrectly opening the welcome screen', openedWindow);
 }

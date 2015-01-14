@@ -32,7 +32,6 @@ goog.require('e2e.ext.ui.panels.prompt.DecryptVerify');
 goog.require('e2e.ext.ui.panels.prompt.EncryptSign');
 goog.require('e2e.ext.ui.panels.prompt.ImportKey');
 goog.require('e2e.ext.ui.panels.prompt.PanelBase');
-goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.ui.templates.prompt');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.action');
@@ -55,7 +54,6 @@ var dialogs = e2e.ext.ui.dialogs;
 var ext = e2e.ext;
 var messages = e2e.ext.messages;
 var panels = e2e.ext.ui.panels;
-var preferences = e2e.ext.ui.preferences;
 var templates = e2e.ext.ui.templates.prompt;
 var ui = e2e.ext.ui;
 var utils = e2e.ext.utils;
@@ -129,7 +127,7 @@ ui.Prompt.prototype.decorateInternal = function(elem) {
   var styles = elem.querySelector('link');
   styles.href = chrome.runtime.getURL('prompt_styles.css');
 
-  utils.action.getExtensionLauncher(function(launcher) {
+  utils.action.getLauncher(function(launcher) {
     this.pgpLauncher_ = launcher || this.pgpLauncher_;
   }, this.displayFailure_, this);
   // Ignore the error to also show the prompt for pages for which we cannot
@@ -169,7 +167,8 @@ ui.Prompt.prototype.processSelectedContent_ =
       content = contentBlob.selection;
     }
     action = opt_action || contentBlob.action ||
-        utils.text.getPgpAction(content, preferences.isActionSniffingEnabled());
+        utils.text.getPgpAction(content,
+            this.pgpLauncher_.getPreferences().isActionSniffingEnabled());
     origin = contentBlob.origin;
     if (e2e.openpgp.asciiArmor.isDraft(content)) {
       action = constants.Actions.ENCRYPT_SIGN;
@@ -196,6 +195,7 @@ ui.Prompt.prototype.processSelectedContent_ =
       promptPanel = new panels.prompt.EncryptSign(
           this.actionExecutor_,
           /** @type {!messages.BridgeMessageRequest} */ (contentBlob || {}),
+          this.pgpLauncher_.getPreferences(),
           goog.bind(this.displayFailure_, this));
       break;
     case constants.Actions.DECRYPT_VERIFY:
@@ -449,7 +449,7 @@ ui.Prompt.prototype.clearFailure_ = function() {
 });  // goog.scope
 
 // Create the settings page.
-if (Boolean(chrome.extension)) {
+if (Boolean(chrome.runtime) && location.protocol === 'chrome-extension:') {
   /** @type {!e2e.ext.ui.Prompt} */
   window.promptPage = new e2e.ext.ui.Prompt();
   window.promptPage.decorate(document.documentElement);

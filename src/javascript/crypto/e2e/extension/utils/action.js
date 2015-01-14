@@ -25,7 +25,7 @@ goog.require('goog.array');
 
 goog.scope(function() {
 var messages = e2e.ext.messages;
-var utils = e2e.ext.utils.action;
+var action = e2e.ext.utils.action;
 
 
 /**
@@ -33,7 +33,7 @@ var utils = e2e.ext.utils.action;
  * @param {!Array.<!e2e.openpgp.Key>} keys
  * @return {string} All user IDs, separated by comma.
  */
-utils.extractUserIds = function(keys) {
+action.extractUserIds = function(keys) {
   var result = goog.array.flatten(goog.array.map(keys, function(key) {
     return key.uids;
   }));
@@ -43,7 +43,7 @@ utils.extractUserIds = function(keys) {
 
 
 /**
- * Gets the extension's launcher.
+ * Gets the End-to-End launcher.
  * @param {!function(!e2e.ext.Launcher)} callback The callback where
  *     the PGP context is to be passed.
  * @param {!function(Error)} errorCallback The callback to invoke if an error is
@@ -52,7 +52,7 @@ utils.extractUserIds = function(keys) {
  *     callbacks will be called.
  * @template T
  */
-utils.getExtensionLauncher = function(callback, errorCallback, opt_scope) {
+action.getLauncher = function(callback, errorCallback, opt_scope) {
   var scope = opt_scope || goog.global;
   chrome.runtime.getBackgroundPage(
       function(backgroundPage) {
@@ -69,7 +69,7 @@ utils.getExtensionLauncher = function(callback, errorCallback, opt_scope) {
 
 
 /**
- * Gets the PGP context.
+ * Gets the OpenPGP context.
  * @param {!function(!e2e.openpgp.ContextImpl)} callback The callback where
  *     the PGP context is to be passed.
  * @param {!function(Error)} errorCallback The callback to invoke if an error is
@@ -78,11 +78,30 @@ utils.getExtensionLauncher = function(callback, errorCallback, opt_scope) {
  *     callbacks will be called.
  * @template T
  */
-utils.getContext = function(callback, errorCallback, opt_scope) {
+action.getContext = function(callback, errorCallback, opt_scope) {
   var scope = opt_scope || goog.global;
-  utils.getExtensionLauncher(function(launcher) {
+  action.getLauncher(function(launcher) {
     callback.call(
         scope, /** @type {!e2e.openpgp.ContextImpl} */ (launcher.getContext()));
+  }, errorCallback, opt_scope);
+};
+
+
+/**
+ * Gets the Preferences object.
+ * @param {!function(!e2e.ext.Preferences)} callback The callback where
+ *     the Preferences object is to be passed.
+ * @param {!function(Error)} errorCallback The callback to invoke if an error is
+ *     encountered.
+ * @param {T=} opt_scope Optional. The scope in which the function and the
+ *     callbacks will be called.
+ * @template T
+ */
+action.getPreferences = function(callback, errorCallback, opt_scope) {
+  var scope = opt_scope || goog.global;
+  action.getLauncher(function(launcher) {
+    callback.call(
+        scope, /** @type {!e2e.ext.Preferences} */ (launcher.getPreferences()));
   }, errorCallback, opt_scope);
 };
 
@@ -97,9 +116,9 @@ utils.getContext = function(callback, errorCallback, opt_scope) {
  *     callbacks will be called.
  * @template T
  */
-utils.getSelectedContent = function(callback, errorCallback, opt_scope) {
+action.getSelectedContent = function(callback, errorCallback, opt_scope) {
   var scope = opt_scope || goog.global;
-  utils.getExtensionLauncher(function(launcher) {
+  action.getLauncher(function(launcher) {
     launcher.getSelectedContent(goog.bind(callback, scope),
         goog.bind(errorCallback, scope));
   }, errorCallback, opt_scope);
@@ -124,10 +143,10 @@ utils.getSelectedContent = function(callback, errorCallback, opt_scope) {
  *     callbacks will be called.
  * @template T
  */
-utils.updateSelectedContent = function(content, recipients, origin,
+action.updateSelectedContent = function(content, recipients, origin,
     expectMoreUpdates, callback, errorCallback, opt_subject, opt_scope) {
   var scope = opt_scope || goog.global;
-  utils.getExtensionLauncher(function(launcher) {
+  action.getLauncher(function(launcher) {
     launcher.updateSelectedContent(content, recipients, origin,
         expectMoreUpdates, goog.bind(callback, scope),
         goog.bind(errorCallback, scope), opt_subject);

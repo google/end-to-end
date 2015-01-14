@@ -18,21 +18,47 @@
  * @fileoverview Starts the extension.
  */
 
-goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.AppLauncher');
+goog.require('e2e.ext.ExtensionLauncher');
+goog.require('e2e.ext.util.ChromeStorageLocal');
+goog.require('goog.storage.mechanism.HTML5LocalStorage');
 
 goog.provide('e2e.ext.bootstrap');
 
-// Create the launcher and start it.
-if (Boolean(chrome.extension)) {
-  /** @type {!e2e.ext.Launcher} */
-  var launcher = new e2e.ext.Launcher();
-  launcher.start();
+
+/**
+ * @param {e2e.ext.Launcher} launcher
+ * @private
+ */
+e2e.ext.bootstrapLauncher_ = function(launcher) {
   goog.exportSymbol('launcher', launcher);
-}
+  launcher.start();
+  e2e.ext.bootstrap = true;
+};
 
 
 /**
  * Whether the extension was bootstrapped.
  * @type {boolean}
  */
-e2e.ext.bootstrap = true;
+e2e.ext.bootstrap = false;
+
+
+
+// Create the launcher and start it.
+if (Boolean(chrome.runtime)) {
+  if (chrome.runtime.getManifest().app) {
+    // Use chrome.local.storage for an app.
+    new e2e.ext.util.ChromeStorageLocal(
+        /** @type {function(!e2e.ext.util.ChromeStorageLocal)} */ (function(
+        storage) {
+          e2e.ext.bootstrapLauncher_(new e2e.ext.AppLauncher(storage));
+        }));
+  } else {
+    // For extension, use ContextImpl with default localStorage backend.
+    // We don't use chrome.storage.local, because it's accessible from content
+    // scripts, that may share processes with arbitrary web origins.
+    e2e.ext.bootstrapLauncher_(new e2e.ext.ExtensionLauncher(
+        new goog.storage.mechanism.HTML5LocalStorage()));
+  }
+}

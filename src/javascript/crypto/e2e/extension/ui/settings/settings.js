@@ -37,6 +37,7 @@ goog.require('e2e.ext.utils.action');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.signer.Algorithm');
 goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.crypt');
 goog.require('goog.dom');
 goog.require('goog.events.EventType');
@@ -49,7 +50,6 @@ var constants = e2e.ext.constants;
 var dialogs = e2e.ext.ui.dialogs;
 var messages = e2e.ext.messages;
 var panels = e2e.ext.ui.panels;
-var preferences = e2e.ext.ui.preferences;
 var templates = e2e.ext.ui.templates;
 var ui = e2e.ext.ui;
 var utils = e2e.ext.utils;
@@ -84,6 +84,14 @@ ui.Settings.prototype.pgpContext_ = null;
 
 
 /**
+ * User preferences.
+ * @type {e2e.ext.Preferences}
+ * @private
+ */
+ui.Settings.prototype.preferences_ = null;
+
+
+/**
  * The panel to list and manage all stored PGP keys.
  * @type {panels.KeyringMgmtFull}
  * @private
@@ -101,17 +109,20 @@ ui.Settings.prototype.getContentElement = function() {
 ui.Settings.prototype.decorateInternal = function(elem) {
   this.setElementInternal(elem);
 
-  utils.action.getContext(function(pgpCtx) {
-    this.pgpContext_ = pgpCtx;
-    if (!this.pgpContext_.hasPassphrase()) {
-      window.alert(chrome.i18n.getMessage('settingsKeyringLockedError'));
-      window.close();
-    } else {
-      // TODO(radi): Move to an E2E action.
-      this.pgpContext_.getAllKeys().
-          addCallback(this.renderTemplate_, this).
-          addErrback(this.displayFailure_, this);
-    }
+  utils.action.getPreferences(function(preferences) {
+    this.preferences_ = preferences;
+    utils.action.getContext(function(pgpCtx) {
+      this.pgpContext_ = pgpCtx;
+      if (!this.pgpContext_.hasPassphrase()) {
+        window.alert(chrome.i18n.getMessage('settingsKeyringLockedError'));
+        window.close();
+      } else {
+        // TODO(radi): Move to an E2E action.
+        this.pgpContext_.getAllKeys().
+            addCallback(this.renderTemplate_, this).
+            addErrback(this.displayFailure_, this);
+      }
+    }, this.displayFailure_, this);
   }, this.displayFailure_, this);
 };
 
@@ -131,7 +142,8 @@ ui.Settings.prototype.renderTemplate_ = function(pgpKeys) {
   var styles = elem.querySelector('link');
   styles.href = chrome.runtime.getURL('settings_styles.css');
 
-  this.addChild(new panels.PreferencesPanel(), true);
+  this.addChild(new panels.PreferencesPanel(
+      goog.asserts.assert(this.preferences_)), true);
 
   var generateKeyPanel =
       new panels.GenerateKey(goog.bind(this.generateKey_, this));
@@ -367,7 +379,7 @@ ui.Settings.prototype.clearFailure_ = function() {
 
 
 // Create the settings page.
-if (Boolean(chrome.extension)) {
+if (Boolean(chrome.runtime) && location.protocol === 'chrome-extension:') {
   /** @type {!e2e.ext.ui.Settings} */
   window.settingsPage = new e2e.ext.ui.Settings();
   window.settingsPage.decorate(document.documentElement);

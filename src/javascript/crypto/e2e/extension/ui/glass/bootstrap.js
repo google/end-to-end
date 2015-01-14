@@ -19,28 +19,34 @@
  */
 
 goog.require('e2e.ext.ui.Glass');
-goog.require('e2e.ext.ui.preferences');
+goog.require('e2e.ext.utils.action');
 goog.require('e2e.ext.utils.text');
 goog.require('goog.crypt.base64');
 
 goog.provide('e2e.ext.ui.glass.bootstrap');
 
-if (e2e.ext.ui.preferences.isLookingGlassEnabled()) {
-  // Create the looking glass.
-  window.addEventListener('message', function(evt) {
-    if (!e2e.ext.utils.text.isGmailOrigin(evt.origin)) {
-      return;
-    }
+e2e.ext.utils.action.getPreferences(function(preferences) {
+  if (preferences.isLookingGlassEnabled()) {
+    // Create the looking glass.
+    window.addEventListener('message', function(evt) {
+      if (!e2e.ext.utils.text.isGmailOrigin(evt.origin)) {
+        return;
+      }
 
-    var pgpMessage = evt.data ? evt.data : '';
-    /** @type {e2e.ext.ui.Glass} */
-    window.lookingGlass = new e2e.ext.ui.Glass(
-        goog.crypt.base64.decodeString(pgpMessage, true));
-    window.lookingGlass.decorate(document.documentElement);
-  });
-  /**
-   * Specifies whether the looking glass has been bootstrapped.
-   * @type {boolean}
-   */
-  e2e.ext.ui.glass.bootstrap = true;
-}
+      var pgpMessage = evt.data ? evt.data : '';
+      /** @type {e2e.ext.ui.Glass} */
+      window.lookingGlass = new e2e.ext.ui.Glass(
+          goog.crypt.base64.decodeString(pgpMessage, true));
+      window.lookingGlass.decorate(document.documentElement);
+    });
+
+    e2e.ext.ui.glass.bootstrap = true;
+  }
+}, goog.nullFunction);
+
+
+/**
+ * Specifies whether the looking glass has been bootstrapped.
+ * @type {boolean}
+ */
+e2e.ext.ui.glass.bootstrap = false;

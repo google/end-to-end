@@ -21,7 +21,7 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.utils.actionTest');
 
-goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.ExtensionLauncher');
 goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.utils.action');
 goog.require('e2e.openpgp.asciiArmor');
@@ -66,7 +66,7 @@ function setUp() {
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
 
-  launcher = new e2e.ext.Launcher();
+  launcher = new e2e.ext.ExtensionLauncher();
   launcher.start();
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
     callback({launcher: launcher});

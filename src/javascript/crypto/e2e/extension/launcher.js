@@ -20,25 +20,33 @@
  * that allow the user to interact with the extension.
  */
 
+goog.provide('e2e.ext.AppLauncher');
+goog.provide('e2e.ext.ExtensionLauncher');
 goog.provide('e2e.ext.Launcher');
 
+goog.require('e2e.async.Result');
+goog.require('e2e.ext.Preferences');
 goog.require('e2e.ext.api.Api');
-goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.openpgp.ContextImpl');
+goog.require('goog.storage.mechanism.HTML5LocalStorage');
+goog.require('goog.storage.mechanism.PrefixedMechanism');
 
 goog.scope(function() {
 var ext = e2e.ext;
 var constants = e2e.ext.constants;
 var messages = e2e.ext.messages;
-var preferences = e2e.ext.ui.preferences;
 
 
 
 /**
- * Constructor for the End-To-End extension launcher.
+ * Base class for the End-To-End launcher.
+ * @param {!goog.storage.mechanism.IterableMechanism} storage Storage mechanism
+ *     for preferences.
+ * @param {e2e.ext.Preferences=} opt_preferences
+ * @param {e2e.ext.api.Api=} opt_api
  * @constructor
  */
-ext.Launcher = function() {
+ext.Launcher = function(storage, opt_preferences, opt_api) {
   /**
    * The ID of the last used tab.
    * @type {number}
@@ -47,11 +55,26 @@ ext.Launcher = function() {
   this.lastTabId_ = window.NaN;
 
   /**
+   * Whether the launcher was started correctly.
+   * @type {boolean}
+   * @private
+   */
+  this.started_ = false;
+
+  /**
    * The PGP context used by the extension.
    * @type {e2e.openpgp.Context}
    * @private
    */
-  this.pgpContext_ = new e2e.openpgp.ContextImpl();
+  this.pgpContext_ = new e2e.openpgp.ContextImpl(storage);
+
+  /**
+   * Object for accessing user preferences.
+   * @type {e2e.ext.Preferences}
+   * @private
+   */
+  this.preferences_ = opt_preferences || new e2e.ext.Preferences(
+      new goog.storage.mechanism.PrefixedMechanism(storage, 'PREF'));
 
   /**
    * The context API that the rest of the extension can use to communicate with
@@ -59,14 +82,7 @@ ext.Launcher = function() {
    * @type {!ext.api.Api}
    * @private
    */
-  this.ctxApi_ = new ext.api.Api();
-
-  /**
-   * Whether the launcher was started correctly.
-   * @type {boolean}
-   * @private
-   */
-  this.started_ = false;
+  this.ctxApi_ = opt_api || new ext.api.Api();
 };
 
 
@@ -94,27 +110,7 @@ ext.Launcher.HELPER_CALLBACK_DELAY = 50;
  * @param {string=} opt_subject The subject of the message if applicable.
  * @expose
  */
-ext.Launcher.prototype.updateSelectedContent = function(content, recipients,
-    origin, expectMoreUpdates, callback, errorCallback, opt_subject) {
-  this.getActiveTab_(goog.bind(function(tabId) {
-    chrome.tabs.sendMessage(tabId, {
-      value: content,
-      response: true,
-      detach: !Boolean(expectMoreUpdates),
-      origin: origin,
-      recipients: recipients,
-      subject: opt_subject
-    }, function(response) {
-      if (arguments.length == 0 && chrome.runtime.lastError) {
-        errorCallback(new Error(chrome.runtime.lastError.message));
-      } else if (response instanceof Error) {
-        errorCallback(response);
-      } else {
-        callback(response);
-      }
-    });
-  }, this));
-};
+ext.Launcher.prototype.updateSelectedContent = goog.abstractMethod;
 
 
 /**
@@ -125,53 +121,7 @@ ext.Launcher.prototype.updateSelectedContent = function(content, recipients,
  *     encountered.
  * @expose
  */
-ext.Launcher.prototype.getSelectedContent = function(callback, errorCallback) {
-  this.getActiveTab_(goog.bind(function(tabId) {
-    chrome.tabs.sendMessage(tabId, {
-      enableLookingGlass: preferences.isLookingGlassEnabled()
-    }, function(response) {
-      if (arguments.length == 0 && chrome.runtime.lastError) {
-        errorCallback(new Error(chrome.runtime.lastError.message));
-      } else if (response instanceof Error) {
-        errorCallback(response);
-      } else {
-        callback(response);
-      }
-    });
-  }, this));
-};
-
-
-/**
- * Finds the current active tab and determines if a helper script is running
- * inside of it. If no helper script is running, then one is injected.
- * @param {!function(...)} callback The function to invoke once the active tab
- *     is found.
- * @private
- */
-ext.Launcher.prototype.getActiveTab_ = function(callback) {
-  chrome.tabs.query({
-    active: true,
-    currentWindow: true
-  }, goog.bind(function(tabs) {
-    var tab = tabs[0];
-    if (!goog.isDef(tab)) {
-      // NOTE(radi): In some operating systems (OSX, CrOS), the query will be
-      // executed against the window holding the browser action. In such
-      // situations we'll provide the last used tab.
-      callback(this.lastTabId_);
-      return;
-    } else {
-      this.lastTabId_ = tab.id;
-    }
-
-    chrome.tabs.executeScript(tab.id, {file: 'helper_binary.js'}, function() {
-      setTimeout(function() {
-        callback(tab.id);
-      }, ext.Launcher.HELPER_CALLBACK_DELAY);
-    });
-  }, this));
-};
+ext.Launcher.prototype.getSelectedContent = goog.abstractMethod;
 
 
 /**
@@ -202,10 +152,10 @@ ext.Launcher.prototype.start_ = function(passphrase) {
   }
   this.ctxApi_.installApi();
   this.started_ = true;
-  preferences.initDefaults();
+  this.preferences_.initDefaults();
 
-  this.showWelcomeScreen_();
-  this.updatePassphraseWarning_();
+  this.showWelcomeScreen();
+  this.updatePassphraseWarning();
 };
 
 
@@ -216,6 +166,16 @@ ext.Launcher.prototype.start_ = function(passphrase) {
  */
 ext.Launcher.prototype.getContext = function() {
   return this.pgpContext_;
+};
+
+
+/**
+ * Returns the Preferences object used within the extension.
+ * @return {e2e.ext.Preferences} The Preferences object.
+ * @expose
+ */
+ext.Launcher.prototype.getPreferences = function() {
+  return this.preferences_;
 };
 
 
@@ -232,9 +192,70 @@ ext.Launcher.prototype.hasPassphrase = function() {
 /**
  * Display a warning to the user if there is no available passphrase to access
  * the keyring.
- * @private
+ * @protected
  */
-ext.Launcher.prototype.updatePassphraseWarning_ = function() {
+ext.Launcher.prototype.updatePassphraseWarning = goog.abstractMethod;
+
+
+/**
+ * Shows the welcome screen to first-time users.
+ * @protected
+ */
+ext.Launcher.prototype.showWelcomeScreen = function() {
+  if (this.preferences_.isWelcomePageEnabled()) {
+    window.open('welcome.html');
+  }
+};
+
+
+
+/**
+ * @param {goog.storage.mechanism.IterableMechanism=} opt_storage
+ * @param {e2e.ext.Preferences=} opt_preferences
+ * @constructor
+ * @extends {ext.Launcher}
+ */
+ext.ExtensionLauncher = function(opt_storage, opt_preferences) {
+  var storage = opt_storage || new goog.storage.mechanism.HTML5LocalStorage();
+  ext.ExtensionLauncher.base(this, 'constructor', storage, opt_preferences);
+};
+goog.inherits(ext.ExtensionLauncher, ext.Launcher);
+
+
+/**
+ * Finds the current active tab and determines if a helper script is running
+ * inside of it. If no helper script is running, then one is injected.
+ * @param {!function(...)} callback The function to invoke once the active tab
+ *     is found.
+ * @protected
+ */
+ext.ExtensionLauncher.prototype.getActiveTab = function(callback) {
+  chrome.tabs.query({
+    active: true,
+    currentWindow: true
+  }, goog.bind(function(tabs) {
+    var tab = tabs[0];
+    if (!goog.isDef(tab)) {
+      // NOTE(radi): In some operating systems (OSX, CrOS), the query will be
+      // executed against the window holding the browser action. In such
+      // situations we'll provide the last used tab.
+      callback(this.lastTabId_);
+      return;
+    } else {
+      this.lastTabId_ = tab.id;
+    }
+
+    chrome.tabs.executeScript(tab.id, {file: 'helper_binary.js'}, function() {
+      setTimeout(function() {
+        callback(tab.id);
+      }, ext.Launcher.HELPER_CALLBACK_DELAY);
+    });
+  }, this));
+};
+
+
+/** @override */
+ext.ExtensionLauncher.prototype.updatePassphraseWarning = function() {
   if (this.hasPassphrase()) {
     chrome.browserAction.setBadgeText({text: ''});
     chrome.browserAction.setTitle({
@@ -249,14 +270,114 @@ ext.Launcher.prototype.updatePassphraseWarning_ = function() {
 };
 
 
+/** @override */
+ext.ExtensionLauncher.prototype.getSelectedContent =
+    function(callback, errorCallback) {
+  this.getActiveTab(goog.bind(function(tabId) {
+    chrome.tabs.sendMessage(tabId, {
+      enableLookingGlass: this.preferences_.isLookingGlassEnabled()
+    }, function(response) {
+      if (arguments.length == 0 && chrome.runtime.lastError) {
+        errorCallback(new Error(chrome.runtime.lastError.message));
+      } else if (response instanceof Error) {
+        errorCallback(response);
+      } else {
+        callback(response);
+      }
+    });
+  }, this));
+};
+
+
+/** @override */
+ext.ExtensionLauncher.prototype.updateSelectedContent =
+    function(content, recipients, origin, expectMoreUpdates, callback,
+    errorCallback, opt_subject) {
+  this.getActiveTab(goog.bind(function(tabId) {
+    chrome.tabs.sendMessage(tabId, {
+      value: content,
+      response: true,
+      detach: !Boolean(expectMoreUpdates),
+      origin: origin,
+      recipients: recipients,
+      subject: opt_subject
+    }, function(response) {
+      if (arguments.length == 0 && chrome.runtime.lastError) {
+        errorCallback(new Error(chrome.runtime.lastError.message));
+      } else if (response instanceof Error) {
+        errorCallback(response);
+      } else {
+        callback(response);
+      }
+    });
+  }, this));
+};
+
+
+
 /**
- * Shows the welcome screen to first-time users.
- * @private
+ * @param {!goog.storage.mechanism.IterableMechanism} storage
+ * @constructor
+ * @extends {ext.Launcher}
  */
-ext.Launcher.prototype.showWelcomeScreen_ = function() {
-  if (preferences.isWelcomePageEnabled()) {
-    window.open('welcome.html');
-  }
+ext.AppLauncher = function(storage) {
+  ext.AppLauncher.base(this, 'constructor', storage);
+  this.webViewChannel = {
+    send: function(ignored) {
+      return e2e.async.Result.toError(new Error('Not implemented'));
+    }
+  };
+  chrome.app.runtime.onLaunched.addListener(function() {
+    // TODO(evn): This should be webview.html rather than prompt.html
+    chrome.app.window.create('prompt.html#id');
+  });
+};
+goog.inherits(ext.AppLauncher, ext.Launcher);
+
+
+/** @override */
+ext.AppLauncher.prototype.updatePassphraseWarning = function() {
+  // TODO(evn): Implement.
+};
+
+
+/** @override */
+ext.AppLauncher.prototype.getSelectedContent =
+    function(callback, errorCallback) {
+  this.webViewChannel.send({
+    enableLookingGlass: this.preferences_.isLookingGlassEnabled()
+  }).addCallback(function(response) {
+    if (arguments.length == 0 && chrome.runtime.lastError) {
+      errorCallback(new Error(chrome.runtime.lastError.message));
+    } else {
+      callback(response);
+    }
+  }).addErrback(function(error) {
+    errorCallback(error);
+  });
+};
+
+
+/** @override */
+ext.AppLauncher.prototype.updateSelectedContent =
+    function(content, recipients, origin, expectMoreUpdates, callback,
+    errorCallback, opt_subject) {
+  this.webViewChannel.send({
+    value: content,
+    response: true,
+    detach: !Boolean(expectMoreUpdates),
+    origin: origin,
+    recipients: recipients,
+    subject: opt_subject
+  }).addCallback(function(response) {
+    if (arguments.length == 0 && chrome.runtime.lastError) {
+      errorCallback(new Error(chrome.runtime.lastError.message));
+    } else {
+      callback(response);
+    }
+  }).addErrback(function(error) {
+    errorCallback(error);
+  });
 };
 
 });  // goog.scope

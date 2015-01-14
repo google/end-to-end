@@ -19,23 +19,23 @@
  */
 
 /** @suppress {extraProvide} */
-goog.provide('e2e.ext.ui.preferencesTest');
+goog.provide('e2e.ext.PreferencesTest');
 
+goog.require('e2e.ext.Preferences');
 goog.require('e2e.ext.constants');
-goog.require('e2e.ext.ui.preferences');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.require('goog.testing.storage.FakeMechanism');
 goog.setTestOnly();
 
 var constants = e2e.ext.constants;
-var preferences = e2e.ext.ui.preferences;
+var fakeStorage;
+var preferences;
 
 
 function setUp() {
-  window.localStorage.removeItem(constants.StorageKey.ENABLE_WELCOME_SCREEN);
-  window.localStorage.removeItem(constants.StorageKey.ENABLE_ACTION_SNIFFING);
-  window.localStorage.removeItem(constants.StorageKey.ENABLE_AUTO_SAVE);
-  window.localStorage.removeItem(constants.StorageKey.ENABLE_LOOKING_GLASS);
+  fakeStorage = new goog.testing.storage.FakeMechanism();
+  preferences = new e2e.ext.Preferences(fakeStorage);
 }
 
 

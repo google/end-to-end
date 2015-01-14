@@ -30,7 +30,6 @@ goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.ui.panels.Chip');
 goog.require('e2e.ext.ui.panels.ChipHolder');
 goog.require('e2e.ext.ui.panels.prompt.PanelBase');
-goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.ui.templates.panels.prompt');
 goog.require('e2e.ext.utils.action');
 goog.require('e2e.ext.utils.text');
@@ -52,7 +51,6 @@ var drafts = e2e.ext.ui.draftmanager;
 var messages = e2e.ext.messages;
 var panels = e2e.ext.ui.panels;
 var promptPanels = e2e.ext.ui.panels.prompt;
-var preferences = e2e.ext.ui.preferences;
 var templates = e2e.ext.ui.templates.panels.prompt;
 var utils = e2e.ext.utils;
 
@@ -64,12 +62,14 @@ var utils = e2e.ext.utils;
  *     End-to-End actions.
  * @param {!messages.BridgeMessageRequest} content The content that the user
  *     wants to encrypt.
+ * @param {!e2e.ext.Preferences} preferences User preferences.
  * @param {!function(Error)} errorCallback A callback where errors will be
  *     passed to.
  * @constructor
  * @extends {promptPanels.PanelBase}
  */
-promptPanels.EncryptSign = function(actionExecutor, content, errorCallback) {
+promptPanels.EncryptSign = function(actionExecutor, content, preferences,
+    errorCallback) {
   goog.base(this, chrome.i18n.getMessage('promptEncryptSignTitle'),
       content, errorCallback);
 
@@ -92,6 +92,13 @@ promptPanels.EncryptSign = function(actionExecutor, content, errorCallback) {
    * @private
    */
   this.chipHolder_ = null;
+
+  /**
+   * User preferences.
+   * @type {e2e.ext.Preferences}
+   * @private
+   */
+  this.preferences_ = preferences;
 };
 goog.inherits(promptPanels.EncryptSign, promptPanels.PanelBase);
 
@@ -163,7 +170,7 @@ promptPanels.EncryptSign.prototype.enterDocument = function() {
         goog.partial(this.insertMessageIntoPage_, origin));
   }
 
-  if (preferences.isAutoSaveEnabled()) {
+  if (this.preferences_.isAutoSaveEnabled()) {
     var textArea = /** @type {HTMLTextAreaElement} */
         (this.getElement().querySelector('textarea'));
     this.getHandler().listenOnce(textArea, goog.events.EventType.KEYDOWN,
@@ -451,7 +458,7 @@ promptPanels.EncryptSign.prototype.loadSavedDraftOrSelectedContent_ =
   } else {
     var content = this.getContent().selection || '';
     var sniffedAction = utils.text.getPgpAction(
-        content, preferences.isActionSniffingEnabled());
+        content, this.preferences_.isActionSniffingEnabled());
     if (sniffedAction == constants.Actions.DECRYPT_VERIFY) {
       this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
         action: constants.Actions.DECRYPT_VERIFY,

@@ -21,13 +21,13 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.WelcomeTest');
 
-goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.ExtensionLauncher');
+goog.require('e2e.ext.Preferences');
 goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.Welcome');
 goog.require('e2e.ext.ui.dialogs.Generic');
-goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.utils');
 goog.require('goog.dom');
 goog.require('goog.testing.AsyncTestCase');
@@ -37,15 +37,18 @@ goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
 goog.require('goog.testing.mockmatchers.SaveArgument');
+goog.require('goog.testing.storage.FakeMechanism');
 goog.setTestOnly();
 
 var constants = e2e.ext.constants;
 var launcher = null;
 var mockControl = null;
 var page = null;
-var preferences = e2e.ext.ui.preferences;
+var preferences = null;
+var fakeStorage = null;
 var stubs = new goog.testing.PropertyReplacer();
 var testCase = goog.testing.AsyncTestCase.createAndInstall();
+
 
 var PRIVATE_KEY_ASCII =
     '-----BEGIN PGP PRIVATE KEY BLOCK-----\n' +
@@ -110,10 +113,12 @@ function setUp() {
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
 
-  localStorage.clear();
+  fakeStorage = new goog.testing.storage.FakeMechanism();
+
+  preferences = new e2e.ext.Preferences(fakeStorage);
   preferences.setWelcomePageEnabled(false);
 
-  launcher = new e2e.ext.Launcher();
+  launcher = new e2e.ext.ExtensionLauncher(fakeStorage, preferences);
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
     callback({launcher: launcher});
   });

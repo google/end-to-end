@@ -85,6 +85,8 @@ ext.Helper.prototype.activeViewListenerKey_ = null;
  * @param {!MessageSender} sender The sender of the request.
  * @param {!function(*)} sendResponse A callback function sending the response
  *     back.
+ * @return {boolean} Returns true to mark that the response is sent
+ *     asynchronously.
  * @private
  */
 ext.Helper.prototype.handleMessage_ = function(req, sender, sendResponse) {
@@ -93,7 +95,7 @@ ext.Helper.prototype.handleMessage_ = function(req, sender, sendResponse) {
   } else if (goog.object.containsKey(req, 'value')) {
     this.setValue_(req, sendResponse);
   }
-  return true; // Returns true to mark that the response is sent asynchronously.
+  return true;
 };
 
 
@@ -243,7 +245,10 @@ ext.Helper.prototype.errorHandler_ = function(sendResponse, error) {
 });  // goog.scope
 
 // Create the helper and start it.
-if (!!chrome.extension && !goog.isDef(window.helper)) {
+if (Boolean(chrome.runtime) &&
+    Boolean(chrome.runtime.getURL) && // Running as Chrome extension/app
+    !Boolean(chrome.runtime.getBackgroundPage) && // Running in a content script
+    !goog.isDef(window.helper)) {
   /** @type {!e2e.ext.Helper} */
   window.helper = new e2e.ext.Helper(new e2e.ext.WebsiteApi());
 }

@@ -36,7 +36,6 @@ e2e.ext.testingstubs.initStubs = function(replacer) {
 
   replacer.setPath('chrome.browserAction.setBadgeText', goog.nullFunction);
   replacer.setPath('chrome.browserAction.setTitle', goog.nullFunction);
-  replacer.setPath('chrome.extension.getURL', goog.nullFunction);
   replacer.setPath('chrome.i18n.getMessage', function() {
     return [].join.call(arguments);
   });

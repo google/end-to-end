@@ -21,7 +21,8 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.prompt.EncryptSignTest');
 
-goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.ExtensionLauncher');
+goog.require('e2e.ext.Preferences');
 goog.require('e2e.ext.actions.DecryptVerify');
 goog.require('e2e.ext.actions.EncryptSign');
 goog.require('e2e.ext.actions.Executor');
@@ -30,7 +31,6 @@ goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.ui.panels.prompt.EncryptSign');
-goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.action');
 goog.require('e2e.ext.utils.text');
@@ -44,7 +44,7 @@ goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
 goog.require('goog.testing.mockmatchers.ArgumentMatcher');
 goog.require('goog.testing.mockmatchers.SaveArgument');
-
+goog.require('goog.testing.storage.FakeMechanism');
 goog.setTestOnly();
 
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
@@ -54,18 +54,22 @@ var constants = e2e.ext.constants;
 var drafts = e2e.ext.ui.draftmanager;
 var launcher = null;
 var mockControl = null;
-var preferences = e2e.ext.ui.preferences;
+var preferences = null;
+var fakeStorage = null;
 var panel = null;
 var stubs = new goog.testing.PropertyReplacer();
 var utils = e2e.ext.utils;
 
 
 function setUp() {
-  window.localStorage.clear();
+  // TODO(koto): Remove once draft manager uses StorageMechanism.
+  localStorage.clear();
+  fakeStorage = new goog.testing.storage.FakeMechanism();
+  preferences = new e2e.ext.Preferences(fakeStorage);
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
 
-  launcher = new e2e.ext.Launcher();
+  launcher = new e2e.ext.ExtensionLauncher(fakeStorage, preferences);
   launcher.start();
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
     callback({launcher: launcher});
@@ -74,6 +78,7 @@ function setUp() {
   panel = new e2e.ext.ui.panels.prompt.EncryptSign(
       new e2e.ext.actions.Executor(goog.nullFunction),
       'irrelevant',
+      preferences,
       goog.nullFunction);
 
   if (!goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG)) {

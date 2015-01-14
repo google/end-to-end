@@ -30,7 +30,6 @@ goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.panels.GenerateKey');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
-goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.ui.templates.welcome');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.action');
@@ -47,7 +46,6 @@ var ui = e2e.ext.ui;
 var constants = e2e.ext.constants;
 var dialogs = e2e.ext.ui.dialogs;
 var messages = e2e.ext.messages;
-var preferences = ui.preferences;
 var templates = ui.templates.welcome;
 var utils = e2e.ext.utils;
 
@@ -176,8 +174,12 @@ ui.Welcome.prototype.enterDocument = function() {
  */
 ui.Welcome.prototype.closeAndDisableWelcomeScreen_ = function() {
   var checkbox = this.getElement().querySelector('input');
-  preferences.setWelcomePageEnabled(checkbox.checked);
-  window.close();
+  e2e.ext.utils.action.getPreferences(function(preferences) {
+    preferences.setWelcomePageEnabled(checkbox.checked);
+    window.close();
+  }, function() {
+    window.close();
+  });
 };
 
 
@@ -333,7 +335,7 @@ ui.Welcome.prototype.displayFailure_ = function(error) {
 });  // goog.scope
 
 // Create the welcome page.
-if (Boolean(chrome.extension)) {
+if (Boolean(chrome.runtime) && location.protocol === 'chrome-extension:') {
   var welcomePage = new e2e.ext.ui.Welcome();
   welcomePage.decorate(document.documentElement);
 }

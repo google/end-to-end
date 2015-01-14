@@ -21,7 +21,7 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.prompt.DecryptVerifyTest');
 
-goog.require('e2e.ext.Launcher');
+goog.require('e2e.ext.ExtensionLauncher');
 goog.require('e2e.ext.actions.DecryptVerify');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants');
@@ -50,7 +50,7 @@ function setUp() {
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
 
-  launcher = new e2e.ext.Launcher();
+  launcher = new e2e.ext.ExtensionLauncher();
   launcher.start();
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
     callback({launcher: launcher});

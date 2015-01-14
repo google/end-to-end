@@ -21,6 +21,7 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.PromptTest');
 
+goog.require('e2e.ext.ExtensionLauncher');
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.actions.DecryptVerify');
 goog.require('e2e.ext.actions.EncryptSign');
@@ -32,7 +33,6 @@ goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.Prompt');
 goog.require('e2e.ext.ui.draftmanager');
-goog.require('e2e.ext.ui.preferences');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.text');
 /** @suppress {extraRequire} intentionally importing all signer functions */
@@ -49,7 +49,7 @@ goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
 goog.require('goog.testing.mockmatchers.ArgumentMatcher');
 goog.require('goog.testing.mockmatchers.SaveArgument');
-
+goog.require('goog.testing.storage.FakeMechanism');
 goog.setTestOnly();
 
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
@@ -57,7 +57,7 @@ var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 var constants = e2e.ext.constants;
 var drafts = e2e.ext.ui.draftmanager;
 var mockControl = null;
-var preferences = e2e.ext.ui.preferences;
+var fakeStorage = null;
 var prompt = null;
 var stubs = new goog.testing.PropertyReplacer();
 var utils = e2e.ext.utils;
@@ -65,14 +65,14 @@ var utils = e2e.ext.utils;
 
 function setUp() {
   asyncTestCase.stepTimeout = 2000;
-  window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
 
   stubs.replace(goog.Timer.prototype, 'start', goog.nullFunction);
 
+  fakeStorage = new goog.testing.storage.FakeMechanism();
   prompt = new e2e.ext.ui.Prompt();
-  prompt.pgpLauncher_ = new e2e.ext.Launcher();
+  prompt.pgpLauncher_ = new e2e.ext.ExtensionLauncher(fakeStorage);
   prompt.pgpLauncher_.start();
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
     callback({launcher: prompt.pgpLauncher_});
@@ -100,12 +100,12 @@ function testGetSelectedContent() {
 
   var queriedForSelectedContent = false;
   stubs.replace(
-      e2e.ext.Launcher.prototype, 'getSelectedContent', function() {
+      e2e.ext.ExtensionLauncher.prototype, 'getSelectedContent', function() {
         queriedForSelectedContent = true;
       });
 
   stubs.replace(chrome.runtime, 'getBackgroundPage', function(callback) {
-    callback({launcher: new e2e.ext.Launcher()});
+    callback({launcher: new e2e.ext.ExtensionLauncher()});
   });
 
   prompt.decorate(document.documentElement);
@@ -500,7 +500,7 @@ function testSelectAction() {
 
 
 function testIfNoPassphrase() {
-  prompt.pgpLauncher_ = new e2e.ext.Launcher();
+  prompt.pgpLauncher_ = new e2e.ext.ExtensionLauncher();
   stubs.replace(e2e.ext.Launcher.prototype, 'hasPassphrase', function() {
     return false;
   });
