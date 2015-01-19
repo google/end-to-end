@@ -215,13 +215,11 @@ ui.Prompt.prototype.processSelectedContent_ =
           goog.bind(this.displayFailure_, this));
       break;
     case constants.Actions.GET_PASSPHRASE:
+      this.hideMenuButton_();
       this.renderKeyringPassphrase_(elem, contentBlob);
-      break;
+      return;
     case constants.Actions.USER_SPECIFIED:
-      var menuContainer =
-          goog.dom.getElement(constants.ElementId.MENU_CONTAINER);
-      goog.dom.classlist.add(menuContainer, constants.CssClass.HIDDEN);
-      this.renderMenu_(elem, contentBlob);
+      this.showMenuInline_(this.renderMenu_(elem, contentBlob));
       return;
     case constants.Actions.CONFIGURE_EXTENSION:
       this.pgpLauncher_.createWindow('settings.html', false, goog.nullFunction);
@@ -241,11 +239,38 @@ ui.Prompt.prototype.processSelectedContent_ =
       elem, goog.events.EventType.CLICK,
       goog.bind(this.buttonClick_, this, action, origin, contentBlob));
 
-  this.getHandler().listen(
-      goog.dom.getElement(constants.ElementId.MENU_CONTAINER),
-      goog.events.EventType.CLICK,
-      goog.bind(this.renderMenu_, this, elem, promptPanel),
-      true);
+  this.renderMenu_(elem, promptPanel);
+};
+
+
+/**
+ * Hides the menu button.
+ * @private
+ */
+ui.Prompt.prototype.hideMenuButton_ = function() {
+  var menuContainer = goog.dom.getElement(constants.ElementId.MENU_CONTAINER);
+  goog.dom.classlist.add(menuContainer, constants.CssClass.HIDDEN);
+};
+
+
+/**
+ * Show the menu in the prompt document inline, hiding the menu container
+ *     button.
+ * @param {!goog.ui.PopupMenu} menu Menu element.
+ * @private
+ */
+ui.Prompt.prototype.showMenuInline_ = function(menu) {
+  var menuContainer = goog.dom.getElement(constants.ElementId.MENU_CONTAINER);
+  this.hideMenuButton_();
+  menu.detach(menuContainer);
+  // Show the menu inline instead and restyle it.
+  goog.dom.classlist.remove(menu.getElement(), 'goog-menu');
+  goog.style.setStyle(menu.getElement(), {
+    'display': 'block',
+    'outline': 'none',
+    'position': 'relative',
+    'top': '-10px'
+  });
 };
 
 
@@ -280,6 +305,7 @@ ui.Prompt.prototype.buttonClick_ = function(
  * @param {panels.prompt.PanelBase|messages.BridgeMessageRequest} blob The
  *     prompt UI panel that is displayed to the user or the content blob that
  *     the user has selected.
+ * @return {!goog.ui.PopupMenu} Created menu
  * @private
  */
 ui.Prompt.prototype.renderMenu_ = function(elem, blob) {
@@ -305,20 +331,14 @@ ui.Prompt.prototype.renderMenu_ = function(elem, blob) {
       goog.partial(this.selectAction_, contentBlob));
 
   var menuContainer = goog.dom.getElement(constants.ElementId.MENU_CONTAINER);
-  if (goog.dom.classlist.contains(menuContainer, constants.CssClass.HIDDEN)) {
-    goog.dom.classlist.remove(menu.getElement(), 'goog-menu');
-    goog.style.setStyle(menu.getElement(), {
-      'display': 'block',
-      'outline': 'none',
-      'position': 'relative',
-      'top': '-10px'
-    });
-  } else {
-    menu.attach(
-        menuContainer,
-        goog.positioning.Corner.TOP_LEFT,
-        goog.positioning.Corner.BOTTOM_LEFT);
-  }
+
+  menu.setToggleMode(true);
+  menu.attach(
+      menuContainer,
+      goog.positioning.Corner.TOP_LEFT,
+      goog.positioning.Corner.BOTTOM_LEFT);
+
+  return menu;
 };
 
 

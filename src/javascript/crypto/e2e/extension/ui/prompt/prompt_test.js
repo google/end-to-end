@@ -590,7 +590,7 @@ function testSetKeyringPassphraseError() {
   var passphrase = 'test';
   stubs.set(prompt.pgpLauncher_, 'start',
       mockControl.createFunctionMock('start'));
-  prompt.pgpLauncher_.start(passphrase).$throws(new Error('irrlevant'));
+  prompt.pgpLauncher_.start(passphrase).$throws(new Error('irrelevant'));
 
   stubs.set(prompt, 'close', mockControl.createFunctionMock('close'));
 
@@ -603,7 +603,6 @@ function testSetKeyringPassphraseError() {
 
   var dialog = prompt.getChildAt(0);
   dialog.dialogCallback_(passphrase);
-
   assertEquals(2, prompt.getChildCount());
 
   mockControl.$verifyAll();

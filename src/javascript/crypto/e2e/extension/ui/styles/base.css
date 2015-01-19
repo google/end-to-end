@@ -88,13 +88,14 @@ button.back > img {
 }
 
 #pgpHead {
-  background: #f5f5f5;
   border: solid #ebebeb;
   border-width: 0 0 1px;
   margin-bottom: 5px;
   padding: 1px 0;
-  width: 100%;
   z-index: 60;
+  background: url('images/icon-48.png') #f5f5f5 8px 50% no-repeat;
+  padding-left: 40px;
+  background-size: 32px;
 }
 
 #pgpHead > div {
