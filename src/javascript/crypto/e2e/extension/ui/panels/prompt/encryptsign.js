@@ -26,7 +26,6 @@ goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
-goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.ui.panels.Chip');
 goog.require('e2e.ext.ui.panels.ChipHolder');
 goog.require('e2e.ext.ui.panels.prompt.PanelBase');
@@ -47,7 +46,6 @@ goog.require('soy');
 goog.scope(function() {
 var constants = e2e.ext.constants;
 var dialogs = e2e.ext.ui.dialogs;
-var drafts = e2e.ext.ui.draftmanager;
 var messages = e2e.ext.messages;
 var panels = e2e.ext.ui.panels;
 var promptPanels = e2e.ext.ui.panels.prompt;
@@ -63,13 +61,14 @@ var utils = e2e.ext.utils;
  * @param {!messages.BridgeMessageRequest} content The content that the user
  *     wants to encrypt.
  * @param {!e2e.ext.Preferences} preferences User preferences.
+ * @param {!e2e.ext.DraftManager} draftManager Draft manager.
  * @param {!function(Error)} errorCallback A callback where errors will be
  *     passed to.
  * @constructor
  * @extends {promptPanels.PanelBase}
  */
 promptPanels.EncryptSign = function(actionExecutor, content, preferences,
-    errorCallback) {
+    draftManager, errorCallback) {
   goog.base(this, chrome.i18n.getMessage('promptEncryptSignTitle'),
       content, errorCallback);
 
@@ -99,6 +98,13 @@ promptPanels.EncryptSign = function(actionExecutor, content, preferences,
    * @private
    */
   this.preferences_ = preferences;
+
+  /**
+   * Draft manager.
+   * @type {e2e.ext.DraftManager}
+   * @private
+   */
+  this.draftManager_ = draftManager;
 };
 goog.inherits(promptPanels.EncryptSign, promptPanels.PanelBase);
 
@@ -428,14 +434,14 @@ promptPanels.EncryptSign.prototype.loadSavedDraftOrSelectedContent_ =
   var origin = this.getContent().origin;
   var textArea = /** @type {HTMLTextAreaElement} */
       (this.getElement().querySelector('textarea'));
-  if (drafts.hasDraft(origin)) {
+  if (this.draftManager_.hasDraft(origin)) {
     var dialog = new dialogs.Generic(
         chrome.i18n.getMessage('promptEncryptSignRestoreDraftMsg'),
         goog.bind(function(dialogResult) {
           if (goog.isDef(dialogResult)) {
             // A passed object signals that the user has clicked the
             // 'OK' button.
-            var draft = drafts.getDraft(origin);
+            var draft = this.draftManager_.getDraft(origin);
             this.actionExecutor_.execute( /** @type {!messages.ApiRequest} */ ({
               action: constants.Actions.DECRYPT_VERIFY,
               content: draft,
@@ -445,7 +451,7 @@ promptPanels.EncryptSign.prototype.loadSavedDraftOrSelectedContent_ =
               this.renderDismiss();
             }, this));
           } else {
-            drafts.clearDraft(origin);
+            this.draftManager_.clearDraft(origin);
           }
 
           goog.dispose(dialog);
@@ -500,7 +506,7 @@ promptPanels.EncryptSign.prototype.saveDraft_ = function(origin, evt) {
           draft, [], origin, true, goog.nullFunction,
           this.errorCallback_, subject);
     } else {
-      drafts.saveDraft(draft, origin);
+      this.draftManager_.saveDraft(draft, origin);
     }
   }, this), goog.bind(function(error) {
     if (evt.type == goog.events.EventType.CLICK &&
@@ -526,7 +532,7 @@ promptPanels.EncryptSign.prototype.saveDraft_ = function(origin, evt) {
  */
 promptPanels.EncryptSign.prototype.clearSavedDraft_ = function(origin) {
   this.autoSaveTimer_.stop();
-  drafts.clearDraft(origin);
+  this.draftManager_.clearDraft(origin);
 };
 
 });  // goog.scope

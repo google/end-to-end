@@ -652,7 +652,7 @@ e2e.openpgp.KeyRing.prototype.hasPassphrase = function() {
 
 
 /**
- * @return {boolean} True if the keyring is encrypted in LocalStorage.
+ * @return {boolean} True if the keyring is encrypted in persistent storage.
  */
 e2e.openpgp.KeyRing.prototype.isEncrypted = function() {
   return (this.passphrase_ != null && this.passphrase_ != '');

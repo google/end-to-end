@@ -1080,11 +1080,12 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
 </textarea>
 
 <script>
+  goog.require('e2e');
+  goog.require('e2e.openpgp.ContextImpl');
   goog.require('goog.async.DeferredList');
   goog.require('goog.testing.AsyncTestCase');
   goog.require('goog.testing.jsunit');
-  goog.require('e2e');
-  goog.require('e2e.openpgp.ContextImpl');
+  goog.require('goog.testing.storage.FakeMechanism');
 </script>
 <script>
   var RSA_PRIVATE_KEY =
@@ -1185,8 +1186,8 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
   var context, asyncTest = goog.testing.AsyncTestCase.createAndInstall(document.title);
 
   function setUp() {
-    localStorage.clear();
-    context = new e2e.openpgp.ContextImpl();
+    context = new e2e.openpgp.ContextImpl(
+        new goog.testing.storage.FakeMechanism());
     context.setKeyRingPassphrase('');
   }
 

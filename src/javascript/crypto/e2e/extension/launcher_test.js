@@ -110,13 +110,14 @@ function testUpdateSelectedContent() {
 
 
 function testBadPassphrase() {
-  var l1 = new e2e.ext.ExtensionLauncher();
+  var storage = new goog.testing.storage.FakeMechanism();
+  var l1 = new e2e.ext.ExtensionLauncher(storage);
   l1.start('somesecret');
   // generate a key to ensure the keyring isn't empty.
   l1.getContext().generateKey(
       'ECDSA', 256, 'ECDH', 256, 'name', '', 'n@e.c', 253402243200);
   assertThrows('Wrong passphrase should throw exception.', function() {
-    var l2 = new e2e.ext.ExtensionLauncher();
+    var l2 = new e2e.ext.ExtensionLauncher(storage);
     l2.start('fail');
   });
 }

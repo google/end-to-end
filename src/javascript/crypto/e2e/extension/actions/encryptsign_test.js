@@ -30,12 +30,14 @@ goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.require('goog.testing.storage.FakeMechanism');
 goog.setTestOnly();
 
 var constants = e2e.ext.constants;
 var mockControl = null;
 var stubs = new goog.testing.PropertyReplacer();
 var testCase = goog.testing.AsyncTestCase.createAndInstall();
+var storage;
 
 var PUBLIC_KEY_ASCII =
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
@@ -117,7 +119,7 @@ var PUBLIC_KEY_ASCII_2 =  // user ID of 'Drew Hintz <adhintz@google.com>'
     '-----END PGP PUBLIC KEY BLOCK-----';
 
 function setUp() {
-  window.localStorage.clear();
+  storage = new goog.testing.storage.FakeMechanism();
   mockControl = new goog.testing.MockControl();
   testCase.stepTimeout = 2000;
 }
@@ -130,7 +132,7 @@ function tearDown() {
 
 
 function testEncrypt() {
-  var pgpContext = new e2e.openpgp.ContextImpl();
+  var pgpContext = new e2e.openpgp.ContextImpl(storage);
   pgpContext.setKeyRingPassphrase(''); // No passphrase.
 
   var pwdCallback = function(uid, callback) {
@@ -162,7 +164,7 @@ function testEncrypt() {
 
 
 function testEncryptForSigner() {
-  var pgpContext = new e2e.openpgp.ContextImpl();
+  var pgpContext = new e2e.openpgp.ContextImpl(storage);
   pgpContext.setKeyRingPassphrase(''); // No passphrase.
 
   var pwdCallback = function(uid, callback) {
@@ -207,7 +209,7 @@ function testEncryptForSigner() {
 
 
 function testEncryptToPassphrase() {
-  var pgpContext = new e2e.openpgp.ContextImpl();
+  var pgpContext = new e2e.openpgp.ContextImpl(storage);
   pgpContext.setKeyRingPassphrase(''); // No passphrase.
 
   var passphrase = 'a passphrase';
@@ -243,7 +245,7 @@ function testEncryptToPassphrase() {
 
 
 function testSignOnly() {
-  var pgpContext = new e2e.openpgp.ContextImpl();
+  var pgpContext = new e2e.openpgp.ContextImpl(storage);
   pgpContext.setKeyRingPassphrase(''); // No passphrase.
 
   var pwdCallback = function(uid, callback) {

@@ -19,18 +19,20 @@
  */
 
 /** @suppress {extraProvide} */
-goog.provide('e2e.ext.ui.draftmanagerTest');
+goog.provide('e2e.ext.DraftManagerTest');
 
-goog.require('e2e.ext.ui.draftmanager');
+goog.require('e2e.ext.DraftManager');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.require('goog.testing.storage.FakeMechanism');
 goog.setTestOnly();
 
-var drafts = e2e.ext.ui.draftmanager;
+var drafts;
 
 
 function setUp() {
-  window.localStorage.clear();
+  drafts = new e2e.ext.DraftManager(
+      new goog.testing.storage.FakeMechanism());
 }
 
 

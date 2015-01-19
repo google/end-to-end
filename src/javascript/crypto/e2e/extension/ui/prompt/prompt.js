@@ -22,10 +22,12 @@
 
 goog.provide('e2e.ext.ui.Prompt');
 
+goog.require('e2e.ext.DraftManager');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
+goog.require('e2e.ext.constants.StorageKey');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.panels.prompt.DecryptVerify');
@@ -196,6 +198,8 @@ ui.Prompt.prototype.processSelectedContent_ =
           this.actionExecutor_,
           /** @type {!messages.BridgeMessageRequest} */ (contentBlob || {}),
           this.pgpLauncher_.getPreferences(),
+          new ext.DraftManager(this.pgpLauncher_.getStorage(
+              constants.StorageKey.DRAFTS)),
           goog.bind(this.displayFailure_, this));
       break;
     case constants.Actions.DECRYPT_VERIFY:

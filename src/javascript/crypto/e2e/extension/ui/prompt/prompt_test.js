@@ -32,7 +32,6 @@ goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.Prompt');
-goog.require('e2e.ext.ui.draftmanager');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.text');
 /** @suppress {extraRequire} intentionally importing all signer functions */
@@ -55,7 +54,6 @@ goog.setTestOnly();
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 
 var constants = e2e.ext.constants;
-var drafts = e2e.ext.ui.draftmanager;
 var mockControl = null;
 var fakeStorage = null;
 var prompt = null;

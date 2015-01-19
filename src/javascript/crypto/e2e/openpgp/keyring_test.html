@@ -18,13 +18,13 @@
 <script src="test_js_deps-runfiles.js"></script>
 <script>
   goog.require('goog.array');
-  goog.require('goog.storage.mechanism.HTML5LocalStorage');
   goog.require('goog.testing.AsyncTestCase');
   goog.require('goog.testing.jsunit');
   goog.require('goog.testing.mockmatchers');
   goog.require('goog.testing.MethodMock');
   goog.require('goog.testing.MockControl');
   goog.require('goog.testing.PropertyReplacer');
+  goog.require('goog.testing.storage.FakeMechanism');
   goog.require('e2e.async.Result');
   goog.require('e2e.cipher.all');
   goog.require('e2e.hash.all');
@@ -219,14 +219,12 @@ var storage;
 var stubs = new goog.testing.PropertyReplacer();
 
 function setUp() {
-  localStorage.clear();
-  storage = new goog.storage.mechanism.HTML5LocalStorage();
+  storage = new goog.testing.storage.FakeMechanism();
   keyRing = new e2e.openpgp.KeyRing('test', storage);
   mockControl = new goog.testing.MockControl();
 }
 
 function tearDown() {
-  localStorage.clear();
   stubs.reset();
   mockControl.$tearDown();
 }
@@ -494,7 +492,6 @@ function testGeneratePersist() {
 
 
 function testFailsWhenLocked() {
-  localStorage.clear();
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
     document.getElementById('pubKeyAscii').value);
   var keyRing1 = new e2e.openpgp.KeyRing('test', storage);
@@ -506,7 +503,7 @@ function testFailsWhenLocked() {
 
 
 function testImportPersistUnencrypted() {
-  localStorage.clear();
+  var storage = new goog.testing.storage.FakeMechanism();
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
     document.getElementById('pubKeyAscii').value);
   var keyRing1 = new e2e.openpgp.KeyRing('', storage);
@@ -576,7 +573,6 @@ function testPersistPrivKeys() {  // b/12100334
 
 
 function testImportPersistEncrypted() {
-  localStorage.clear();
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
     document.getElementById('pubKeyAscii').value);
   // Test encryption with no keys in the keyring.

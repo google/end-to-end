@@ -18,13 +18,31 @@
  * @fileoverview Manages saved drafts within the extension.
  */
 
-goog.provide('e2e.ext.ui.draftmanager');
+goog.provide('e2e.ext.DraftManager');
 
 goog.require('e2e.ext.constants.StorageKey');
 
 goog.scope(function() {
 var constants = e2e.ext.constants;
-var draftmanager = e2e.ext.ui.draftmanager;
+var ext = e2e.ext;
+
+
+
+/**
+ * Constructor for the draft manager.
+ * @param {!goog.storage.mechanism.Mechanism} storage mechanism for storing
+ *     drafts.
+ * @constructor
+ */
+ext.DraftManager = function(storage) {
+
+  /**
+   * Mechanism for storing drafts.
+   * @type {!goog.storage.mechanism.Mechanism}
+   * @private
+   */
+  this.storage_ = storage;
+};
 
 
 /**
@@ -32,10 +50,10 @@ var draftmanager = e2e.ext.ui.draftmanager;
  * @param {string} draft The draft to persist.
  * @param {string} origin The origin where the message was created.
  */
-draftmanager.saveDraft = function(draft, origin) {
-  var allDrafts = draftmanager.getAllDrafts_();
+ext.DraftManager.prototype.saveDraft = function(draft, origin) {
+  var allDrafts = this.getAllDrafts_();
   allDrafts[origin] = draft;
-  draftmanager.persistAllDrafts_(allDrafts);
+  this.persistAllDrafts_(allDrafts);
 };
 
 
@@ -44,8 +62,8 @@ draftmanager.saveDraft = function(draft, origin) {
  * @param {string} origin The origin for which the last draft is needed.
  * @return {string} The last saved draft.
  */
-draftmanager.getDraft = function(origin) {
-  var allDrafts = draftmanager.getAllDrafts_();
+ext.DraftManager.prototype.getDraft = function(origin) {
+  var allDrafts = this.getAllDrafts_();
   return allDrafts[origin] || '';
 };
 
@@ -55,8 +73,8 @@ draftmanager.getDraft = function(origin) {
  * @param {string} origin The origin for which the last draft is needed.
  * @return {boolean} True if a draft exists. Otherwise false.
  */
-draftmanager.hasDraft = function(origin) {
-  var allDrafts = draftmanager.getAllDrafts_();
+ext.DraftManager.prototype.hasDraft = function(origin) {
+  var allDrafts = this.getAllDrafts_();
   return Boolean(allDrafts[origin]);
 };
 
@@ -65,22 +83,21 @@ draftmanager.hasDraft = function(origin) {
  * Removes the saved drafts for a given origin.
  * @param {string} origin The origin for which the drafts are to be removed.
  */
-draftmanager.clearDraft = function(origin) {
-  var allDrafts = draftmanager.getAllDrafts_();
+ext.DraftManager.prototype.clearDraft = function(origin) {
+  var allDrafts = this.getAllDrafts_();
   delete allDrafts[origin];
-  draftmanager.persistAllDrafts_(allDrafts);
+  this.persistAllDrafts_(allDrafts);
 };
 
 
 /**
- * Retrieves all draft messages from local storage.
- * @return {!Object.<string, string>} All drafts that are saved in local
- *     storage.
+ * Retrieves all draft messages from storage.
+ * @return {!Object.<string, string>} All drafts that are saved in storage.
  * @private
  */
-draftmanager.getAllDrafts_ = function() {
+ext.DraftManager.prototype.getAllDrafts_ = function() {
   try {
-    var serialized = window.localStorage.getItem(
+    var serialized = this.storage_.get(
         constants.StorageKey.LAST_SAVED_DRAFT) || '{}';
 
     // NOTE(radi): Wrapping in try/catch for backwards compatibility.
@@ -94,15 +111,14 @@ draftmanager.getAllDrafts_ = function() {
 
 
 /**
- * Persists the provided drafts into local storage, overriding any previous
+ * Persists the provided drafts into storage, overriding any previous
  * drafts.
- * @param {!Object.<string, string>} drafts The drafts to persist in local
- *     storage.
+ * @param {!Object.<string, string>} drafts The drafts to persist in storage.
  * @private
  */
-draftmanager.persistAllDrafts_ = function(drafts) {
+ext.DraftManager.prototype.persistAllDrafts_ = function(drafts) {
   try {
-    window.localStorage.setItem(
+    this.storage_.set(
         constants.StorageKey.LAST_SAVED_DRAFT, window.JSON.stringify(drafts));
   } catch (e) {}
 };

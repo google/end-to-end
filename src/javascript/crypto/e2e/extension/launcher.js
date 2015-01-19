@@ -27,6 +27,7 @@ goog.provide('e2e.ext.Launcher');
 goog.require('e2e.async.Result');
 goog.require('e2e.ext.Preferences');
 goog.require('e2e.ext.api.Api');
+goog.require('e2e.ext.constants.StorageKey');
 goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.storage.mechanism.HTML5LocalStorage');
 goog.require('goog.storage.mechanism.PrefixedMechanism');
@@ -41,12 +42,10 @@ var messages = e2e.ext.messages;
 /**
  * Base class for the End-To-End launcher.
  * @param {!goog.storage.mechanism.IterableMechanism} storage Storage mechanism
- *     for preferences.
- * @param {e2e.ext.Preferences=} opt_preferences
- * @param {e2e.ext.api.Api=} opt_api
+ *     for persistent data.
  * @constructor
  */
-ext.Launcher = function(storage, opt_preferences, opt_api) {
+ext.Launcher = function(storage) {
   /**
    * The ID of the last used tab.
    * @type {number}
@@ -69,12 +68,19 @@ ext.Launcher = function(storage, opt_preferences, opt_api) {
   this.pgpContext_ = new e2e.openpgp.ContextImpl(storage);
 
   /**
+   * Storage mechanism for persistent data.
+   * @type {!goog.storage.mechanism.IterableMechanism}
+   * @private
+   */
+  this.storage_ = storage;
+
+  /**
    * Object for accessing user preferences.
    * @type {e2e.ext.Preferences}
    * @private
    */
-  this.preferences_ = opt_preferences || new e2e.ext.Preferences(
-      new goog.storage.mechanism.PrefixedMechanism(storage, 'PREF'));
+  this.preferences_ = new e2e.ext.Preferences(this.getStorage(
+      constants.StorageKey.PREFERENCES));
 
   /**
    * The context API that the rest of the extension can use to communicate with
@@ -82,7 +88,7 @@ ext.Launcher = function(storage, opt_preferences, opt_api) {
    * @type {!ext.api.Api}
    * @private
    */
-  this.ctxApi_ = opt_api || new ext.api.Api();
+  this.ctxApi_ = new ext.api.Api();
 };
 
 
@@ -208,16 +214,25 @@ ext.Launcher.prototype.showWelcomeScreen = function() {
 };
 
 
+/**
+ * Returns storage mechanism for a given namespace.
+ * @param  {string} namespace The namespace.
+ * @return {!goog.storage.mechanism.PrefixedMechanism}
+ */
+ext.Launcher.prototype.getStorage = function(namespace) {
+  return new goog.storage.mechanism.PrefixedMechanism(this.storage_,
+      namespace);
+};
+
 
 /**
  * @param {goog.storage.mechanism.IterableMechanism=} opt_storage
- * @param {e2e.ext.Preferences=} opt_preferences
  * @constructor
  * @extends {ext.Launcher}
  */
-ext.ExtensionLauncher = function(opt_storage, opt_preferences) {
+ext.ExtensionLauncher = function(opt_storage) {
   var storage = opt_storage || new goog.storage.mechanism.HTML5LocalStorage();
-  ext.ExtensionLauncher.base(this, 'constructor', storage, opt_preferences);
+  ext.ExtensionLauncher.base(this, 'constructor', storage);
 };
 goog.inherits(ext.ExtensionLauncher, ext.Launcher);
 

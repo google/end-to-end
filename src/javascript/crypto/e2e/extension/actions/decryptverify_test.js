@@ -34,6 +34,7 @@ goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers.ArgumentMatcher');
+goog.require('goog.testing.storage.FakeMechanism');
 goog.setTestOnly();
 
 var constants = e2e.ext.constants;
@@ -103,7 +104,6 @@ var USER_ID = 'test 4';
 
 
 function setUp() {
-  window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
 
   e2e.ext.testingstubs.initStubs(stubs);
@@ -118,7 +118,8 @@ function tearDown() {
 
 
 function testExecute() {
-  var pgpContext = new e2e.openpgp.ContextImpl();
+  var pgpContext = new e2e.openpgp.ContextImpl(
+      new goog.testing.storage.FakeMechanism());
   pgpContext.setKeyRingPassphrase(''); // No passphrase.
 
   var pwdCallback = function(uid, callback) {

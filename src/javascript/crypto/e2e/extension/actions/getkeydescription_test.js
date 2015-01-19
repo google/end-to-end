@@ -31,6 +31,7 @@ goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+goog.require('goog.testing.storage.FakeMechanism');
 goog.require('goog.ui.Component');
 goog.setTestOnly();
 
@@ -38,6 +39,7 @@ var constants = e2e.ext.constants;
 var mockControl = null;
 var stubs = new goog.testing.PropertyReplacer();
 var testCase = goog.testing.AsyncTestCase.createAndInstall();
+var storage;
 
 var PUBLIC_KEY_ASCII =
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
@@ -64,6 +66,7 @@ var PUBLIC_KEY_ASCII =
 function setUp() {
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
+  storage = new goog.testing.storage.FakeMechanism();
 
   var dialogContainer = document.createElement('div');
   dialogContainer.id = constants.ElementId.CALLBACK_DIALOG;
@@ -81,7 +84,7 @@ function testExecute() {
   var parentUi = new goog.ui.Component();
   parentUi.render(document.body);
 
-  var pgpContext = new e2e.openpgp.ContextImpl();
+  var pgpContext = new e2e.openpgp.ContextImpl(storage);
   var errorCallback = mockControl.createFunctionMock('errorCallback');
   var callback = mockControl.createFunctionMock('callback');
   callback('');

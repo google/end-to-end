@@ -159,7 +159,7 @@ e2e.ext.constants.CssClass = {
 
 
 /**
- * The keys used to persist data into preferences storage.
+ * The keys used to persist data into storage.
  * @enum {string}
  */
 e2e.ext.constants.StorageKey = {
@@ -167,7 +167,9 @@ e2e.ext.constants.StorageKey = {
   ENABLE_ACTION_SNIFFING: 'enable-action-sniff',
   ENABLE_AUTO_SAVE: 'enable-auto-save',
   ENABLE_LOOKING_GLASS: 'enable-looking-glass-feature',
-  LAST_SAVED_DRAFT: 'last-saved-draft'
+  LAST_SAVED_DRAFT: 'last-saved-draft',
+  PREFERENCES: 'PREF',
+  DRAFTS: 'DRAFTS'
 };
 
 

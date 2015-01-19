@@ -90,7 +90,7 @@ e2e.openpgp.Context.prototype.hasPassphrase;
 
 
 /**
- * @return {boolean} True if the keyring is encrypted in LocalStorage.
+ * @return {boolean} True if the keyring is encrypted in persistent storage.
  * @expose
  */
 e2e.openpgp.Context.prototype.isKeyRingEncrypted;

@@ -34,10 +34,13 @@ goog.require('goog.structs.Map');
  * @final
  */
 e2e.ext.util.ChromeStorageLocal = function(opt_callback) {
-  this.storage_ = null;
+  this.storage_ = {};
   this.updateStorage_(opt_callback);
-  chrome.storage.onChanged.addListener(goog.bind(function() {
-    this.updateStorage_();
+  chrome.storage.onChanged.addListener(goog.bind(function(changes, areaName) {
+    var keyName = e2e.ext.util.ChromeStorageLocal.STORAGE_KEY_NAME_;
+    if (areaName == 'local' && keyName in changes) {
+      this.storage_ = changes[keyName].newValue || {};
+    }
   }, this));
 };
 goog.inherits(e2e.ext.util.ChromeStorageLocal,
@@ -58,10 +61,11 @@ e2e.ext.util.ChromeStorageLocal.STORAGE_KEY_NAME_ =
  */
 e2e.ext.util.ChromeStorageLocal.prototype.updateStorage_ = function(
     opt_callback) {
+  var keyName = e2e.ext.util.ChromeStorageLocal.STORAGE_KEY_NAME_;
   chrome.storage.local.get(
-      e2e.ext.util.ChromeStorageLocal.STORAGE_KEY_NAME_,
-      goog.bind(function(value) {
-        this.storage_ = value;
+      keyName,
+      goog.bind(function(values) {
+        this.storage_ = values[keyName] || {};
         opt_callback && opt_callback(this);
       }, this));
 };

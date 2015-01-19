@@ -32,6 +32,7 @@ goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
 goog.require('goog.testing.mockmatchers.SaveArgument');
+goog.require('goog.testing.storage.FakeMechanism');
 goog.setTestOnly();
 
 var launcher = null;
@@ -62,11 +63,11 @@ var PUBLIC_KEY_ASCII =
 
 
 function setUp() {
-  window.localStorage.clear();
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
 
-  launcher = new e2e.ext.ExtensionLauncher();
+  launcher = new e2e.ext.ExtensionLauncher(
+      new goog.testing.storage.FakeMechanism());
   launcher.start();
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
     callback({launcher: launcher});
