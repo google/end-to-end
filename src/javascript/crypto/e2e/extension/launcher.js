@@ -204,12 +204,23 @@ ext.Launcher.prototype.updatePassphraseWarning = goog.abstractMethod;
 
 
 /**
+ * Creates a window displaying a document from an internal End-To-End URL.
+ * @param {string} url URL of the document.
+ * @param {boolean} isForeground Should the focus be moved to the new window.
+ * @param {!function(...)} callback Function to call once the window has been
+ *     created.
+ * @protected
+ */
+ext.Launcher.prototype.createWindow = goog.abstractMethod;
+
+
+/**
  * Shows the welcome screen to first-time users.
  * @protected
  */
 ext.Launcher.prototype.showWelcomeScreen = function() {
   if (this.preferences_.isWelcomePageEnabled()) {
-    window.open('welcome.html');
+    this.createWindow('welcome.html', true, goog.nullFunction);
   }
 };
 
@@ -223,6 +234,7 @@ ext.Launcher.prototype.getStorage = function(namespace) {
   return new goog.storage.mechanism.PrefixedMechanism(this.storage_,
       namespace);
 };
+
 
 
 /**
@@ -329,6 +341,16 @@ ext.ExtensionLauncher.prototype.updateSelectedContent =
 };
 
 
+/** @override */
+ext.ExtensionLauncher.prototype.createWindow = function(url, isForeground,
+    callback) {
+  chrome.tabs.create({
+    url: url,
+    active: isForeground
+  }, callback);
+};
+
+
 
 /**
  * @param {!goog.storage.mechanism.IterableMechanism} storage
@@ -393,6 +415,14 @@ ext.AppLauncher.prototype.updateSelectedContent =
   }).addErrback(function(error) {
     errorCallback(error);
   });
+};
+
+
+/** @override */
+ext.AppLauncher.prototype.createWindow = function(url, isForeground, callback) {
+  chrome.app.window.create(url, {
+    focused: isForeground
+  }, callback);
 };
 
 });  // goog.scope

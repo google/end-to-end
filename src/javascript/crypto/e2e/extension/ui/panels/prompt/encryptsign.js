@@ -413,18 +413,6 @@ promptPanels.EncryptSign.prototype.insertMessageIntoPage_ = function(origin) {
 
 
 /**
- * Shows the Settings/Options page.
- * @private
- */
-promptPanels.EncryptSign.prototype.showOptions_ = function() {
-  chrome.tabs.create({
-    url: 'settings.html',
-    active: false
-  }, goog.nullFunction);
-};
-
-
-/**
  * Loads the last saved draft. If none is available, loads the content that the
  * user has selected.
  * @private

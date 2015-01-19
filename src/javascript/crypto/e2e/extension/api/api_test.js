@@ -267,6 +267,7 @@ function testLockedKeyring() {
 function testWithAppLauncher() {
   extensionLauncher = null;
   stubs.setPath('chrome.app.runtime.onLaunched.addListener', goog.nullFunction);
+  stubs.setPath('chrome.app.window.create', goog.nullFunction);
 
   appLauncher = new e2e.ext.AppLauncher(storage);
   appLauncher.start();

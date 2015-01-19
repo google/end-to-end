@@ -27,7 +27,6 @@ goog.provide('e2e.ext.testingstubs');
  * @param {goog.testing.PropertyReplacer} replacer
  */
 e2e.ext.testingstubs.initStubs = function(replacer) {
-  replacer.setPath('window.open', goog.nullFunction);
   replacer.setPath('window.setTimeout', function(callback) {
     callback();
   });
@@ -51,6 +50,9 @@ e2e.ext.testingstubs.initStubs = function(replacer) {
   replacer.setPath('chrome.tabs.executeScript', goog.nullFunction);
   replacer.setPath('chrome.tabs.query', function(req, callback) {
     callback([{id: 1}]);
+  });
+  replacer.setPath('chrome.tabs.create', function(options, callback) {
+    callback();
   });
   replacer.setPath('chrome.tabs.sendMessage', goog.nullFunction);
 };

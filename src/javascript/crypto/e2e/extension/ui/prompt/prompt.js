@@ -224,10 +224,7 @@ ui.Prompt.prototype.processSelectedContent_ =
       this.renderMenu_(elem, contentBlob);
       return;
     case constants.Actions.CONFIGURE_EXTENSION:
-      chrome.tabs.create({
-        url: 'settings.html',
-        active: false
-      }, goog.nullFunction);
+      this.pgpLauncher_.createWindow('settings.html', false, goog.nullFunction);
       return;
     case constants.Actions.NO_OP:
       this.close();

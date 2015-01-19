@@ -184,7 +184,7 @@ function testGetLastTab() {
 
 function testShowWelcomeScreenEnabled() {
   var openedWindow = false;
-  stubs.replace(window, 'open', function() {
+  stubs.replace(launcher, 'createWindow', function() {
     openedWindow = true;
   });
 
@@ -196,7 +196,7 @@ function testShowWelcomeScreenEnabled() {
 
 function testShowWelcomeScreenDisabled() {
   var openedWindow = false;
-  stubs.replace(window, 'open', function() {
+  stubs.replace(launcher, 'createWindow', function() {
     openedWindow = true;
   });
 
