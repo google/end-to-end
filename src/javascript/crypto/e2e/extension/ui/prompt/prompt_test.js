@@ -49,6 +49,7 @@ goog.require('goog.testing.mockmatchers');
 goog.require('goog.testing.mockmatchers.ArgumentMatcher');
 goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.require('goog.testing.storage.FakeMechanism');
+goog.require('goog.ui.PopupMenu');
 goog.setTestOnly();
 
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
@@ -133,6 +134,19 @@ function testMenuRendering() {
   var elem = document.body;
 
   assertContains('actionUserSpecified', elem.textContent);
+}
+
+
+function testDisabledMenuItems() {
+  prompt.decorate(document.documentElement);
+  prompt.processSelectedContent_({
+    action: e2e.ext.constants.Actions.ENCRYPT_SIGN
+  });
+  assertTrue(prompt.getChildAt(1) instanceof goog.ui.PopupMenu);
+  assertEquals(e2e.ext.constants.Actions.ENCRYPT_SIGN,
+      prompt.getChildAt(1).getItemAt(0).getValue());
+  assertFalse('Menu item should be disabled',
+      prompt.getChildAt(1).getItemAt(0).isEnabled());
 }
 
 
@@ -482,8 +496,8 @@ function testSelectAction() {
   stubs.replace(
       e2e.ext.ui.Prompt.prototype,
       'processSelectedContent_',
-      function(blob, action) {
-        assertEquals('Failed to select action', 'test_action', action);
+      function(blob) {
+        assertEquals('Failed to select action', 'test_action', blob.action);
         processedContent = true;
       });
 

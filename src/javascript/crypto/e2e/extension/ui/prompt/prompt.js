@@ -310,8 +310,10 @@ ui.Prompt.prototype.buttonClick_ = function(
  */
 ui.Prompt.prototype.renderMenu_ = function(elem, blob) {
   var contentBlob;
+  var displayedAction;
   if (blob instanceof panels.prompt.PanelBase) {
     contentBlob = blob.getContent();
+    displayedAction = contentBlob.action;
   } else {
     contentBlob = blob || null;
   }
@@ -320,6 +322,9 @@ ui.Prompt.prototype.renderMenu_ = function(elem, blob) {
   goog.array.forEach(this.selectableActions_, function(action) {
     var menuItem = new goog.ui.MenuItem(action.title);
     menuItem.setValue(action.value);
+    if (displayedAction == action.value) {
+      menuItem.setEnabled(false);
+    }
     menu.addChild(menuItem, true);
   });
   this.addChild(menu, false);
@@ -434,9 +439,11 @@ ui.Prompt.prototype.selectAction_ = function(contentBlob, evt) {
   goog.dom.classlist.remove(menuContainer, constants.CssClass.HIDDEN);
   this.removeChildren();
 
-  this.processSelectedContent_(
-      contentBlob,
-      /** @type {constants.Actions} */ (evt.target.getValue()));
+  if (!contentBlob) {
+    contentBlob = /** @type {messages.BridgeMessageRequest} */ ({});
+  }
+  contentBlob.action = /** @type {constants.Actions} */ (evt.target.getValue());
+  this.processSelectedContent_(contentBlob);
 };
 
 
