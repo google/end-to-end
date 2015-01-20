@@ -21,7 +21,6 @@
 
 goog.provide('e2e.cipher.RsaEncrypt');
 
-goog.require('e2e');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.AsymmetricCipher');
 goog.require('e2e.cipher.Error');

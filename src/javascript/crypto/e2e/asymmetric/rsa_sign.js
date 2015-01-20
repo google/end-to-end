@@ -21,7 +21,6 @@
 
 goog.provide('e2e.signer.RsaSign');
 
-goog.require('e2e');
 goog.require('e2e.cipher.Rsa');
 goog.require('e2e.signer.Algorithm');
 goog.require('e2e.signer.Error');
