@@ -53,13 +53,6 @@ function testActionSniffing() {
 }
 
 
-function testAutoSave() {
-  assertFalse(preferences.isAutoSaveEnabled());
-  preferences.setAutoSaveEnabled(true);
-  assertTrue(preferences.isAutoSaveEnabled());
-}
-
-
 function testLookingGlass() {
   assertFalse(preferences.isLookingGlassEnabled());
   preferences.setLookingGlassEnabled(true);
@@ -71,5 +64,4 @@ function testDefaults() {
   preferences.initDefaults();
   assertTrue(preferences.isWelcomePageEnabled());
   assertTrue(preferences.isActionSniffingEnabled());
-  assertTrue(preferences.isAutoSaveEnabled());
 }

@@ -381,10 +381,90 @@ function testDecrypt() {
 }
 
 
+function testOpenPopout() {
+  var tabId = 1;
+  var selection = 'selected content';
+  var stubWindow = {
+    id: 5
+  };
+  var timesCalled = 0;
+
+  stubs.setPath('chrome.windows.create', function(windowOptions, callback) {
+    assertEquals('prompt.html?popout', windowOptions.url);
+    assertEquals('popup', windowOptions.type);
+    callback(stubWindow);
+  });
+
+  stubs.setPath('chrome.windows.update', function(windowId, update) {
+    assertEquals(5, windowId);
+    timesCalled++;
+    assertTrue(update.focused);
+  });
+
+  stubs.set(prompt, 'close', function() {
+    assertEquals(2, timesCalled);
+    asyncTestCase.continueTesting();
+  });
+
+  stubs.setPath('chrome.extension.getViews', function() {
+    return [{location: {search: '?popout'}, postMessage: function(msg,
+            senderOrigin) {
+          assertEquals(tabId, msg.tabId);
+          assertEquals(selection, msg.selection);
+          assertEquals(constants.Actions.ENCRYPT_SIGN, msg.action);
+          assertEquals(location.origin, senderOrigin);
+          timesCalled++;
+        }}];
+  });
+
+  prompt.decorate(document.documentElement);
+  prompt.processSelectedContent_({
+    request: true,
+    tabId: tabId,
+    selection: selection,
+    action: constants.Actions.ENCRYPT_SIGN
+  });
+
+  asyncTestCase.waitForAsync('Waiting for popout window to open.');
+  var popoutButton = document.querySelector('#popout-button');
+  popoutButton.click();
+}
+
+function testInitializePopout() {
+  var selection = 'aaa';
+  var removedListener = false;
+  var request = {
+    request: true,
+    selection: selection,
+    action: constants.Actions.DECRYPT_VERIFY
+  };
+  stubs.set(prompt, 'isPopout', true);
+  stubs.set(window, 'removeEventListener', function(eventType) {
+    assertEquals('message', eventType);
+    removedListener = true;
+  });
+  stubs.set(window, 'addEventListener', function(eventType, handler) {
+    assertEquals('message', eventType);
+    handler({data: request, origin: 'http://invalid-origin.com'});
+    assertFalse(prompt.wasDecorated());
+    assertFalse(removedListener);
+    handler({data: request, origin: location.origin});
+    assertTrue(prompt.wasDecorated());
+    assertEquals(constants.Actions.DECRYPT_VERIFY,
+        prompt.panel_.getContent().action);
+    assertEquals(selection, prompt.panel_.getContent().selection);
+    assertTrue(removedListener);
+  });
+  prompt.startMessageListener();
+  assertTrue(removedListener);
+}
+
+
 function testContentInsertedOnEncrypt() {
   var plaintext = 'irrelevant';
   var origin = 'http://www.example.com';
   var subject = 'encrypted message';
+  var tabId = 1337;
 
   stubs.replace(e2e.ext.utils.text, 'extractValidEmail',
       function(recipient) {
@@ -401,7 +481,7 @@ function testContentInsertedOnEncrypt() {
   });
   prompt.pgpLauncher_.updateSelectedContent(encryptedMsg, [USER_ID], origin,
       false, goog.testing.mockmatchers.ignoreArgument,
-      goog.testing.mockmatchers.ignoreArgument, subjectMsg);
+      goog.testing.mockmatchers.ignoreArgument, subjectMsg, tabId);
 
   mockControl.$replayAll();
   populatePgpKeys();
@@ -415,7 +495,8 @@ function testContentInsertedOnEncrypt() {
       recipients: [USER_ID],
       origin: origin,
       canInject: true,
-      subject: subject
+      subject: subject,
+      tabId: tabId
     }, constants.Actions.ENCRYPT_SIGN);
 
     var protectBtn = document.querySelector('button.action');

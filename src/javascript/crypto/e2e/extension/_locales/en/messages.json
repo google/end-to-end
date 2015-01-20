@@ -47,18 +47,6 @@
     "message": "Save encrypted draft",
     "description": "A sentence fragment prompting the user to save the working draft into the visiting page."
   },
-  "promptEncryptSignRestoreDraftMsg": {
-    "message": "You previously saved a draft. Would you liked to continue editing it?",
-    "description": "A sentence asking the user if the saved draft should be used."
-  },
-  "promptEncryptSignRestoreDraftLabel": {
-    "message": "Restore the draft",
-    "description": "A sentence fragment prompting the user to restore the saved draft."
-  },
-  "promptEncryptSignDiscardDraftLabel": {
-    "message": "Discard the draft",
-    "description": "A sentence fragment prompting the user to discard the saved draft."
-  },
   "promptEncryptSignReplyHeader": {
     "message": "Original message",
     "description": "A sentence fragment indicating where the original message begins."
@@ -138,6 +126,10 @@
   "actionOpenMenu": {
     "message": "Menu",
     "description": "A noun describing where the menu is located."
+  },
+  "actionOpenPopout": {
+    "message": "Open in a new window",
+    "description": "A short phrase describing opening a new window."
   },
   "keyMgmtTitle": {
     "message": "Keyring management",

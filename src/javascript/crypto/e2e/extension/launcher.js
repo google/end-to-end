@@ -114,6 +114,8 @@ ext.Launcher.HELPER_CALLBACK_DELAY = 50;
  * @param {!function(Error)} errorCallback The callback to invoke if an error is
  *     encountered.
  * @param {string=} opt_subject The subject of the message if applicable.
+ * @param {number=} opt_tabId Tab ID of the tab to update the content in.
+ *     Defaults to active tab.
  * @expose
  */
 ext.Launcher.prototype.updateSelectedContent = goog.abstractMethod;
@@ -125,6 +127,8 @@ ext.Launcher.prototype.updateSelectedContent = goog.abstractMethod;
  *     be passed.
  * @param {!function(Error)} errorCallback The callback to invoke if an error is
  *     encountered.
+ * @param {number=} opt_tabId Tab ID of the tab to get the content from.
+ *     Defaults to active tab.
  * @expose
  */
 ext.Launcher.prototype.getSelectedContent = goog.abstractMethod;
@@ -250,34 +254,55 @@ goog.inherits(ext.ExtensionLauncher, ext.Launcher);
 
 
 /**
- * Finds the current active tab and determines if a helper script is running
- * inside of it. If no helper script is running, then one is injected.
- * @param {!function(...)} callback The function to invoke once the active tab
- *     is found.
+ * Finds the tab of with a current web application and determines if a helper
+ * script is running inside of it. If no helper script is running, then one is
+ * injected.
+ * @param {!function(number)} callback The function to invoke once the active
+ *     tab is found.
+ * @param {number=} opt_tabId If present, forces query of a given tab ID instead
+ *     of the current tab.
  * @protected
  */
-ext.ExtensionLauncher.prototype.getActiveTab = function(callback) {
-  chrome.tabs.query({
-    active: true,
-    currentWindow: true
-  }, goog.bind(function(tabs) {
-    var tab = tabs[0];
-    if (!goog.isDef(tab)) {
-      // NOTE(radi): In some operating systems (OSX, CrOS), the query will be
-      // executed against the window holding the browser action. In such
-      // situations we'll provide the last used tab.
-      callback(this.lastTabId_);
-      return;
-    } else {
-      this.lastTabId_ = tab.id;
-    }
+ext.ExtensionLauncher.prototype.getWebsiteTab = function(callback, opt_tabId) {
+  if (goog.isDefAndNotNull(opt_tabId)) {
+    this.connectToTab_(callback, opt_tabId);
+  } else {
+    // Query active tab.
+    chrome.tabs.query({
+      active: true,
+      currentWindow: true
+    }, goog.bind(function(tabs) {
+      var tabId = tabs[0] ? tabs[0].id : undefined;
+      this.connectToTab_(callback, tabId);
+    }, this));
+  }
+};
 
-    chrome.tabs.executeScript(tab.id, {file: 'helper_binary.js'}, function() {
+
+/**
+ * Connects to the helper in a given tab.
+ * @param {!function(number)} callback The function to invoke once the active
+ *     tab is found.
+ * @param {number=} opt_tabId Tab ID to connect to.
+ * @private
+ */
+ext.ExtensionLauncher.prototype.connectToTab_ = function(callback, opt_tabId) {
+  if (!goog.isDef(opt_tabId)) {
+    // NOTE(radi): In some operating systems (OSX, CrOS), the query will be
+    // executed against the window holding the browser action. In such
+    // situations we'll provide the last used tab.
+    callback(this.lastTabId_);
+    return;
+  } else {
+    this.lastTabId_ = opt_tabId;
+    chrome.tabs.executeScript(opt_tabId, {
+      file: 'helper_binary.js'
+    }, function() {
       setTimeout(function() {
-        callback(tab.id);
+        callback(/** @type {number} */ (opt_tabId));
       }, ext.Launcher.HELPER_CALLBACK_DELAY);
     });
-  }, this));
+  }
 };
 
 
@@ -299,8 +324,8 @@ ext.ExtensionLauncher.prototype.updatePassphraseWarning = function() {
 
 /** @override */
 ext.ExtensionLauncher.prototype.getSelectedContent =
-    function(callback, errorCallback) {
-  this.getActiveTab(goog.bind(function(tabId) {
+    function(callback, errorCallback, opt_tabId) {
+  this.getWebsiteTab(goog.bind(function(tabId) {
     chrome.tabs.sendMessage(tabId, {
       enableLookingGlass: this.preferences_.isLookingGlassEnabled()
     }, function(response) {
@@ -309,18 +334,21 @@ ext.ExtensionLauncher.prototype.getSelectedContent =
       } else if (response instanceof Error) {
         errorCallback(response);
       } else {
+        if (goog.isObject(response)) {
+          response.tabId = tabId;
+        }
         callback(response);
       }
     });
-  }, this));
+  }, this), opt_tabId);
 };
 
 
 /** @override */
 ext.ExtensionLauncher.prototype.updateSelectedContent =
     function(content, recipients, origin, expectMoreUpdates, callback,
-    errorCallback, opt_subject) {
-  this.getActiveTab(goog.bind(function(tabId) {
+    errorCallback, opt_subject, opt_tabId) {
+  this.getWebsiteTab(goog.bind(function(tabId) {
     chrome.tabs.sendMessage(tabId, {
       value: content,
       response: true,
@@ -337,7 +365,7 @@ ext.ExtensionLauncher.prototype.updateSelectedContent =
         callback(response);
       }
     });
-  }, this));
+  }, this), opt_tabId);
 };
 
 
@@ -380,7 +408,7 @@ ext.AppLauncher.prototype.updatePassphraseWarning = function() {
 
 /** @override */
 ext.AppLauncher.prototype.getSelectedContent =
-    function(callback, errorCallback) {
+    function(callback, errorCallback, opt_tabId) {
   this.webViewChannel.send({
     enableLookingGlass: this.preferences_.isLookingGlassEnabled()
   }).addCallback(function(response) {
@@ -398,7 +426,7 @@ ext.AppLauncher.prototype.getSelectedContent =
 /** @override */
 ext.AppLauncher.prototype.updateSelectedContent =
     function(content, recipients, origin, expectMoreUpdates, callback,
-    errorCallback, opt_subject) {
+    errorCallback, opt_subject, opt_tabId) {
   this.webViewChannel.send({
     value: content,
     response: true,

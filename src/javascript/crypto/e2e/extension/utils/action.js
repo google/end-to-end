@@ -114,9 +114,11 @@ action.getPreferences = function(callback, errorCallback, opt_scope) {
  *     encountered.
  * @param {T=} opt_scope Optional. The scope in which the function and the
  *     callbacks will be called.
+ * @param {number=} opt_tabId Tab ID to get the content from.
  * @template T
  */
-action.getSelectedContent = function(callback, errorCallback, opt_scope) {
+action.getSelectedContent = function(callback, errorCallback, opt_scope,
+    opt_tabId) {
   var scope = opt_scope || goog.global;
   action.getLauncher(function(launcher) {
     launcher.getSelectedContent(goog.bind(callback, scope),
@@ -141,15 +143,17 @@ action.getSelectedContent = function(callback, errorCallback, opt_scope) {
  * @param {string=} opt_subject The subject of the message if applicable.
  * @param {T=} opt_scope Optional. The scope in which the function and the
  *     callbacks will be called.
+ * @param {number=} opt_tabId Tab ID to update the content in.
  * @template T
  */
 action.updateSelectedContent = function(content, recipients, origin,
-    expectMoreUpdates, callback, errorCallback, opt_subject, opt_scope) {
+    expectMoreUpdates, callback, errorCallback, opt_subject, opt_scope,
+    opt_tabId) {
   var scope = opt_scope || goog.global;
   action.getLauncher(function(launcher) {
     launcher.updateSelectedContent(content, recipients, origin,
         expectMoreUpdates, goog.bind(callback, scope),
-        goog.bind(errorCallback, scope), opt_subject);
+        goog.bind(errorCallback, scope), opt_subject, opt_tabId);
   }, errorCallback, opt_scope);
 };
 

@@ -167,13 +167,13 @@ function testGetLastTab() {
   });
 
   var returnedIds = 0;
-  launcher.getActiveTab(function(returnedId) {
+  launcher.getWebsiteTab(function(returnedId) {
     assertEquals(tabId, returnedId);
     returnedIds++;
     tabs.splice(0, tabs.length);
   });
 
-  launcher.getActiveTab(function(returnedId) {
+  launcher.getWebsiteTab(function(returnedId) {
     assertEquals(tabId, returnedId);
     returnedIds++;
   });

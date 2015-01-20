@@ -21,14 +21,12 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.panels.prompt.EncryptSignTest');
 
-goog.require('e2e.ext.DraftManager');
 goog.require('e2e.ext.ExtensionLauncher');
 goog.require('e2e.ext.actions.DecryptVerify');
 goog.require('e2e.ext.actions.EncryptSign');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.testingstubs');
-goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.panels.prompt.EncryptSign');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.action');
@@ -50,7 +48,6 @@ var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 asyncTestCase.stepTimeout = 2000;
 
 var constants = e2e.ext.constants;
-var draftManager = null;
 var launcher = null;
 var mockControl = null;
 var fakeStorage = null;
@@ -61,7 +58,6 @@ var utils = e2e.ext.utils;
 
 function setUp() {
   fakeStorage = new goog.testing.storage.FakeMechanism();
-  draftManager = new e2e.ext.DraftManager(fakeStorage);
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
 
@@ -75,7 +71,6 @@ function setUp() {
       new e2e.ext.actions.Executor(goog.nullFunction),
       'irrelevant',
       launcher.getPreferences(),
-      draftManager,
       goog.nullFunction);
 
   if (!goog.dom.getElement(constants.ElementId.CALLBACK_DIALOG)) {
@@ -262,6 +257,7 @@ function testSaveDraftIntoPage() {
   var plaintext = 'plaintext message';
   var encrypted = 'header\n\nencrypted message';
   var subject = 'some subject';
+  var tabId = 1337;
 
   var encryptCb = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
   stubs.setPath('e2e.ext.actions.EncryptSign.prototype.execute',
@@ -286,12 +282,14 @@ function testSaveDraftIntoPage() {
   stubs.set(e2e.ext.utils.action, 'updateSelectedContent',
       mockControl.createFunctionMock('updateSelectedContent'));
   var contentArg = new goog.testing.mockmatchers.SaveArgument(goog.isString);
+  var tabIdArg = new goog.testing.mockmatchers.SaveArgument(goog.isNumber);
   var subjectArg = new goog.testing.mockmatchers.SaveArgument(function(a) {
     return (!goog.isDef(a) || goog.isString(a));
   });
   e2e.ext.utils.action.updateSelectedContent(contentArg, [], origin, true,
       goog.testing.mockmatchers.ignoreArgument,
-      goog.testing.mockmatchers.ignoreArgument, subjectArg);
+      goog.testing.mockmatchers.ignoreArgument, subjectArg,
+      goog.testing.mockmatchers.ignoreArgument, tabIdArg);
 
   mockControl.$replayAll();
   panel.setContentInternal({
@@ -299,7 +297,9 @@ function testSaveDraftIntoPage() {
     selection: plaintext,
     recipients: [USER_ID],
     origin: origin,
-    subject: subject
+    subject: subject,
+    tabId: tabId,
+    canInject: true
   });
   panel.render(document.body);
   textArea = document.querySelector('textarea');
@@ -307,8 +307,9 @@ function testSaveDraftIntoPage() {
   subjectInput = document.getElementById(constants.ElementId.SUBJECT);
   assertEquals(subject, subjectInput.value);
 
-  panel.saveDraft_(origin, {type: 'click'});
+  panel.saveDraft_(origin, {});
   encryptCb.arg(encrypted);
+  assertEquals(tabId, tabIdArg.arg);
   assertTrue(e2e.openpgp.asciiArmor.isDraft(contentArg.arg));
   assertContains('encrypted message', contentArg.arg);
   assertEquals(subject, subjectArg.arg);
@@ -343,7 +344,6 @@ function testLoadDraftFromPage() {
 
   mockControl.$replayAll();
 
-  draftManager.saveDraft(encrypted, origin);
   panel.setContentInternal({
     request: true,
     selection: e2e.openpgp.asciiArmor.markAsDraft(encrypted)
@@ -352,123 +352,6 @@ function testLoadDraftFromPage() {
 
   decryptCb.arg(plaintext);
   assertEquals(plaintext, document.querySelector('textarea').value);
-  mockControl.$verifyAll();
-}
-
-
-function testSaveDraftLocalStorage() {
-  var origin = 'http://www.example.com';
-  var plaintext = 'plaintext message';
-  var encrypted = 'header\n\nencrypted message';
-
-  var encryptCb = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  stubs.setPath('e2e.ext.actions.EncryptSign.prototype.execute',
-      mockControl.createFunctionMock('encryptSign'));
-  e2e.ext.actions.EncryptSign.prototype.execute(
-      goog.testing.mockmatchers.ignoreArgument,
-      new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-        assertEquals(plaintext, arg.content);
-        return true;
-      }),
-      panel,
-      encryptCb,
-      new goog.testing.mockmatchers.ArgumentMatcher(goog.isFunction));
-
-  stubs.replace(e2e.ext.utils.text, 'extractValidEmail', function(recipient) {
-    if (recipient == USER_ID) {
-      return recipient;
-    }
-    return null;
-  });
-
-  mockControl.$replayAll();
-
-  panel.setContentInternal({
-    request: true,
-    selection: plaintext,
-    recipients: [USER_ID],
-    origin: origin
-  });
-  panel.render(document.body);
-  textArea = document.querySelector('textarea');
-  assertEquals(plaintext, textArea.value);
-
-  panel.saveDraft_(origin, {type: 'non-click'});
-  encryptCb.arg(encrypted);
-  assertTrue(e2e.openpgp.asciiArmor.isDraft(draftManager.getDraft(origin)));
-  assertContains('encrypted message', draftManager.getDraft(origin));
-  mockControl.$verifyAll();
-}
-
-
-function testLoadDraftLocalStorage() {
-  var origin = 'http://www.example.com';
-  var plaintext = 'plaintext message';
-  var encrypted = 'encrypted message';
-
-  var decryptCb = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  stubs.setPath('e2e.ext.actions.DecryptVerify.prototype.execute',
-      mockControl.createFunctionMock('decryptVerify'));
-  e2e.ext.actions.DecryptVerify.prototype.execute(
-      goog.testing.mockmatchers.ignoreArgument,
-      new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-        assertEquals(encrypted, arg.content);
-        return true;
-      }),
-      panel,
-      decryptCb,
-      new goog.testing.mockmatchers.ArgumentMatcher(goog.isFunction));
-
-  mockControl.$replayAll();
-
-  draftManager.saveDraft(encrypted, origin);
-  panel.setContentInternal({
-    request: true,
-    selection: '',
-    origin: origin
-  });
-  panel.render(document.body);
-
-  for (var childIdx = 0; childIdx < panel.getChildCount(); childIdx++) {
-    var child = panel.getChildAt(childIdx);
-    if (child instanceof e2e.ext.ui.dialogs.Generic) {
-      child.dialogCallback_('');
-    }
-  }
-
-  decryptCb.arg(plaintext);
-  assertEquals(plaintext, document.querySelector('textarea').value);
-  mockControl.$verifyAll();
-}
-
-
-function testDiscardSavedDraft() {
-  var origin = 'http://www.example.com';
-  var encrypted = 'encrypted message';
-
-  var decryptCb = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  stubs.setPath('e2e.ext.actions.DecryptVerify.prototype.execute',
-      mockControl.createFunctionMock('decryptVerify'));
-
-  mockControl.$replayAll();
-
-  draftManager.saveDraft(encrypted, origin);
-  panel.setContentInternal({
-    request: true,
-    selection: '',
-    origin: origin
-  });
-  panel.render(document.body);
-
-  for (var childIdx = 0; childIdx < panel.getChildCount(); childIdx++) {
-    var child = panel.getChildAt(childIdx);
-    if (child instanceof e2e.ext.ui.dialogs.Generic) {
-      child.dialogCallback_();
-    }
-  }
-
-  assertEquals('', document.querySelector('textarea').value);
-  assertFalse(draftManager.hasDraft(origin));
   mockControl.$verifyAll();
 }
 
@@ -509,7 +392,6 @@ function testSaveDraftNoKeys() {
   panel.saveDraft_(origin, {type: 'click'});
   encryptErrorCb.arg(new utils.Error('', 'promptNoEncryptionTarget'));
   assertEquals(plaintext, textArea.value);
-  assertEquals('', draftManager.getDraft(origin));
   mockControl.$verifyAll();
 }
 

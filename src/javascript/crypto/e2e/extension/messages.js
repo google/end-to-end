@@ -39,7 +39,9 @@ var messages = e2e.ext.messages;
  *   request: boolean,
  *   origin: string,
  *   subject: (string|undefined),
- *   canInject: boolean
+ *   canInject: boolean,
+ *   canSaveDraft: boolean,
+ *   tabId: (number|undefined)
  * }}
  */
 messages.BridgeMessageRequest;

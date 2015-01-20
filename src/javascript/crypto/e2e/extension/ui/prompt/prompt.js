@@ -22,12 +22,10 @@
 
 goog.provide('e2e.ext.ui.Prompt');
 
-goog.require('e2e.ext.DraftManager');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
-goog.require('e2e.ext.constants.StorageKey');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
 goog.require('e2e.ext.ui.panels.prompt.DecryptVerify');
@@ -65,9 +63,10 @@ var utils = e2e.ext.utils;
 /**
  * Constructor for the UI prompt.
  * @constructor
+ * @param {boolean=} opt_isPopout Is the prompt displayed in a popout window.
  * @extends {goog.ui.Component}
  */
-ui.Prompt = function() {
+ui.Prompt = function(opt_isPopout) {
   goog.base(this);
 
   /**
@@ -96,6 +95,34 @@ ui.Prompt = function() {
     value: constants.Actions.CONFIGURE_EXTENSION,
     title: chrome.i18n.getMessage('actionConfigureExtension')
   }];
+
+  /**
+   * Content injected externally. Used for popout functionality.
+   * @private
+   * @type {?messages.BridgeMessageRequest}
+   */
+  this.injectedContent_ = null;
+
+  /**
+   * Is the prompt displayed in a popout window.
+   * @type {boolean}
+   */
+  this.isPopout = Boolean(opt_isPopout);
+
+  /**
+   * Message listener bound to this object. Used by popouts.
+   * @type {function(!Event): undefined}
+   * @private
+   */
+  this.boundMessageListener_ = goog.nullFunction;
+
+  /**
+   * Currently attached panel.
+   * @type {panels.prompt.PanelBase}
+   * @private
+   */
+  this.panel_ = null;
+
 };
 goog.inherits(ui.Prompt, goog.ui.Component);
 
@@ -123,27 +150,53 @@ ui.Prompt.prototype.decorateInternal = function(elem) {
 
   soy.renderElement(elem, templates.main, {
     extName: chrome.i18n.getMessage('extName'),
-    menuLabel: chrome.i18n.getMessage('actionOpenMenu')
+    menuLabel: chrome.i18n.getMessage('actionOpenMenu'),
+    popoutLabel: chrome.i18n.getMessage('actionOpenPopout')
   });
 
   var styles = elem.querySelector('link');
   styles.href = chrome.runtime.getURL('prompt_styles.css');
-
+  if (this.isPopout) {
+    goog.dom.classlist.add(
+        goog.dom.getElement(constants.ElementId.POPOUT_BUTTON),
+        constants.CssClass.HIDDEN);
+  }
   utils.action.getLauncher(function(launcher) {
     this.pgpLauncher_ = launcher || this.pgpLauncher_;
+    if (this.isPopout) {
+      this.processSelectedContent_(this.injectedContent_);
+    } else {
+      // Ignore the error to also show the prompt for pages for which we cannot
+      // inject code.
+      utils.action.getSelectedContent(
+          this.processSelectedContent_, function(error) {
+            this.processSelectedContent_(null);
+          }, this);
+    }
   }, this.displayFailure_, this);
-  // Ignore the error to also show the prompt for pages for which we cannot
-  // inject code.
-  utils.action.getSelectedContent(
-      this.processSelectedContent_, function(error) {
-        this.processSelectedContent_(null);
-      }, this);
 };
 
 
 /** @override */
 ui.Prompt.prototype.getContentElement = function() {
   return goog.dom.getElement(constants.ElementId.BODY);
+};
+
+
+/**
+ * Injects a content from external sources (used for popout functionality).
+ * Needs to be called before decorate().
+ * @param {?messages.BridgeMessageRequest} contentBlob The content to process.
+ * @expose
+ */
+ui.Prompt.prototype.injectContent = function(contentBlob) {
+  if (!this.isPopout) { // Only allowed in popouts.
+    return;
+  }
+  if (this.wasDecorated()) {
+    throw new Error('Prompt was already decorated.');
+  }
+  this.injectedContent_ = contentBlob;
 };
 
 
@@ -198,8 +251,6 @@ ui.Prompt.prototype.processSelectedContent_ =
           this.actionExecutor_,
           /** @type {!messages.BridgeMessageRequest} */ (contentBlob || {}),
           this.pgpLauncher_.getPreferences(),
-          new ext.DraftManager(this.pgpLauncher_.getStorage(
-              constants.StorageKey.DRAFTS)),
           goog.bind(this.displayFailure_, this));
       break;
     case constants.Actions.DECRYPT_VERIFY:
@@ -215,41 +266,124 @@ ui.Prompt.prototype.processSelectedContent_ =
           goog.bind(this.displayFailure_, this));
       break;
     case constants.Actions.GET_PASSPHRASE:
-      this.hideMenuButton_();
+      this.hideHeaderButtons_();
       this.renderKeyringPassphrase_(elem, contentBlob);
       return;
     case constants.Actions.USER_SPECIFIED:
       this.showMenuInline_(this.renderMenu_(elem, contentBlob));
       return;
     case constants.Actions.CONFIGURE_EXTENSION:
-      this.pgpLauncher_.createWindow('settings.html', false, goog.nullFunction);
+      this.pgpLauncher_.createWindow('settings.html', this.isPopout,
+          goog.nullFunction);
       return;
     case constants.Actions.NO_OP:
       this.close();
       return;
   }
-
+  this.showHeaderButtons_();
   if (promptPanel) {
+    this.panel_ = promptPanel;
     this.addChild(promptPanel, false);
     promptPanel.decorate(elem);
     title.textContent = promptPanel.getTitle();
+  } else {
+    this.panel_ = null;
   }
 
   this.getHandler().listen(
       elem, goog.events.EventType.CLICK,
       goog.bind(this.buttonClick_, this, action, origin, contentBlob));
 
+  if (!this.isPopout) {
+    this.getHandler().listen(
+        goog.dom.getElement(constants.ElementId.POPOUT_BUTTON),
+        goog.events.EventType.CLICK,
+        goog.bind(this.handlePopout_, this)
+    );
+  }
+
   this.renderMenu_(elem, promptPanel);
 };
 
 
 /**
- * Hides the menu button.
+ * Hides the buttons in the prompt header.
  * @private
  */
-ui.Prompt.prototype.hideMenuButton_ = function() {
-  var menuContainer = goog.dom.getElement(constants.ElementId.MENU_CONTAINER);
-  goog.dom.classlist.add(menuContainer, constants.CssClass.HIDDEN);
+ui.Prompt.prototype.hideHeaderButtons_ = function() {
+  var buttonsContainer = goog.dom.getElement(
+      constants.ElementId.BUTTONS_CONTAINER);
+  goog.dom.classlist.add(buttonsContainer, constants.CssClass.HIDDEN);
+};
+
+
+/**
+ * Shows the buttons in the prompt header.
+ * @private
+ */
+ui.Prompt.prototype.showHeaderButtons_ = function() {
+  var buttonsContainer = goog.dom.getElement(
+      constants.ElementId.BUTTONS_CONTAINER);
+  goog.dom.classlist.remove(buttonsContainer, constants.CssClass.HIDDEN);
+};
+
+
+/**
+ * Opens the prompt in a new window.
+ * @param {Event} event The event that triggered the popout action.
+ * @private
+ */
+ui.Prompt.prototype.handlePopout_ = function(event) {
+  var boundingRect = this.getElement().getBoundingClientRect();
+  var currentWidth = Math.round(boundingRect.width);
+  var currentHeight = Math.round(boundingRect.height);
+  var currentLeft = window.screenX;
+  var currentTop = window.screenY;
+  var windowBorder = 15;
+  // TODO(koto): Add supportsPopout in the launcher and bail out if they are not
+  // available. Do not use chrome.windows directly.
+  // Maybe Launcher.createPopupWindow?
+  chrome.windows.create({
+    url: 'prompt.html?popout',
+    focused: false,
+    type: 'popup',
+    width: currentWidth,
+    height: currentHeight + windowBorder,
+    left: currentLeft,
+    top: currentTop - windowBorder
+  }, goog.bind(function(win) {
+    setTimeout(goog.bind(function() {
+      var request = /** @type {?messages.BridgeMessageRequest} */ (
+          this.panel_.getContent());
+      var popouts = this.getPopouts_();
+      if (popouts.length > 0) {
+        goog.array.forEach(popouts, function(popout) {
+          // TODO(koto): Change to chrome.tabs.sendMessage(). Maybe.
+          popout.postMessage(request, location.origin);
+        });
+        chrome.windows.update(win.id, {
+          focused: true
+        });
+        this.close();
+      } else {
+        this.displayFailure_(new Error(
+            'Error occurred when connecting to the new window.'));
+      }
+    }, this), 500);
+  }, this));
+};
+
+
+/**
+ * Return Window elements of all opened popouts.
+ * @return {!Array<!Window>} Popout windows.
+ * @private
+ */
+ui.Prompt.prototype.getPopouts_ = function() {
+  // TODO(koto): Do now use chrome.* API directly.
+  return goog.array.filter(chrome.extension.getViews(), function(el) {
+    return (el.location.search == '?popout');
+  });
 };
 
 
@@ -260,9 +394,9 @@ ui.Prompt.prototype.hideMenuButton_ = function() {
  * @private
  */
 ui.Prompt.prototype.showMenuInline_ = function(menu) {
-  var menuContainer = goog.dom.getElement(constants.ElementId.MENU_CONTAINER);
-  this.hideMenuButton_();
-  menu.detach(menuContainer);
+  var menuButton = goog.dom.getElement(constants.ElementId.MENU_BUTTON);
+  this.hideHeaderButtons_();
+  menu.detach(menuButton);
   // Show the menu inline instead and restyle it.
   goog.dom.classlist.remove(menu.getElement(), 'goog-menu');
   goog.style.setStyle(menu.getElement(), {
@@ -335,11 +469,11 @@ ui.Prompt.prototype.renderMenu_ = function(elem, blob) {
       goog.ui.Component.EventType.ACTION,
       goog.partial(this.selectAction_, contentBlob));
 
-  var menuContainer = goog.dom.getElement(constants.ElementId.MENU_CONTAINER);
+  var menuButton = goog.dom.getElement(constants.ElementId.MENU_BUTTON);
 
   menu.setToggleMode(true);
   menu.attach(
-      menuContainer,
+      menuButton,
       goog.positioning.Corner.TOP_LEFT,
       goog.positioning.Corner.BOTTOM_LEFT);
 
@@ -435,8 +569,6 @@ ui.Prompt.prototype.getTitle_ = function(action) {
  * @private
  */
 ui.Prompt.prototype.selectAction_ = function(contentBlob, evt) {
-  var menuContainer = goog.dom.getElement(constants.ElementId.MENU_CONTAINER);
-  goog.dom.classlist.remove(menuContainer, constants.CssClass.HIDDEN);
   this.removeChildren();
 
   if (!contentBlob) {
@@ -474,11 +606,49 @@ ui.Prompt.prototype.clearFailure_ = function() {
 };
 
 
+/**
+ * Handles external messages to initialize the popout prompt. Will unbind itself
+ * once the message is processed.
+ * @param  {!Event} event Incoming event.
+ * @private
+ */
+ui.Prompt.prototype.handleExternalMessage_ = function(event) {
+  if (!this.isPopout ||
+      (event.origin !== location.origin) ||
+      this.wasDecorated()) {
+    return;
+  }
+  var request = /**@type {?e2e.ext.messages.BridgeMessageRequest} */ (
+      event.data);
+  this.injectContent(request);
+  this.decorate(document.documentElement);
+  window.removeEventListener('message', this.boundMessageListener_);
+};
+
+
+/**
+ * Starts a one-time MessageEvent listener.
+ */
+ui.Prompt.prototype.startMessageListener = function() {
+  if (!this.isPopout) {
+    return;
+  }
+  this.boundMessageListener_ = goog.bind(this.handleExternalMessage_, this);
+  window.addEventListener('message', this.boundMessageListener_, false);
+};
+
+
 });  // goog.scope
 
-// Create the settings page.
+// Create the prompt page.
 if (Boolean(chrome.runtime) && location.protocol === 'chrome-extension:') {
+  var isPopout = (location.search === '?popout');
   /** @type {!e2e.ext.ui.Prompt} */
-  window.promptPage = new e2e.ext.ui.Prompt();
-  window.promptPage.decorate(document.documentElement);
+  window.promptPage = new e2e.ext.ui.Prompt(isPopout);
+  if (isPopout) {
+    // Popouts are initialized by an event from the extension popup.
+    window.promptPage.startMessageListener();
+  } else {
+    window.promptPage.decorate(document.documentElement);
+  }
 }

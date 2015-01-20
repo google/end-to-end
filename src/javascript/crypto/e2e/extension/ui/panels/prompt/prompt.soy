@@ -31,6 +31,7 @@
 /**
  * Renders the required UI elements for PGP encryption.
  * @param insertCheckboxEnabled A boolean flag if the insert checkbox should be displayed.
+ * @param canSaveDraft A boolean flag if the save draft feature should be enabled.
  * @param fromLabel The label to describe the "From:" select box.
  * @param signerCheckboxTitle The label for the checkbox to sign messages.
  * @param passphraseEncryptionLinkTitle The title for the passphrase encryption link.
@@ -40,6 +41,7 @@
  * @param cancelButtonTitle The title of the cancel button.
  * @param subject The value of the subject field if applicable.
  * @param subjectLabel The label to describe the "Subject:" box if applicable.
+ * @param origin Origin of the content.
  */
 {template .renderEncrypt}
   <div id="{e2e.ext.constants.ElementId.FROM_HOLDER}">
@@ -56,7 +58,7 @@
       <input id="{e2e.ext.constants.ElementId.SUBJECT}" value="{$subject}" />
   </div>
   {/if}
-  <textarea></textarea>
+  <textarea data-origin="{$origin}"></textarea>
   <div>
     <input type="checkbox" id="{e2e.ext.constants.ElementId.SIGN_MESSAGE_CHECK}">
     <label for="{e2e.ext.constants.ElementId.SIGN_MESSAGE_CHECK}">
@@ -69,6 +71,8 @@
                    {e2e.ext.constants.CssClass.HIDDEN}">
       {$insertButtonTitle}
     </button>
+  {/if}
+  {if $canSaveDraft}
     <button class="{e2e.ext.constants.CssClass.SAVE}">{$saveDraftButtonTitle}</button>
   {/if}
   <button class="{e2e.ext.constants.CssClass.CANCEL}">{$cancelButtonTitle}</button>

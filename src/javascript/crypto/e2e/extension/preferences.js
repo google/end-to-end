@@ -70,11 +70,6 @@ e2e.ext.Preferences.prototype.initDefaults = function() {
   }
 
   if (null === this.getItem(
-      constants.StorageKey.ENABLE_AUTO_SAVE)) {
-    this.setAutoSaveEnabled(true);
-  }
-
-  if (null === this.getItem(
       constants.StorageKey.ENABLE_LOOKING_GLASS)) {
     this.setLookingGlassEnabled(false);
   }
@@ -122,28 +117,6 @@ e2e.ext.Preferences.prototype.setActionSniffingEnabled = function(enable) {
 e2e.ext.Preferences.prototype.isActionSniffingEnabled = function() {
   return 'true' == this.storage_.get(
       constants.StorageKey.ENABLE_ACTION_SNIFFING);
-};
-
-
-/**
- * Enables/disables auto-save for drafts.
- * @param {boolean} enable True if auto-save is to be enabled.
- * @expose
- */
-e2e.ext.Preferences.prototype.setAutoSaveEnabled = function(enable) {
-  this.storage_.set(
-      constants.StorageKey.ENABLE_AUTO_SAVE, enable.toString());
-};
-
-
-/**
- * Indicates whether auto-save is enabled for drafts.
- * @return {boolean} True if enabled.
- * @expose
- */
-e2e.ext.Preferences.prototype.isAutoSaveEnabled = function() {
-  return 'true' == this.storage_.get(
-      constants.StorageKey.ENABLE_AUTO_SAVE);
 };
 
 

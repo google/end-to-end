@@ -174,7 +174,8 @@ ext.Helper.prototype.getSelectedContent_ = function(req, sendResponse) {
           request: true,
           origin: origin,
           subject: msgSubject,
-          canInject: Boolean(canInject)
+          canInject: Boolean(canInject),
+          canSaveDraft: Boolean(canInject)
         });
         sendResponse(response);
       }, goog.bind(this.errorHandler_, this, sendResponse));

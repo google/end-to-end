@@ -48,7 +48,8 @@ actions.EncryptSign.prototype.execute =
   var currentUser = request.currentUser || '';
 
   if (currentUser &&
-      (recipients.length > 0 || passphrases.length > 0)) {
+      (recipients.length > 0 || passphrases.length > 0) &&
+      !goog.array.contains(recipients, currentUser)) {
     // If encrypting the message, always add the sender key for him
     // to be able to decrypt.
     recipients.push(currentUser);

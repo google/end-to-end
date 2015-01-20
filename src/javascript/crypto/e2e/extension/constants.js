@@ -87,7 +87,9 @@ e2e.ext.constants.ElementId = {
   SUBJECT: 'subject',
 
   /* Used to display menus in the UI. */
-  MENU_CONTAINER: 'menu-container',
+  BUTTONS_CONTAINER: 'buttons-container',
+  MENU_BUTTON: 'menu-button',
+  POPOUT_BUTTON: 'popout-button',
 
   // Welcome page
   WELCOME_BODY: 'welcome-main',
@@ -165,11 +167,8 @@ e2e.ext.constants.CssClass = {
 e2e.ext.constants.StorageKey = {
   ENABLE_WELCOME_SCREEN: 'enable-welcome',
   ENABLE_ACTION_SNIFFING: 'enable-action-sniff',
-  ENABLE_AUTO_SAVE: 'enable-auto-save',
   ENABLE_LOOKING_GLASS: 'enable-looking-glass-feature',
-  LAST_SAVED_DRAFT: 'last-saved-draft',
   PREFERENCES: 'PREF',
-  DRAFTS: 'DRAFTS'
 };
 
 
@@ -178,13 +177,6 @@ e2e.ext.constants.StorageKey = {
  * @const
  */
 e2e.ext.constants.NOTIFICATIONS_DELAY = 10 * 1000;
-
-
-/**
- * The number of millis to wait before saving a draft message.
- * @const
- */
-e2e.ext.constants.AUTOSAVE_INTERVAL = 5 * 1000;
 
 
 /**

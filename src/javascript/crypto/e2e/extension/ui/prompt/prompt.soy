@@ -19,6 +19,7 @@
  * Renders the base layout for the Prompt UI.
  * @param extName The name of the extension.
  * @param menuLabel The label for the menu icon.
+ * @param popoutLabel The label for the popout icon.
  */
 {template .main}
   <html>
@@ -29,8 +30,11 @@
     <body>
       <div id="{e2e.ext.constants.ElementId.HEADER}">
         <div>
-          <div id="{e2e.ext.constants.ElementId.MENU_CONTAINER}">
-            <img src="images/ic_more_vert.png" title="{$menuLabel}">
+          <div id="{e2e.ext.constants.ElementId.BUTTONS_CONTAINER}">
+            <img id="{e2e.ext.constants.ElementId.POPOUT_BUTTON}"
+                src="images/ic_launch.png" title="{$popoutLabel}">
+            <img id="{e2e.ext.constants.ElementId.MENU_BUTTON}"
+                src="images/ic_more_vert.png" title="{$menuLabel}">
           </div>
           <h1 id="{e2e.ext.constants.ElementId.TITLE}"></h1>
         </div>

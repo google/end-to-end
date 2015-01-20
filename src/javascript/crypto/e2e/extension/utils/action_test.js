@@ -125,6 +125,7 @@ function testUpdateSelectedContent() {
   var origin = 'irrelevant';
   var subject = 'irrelevant';
   var expectMoreUpdates = false;
+  var tabId = 1337;
   var callback = mockControl.createFunctionMock();
   callback();
 
@@ -133,12 +134,12 @@ function testUpdateSelectedContent() {
       launcher, 'updateSelectedContent', mockControl.createFunctionMock());
   launcher.updateSelectedContent(
       content, recipients, origin, expectMoreUpdates, callbackArg,
-      goog.testing.mockmatchers.ignoreArgument, subject);
+      goog.testing.mockmatchers.ignoreArgument, subject, tabId);
 
   mockControl.$replayAll();
   utils.updateSelectedContent(
       content, recipients, origin, expectMoreUpdates, callback,
-      goog.nullFunction, subject);
+      goog.nullFunction, subject, undefined, tabId);
   callbackArg.arg();
   mockControl.$verifyAll();
 }
