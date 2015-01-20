@@ -126,10 +126,10 @@ e2e.openpgp.packet.UserId.prototype.isCertifiedTo = function(key, use) {
   }
   // Otherwise, look for a suitable attribute on the signature.
   if (use === e2e.openpgp.packet.Key.Usage.SIGN) {
-    return sig.attributes.KEY_FLAG_SIGN;
+    return sig.attributes.KEY_FLAG_SIGN !== 0;
   } else if (use === e2e.openpgp.packet.Key.Usage.ENCRYPT) {
     return sig.attributes.KEY_FLAG_ENCRYPT_COMMUNICATION ||
-        sig.attributes.KEY_FLAG_ENCRYPT_STORAGE;
+        sig.attributes.KEY_FLAG_ENCRYPT_STORAGE !== 0;
   } else {
     return false;
   }

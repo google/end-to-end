@@ -235,18 +235,18 @@ function testKeySignatureParsing() {
     '=xRCj\n' +
     '-----END PGP PUBLIC KEY BLOCK-----';
   var key = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
-  assertEquals(0, key.keyPacket.bindingSignatures_.length);
+  assertEquals(0, key.keyPacket.bindingSignatures_.size());
   // Subkey signature for encrypting subkey
-  assertEquals(1, key.subKeys[0].bindingSignatures_.length);
+  assertEquals(1, key.subKeys[0].bindingSignatures_.size());
   assertEquals(e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
-      key.subKeys[0].bindingSignatures_[0].signatureType);
-  assertTrue(Boolean(key.subKeys[0].bindingSignatures_[0].attributes.
+      key.subKeys[0].bindingSignatures_.get(0).signatureType);
+  assertTrue(Boolean(key.subKeys[0].bindingSignatures_.get(0).attributes.
       KEY_FLAG_ENCRYPT_COMMUNICATION));
-  assertTrue(Boolean(key.subKeys[0].bindingSignatures_[0].attributes.
+  assertTrue(Boolean(key.subKeys[0].bindingSignatures_.get(0).attributes.
       KEY_FLAG_ENCRYPT_STORAGE));
-  assertFalse(Boolean(key.subKeys[0].bindingSignatures_[0].attributes.
+  assertFalse(Boolean(key.subKeys[0].bindingSignatures_.get(0).attributes.
       KEY_FLAG_SIGN));
-  assertArrayEquals(key.subKeys[0].bindingSignatures_[0].getSignerKeyId(),
+  assertArrayEquals(key.subKeys[0].bindingSignatures_.get(0).getSignerKeyId(),
       key.keyPacket.keyId);
 
   // User ID certification signature

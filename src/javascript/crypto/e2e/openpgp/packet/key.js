@@ -25,6 +25,7 @@ goog.provide('e2e.openpgp.packet.Key');
 goog.provide('e2e.openpgp.packet.Key.Usage');
 
 goog.require('e2e');
+goog.require('e2e.ImmutableArray');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.SerializationError');
 goog.require('e2e.openpgp.error.SignatureError');
@@ -37,6 +38,17 @@ goog.require('e2e.openpgp.types');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.crypt');
+
+
+/**
+ * Verification state for certifications on this key.
+ * @enum {boolean}
+ * @private
+ */
+e2e.openpgp.packet.KeyCertificationState_ = {
+  VERIFIED: true,
+  UNVERIFIED: false
+};
 
 
 
@@ -93,21 +105,17 @@ e2e.openpgp.packet.Key = function(
    */
   this.cipher = cipher;
   /**
-   * @type {!Array.<!e2e.openpgp.packet.Signature>}
+   * @type {!e2e.ImmutableArray.<!e2e.openpgp.packet.Signature,
+   *     e2e.openpgp.packet.KeyCertificationState_>}
    * @private
    */
-  this.bindingSignatures_ = [];
+  this.bindingSignatures_ = new e2e.ImmutableArray([]);
   /**
-   * @type {!Array.<!e2e.openpgp.packet.Signature>}
+   * @type {!e2e.ImmutableArray.<!e2e.openpgp.packet.Signature,
+   *     e2e.openpgp.packet.KeyCertificationState_>}
    * @private
    */
-  this.revocations_ = [];
-  /**
-   * Usages of the key packet that have been certified in signatures.
-   * @type {!Array.<!e2e.openpgp.packet.Key.Usage>}
-   * @private
-   */
-  this.certifiedUsage_ = [];
+  this.revocations_ = new e2e.ImmutableArray([]);
 };
 goog.inherits(e2e.openpgp.packet.Key,
               e2e.openpgp.packet.Packet);
@@ -137,14 +145,15 @@ e2e.openpgp.packet.Key.prototype.isSubkey = false;
 
 
 /**
- * Adds the key binding signature.
+ * Adds the key binding signature. Only possible for subkeys.
  * Caution! Signature is not verified, use verifySignatures() function to verify
  * the signature.
  * @param {!e2e.openpgp.packet.Signature} signature
  */
 e2e.openpgp.packet.Key.prototype.addBindingSignature = function(signature) {
-  if (signature.signatureType !==
-      e2e.openpgp.packet.Signature.SignatureType.SUBKEY) {
+  if (!this.isSubkey ||
+      (signature.signatureType !==
+      e2e.openpgp.packet.Signature.SignatureType.SUBKEY)) {
     throw new e2e.openpgp.error.ParseError(
         'Invalid binding signature type.');
   }
@@ -166,23 +175,16 @@ e2e.openpgp.packet.Key.prototype.addBindingSignature = function(signature) {
       throw new e2e.openpgp.error.ParseError('Invalid key cross-signature.');
     }
   }
-  this.bindingSignatures_.push(signature);
+  this.bindingSignatures_ = e2e.ImmutableArray.pushCopy(
+      this.bindingSignatures_, signature);
 };
 
 
 /**
- * Returns key binding signatures.
- * @return {!Array.<!e2e.openpgp.packet.Signature>}
- */
-e2e.openpgp.packet.Key.prototype.getBindingSignatures = function() {
-  return this.bindingSignatures_;
-};
-
-
-/**
- * Checks if a key has valid (unrevoked) binding signature to a given key
- *     packet. This function will throw SignatureError if any signature
- *     verification fails.
+ * Checks if a key has a valid (unrevoked) binding signature to a given
+ * key packet. The provided key must be the top-level key if this is a
+ * subkey, otherwise it must be the key itself. This function will
+ * throw SignatureError if any signature verification fails.
  * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
  *     verify the signatures
  * @return {boolean} True if key has valid binding.
@@ -190,21 +192,88 @@ e2e.openpgp.packet.Key.prototype.getBindingSignatures = function() {
 e2e.openpgp.packet.Key.prototype.verifySignatures = function(verifyingKey) {
   // Always process signatures to throw errors on any signature tampering.
 
+  var verifyingKeyId = verifyingKey.keyId;
+  if (!verifyingKeyId || !this.keyId) {
+    // Reject check on keys with no keyids.
+    return false;
+  }
+
+  // Ensure we're passed a toplevel key.
+  if (verifyingKey.isSubkey) {
+    throw new e2e.openpgp.error.SignatureError(
+        'Cannot verify key signatures with a subkey.');
+  }
+
+  // If we're a primary key, we can only be verified by ourselves.
+  if (!this.isSubkey &&
+      !goog.array.equals(this.keyId, verifyingKeyId)) {
+    throw new e2e.openpgp.error.SignatureError(
+        'Cannot verify primary key with a different key.');
+  }
+
   // There should be no valid revocation signatures.
   var isRevoked = false;
-  goog.array.forEach(this.revocations_, function(signature) {
+  e2e.ImmutableArray.forEach(this.revocations_, function(signature) {
     if (this.verifyRevocation_(signature, verifyingKey)) {
       isRevoked = true;
     }
   }, this);
-  var hasBinding = false;
-  // Subkeys needs to have a binding signature. See RFC 4880 11.1.
-  goog.array.forEach(this.bindingSignatures_, function(signature) {
+
+  if (isRevoked) {
+    return false;
+  }
+
+  // There are no valid revocation signatures, remove everything from
+  // our revocation array, and mark it as verified.
+  this.revocations_ = new e2e.ImmutableArray(
+      [], e2e.openpgp.packet.KeyCertificationState_.VERIFIED);
+
+  // Checks for a primary key are now complete.
+  if (!this.isSubkey) {
+    // We never add binding signatures to primary keys, so assert it.
+    e2e.assert(this.bindingSignatures_.size() == 0);
+    // Also mark binding array as verified.
+    this.bindingSignatures_ = new e2e.ImmutableArray(
+        [], e2e.openpgp.packet.KeyCertificationState_.VERIFIED);
+    return true;
+  }
+
+  // Subkeys must have a binding signature. See RFC 4880 11.1.
+  // If we have multiple valid binding signatures, use the most recent
+  // one.
+  var newestSignature = this.findNewestBindingSignature_(verifyingKey);
+  if (goog.isNull(newestSignature)) {
+    return false;
+  }
+  // Mark our binding array as being verified, and remove all elements
+  // from it except for the newest signature.
+  this.bindingSignatures_ = new e2e.ImmutableArray(
+      [newestSignature], e2e.openpgp.packet.KeyCertificationState_.VERIFIED);
+  return true;
+};
+
+
+/**
+ * Finds the newest valid binding signature on this key made by the
+ * verifyingKey, or null if none exists.
+ * @param {!e2e.openpgp.packet.Key} verifyingKey
+ * @return {e2e.openpgp.packet.Signature}
+ * @private
+ */
+e2e.openpgp.packet.Key.prototype.findNewestBindingSignature_ = function(
+    verifyingKey) {
+  var latestSignatureTime = -1;
+  var latestSignature = null;
+  e2e.ImmutableArray.forEach(this.bindingSignatures_, function(signature) {
     if (this.verifyBindingSignature_(signature, verifyingKey)) {
-      hasBinding = true;
+      // Check if we need to update the most recent signature.
+      if (signature.creationTime >= latestSignatureTime) {
+        latestSignature = signature;
+        latestSignatureTime = signature.creationTime;
+      }
     }
   }, this);
-  return (!isRevoked && (!this.isSubkey || hasBinding));
+  return latestSignature;
 };
 
 
@@ -221,7 +290,7 @@ e2e.openpgp.packet.Key.prototype.addRevocation = function(signature) {
     throw new e2e.openpgp.error.ParseError(
         'Invalid revocation signature type.');
   }
-  this.revocations_.push(signature);
+  this.revocations_ = e2e.ImmutableArray.pushCopy(this.revocations_, signature);
 };
 
 
@@ -261,25 +330,11 @@ e2e.openpgp.packet.Key.prototype.verifyRevocation_ = function(signature,
  */
 e2e.openpgp.packet.Key.prototype.verifyBindingSignature_ = function(signature,
     verifyingKey) {
-  var result = this.verifySignatureInternal_(
+  return this.verifySignatureInternal_(
       signature,
       verifyingKey,
       this.getKeyBindingSignatureData_(verifyingKey),
       'Binding signature verification failed.');
-  if (result) {
-    if (signature.attributes &&
-        signature.attributes.hasOwnProperty('KEY_FLAGS')) {
-      this.certifiedUsage_ = [];
-      if (signature.attributes.KEY_FLAG_SIGN) {
-        this.certifiedUsage_.push(e2e.openpgp.packet.Key.Usage.SIGN);
-      }
-      if (signature.attributes.KEY_FLAG_ENCRYPT_COMMUNICATION ||
-          signature.attributes.KEY_FLAG_ENCRYPT_STORAGE) {
-        this.certifiedUsage_.push(e2e.openpgp.packet.Key.Usage.ENCRYPT);
-      }
-    }
-  }
-  return result;
 };
 
 
@@ -369,6 +424,12 @@ e2e.openpgp.packet.Key.prototype.getKeyBindingSignatureData_ = function(
  */
 e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type,
     opt_keyFlags) {
+  // Check that we're a subkey, and that the provided key is a
+  // top-level key.
+  if (!this.isSubkey || bindingKey.isSubkey) {
+    throw new e2e.openpgp.error.SignatureError(
+        'Subkeys must be bound by top-level keys.');
+  }
   var data = this.getKeyBindingSignatureData_(bindingKey);
   var attributes = {
     'SIGNATURE_CREATION_TIME': e2e.dwordArrayToByteArray(
@@ -384,8 +445,20 @@ e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type,
       type,
       attributes);
 
+  var bindingPublicKey = bindingKey.getPublicKeyPacket();
   return sigRes.addCallback(function(sig) {
-    this.bindingSignatures_.push(sig);
+    // This newly minted signature should become the latest bound
+    // certification on this key. We check this by explicitly
+    // verifying the newly created signature.
+    this.addBindingSignature(sig);
+    if (!this.verifySignatures(bindingPublicKey)) {
+      throw new e2e.openpgp.error.SignatureError(
+          'Unexpected - newly bound signature could not be verified.');
+    }
+    if (sig != this.getVerifiedCertification_()) {
+      throw new e2e.openpgp.error.SignatureError(
+          'Unexpected - newly bound signature was not the latest.');
+    }
   }, this);
 };
 
@@ -393,8 +466,8 @@ e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type,
 /** @override */
 e2e.openpgp.packet.Key.prototype.serialize = function() {
   var serialized = goog.base(this, 'serialize');
-  goog.array.forEach(
-      this.revocations_.concat(this.bindingSignatures_),
+  e2e.ImmutableArray.forEach(
+      e2e.ImmutableArray.concat(this.revocations_, this.bindingSignatures_),
       function(sig) {
         goog.array.extend(serialized, sig.serialize());
       });
@@ -417,11 +490,50 @@ e2e.openpgp.packet.Key.prototype.can = function(use) {
 
 /**
  * Specifies whether the key packet has been certified for a specific use.
- * @param {e2e.openpgp.packet.Key.Usage} use Either 'sign' or 'encrypt'.
+ * Can only ask this question of a subkey.
+ * TBD: (kbsriram) pass in the verifyingKey to ensure we're asking
+ * this question with the same key that made the certification.
+ * @param {!e2e.openpgp.packet.Key.Usage} use Either 'sign' or 'encrypt'.
  * @return {boolean}
  */
 e2e.openpgp.packet.Key.prototype.isCertifiedTo = function(use) {
-  return goog.array.contains(this.certifiedUsage_, use);
+  var sig = this.getVerifiedCertification_();
+
+  // If the signature has no KEY_FLAGS property at all, the key
+  // is considered to be certified for all uses.
+  if (!sig.attributes.hasOwnProperty('KEY_FLAGS')) {
+    return true;
+  }
+  // Otherwise, look for a suitable attribute on the signature.
+  if (use === e2e.openpgp.packet.Key.Usage.SIGN) {
+    return sig.attributes.KEY_FLAG_SIGN !== 0;
+  } else if (use === e2e.openpgp.packet.Key.Usage.ENCRYPT) {
+    return sig.attributes.KEY_FLAG_ENCRYPT_COMMUNICATION ||
+        sig.attributes.KEY_FLAG_ENCRYPT_STORAGE !== 0;
+  } else {
+    return false;
+  }
+};
+
+
+/**
+ * The timestamp of the (valid) binding signature for this subkey. If
+ * the key was never certified (through verifySignatures()) this
+ * method will throw an exception. The key to be passed in is the
+ * toplevel key -- used as a check to ensure that the certified
+ * signature was in fact issued by that key.
+ * @param {!e2e.openpgp.packet.Key} key is the main key
+ * @return {number} timestamp
+ */
+e2e.openpgp.packet.Key.prototype.getCertifiedTime = function(key) {
+  var sig = this.getVerifiedCertification_();
+
+  // TODO(kbsriram) move this into getVerifiedCertification()
+  if (!key.keyId || !goog.array.equals(key.keyId, sig.getSignerKeyId())) {
+    throw new e2e.openpgp.error.SignatureError(
+        'This key was certified by a different issuer.');
+  }
+  return sig.creationTime;
 };
 
 
@@ -437,6 +549,47 @@ e2e.openpgp.packet.Key.prototype.toKeyPacketInfo = function() {
     fingerprintHex: this.getFingerprintHex_(),
     algorithm: this.cipher.algorithm
   };
+};
+
+
+/**
+ * Return a previously verified certification, or raise an exception
+ * if none were found. This method only makes sense for a subkey.
+ * @return {!e2e.openpgp.packet.Signature}
+ * @private
+ */
+e2e.openpgp.packet.Key.prototype.getVerifiedCertification_ = function() {
+  if (!this.isSubkey) {
+    throw new e2e.openpgp.error.SignatureError(
+        'Cannot directly certify a primary key.');
+  }
+
+  // 1. Check that both the revocation and binding arrays are marked
+  // as verified.
+  if ((this.revocations_.getState() !==
+      e2e.openpgp.packet.KeyCertificationState_.VERIFIED) ||
+      (this.bindingSignatures_.getState() !==
+      e2e.openpgp.packet.KeyCertificationState_.VERIFIED)) {
+    throw new e2e.openpgp.error.SignatureError('This key is not certified.');
+  }
+
+  // 2. Sanity check - revocations array must be empty, and there should
+  // be exactly one element in bindingSignatures.
+  e2e.assert(this.revocations_.size() === 0);
+  e2e.assert(this.bindingSignatures_.size() === 1);
+
+  // signature should never be undefined, and this check also convinces
+  // closure that signature is defined.
+  var signature = goog.asserts.assertObject(this.bindingSignatures_.get(0));
+
+  // TODO (kbsriram)
+  // 3. Binding signature must be made by the verifyingKey
+  // if (!verifyingKey.keyId ||
+  //     !goog.array.equals(verifyingKey.keyId, signature.getSignerKeyId())) {
+  //   throw new e2e.openpgp.error.SignatureError(
+  //       'This key was certified by a different issuer.');
+  // }
+  return signature;
 };
 
 

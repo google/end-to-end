@@ -272,7 +272,7 @@ function testGeneration() {
   assertEquals(0x01, certification.attributes.FEATURES); // MDC
   assertTrue(Boolean(certification.attributes.KEY_FLAG_CERTIFY));
   assertTrue(Boolean(certification.attributes.KEY_FLAG_SIGN));
-  var bindingSig = ecdhPubKey.getBindingSignatures()[0];
+  var bindingSig = ecdhPubKey.bindingSignatures_.get(0);
   assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_COMMUNICATION));
   assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_STORAGE));
   assertArrayEquals(bindingSig.attributes.ISSUER, ecdsaPubKey.keyId);
@@ -296,7 +296,7 @@ function testGeneration() {
   assertEquals(0x01, certification.attributes.FEATURES); // MDC
   assertTrue(Boolean(certification.attributes.KEY_FLAG_CERTIFY));
   assertTrue(Boolean(certification.attributes.KEY_FLAG_SIGN));
-  bindingSig = ecdhPrivKey.getBindingSignatures()[0];
+  bindingSig = ecdhPrivKey.bindingSignatures_.get(0);
   assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_COMMUNICATION));
   assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_STORAGE));
   assertArrayEquals(bindingSig.attributes.ISSUER, ecdsaPubKey.keyId);

@@ -204,6 +204,7 @@ function testEncryption() {
     '=nHBL\n' +
     '-----END PGP PUBLIC KEY BLOCK-----';
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
+  publicKeyBlock.processSignatures();
   var literal = e2e.openpgp.block.LiteralMessage.construct(plaintext,
       plaintextFilename);
   asyncTestCase.waitForAsync('Waiting for encryption.');
@@ -474,6 +475,7 @@ function testEncryptionECDH() {
     '=xRCj\n' +
     '-----END PGP PUBLIC KEY BLOCK-----';
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
+  publicKeyBlock.processSignatures();
 
   var literal = e2e.openpgp.block.LiteralMessage.construct(plaintext,
       plaintextFilename);
@@ -816,42 +818,33 @@ function testClearSignDSA() {
 function testElGamal() {
   var plaintext = 'hello world from encrypted message';
   var plaintextFilename = 'file.txt';
-  var publicKeyAscii =  // Vint Cerf key with DSA key and ElGamal subkey
+  var publicKeyAscii =  // DSA primary key with ElGamal subkey
       '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
+      'Version: GnuPG v1\n' +
       '\n' +
-      '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\n' +
-      '=4QTq\n' +
-      '-----END PGP PUBLIC KEY BLOCK-----';
-  publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
+      'mQGiBFSPk4wRBACH3hO981TUnewFnMYLXBBpVEUDGL9lw2j/Am2IaXdKYQeCChOS\n' +
+      'niFzxUT+2wd0tO3oMP1bqMiCQ0T5io+erdTkO5UKzstFR5Wy0yilOGL6CSl+LFk+\n' +
+      'z4lH99Oz8Tp9cIAR1vf7d1OVV/VdWj7wW1/vAHlawApwGBKfp44AmaCREwCgtSfl\n' +
+      'WVrIt0m6Eqdh98zSIUqJrmsD/0b42/4LgzqV9dCJ0ar2MIVrisRRHF5evCyrYXUr\n' +
+      'bwgvNyjgwVhceQ30YOZ/9evFmSQI5PJck7HTiJeZ8kXyZaRCah26wo33Y4DatKI9\n' +
+      'Yd319RtBU5Rax3xbEwbph6xJY4N6OsxkLqc6heGee7+g8TpNJK5THahZTo4EosJS\n' +
+      'WUW7BACDUjca3V2CDm+X1Xx9zD5g/YMgrFXgRWPnaL8mojNSjdTVHRX+r23jacZz\n' +
+      'F42Sdxx+W9D7gO/jwW61zU261QvTgZE4Q57cFkY29EoOTt4ImaVpfW2iJQWqnFpJ\n' +
+      'RfmZHlJmQW6gctxM3KFQqMVQ43i58fklf9KkMmE21RyVcpWVxLQWZHNhdGVzdCA8\n' +
+      'ZHNhQHRlc3QuY29tPohiBBMRAgAiBQJUj5OMAhsDBgsJCAcDAgYVCAIJCgsEFgID\n' +
+      'AQIeAQIXgAAKCRDkg3aueL6DESX4AJ9eBP7+dK/k0peMP4MvRYbHtqWtngCePkt7\n' +
+      '+68wq2IbV3bMgP1OBbxI2j65AQ0EVI+TjBAEAORrWicQxz1BUXR8o0lPosMG763j\n' +
+      '/qY7qRaNpW1yy+MC6mkTzdyTe+uADbnlWW9iAKuVTtLn7z9DQ31V/alW1EJIO7zk\n' +
+      'a5B+DP0rl8sqg2PaffjaCW/R6CJvCIUO7Vd13WAv9Q9qN8KhcOVE7Nl70u1m2/+r\n' +
+      'ocuDXUmYkVhNd2yPAAMFBACy8RRvm2kLGTq5il45GCNnYxfX4F4lDaf8Kp38GrPN\n' +
+      'wL2ofiyMPMc5QKdA4rO5Mr41SX0Y0Zs6Vbf7bfmAuT/zDxf8c7IfYfWmB122qOOG\n' +
+      'lOHuJkXNMUrc7Q+SXnm1t/ottQ8ftjMYW+aBBR82Vb36pCCYsObKnSX1qypnYpHe\n' +
+      'pIhJBBgRAgAJBQJUj5OMAhsMAAoJEOSDdq54voMRb+gAoLFAFX7763NQAV5AyfU7\n' +
+      'WY9OhFXnAJ488jUYc4saWRw0Pl6TrVrWScV+EA==\n' +
+      '=GrgA\n' +
+      '-----END PGP PUBLIC KEY BLOCK-----\n';
+  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
+  publicKeyBlock.processSignatures();
 
   var literal = e2e.openpgp.block.LiteralMessage.construct(plaintext,
       plaintextFilename);
@@ -926,8 +919,10 @@ function testEncryptionWithSignatures() {
     '=nHBL\n' +
     '-----END PGP PUBLIC KEY BLOCK-----';
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
+  publicKeyBlock.processSignatures();
   var privateKeyBlock = e2e.openpgp.block.factory.parseAscii(
         privateKeyAscii);
+  privateKeyBlock.processSignatures();
 
   var passphrase = e2e.stringToByteArray('test');
   privateKeyBlock.keyPacket.cipher.unlockKey(passphrase);

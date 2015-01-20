@@ -670,6 +670,69 @@ j/GbY0dnReClicttomuqZKLB3ANeap1s8cmJSinmtL+0lwNUzW/swRX3rw/Fo1Mn
 -----END PGP PUBLIC KEY BLOCK-----
 </textarea>
 <!--
+  The primary key can neither sign nor encrypt. It has a single
+  signing subkey. It should return a null if a public encryption
+  subkey is requested.
+
+:public key packet:
+  version 4, algo 1, created 1418654084, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+  keyid: 8A20F7D9D02291A5
+:user ID packet: "gpg-test <gpg-s2k@test.com>"
+:signature packet: algo 1, keyid 8A20F7D9D02291A5
+  version 4, created 1418654084, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest 65 21
+  hashed subpkt 2 len 4 (sig created 2014-12-15)
+  hashed subpkt 27 len 1 (key flags: 01)
+  hashed subpkt 11 len 5 (pref-sym-algos: 9 8 7 3 2)
+  hashed subpkt 21 len 5 (pref-hash-algos: 8 2 9 10 11)
+  hashed subpkt 22 len 3 (pref-zip-algos: 2 3 1)
+  hashed subpkt 30 len 1 (features: 01)
+  hashed subpkt 23 len 1 (key server preferences: 80)
+  subpkt 16 len 8 (issuer key ID 8A20F7D9D02291A5)
+  data: [1024 bits]
+:public sub key packet:
+  version 4, algo 1, created 1418654101, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+  keyid: 87EBC27D4CA8E30D
+:signature packet: algo 1, keyid 8A20F7D9D02291A5
+  version 4, created 1418654101, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest c1 e5
+  hashed subpkt 2 len 4 (sig created 2014-12-15)
+  hashed subpkt 27 len 1 (key flags: 02)
+  subpkt 16 len 8 (issuer key ID 8A20F7D9D02291A5)
+  subpkt 32 len 156 (signature: v4, class 0x19, algo 1, digest algo 2)
+  data: [1022 bits]
+-->
+
+<textarea id="SignOnlyPublicKey">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1
+
+mI0EVI7xhAEEAKlKrmSbRg0JMvo+oW0KT2HLMZkFxQIDgFLiSYcqLBUA2MxtMxjc
+Y+jY0+/gz9owKCZUSkoCk90ntybEAJYqnWJLrKIgllR8cBq6hU+c9P94x7jG7LhT
+rP85IhrLQ677zD8es8DQe8+tPw1J8/A5jKasY0aS7Picxqe2V6zRllwfABEBAAG0
+G2dwZy10ZXN0IDxncGctczJrQHRlc3QuY29tPoi4BBMBAgAiBQJUjvGEAhsBBgsJ
+CAcDAgYVCAIJCgsEFgIDAQIeAQIXgAAKCRCKIPfZ0CKRpWUhBACMri9E/kcqcCxl
+3p+/xq2WChmS5g8dJ+QVZsXHudwWqAtUUjk94f+3FgD1CI34W5l8Ycz2nD9Z7GWA
+wclTgplpIcqUB4wi8XFPjgZQW3TXZWE6qSiiWcUn6Qdu+vSQyY1z+HLcbjcr/+Ig
+pQHRxnyg/Pgk/OA+7RpqEI6U9kA/friNBFSO8ZUBBADUKdzdW3FKscFug6AYQSIP
+xxqfd/2GjA+apulnw1ysLUq8Mr/h/tnXTaUQ2XpnhJcbpoWvGIR2C+djdISwHVLg
+I1OIgJJ5AaprBU4zti5OgliCQfAPFQdl258l8c9zm510uHy3Uz2FFH7N/0fQM21h
+1TeS8FJYAYfenvE/IfCDBwARAQABiQE9BBgBAgAJBQJUjvGVAhsCAKgJEIog99nQ
+IpGlnSAEGQECAAYFAlSO8ZUACgkQh+vCfUyo4w3wZQQAxCkx0G/rJj5P5LM6LCGV
+RYqIRSjegd/r6x/BQfkFbmjJg4BxUiT6ruQ/BWYHflCnHoixZZTu0cGvowJQFrr7
+RDvKaayIqh+na0vyfVL2+KVBfe3Kbu48c5tHtCuqz2nWbFq+wGprMxOERA1khNAO
+QwFWoGjooCC4i+8rOAPXsWbB5QP+JbFfzPLCRQFT4Wk+pvNCo+uABkv/gy8MjJcf
+osdAczCNqo89EOpkFWaRsiQGvu7Z2srXoiUObUMqLpGpjNM467vc/RAK5OF5lqKZ
+hZN0w0g1mpYHmnL1dPhMBdM5nicOZurepAWF4qWk8+7uX42u7LRuEE1xB9yeOG4X
+d8SAPYc=
+=fFTC
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<!--
 UID with an expired certification signature.
 :public key packet:
   version 4, algo 1, created 1400629566, expires 0
@@ -1082,7 +1145,7 @@ function testSigningSubkey() {
   var key = getKey('SigningSubkey');
   var mainKeyId = key.keyPacket.keyId;
   var signingSubKey = key.subKeys[1];
-  var bindingSig = signingSubKey.bindingSignatures_[0];
+  var bindingSig = signingSubKey.bindingSignatures_.get(0);
   assertArrayEquals(mainKeyId, bindingSig.getSignerKeyId());
   assertTrue(bindingSig.embeddedSignature
       instanceof e2e.openpgp.packet.Signature);
@@ -1099,14 +1162,14 @@ function testEmbeddedSignatures() {
   var key, error;
   // Remove embedded signature
   key = getKey('SigningSubkey');
-  delete key.subKeys[1].bindingSignatures_[0].embeddedSignature;
+  delete key.subKeys[1].bindingSignatures_.get(0).embeddedSignature;
   error = assertThrows(function() {
     key.processSignatures();
   });
   assertTrue(error instanceof e2e.openpgp.error.SignatureError);
   // Tamper signature type
   key = getKey('SigningSubkey');
-  key.subKeys[1].bindingSignatures_[0].embeddedSignature.signatureType =
+  key.subKeys[1].bindingSignatures_.get(0).embeddedSignature.signatureType =
       e2e.openpgp.packet.Signature.SignatureType.SUBKEY;
   error = assertThrows(function() {
     key.processSignatures();
@@ -1114,7 +1177,7 @@ function testEmbeddedSignatures() {
   assertTrue(error instanceof e2e.openpgp.error.SignatureError);
   // Invalidate signature
   key = getKey('SigningSubkey');
-  key.subKeys[1].bindingSignatures_[0].embeddedSignature.signature.s[0] ^= 0x01;
+  key.subKeys[1].bindingSignatures_.get(0).embeddedSignature.signature.s[0] ^= 0x01;
   error = assertThrows(function() {
     key.processSignatures();
   });
@@ -1124,15 +1187,15 @@ function testEmbeddedSignatures() {
 
 function testSignatureVerification() {
   var keyBlock = getKey('EccKey');
-  assertEquals(1, keyBlock.subKeys[0].bindingSignatures_.length);
+  assertEquals(1, keyBlock.subKeys[0].bindingSignatures_.size());
   assertEquals(
       e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
-      keyBlock.subKeys[0].bindingSignatures_[0].signatureType);
+      keyBlock.subKeys[0].bindingSignatures_.get(0).signatureType);
   assertArrayEquals(
-      keyBlock.subKeys[0].bindingSignatures_[0].untrustedAttributes.ISSUER,
+      keyBlock.subKeys[0].bindingSignatures_.get(0).untrustedAttributes.ISSUER,
       keyBlock.keyPacket.keyId);
   // Modify the signature.
-  keyBlock.subKeys[0].bindingSignatures_[0].signature.s[0] ^= 0x01;
+  keyBlock.subKeys[0].bindingSignatures_.get(0).signature.s[0] ^= 0x01;
 
   var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
       keyBlock.serialize());
@@ -1153,14 +1216,14 @@ function testGnupgRevokedSubkey() {
   // Parsing revocation signature
   assertEquals(1, publicKeyBlock.subKeys.length);
   var revokedSubkey = publicKeyBlock.subKeys[0];
-  assertEquals(1, revokedSubkey.revocations_.length);
+  assertEquals(1, revokedSubkey.revocations_.size());
   assertEquals(e2e.openpgp.packet.Signature.SignatureType.SUBKEY_REVOCATION,
-      revokedSubkey.revocations_[0].signatureType);
+      revokedSubkey.revocations_.get(0).signatureType);
   assertEquals(e2e.openpgp.packet.Signature.RevocationReason.KEY_COMPROMISED,
-      revokedSubkey.revocations_[0].attributes.REVOCATION_REASON);
+      revokedSubkey.revocations_.get(0).attributes.REVOCATION_REASON);
   assertEquals('revoke subkey',
-      revokedSubkey.revocations_[0].attributes.REVOCATION_REASON_TEXT);
-  assertEquals(1, revokedSubkey.bindingSignatures_.length);
+      revokedSubkey.revocations_.get(0).attributes.REVOCATION_REASON_TEXT);
+  assertEquals(1, revokedSubkey.bindingSignatures_.size());
   // Applying revocation signature removes the revoked subkey, but the key is
   // still valid.
   publicKeyBlock.processSignatures();
@@ -1168,7 +1231,7 @@ function testGnupgRevokedSubkey() {
 
   // Tamper revocation signature
   var clone = getKey('RevokedSubKey');
-  clone.subKeys[0].revocations_[0].signature.s[0] ^= 0x01;
+  clone.subKeys[0].revocations_.get(0).signature.s[0] ^= 0x01;
   var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
       clone.serialize());
   var error = assertThrows(function() {
@@ -1182,13 +1245,13 @@ function testGnupgRevokedSubkey() {
 function testGnupgRevokedMainKey() {
   var publicKeyBlock = getKey('RevokedMainKey');
 
-  assertEquals(1, publicKeyBlock.keyPacket.revocations_.length);
+  assertEquals(1, publicKeyBlock.keyPacket.revocations_.size());
   assertEquals(e2e.openpgp.packet.Signature.SignatureType.KEY_REVOCATION,
-      publicKeyBlock.keyPacket.revocations_[0].signatureType);
+      publicKeyBlock.keyPacket.revocations_.get(0).signatureType);
   assertEquals(e2e.openpgp.packet.Signature.RevocationReason.KEY_COMPROMISED,
-      publicKeyBlock.keyPacket.revocations_[0].attributes.REVOCATION_REASON);
+      publicKeyBlock.keyPacket.revocations_.get(0).attributes.REVOCATION_REASON);
   assertEquals('Main key revocation test',
-      publicKeyBlock.keyPacket.revocations_[0].attributes.REVOCATION_REASON_TEXT);
+      publicKeyBlock.keyPacket.revocations_.get(0).attributes.REVOCATION_REASON_TEXT);
   var error = assertThrows(function() {
       // The whole key is revoked, so this throws error
       publicKeyBlock.processSignatures();
@@ -1196,7 +1259,7 @@ function testGnupgRevokedMainKey() {
   assertTrue(error instanceof e2e.openpgp.error.SignatureError);
 
   // Tamper revocation signature
-  publicKeyBlock.keyPacket.revocations_[0].signature.s[0] ^= 0x01;
+  publicKeyBlock.keyPacket.revocations_.get(0).signature.s[0] ^= 0x01;
   var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
       publicKeyBlock.serialize());
   var error = assertThrows(function() {
@@ -1310,6 +1373,36 @@ function testKeyUsageFlags() {
   assertObjectEquals(key.subKeys[1], key.getKeyToEncrypt());
 }
 
+function testSignOnlyPublicKey() {
+  var key = getKey('SignOnlyPublicKey');
+  key.processSignatures();
+
+  // primary key/userid on this key should not sign or encrypt.
+  assertEquals(1, key.userIds.length);
+  assertEquals(1418654084, key.userIds[0].getCertifiedTime(key.keyPacket));
+  assertFalse(key.userIds[0].isCertifiedTo(
+      key.keyPacket, e2e.openpgp.packet.Key.Usage.ENCRYPT));
+  assertFalse(key.userIds[0].isCertifiedTo(
+      key.keyPacket, e2e.openpgp.packet.Key.Usage.SIGN));
+
+
+  // The single subkey on this key can only sign.
+  assertEquals(1, key.subKeys.length);
+  assertEquals(1418654101, key.subKeys[0].getCertifiedTime(key.keyPacket));
+  assertTrue(key.subKeys[0].isCertifiedTo(
+      e2e.openpgp.packet.Key.Usage.SIGN));
+  assertFalse(key.subKeys[0].isCertifiedTo(
+      e2e.openpgp.packet.Key.Usage.ENCRYPT));
+
+  // Verify the getter methods return the correct (or no) subkey.
+  // TODO (kbsriram)
+  // assertNull(key.getKeyToEncrypt());
+  // assertEquals(
+  //    key.subKeys[0],
+  //    key.getKeyTo(
+  //        e2e.openpgp.packet.Key.Usage.SIGN, e2e.openpgp.packet.PublicKey));
+}
+
 function testExpiredUid() {
   var key = getKey('ExpiredUid');
   assertEquals(2, key.userIds.length);
@@ -1342,7 +1435,7 @@ function testRevokedUid() {
 function testExpiredSubkey() {
   var key = getKey('ExpiredSubkey');
   assertEquals(1, key.subKeys.length);
-  assertEquals(86400, key.subKeys[0].getBindingSignatures()[0].attributes.
+  assertEquals(86400, key.subKeys[0].bindingSignatures_.get(0).attributes.
       SIGNATURE_EXPIRATION_TIME);
   key.processSignatures();
   // Expired User ID gets rejected
