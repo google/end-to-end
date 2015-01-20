@@ -99,6 +99,10 @@
     "message": "Unable to decrypt contents. Please try reloading the page and clicking the End-To-End icon in the upper right corner of the screen.",
     "description": "A generic error message indicating that something went wrong while reading messages inline."
   },
+  "actionLoading": {
+    "message": "Loading...",
+    "description": "A phrase inditating a loading process."
+  },
   "actionUserSpecified": {
     "message": "Select an End-To-End action...",
     "description": "A phrase prompting the user to select a PGP action."

@@ -40,6 +40,7 @@ goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
+goog.require('goog.events');
 goog.require('goog.events.EventType');
 goog.require('goog.positioning.Corner');
 goog.require('goog.style');
@@ -149,13 +150,13 @@ ui.Prompt.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
 
   soy.renderElement(elem, templates.main, {
-    extName: chrome.i18n.getMessage('extName'),
     menuLabel: chrome.i18n.getMessage('actionOpenMenu'),
     popoutLabel: chrome.i18n.getMessage('actionOpenPopout')
   });
 
-  var styles = elem.querySelector('link');
-  styles.href = chrome.runtime.getURL('prompt_styles.css');
+  var title = goog.dom.getElement(constants.ElementId.TITLE);
+  title.textContent = chrome.i18n.getMessage('actionLoading');
+
   if (this.isPopout) {
     goog.dom.classlist.add(
         goog.dom.getElement(constants.ElementId.POPOUT_BUTTON),
@@ -621,7 +622,7 @@ ui.Prompt.prototype.handleExternalMessage_ = function(event) {
   var request = /**@type {?e2e.ext.messages.BridgeMessageRequest} */ (
       event.data);
   this.injectContent(request);
-  this.decorate(document.documentElement);
+  this.decorate(document.body);
   window.removeEventListener('message', this.boundMessageListener_);
 };
 
@@ -642,13 +643,15 @@ ui.Prompt.prototype.startMessageListener = function() {
 
 // Create the prompt page.
 if (Boolean(chrome.runtime) && location.protocol === 'chrome-extension:') {
-  var isPopout = (location.search === '?popout');
-  /** @type {!e2e.ext.ui.Prompt} */
-  window.promptPage = new e2e.ext.ui.Prompt(isPopout);
-  if (isPopout) {
-    // Popouts are initialized by an event from the extension popup.
-    window.promptPage.startMessageListener();
-  } else {
-    window.promptPage.decorate(document.documentElement);
-  }
+  goog.events.listen(window, goog.events.EventType.LOAD, function() {
+    var isPopout = (location.search === '?popout');
+    /** @type {!e2e.ext.ui.Prompt} */
+    window.promptPage = new e2e.ext.ui.Prompt(isPopout);
+    if (isPopout) {
+      // Popouts are initialized by an event from the extension popup.
+      window.promptPage.startMessageListener();
+    } else {
+      window.promptPage.decorate(document.body);
+    }
+  });
 }

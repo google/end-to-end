@@ -137,6 +137,22 @@ function testMenuRendering() {
 }
 
 
+function testLoadingState() {
+  stubs.replace(chrome.i18n, 'getMessage', function(msgId) {
+    return msgId;
+  });
+
+  prompt.decorate(document.documentElement);
+  var elem = document.body;
+
+  assertContains('actionLoading', elem.textContent);
+  assertTrue(goog.dom.classlist.contains(
+      goog.dom.getElement(e2e.ext.constants.ElementId.BUTTONS_CONTAINER),
+      e2e.ext.constants.CssClass.HIDDEN));
+
+}
+
+
 function testDisabledMenuItems() {
   prompt.decorate(document.documentElement);
   prompt.processSelectedContent_({
