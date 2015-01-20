@@ -161,7 +161,55 @@ e2e_build_extension() {
   cp -fr "$SRC_EXT_DIR/_locales" "$BUILD_EXT_DIR"
   find "$SRC_EXT_DIR/ui" -regex .*.html -not -regex .*_test.html -exec cp -f "{}" "$BUILD_EXT_DIR" \;
   cp -f "$SRC_EXT_DIR/helper/gmonkeystub.js" "$BUILD_EXT_DIR"
-  cp -f "$SRC_EXT_DIR/manifest.json" "$BUILD_EXT_DIR"
+  cp -f "$SRC_EXT_DIR/extension_manifest.json" "$BUILD_EXT_DIR/manifest.json"
+  echo "Done."
+}
+
+e2e_build_app() {
+  e2e_assert_dependencies
+  set -e
+  e2e_assert_jsdeps
+  e2e_assert_templates
+
+  BUILD_EXT_DIR="$BUILD_DIR/app"
+  echo "Building End-To-End app to $BUILD_EXT_DIR"
+  rm -rf "$BUILD_EXT_DIR"
+  mkdir -p "$BUILD_EXT_DIR"
+  SRC_EXT_DIR="src/javascript/crypto/e2e/extension"
+  SRC_DIRS=( src lib/closure-library lib/closure-templates-compiler $BUILD_TPL_DIR \
+    lib/zlib.js/src lib/typedarray )
+
+  jscompile_e2e="$JSCOMPILE_CMD"
+  for var in "${SRC_DIRS[@]}"
+  do
+    jscompile_e2e+=" --js='$var/**.js' --js='!$var/**_test.js'"
+  done
+  csscompile_e2e="java -jar lib/closure-stylesheets-20111230.jar src/javascript/crypto/e2e/extension/ui/styles/base.css"
+  # compile javascript files
+  echo "Compiling JS files..."
+  if [ "$1" == "debug" ]; then
+    jscompile_e2e+=" --debug --formatting=PRETTY_PRINT"
+  fi
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.bootstrap" --js_output_file "$BUILD_EXT_DIR/launcher_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.Helper" --js_output_file "$BUILD_EXT_DIR/helper_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.glass.bootstrap" --js_output_file "$BUILD_EXT_DIR/glass_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.Prompt" --js_output_file "$BUILD_EXT_DIR/prompt_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.Settings" --js_output_file "$BUILD_EXT_DIR/settings_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.Welcome" --js_output_file "$BUILD_EXT_DIR/welcome_binary.js"
+  echo ""
+  # compile css files
+  echo "Compiling CSS files..."
+  $csscompile_e2e "$SRC_EXT_DIR/ui/glass/glass.css" > "$BUILD_EXT_DIR/glass_styles.css"
+  $csscompile_e2e "$SRC_EXT_DIR/ui/prompt/prompt.css" > "$BUILD_EXT_DIR/prompt_styles.css"
+  $csscompile_e2e "$SRC_EXT_DIR/ui/settings/settings.css" > "$BUILD_EXT_DIR/settings_styles.css"
+  $csscompile_e2e "$SRC_EXT_DIR/ui/welcome/welcome.css" > "$BUILD_EXT_DIR/welcome_styles.css"
+  echo "Copying extension files..."
+  # copy extension files
+  cp -fr "$SRC_EXT_DIR/images" "$BUILD_EXT_DIR"
+  cp -fr "$SRC_EXT_DIR/_locales" "$BUILD_EXT_DIR"
+  find "$SRC_EXT_DIR/ui" -regex .*.html -not -regex .*_test.html -exec cp -f "{}" "$BUILD_EXT_DIR" \;
+  cp -f "$SRC_EXT_DIR/helper/gmonkeystub.js" "$BUILD_EXT_DIR"
+  cp -f "$SRC_EXT_DIR/app_manifest.json" "$BUILD_EXT_DIR/manifest.json"
   echo "Done."
 }
 
@@ -256,6 +304,12 @@ case "$CMD" in
     ;;
   build_extension_debug)
     e2e_build_extension "debug";
+    ;;
+  build_app)
+    e2e_build_app;
+    ;;
+  build_app_debug)
+    e2e_build_app "debug";
     ;;
   build_library)
     e2e_build_library;
