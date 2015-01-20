@@ -73,7 +73,7 @@ function setUp() {
   prompt = new e2e.ext.ui.Prompt();
   prompt.pgpLauncher_ = new e2e.ext.ExtensionLauncher(fakeStorage);
   prompt.pgpLauncher_.start();
-  stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
+  stubs.setPath('window.chrome.runtime.getBackgroundPage', function(callback) {
     callback({launcher: prompt.pgpLauncher_});
   });
 
@@ -405,6 +405,10 @@ function testOpenPopout() {
   };
   var timesCalled = 0;
 
+  stubs.setPath('e2e.ext.utils.isChromeExtensionWindow', function() {
+    return true;
+  });
+
   stubs.setPath('chrome.windows.create', function(windowOptions, callback) {
     assertEquals('prompt.html?popout', windowOptions.url);
     assertEquals('popup', windowOptions.type);
@@ -440,7 +444,6 @@ function testOpenPopout() {
     selection: selection,
     action: constants.Actions.ENCRYPT_SIGN
   });
-
   asyncTestCase.waitForAsync('Waiting for popout window to open.');
   var popoutButton = document.querySelector('#popout-button');
   popoutButton.click();

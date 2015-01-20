@@ -115,3 +115,54 @@ function testShowNotification() {
   delayedCb.arg();
   mockControl.$verifyAll();
 }
+
+
+function testIsContentScript() {
+  stubs.setPath('chrome.runtime', {
+    getURL: goog.nullFunction
+  });
+
+  assertTrue(utils.isContentScript());
+
+  stubs.setPath('chrome.runtime', {
+    getURL: goog.nullFunction,
+    getBackgroundPage: goog.nullFunction
+  });
+
+  assertFalse(utils.isContentScript());
+}
+
+
+function testIsChromeExtensionWindow() {
+  var stubWindow = {};
+  stubs.set(stubWindow, 'chrome', {
+    runtime: {
+      getManifest: function() {return {}}
+    }
+  });
+
+  stubs.set(stubWindow, 'location', {
+    protocol: 'chrome-extension:'
+  });
+
+  assertTrue(utils.isChromeExtensionWindow(stubWindow));
+  assertFalse(utils.isChromeAppWindow(stubWindow));
+  assertFalse(utils.isContentScript());
+}
+
+function testIsChromeAppWindow() {
+  var stubWindow = {};
+  stubs.set(stubWindow, 'chrome', {
+    runtime: {
+      getManifest: function() {return {app: {}}}
+    }
+  });
+
+  stubs.set(stubWindow, 'location', {
+    protocol: 'chrome-extension:'
+  });
+
+  assertTrue(utils.isChromeAppWindow(stubWindow));
+  assertFalse(utils.isChromeExtensionWindow(stubWindow));
+  assertFalse(utils.isContentScript());
+}

@@ -394,7 +394,12 @@ ext.AppLauncher = function(storage) {
   };
   chrome.app.runtime.onLaunched.addListener(function() {
     // TODO(evn): This should be webview.html rather than prompt.html
-    chrome.app.window.create('prompt.html#id');
+    chrome.app.window.create('prompt.html', {
+      innerBounds: {
+        width: 680,
+        height: 480
+      }
+    });
   });
 };
 goog.inherits(ext.AppLauncher, ext.Launcher);

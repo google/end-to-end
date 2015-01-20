@@ -24,6 +24,7 @@ goog.provide('e2e.ext.Helper');
 goog.require('e2e.ext.WebsiteApi');
 goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.ui.GlassWrapper');
+goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.Disposable');
@@ -246,10 +247,7 @@ ext.Helper.prototype.errorHandler_ = function(sendResponse, error) {
 });  // goog.scope
 
 // Create the helper and start it.
-if (Boolean(chrome.runtime) &&
-    Boolean(chrome.runtime.getURL) && // Running as Chrome extension/app
-    !Boolean(chrome.runtime.getBackgroundPage) && // Running in a content script
-    !goog.isDef(window.helper)) {
+if (e2e.ext.utils.isContentScript() && !goog.isDef(window.helper)) {
   /** @type {!e2e.ext.Helper} */
   window.helper = new e2e.ext.Helper(new e2e.ext.WebsiteApi());
 }

@@ -157,7 +157,7 @@ ui.Prompt.prototype.decorateInternal = function(elem) {
   var title = goog.dom.getElement(constants.ElementId.TITLE);
   title.textContent = chrome.i18n.getMessage('actionLoading');
 
-  if (this.isPopout) {
+  if (this.isPopout || !(utils.isChromeExtensionWindow())) {
     goog.dom.classlist.add(
         goog.dom.getElement(constants.ElementId.POPOUT_BUTTON),
         constants.CssClass.HIDDEN);
@@ -295,7 +295,7 @@ ui.Prompt.prototype.processSelectedContent_ =
       elem, goog.events.EventType.CLICK,
       goog.bind(this.buttonClick_, this, action, origin, contentBlob));
 
-  if (!this.isPopout) {
+  if (utils.isChromeExtensionWindow() && !this.isPopout) {
     this.getHandler().listen(
         goog.dom.getElement(constants.ElementId.POPOUT_BUTTON),
         goog.events.EventType.CLICK,
@@ -335,15 +335,15 @@ ui.Prompt.prototype.showHeaderButtons_ = function() {
  * @private
  */
 ui.Prompt.prototype.handlePopout_ = function(event) {
+  if (!utils.isChromeExtensionWindow()) {
+    throw new Error('Popouts are only supported in Chrome extension.');
+  }
   var boundingRect = this.getElement().getBoundingClientRect();
   var currentWidth = Math.round(boundingRect.width);
   var currentHeight = Math.round(boundingRect.height);
   var currentLeft = window.screenX;
   var currentTop = window.screenY;
   var windowBorder = 15;
-  // TODO(koto): Add supportsPopout in the launcher and bail out if they are not
-  // available. Do not use chrome.windows directly.
-  // Maybe Launcher.createPopupWindow?
   chrome.windows.create({
     url: 'prompt.html?popout',
     focused: false,
@@ -381,7 +381,6 @@ ui.Prompt.prototype.handlePopout_ = function(event) {
  * @private
  */
 ui.Prompt.prototype.getPopouts_ = function() {
-  // TODO(koto): Do now use chrome.* API directly.
   return goog.array.filter(chrome.extension.getViews(), function(el) {
     return (el.location.search == '?popout');
   });
@@ -642,7 +641,8 @@ ui.Prompt.prototype.startMessageListener = function() {
 });  // goog.scope
 
 // Create the prompt page.
-if (Boolean(chrome.runtime) && location.protocol === 'chrome-extension:') {
+if (e2e.ext.utils.isChromeExtensionWindow() ||
+    e2e.ext.utils.isChromeAppWindow()) {
   goog.events.listen(window, goog.events.EventType.LOAD, function() {
     var isPopout = (location.search === '?popout');
     /** @type {!e2e.ext.ui.Prompt} */
