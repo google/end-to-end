@@ -27,6 +27,7 @@ goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.random');
 goog.require('goog.Uri');
+goog.require('goog.array');
 goog.require('goog.crypt');
 goog.require('goog.net.XhrIo');
 
@@ -301,6 +302,9 @@ e2e.openpgp.KeyClient.prototype.searchPublicKey = function(email) {
             var receivedPubKeys =
                 e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(
                     keydata.data, false, keydata.charset);
+            goog.array.forEach(receivedPubKeys, function(key) {
+              key.processSignatures();
+            });
             // TODO(user): Get the public key blob's proof and verify the
             // consistency of the proof.
             resultPubKeys.callback(receivedPubKeys);

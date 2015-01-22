@@ -33,7 +33,6 @@ goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.openpgp.packet.Key');
 goog.require('e2e.openpgp.packet.PublicKey');
 goog.require('e2e.openpgp.packet.factory');
-goog.require('e2e.signer.factory');
 goog.require('goog.array');
 goog.require('goog.asserts');
 
@@ -99,16 +98,6 @@ e2e.openpgp.packet.SecretKey.prototype.serializePacketBody = function() {
   }
   throw new e2e.openpgp.error.UnsupportedError(
       'Key derivation type not supported.');
-};
-
-
-/** @override */
-e2e.openpgp.packet.SecretKey.prototype.can = function(use) {
-  if (use == e2e.openpgp.packet.Key.Usage.SIGN) {
-    return e2e.signer.factory.has(
-        /** @type {e2e.signer.Algorithm} */ (this.cipher.algorithm));
-  }
-  return false;
 };
 
 

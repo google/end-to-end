@@ -514,6 +514,7 @@ e2e.openpgp.KeyRing.prototype.lockSecretKey_ = function(key) {
     var serialized = key.serialize();
     var parsed = /** @type {!e2e.openpgp.block.TransferableSecretKey} */ (
         e2e.openpgp.block.factory.parseByteArrayTransferableKey(serialized));
+    parsed.processSignatures();
     parsed.unlock();
     var success = false;
     if (this.passphrase_) {
@@ -970,6 +971,7 @@ e2e.openpgp.KeyRing.prototype.objectToPrivKeyRing_ = function(s) {
       if (!(block instanceof e2e.openpgp.block.TransferableSecretKey)) {
         throw new Error('Unexpected block in keyring.');
       }
+      block.processSignatures();
       block.unlock();
       return block;
     });
@@ -992,6 +994,7 @@ e2e.openpgp.KeyRing.prototype.objectToPubKeyRing_ = function(s) {
       if (!(block instanceof e2e.openpgp.block.TransferablePublicKey)) {
         throw new Error('Unexpected block in keyring.');
       }
+      block.processSignatures();
       return block;
     });
   });

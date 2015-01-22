@@ -90,7 +90,7 @@ goog.inherits(e2e.openpgp.block.TransferableKey,
 
 
 /**
- * @return {!Array.<string>} The user ids for this key block.
+ * @return {!Array.<string>} The User IDs for this key block.
  */
 e2e.openpgp.block.TransferableKey.prototype.getUserIds = function() {
   return goog.array.map(this.userIds, function(uid) {return uid.userId;});
@@ -234,38 +234,43 @@ e2e.openpgp.block.TransferableKey.prototype.processSignatures = function() {
 
 
 /**
- * Chooses a key packet for the specified use. Prefers keys that have been
- * certified by the key owner for a specified use.
- * @param {e2e.openpgp.packet.Key.Usage} use The use of the key.
+ * Chooses a key packet for the specified use.
+ * @param {!e2e.openpgp.packet.Key.Usage} use The use of the key.
  * @param {function(new:T, ...)} type The constructor of the key to get.
- * @param {boolean} preferSubkey If true, subkey with a capability is preferred
- *     to main key packet.
  * @return {T} A key packet of the specified type.
  * @template T
  * @protected
  */
-e2e.openpgp.block.TransferableKey.prototype.getKeyTo =
-    function(use, type, preferSubkey) {
-  if (!preferSubkey) { // Check main key packet capabilities first
-    if (this.keyPacket.can(use) && this.keyPacket instanceof type) {
-      return this.keyPacket;
-    }
+e2e.openpgp.block.TransferableKey.prototype.getKeyTo = function(use, type) {
+  // First see if we have a subkey that satisfies the use, and pick
+  // the newest if we have multiple viable subkeys.
+  var subkey = this.getNewestCertifiedSubkeyTo_(use, type);
+
+  if (!goog.isNull(subkey)) {
+    return subkey;
   }
 
-  var certifiedKey = goog.array.find(
-      this.subKeys, function(key) {
-        return key.isCertifiedTo(use) && key.can(use) && key instanceof type;
-      });
-
-  if (certifiedKey) {
-    return certifiedKey;
+  // No subkeys match, so see if the primary key can be used.
+  if (!this.keyPacket.can(use) || !(this.keyPacket instanceof type)) {
+    return null;
   }
 
-  // Fallback if no key was certified for a usage.
-  return goog.array.find(
-      this.subKeys.concat(this.keyPacket), function(key) {
-        return key.can(use) && key instanceof type;
-      });
+  // Get certified key-usage flags for the primary key from the uid
+  // self-signatures.
+  // We should really use a specific userid to get the most appropriate
+  // key-usage information for the primary key. Instead, we find it from
+  // the most recently self-certified userid signature.
+  var userId = this.getNewestCertifiedUserId_();
+  if (userId.isCertifiedTo(this.keyPacket, use)) {
+    return this.keyPacket;
+  }
+
+  // No certifications found either in subkeys, or in the primary
+  // key for the given use.
+  e2e.openpgp.block.TransferableKey.console_.warn(
+      'No keys available for', use);
+
+  return null;
 };
 
 
@@ -346,6 +351,85 @@ e2e.openpgp.block.TransferableKey.prototype.toKeyObject = function(
         (opt_dontSerialize || !this.SERIALIZE_IN_KEY_OBJECT) ?
         [] : this.serialize())
   };
+};
+
+
+/**
+ * Choose the newest certified subkey that satisfies the given
+ * use, or null if none are avaliable.
+ * Will raise an exception if there are any uncertified subkeys.
+ * @param {!e2e.openpgp.packet.Key.Usage} use The use of the key.
+ * @param {function(new:T, ...)} type The constructor of the key to get.
+ * @return {T} A key packet of the specified type.
+ * @template T
+ * @private
+ */
+e2e.openpgp.block.TransferableKey.prototype.getNewestCertifiedSubkeyTo_ =
+    function(use, type) {
+  var latestSubkey = null;
+  // The most recent certification time on viable candidate keys.
+  // Epoch seconds, initially set to a negative (minimum, but invalid)
+  // value.
+  // https://tools.ietf.org/html/rfc4880#section-3.5
+  var latestTimestamp = -1;
+
+  var mainKey = this.keyPacket;
+  if (!goog.isDefAndNotNull(mainKey)) {
+    throw new e2e.openpgp.error.SignatureError(
+        'Main key has not been initialized.');
+  }
+
+  goog.array.forEach(this.subKeys, function(subkey) {
+    var curTimestamp = subkey.getCertifiedTime(
+        goog.asserts.assertObject(mainKey));
+    if (curTimestamp >= latestTimestamp &&
+        subkey.can(use) && subkey instanceof type &&
+        subkey.isCertifiedTo(
+            goog.asserts.assertObject(mainKey), use)) {
+      latestTimestamp = curTimestamp;
+      latestSubkey = subkey;
+    }
+  }, this);
+
+  return latestSubkey;
+};
+
+
+/**
+ * Select the newest certified User ID.
+ * Will raise an exception if there are any uncertified User IDs, or
+ * if there are no certified User IDs.
+ * @return {!e2e.openpgp.packet.UserId}
+ * @private
+ */
+e2e.openpgp.block.TransferableKey.prototype.getNewestCertifiedUserId_ =
+    function() {
+  var latestUserId;
+  // The most recent certification time on viable candidate User IDs.
+  // Epoch seconds, initially set to a negative (minimum, but invalid)
+  // value.
+  // https://tools.ietf.org/html/rfc4880#section-3.5
+  var latestTimestamp = -1;
+
+  var mainKey = this.keyPacket;
+  if (!goog.isDefAndNotNull(mainKey)) {
+    throw new e2e.openpgp.error.SignatureError(
+        'Main key has not been initialized.');
+  }
+
+  goog.array.forEach(this.userIds, function(userId) {
+    var curTimestamp = userId.getCertifiedTime(
+        goog.asserts.assertObject(mainKey));
+    if (curTimestamp >= latestTimestamp) {
+      latestTimestamp = curTimestamp;
+      latestUserId = userId;
+    }
+  }, this);
+  if (!goog.isDefAndNotNull(latestUserId)) {
+    throw new e2e.openpgp.error.SignatureError(
+        'No certified User IDs available.');
+  }
+  return latestUserId;
 };
 
 

@@ -50,8 +50,7 @@ e2e.openpgp.block.TransferablePublicKey.prototype.getKeyToEncrypt =
     function() {
   return this.getKeyTo(
       e2e.openpgp.packet.Key.Usage.ENCRYPT,
-      e2e.openpgp.packet.PublicKey,
-      true); // Prefer one of subkeys to main key.
+      e2e.openpgp.packet.PublicKey);
 };
 
 

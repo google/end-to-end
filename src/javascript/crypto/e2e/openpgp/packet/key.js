@@ -26,6 +26,7 @@ goog.provide('e2e.openpgp.packet.Key.Usage');
 
 goog.require('e2e');
 goog.require('e2e.ImmutableArray');
+goog.require('e2e.cipher.factory');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.SerializationError');
 goog.require('e2e.openpgp.error.SignatureError');
@@ -35,6 +36,7 @@ goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.Signature');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.openpgp.types');
+goog.require('e2e.signer.factory');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.crypt');
@@ -455,7 +457,7 @@ e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type,
       throw new e2e.openpgp.error.SignatureError(
           'Unexpected - newly bound signature could not be verified.');
     }
-    if (sig != this.getVerifiedCertification_()) {
+    if (sig != this.getVerifiedCertification_(bindingPublicKey)) {
       throw new e2e.openpgp.error.SignatureError(
           'Unexpected - newly bound signature was not the latest.');
     }
@@ -484,20 +486,31 @@ e2e.openpgp.packet.Key.prototype.serialize = function() {
  * @return {boolean}
  */
 e2e.openpgp.packet.Key.prototype.can = function(use) {
-  return false;
+  if (use == e2e.openpgp.packet.Key.Usage.ENCRYPT) {
+    return e2e.cipher.factory.has(
+        /** @type {e2e.cipher.Algorithm} */ (this.cipher.algorithm));
+  } else if (use == e2e.openpgp.packet.Key.Usage.SIGN) {
+    return e2e.signer.factory.has(
+        /** @type {e2e.signer.Algorithm} */ (this.cipher.algorithm));
+  } else {
+    return false;
+  }
 };
 
 
 /**
  * Specifies whether the key packet has been certified for a specific use.
  * Can only ask this question of a subkey.
- * TBD: (kbsriram) pass in the verifyingKey to ensure we're asking
- * this question with the same key that made the certification.
+ * This information is obtained from the KEY_FLAGS property of
+ * its certification signature. If the signature contains no KEY_FLAGS
+ * at all, the subkey is considered to be certified for all uses.
+ * @param {!e2e.openpgp.packet.Key} verifyingKey the main key that originally
+ *     certified this key.
  * @param {!e2e.openpgp.packet.Key.Usage} use Either 'sign' or 'encrypt'.
  * @return {boolean}
  */
-e2e.openpgp.packet.Key.prototype.isCertifiedTo = function(use) {
-  var sig = this.getVerifiedCertification_();
+e2e.openpgp.packet.Key.prototype.isCertifiedTo = function(verifyingKey, use) {
+  var sig = this.getVerifiedCertification_(verifyingKey);
 
   // If the signature has no KEY_FLAGS property at all, the key
   // is considered to be certified for all uses.
@@ -522,17 +535,12 @@ e2e.openpgp.packet.Key.prototype.isCertifiedTo = function(use) {
  * method will throw an exception. The key to be passed in is the
  * toplevel key -- used as a check to ensure that the certified
  * signature was in fact issued by that key.
- * @param {!e2e.openpgp.packet.Key} key is the main key
+ * @param {!e2e.openpgp.packet.Key} verifyingKey is the main key that
+ *     originally certified this key.
  * @return {number} timestamp
  */
-e2e.openpgp.packet.Key.prototype.getCertifiedTime = function(key) {
-  var sig = this.getVerifiedCertification_();
-
-  // TODO(kbsriram) move this into getVerifiedCertification()
-  if (!key.keyId || !goog.array.equals(key.keyId, sig.getSignerKeyId())) {
-    throw new e2e.openpgp.error.SignatureError(
-        'This key was certified by a different issuer.');
-  }
+e2e.openpgp.packet.Key.prototype.getCertifiedTime = function(verifyingKey) {
+  var sig = this.getVerifiedCertification_(verifyingKey);
   return sig.creationTime;
 };
 
@@ -555,10 +563,13 @@ e2e.openpgp.packet.Key.prototype.toKeyPacketInfo = function() {
 /**
  * Return a previously verified certification, or raise an exception
  * if none were found. This method only makes sense for a subkey.
+ * @param {!e2e.openpgp.packet.Key} verifyingKey the main key that
+ *     certified this key.
  * @return {!e2e.openpgp.packet.Signature}
  * @private
  */
-e2e.openpgp.packet.Key.prototype.getVerifiedCertification_ = function() {
+e2e.openpgp.packet.Key.prototype.getVerifiedCertification_ = function(
+    verifyingKey) {
   if (!this.isSubkey) {
     throw new e2e.openpgp.error.SignatureError(
         'Cannot directly certify a primary key.');
@@ -582,13 +593,12 @@ e2e.openpgp.packet.Key.prototype.getVerifiedCertification_ = function() {
   // closure that signature is defined.
   var signature = goog.asserts.assertObject(this.bindingSignatures_.get(0));
 
-  // TODO (kbsriram)
   // 3. Binding signature must be made by the verifyingKey
-  // if (!verifyingKey.keyId ||
-  //     !goog.array.equals(verifyingKey.keyId, signature.getSignerKeyId())) {
-  //   throw new e2e.openpgp.error.SignatureError(
-  //       'This key was certified by a different issuer.');
-  // }
+  if (!verifyingKey.keyId ||
+      !goog.array.equals(verifyingKey.keyId, signature.getSignerKeyId())) {
+    throw new e2e.openpgp.error.SignatureError(
+        'This key was certified by a different issuer.');
+  }
   return signature;
 };
 

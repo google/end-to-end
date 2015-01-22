@@ -106,7 +106,10 @@ e2e.openpgp.packet.UserId.parse = function(data) {
 
 /**
  * Query if the provided key has certified the User ID for a specific
-    * use. If the key was never certified (through verifySignatures())
+ * use. This information is obtained from the KEY_FLAGS property of
+ * its certification signature. If the signature contains no KEY_FLAGS
+ * at all, the userid is considered to be certified for all uses.
+ * If the key was never certified (through verifySignatures())
  * this method will throw an exception.
  * @param {!e2e.openpgp.packet.Key} key
  * @param {!e2e.openpgp.packet.Key.Usage} use

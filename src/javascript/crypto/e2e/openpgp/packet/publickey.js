@@ -138,16 +138,6 @@ e2e.openpgp.packet.PublicKey.prototype.serializePacketBody =
 
 
 /** @override */
-e2e.openpgp.packet.PublicKey.prototype.can = function(use) {
-  if (use == e2e.openpgp.packet.Key.Usage.ENCRYPT) {
-    return e2e.cipher.factory.has(
-        /** @type {e2e.cipher.Algorithm} */ (this.cipher.algorithm));
-  }
-  return false;
-};
-
-
-/** @override */
 e2e.openpgp.packet.PublicKey.prototype.getPublicKeyPacket = function() {
   return this;
 };

@@ -84,8 +84,7 @@ e2e.openpgp.block.TransferableSecretKey.prototype.getKeyToSign =
     function() {
   return this.getKeyTo(
       e2e.openpgp.packet.Key.Usage.SIGN,
-      e2e.openpgp.packet.SecretKey,
-      false); // Prefer main key to subkeys.
+      e2e.openpgp.packet.SecretKey);
 };
 
 

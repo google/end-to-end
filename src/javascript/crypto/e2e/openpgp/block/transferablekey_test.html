@@ -23,6 +23,8 @@
   goog.require('goog.testing.jsunit');
   goog.require('e2e.openpgp.block.all');
   goog.require('e2e.openpgp.block.factory');
+  goog.require('e2e.cipher.all');
+  goog.require('e2e.signer.all');
  </script>
 
 <!--
@@ -732,6 +734,249 @@ d8SAPYc=
 =fFTC
 -----END PGP PUBLIC KEY BLOCK-----
 </textarea>
+
+<!--
+Only secret signing and encryption subkeys are available. This is a
+somewhat used configuration for gnupg; where the certification
+(primary) secret key is stored elsewhere, and only secret subkeys are
+generated/used inside multiple devices/implementations.
+
+Ensure we can import, and return the correct subkeys when requested.
+
+:secret key packet:
+  version 4, algo 1, created 1418865844, expires 0
+  skey[0]: [1024 bits]
+  skey[1]: [17 bits]
+  gnu-dummy S2K, algo: 3, SHA1 protection, hash: 2
+  protect IV:
+  keyid: 354F6BFEC9789F00
+:user ID packet: "subkey-only <sub@key.only>"
+:signature packet: algo 1, keyid 354F6BFEC9789F00
+  version 4, created 1418865844, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest f6 6f
+  hashed subpkt 2 len 4 (sig created 2014-12-18)
+  hashed subpkt 27 len 1 (key flags: 01)
+  hashed subpkt 11 len 5 (pref-sym-algos: 9 8 7 3 2)
+  hashed subpkt 21 len 5 (pref-hash-algos: 8 2 9 10 11)
+  hashed subpkt 22 len 3 (pref-zip-algos: 2 3 1)
+  hashed subpkt 30 len 1 (features: 01)
+  hashed subpkt 23 len 1 (key server preferences: 80)
+  subpkt 16 len 8 (issuer key ID 354F6BFEC9789F00)
+  data: [1024 bits]
+:secret sub key packet:
+  version 4, algo 1, created 1418866003, expires 0
+  skey[0]: [1024 bits]
+  skey[1]: [17 bits]
+  iter+salt S2K, algo: 3, SHA1 protection, hash: 2, salt: 3b305916d790802e
+  protect count: 65536 (96)
+  protect IV:  9a dd 5b 63 af 00 78 1a
+  encrypted stuff follows
+  keyid: A544CE2DFDAF0B58
+:signature packet: algo 1, keyid 354F6BFEC9789F00
+  version 4, created 1418866003, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest bf 02
+  hashed subpkt 2 len 4 (sig created 2014-12-18)
+  hashed subpkt 27 len 1 (key flags: 02)
+  subpkt 16 len 8 (issuer key ID 354F6BFEC9789F00)
+  subpkt 32 len 156 (signature: v4, class 0x19, algo 1, digest algo 2)
+  data: [1021 bits]
+:secret sub key packet:
+  version 4, algo 1, created 1418867855, expires 0
+  skey[0]: [1024 bits]
+  skey[1]: [17 bits]
+  iter+salt S2K, algo: 3, SHA1 protection, hash: 2, salt: 1f6ce8fc83014f2c
+  protect count: 65536 (96)
+  protect IV:  85 38 a8 6e a7 f6 5a 06
+  encrypted stuff follows
+  keyid: 1389A78D4206E4CD
+:signature packet: algo 1, keyid 354F6BFEC9789F00
+  version 4, created 1418867855, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest 1a d0
+  hashed subpkt 2 len 4 (sig created 2014-12-18)
+  hashed subpkt 27 len 1 (key flags: 0C)
+  subpkt 16 len 8 (issuer key ID 354F6BFEC9789F00)
+  data: [1024 bits]
+-->
+<textarea id="SubkeyOnlySecretKey">
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+Version: GnuPG v1
+
+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
+/Q==
+=iqk+
+-----END PGP PRIVATE KEY BLOCK-----
+</textarea>
+
+<!--
+Secret key DSA/DSA with no explicit keyflags set - the subkey
+should be selected for signing operations.
+
+:secret key packet:
+  version 4, algo 17, created 1410274798, expires 0
+  skey[0]: [1024 bits]
+  skey[1]: [160 bits]
+  skey[2]: [1023 bits]
+  skey[3]: [1023 bits]
+  iter+salt S2K, algo: 7, SHA1 protection, hash: 8, salt: 0e5250d32bd85b90
+  protect count: 65536 (96)
+  protect IV:  1b ac 10 8d 0d 66 72 ee 61 c1 a6 22 0b 7f 75 91
+  encrypted stuff follows
+  keyid: B471D19456481C9A
+:user ID packet: "default-key-usage"
+:signature packet: algo 17, keyid B471D19456481C9A
+  version 4, created 1418914798, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest d6 4d
+  hashed subpkt 2 len 4 (sig created 2014-12-18)
+  hashed subpkt 11 len 1 (pref-sym-algos: 7)
+  hashed subpkt 21 len 1 (pref-hash-algos: 8)
+  hashed subpkt 30 len 1 (features: 01)
+  subpkt 16 len 8 (issuer key ID B471D19456481C9A)
+  data: [160 bits]
+  data: [159 bits]
+:secret sub key packet:
+  version 4, algo 17, created 1410274798, expires 0
+  skey[0]: [1024 bits]
+  skey[1]: [160 bits]
+  skey[2]: [1023 bits]
+  skey[3]: [1021 bits]
+  iter+salt S2K, algo: 7, SHA1 protection, hash: 8, salt: 0e5250d32bd85b90
+  protect count: 65536 (96)
+  protect IV:  57 92 12 db d4 64 38 03 b8 e2 55 00 0f 44 b9 3d
+  encrypted stuff follows
+  keyid: 2AD936C0DDB2552A
+:signature packet: algo 17, keyid B471D19456481C9A
+  version 4, created 1410274798, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest f0 62
+  hashed subpkt 2 len 4 (sig created 2014-09-09)
+  subpkt 16 len 8 (issuer key ID B471D19456481C9A)
+  data: [159 bits]
+  data: [160 bits]
+-->
+<textarea id="DSADSADefaultKeyUsage">
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+Version: GnuPG v1
+
+lQHpBFQPFe4RBACOY5b4/FYCkuvu5rV2lbqTGUkzNH5OFFMnugh99sfVR2jIv3mf
+q1dluTqy5S8CVj2q6qJgNCKpZ+Bnzsrx7jmFnGmkSjw6VtjN8f3U0D4r+suzI2CZ
+R8t7b/Jc+qCXLrD4SjwBAtGBvs3oXfnrngf+kp18T5QRWvt0ay0EE75PqwCg5+PO
+oL2tnxjj9NVQbGr8m9+sl7UD/2WFP/KM8KS4ezu7HQUDA7x8sYfD2DaSfPuxbFE8
+Kvqa2xRX0Sa6kF+RfiWV/XbcTaQbi2E251MfbyfcZS7OTo87sd53btlCYdRPxgiS
+/E7ImKxFJXVwKbPozslfxoNj0mfwr8qY9CpJISnrGACY92pOcDSSat2baEC2tuwu
+inJlA/9YXoLn3h7IHFDBs0eKLhlMnKizrzOs5gpn6K3TygEC6OgLvj3r90YzXqNh
+0vkDMfhopMN3A9/NwNl2LYunzixYg+7iPXUW8FVO6HlWNd5sZYdSgHBp8noJkg0D
+GcUDiB5jyNIz+aMFsva+eYUmrDs4hQlQs+n3mJnwAV/hbUZIA/4HAwgOUlDTK9hb
+kGAbrBCNDWZy7mHBpiILf3WRvGqj/b3RqxEKOhzm/jia/6hpriHsf6RWlxin4XT6
+V/8kbBha5m/jyTKftBFkZWZhdWx0LWtleS11c2FnZYhPBBMRAgAPBQJUkuvuAgsH
+AhUIAh4BAAoJELRx0ZRWSBya1k0AoMLrV18HalT4HXwkxaErh4TyEJ1kAJ9imD6u
+Pa1llv6cvNvmY+dkeuA8450B6QRUDxXuEQQAjmOW+PxWApLr7ua1dpW6kxlJMzR+
+ThRTJ7oIffbH1UdoyL95n6tXZbk6suUvAlY9quqiYDQiqWfgZ87K8e45hZxppEo8
+OlbYzfH91NA+K/rLsyNgmUfLe2/yXPqgly6w+Eo8AQLRgb7N6F35654H/pKdfE+U
+EVr7dGstBBO+T6sAoOfjzqC9rZ8Y4/TVUGxq/JvfrJe1A/9lhT/yjPCkuHs7ux0F
+AwO8fLGHw9g2knz7sWxRPCr6mtsUV9EmupBfkX4llf123E2kG4thNudTH28n3GUu
+zk6PO7Hed27ZQmHUT8YIkvxOyJisRSV1cCmz6M7JX8aDY9Jn8K/KmPQqSSEp6xgA
+mPdqTnA0kmrdm2hAtrbsLopyZQP9H1zlZtnEsCyB/72o1EkTUCC1y8NRvtV3g7O6
+qyc4jRTTkBnRppwuisloSHj4trVQIbHm7QAjDs6Q+hTENNR4btFAQPT4OYBIiDj7
++jf6TfZwA1q7HVkk6tAFPDYPXFnG6W/Q219TgvdvNrHqEHhNDWdjNKi2U90X6Oc7
+7zjDV1L+BwMIDlJQ0yvYW5BgV5IS29RkOAO44lUAD0S5PZIW7x8Grvoph6goKbD1
++yCaUEhzcuedD8JLyfedlALDs1cKg0RqWBNCx4hGBBgRAgAGBQJUDxXuAAoJELRx
+0ZRWSBya8GIAn1czWNBsYw3zwAa4l5DF+yRPzgKkAKDQpnBen+0rk+S/N1CusDNB
+CgAJ0w==
+=FN/h
+-----END PGP PRIVATE KEY BLOCK-----
+</textarea>
+
+<!--
+ RSA-s/RSA-e key but with no explicit key-usage flags. The
+ appropriate key should be picked up for encryption/signing.
+
+:public key packet:
+  version 4, algo 3, created 1410288017, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+  keyid: 04C78703EFBF9416
+:user ID packet: "rsa-rsa-default"
+:signature packet: algo 3, keyid 04C78703EFBF9416
+  version 4, created 1418928017, md5len 0, sigclass 0x13
+  digest algo 2, begin of digest a7 ca
+  hashed subpkt 2 len 4 (sig created 2014-12-18)
+  hashed subpkt 11 len 1 (pref-sym-algos: 7)
+  hashed subpkt 21 len 1 (pref-hash-algos: 8)
+  hashed subpkt 30 len 1 (features: 01)
+  subpkt 16 len 8 (issuer key ID 04C78703EFBF9416)
+  data: [1022 bits]
+:public sub key packet:
+  version 4, algo 2, created 1410288017, expires 0
+  pkey[0]: [1024 bits]
+  pkey[1]: [17 bits]
+  keyid: D768A4153A7326C3
+:signature packet: algo 3, keyid 04C78703EFBF9416
+  version 4, created 1410288017, md5len 0, sigclass 0x18
+  digest algo 2, begin of digest 21 4a
+  hashed subpkt 2 len 4 (sig created 2014-09-09)
+  subpkt 16 len 8 (issuer key ID 04C78703EFBF9416)
+  data: [1020 bits]
+
+-->
+<textarea id="RSARSADefaultKeyUsage">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1
+
+mI0EVA9JkQMEAJr4nAio6oS1NjJousigaCEZQWPLzu7S2SH1873RklKJEcex5RXc
+6IZUCeFh27vYpGiMVsHn389jnZYj4xdbG8qGsdEq5OT7+aW31Uk/Ro2nRPSs/E0T
+rS2DOY/8INffAt+C87wF+S7cQbPEeGOKBTcmWGqqxX4rZsBPl3VxagxxABEBAAG0
+D3JzYS1yc2EtZGVmYXVsdIilBBMDAgAPBQJUkx+RAgsHAhUIAh4BAAoJEATHhwPv
+v5QWp8oD/jDlPbR4AgpEwLqYOI5dUO0gQoG2G+2JK2qCNuy8SMTMBfiPz1TW62Hn
+mOFz1wWRgwNwIl4+F1qC4o8nxORIKyXJBngUhekSifWoWPyMzp2om7Ipta/dQjKU
+wZV2fVStiqqK1u7l1t0pYLs3Giy8V0PAflDKkVIZqw9xCJegK6RauI0EVA9JkQIE
+AJE6gdvcDLDc/O5b+Blh/8e/fARxcDBpSJsOE86n7N2Prve3Fa17sBT2T1pPDOiB
+3YmQv6pHC1afFHb5qnsFY/5aS3mp+zsmNW0L2oD4vSY0QRnKIzBh33QZv2Di5kKf
+FNIOGgMovmsyXISZYeAwsnLDSSTbsgHjGR8fqdyf7BaHABEBAAGInAQYAwIABgUC
+VA9JkQAKCRAEx4cD77+UFiFKA/wOG2PxB1iDtDeLAUfOP0zMx6qBQfWCyWldKze/
+bom5SwbLT42+Aks9B0RU6JKdd8WfwTlJyQeM56aUe1wPwVHBe+zTG+XvsYree3rQ
+HFEgHTN3KEPHc6EcQqrhcYJ4IBFau0avBvi7QjsSOvePvIKFO/DuDIECRpLZjRW+
+VKisag==
+=fTBV
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+
 <!--
 UID with an expired certification signature.
 :public key packet:
@@ -1390,17 +1635,83 @@ function testSignOnlyPublicKey() {
   assertEquals(1, key.subKeys.length);
   assertEquals(1418654101, key.subKeys[0].getCertifiedTime(key.keyPacket));
   assertTrue(key.subKeys[0].isCertifiedTo(
-      e2e.openpgp.packet.Key.Usage.SIGN));
+      key.keyPacket, e2e.openpgp.packet.Key.Usage.SIGN));
   assertFalse(key.subKeys[0].isCertifiedTo(
-      e2e.openpgp.packet.Key.Usage.ENCRYPT));
+      key.keyPacket, e2e.openpgp.packet.Key.Usage.ENCRYPT));
 
   // Verify the getter methods return the correct (or no) subkey.
-  // TODO (kbsriram)
-  // assertNull(key.getKeyToEncrypt());
-  // assertEquals(
-  //    key.subKeys[0],
-  //    key.getKeyTo(
-  //        e2e.openpgp.packet.Key.Usage.SIGN, e2e.openpgp.packet.PublicKey));
+  assertNull(key.getKeyToEncrypt());
+  assertEquals(
+      key.subKeys[0],
+      key.getKeyTo(
+          e2e.openpgp.packet.Key.Usage.SIGN, e2e.openpgp.packet.PublicKey));
+}
+
+function testSubkeyOnlySecretKey() {
+  var key = getKey('SubkeyOnlySecretKey');
+  key.processSignatures();
+
+  // primary key/userid on this key should not sign or encrypt.
+  assertEquals(1, key.userIds.length);
+  assertFalse(key.userIds[0].isCertifiedTo(
+      key.keyPacket, e2e.openpgp.packet.Key.Usage.ENCRYPT));
+  assertFalse(key.userIds[0].isCertifiedTo(
+      key.keyPacket, e2e.openpgp.packet.Key.Usage.SIGN));
+
+  // Get the appropriate subkey when asked.
+  var subkey = key.getKeyToSign();
+  assertArrayEquals(
+      [0xA5, 0x44, 0xCE, 0x2D, 0xFD, 0xAF, 0x0B, 0x58], subkey.keyId);
+  subkey = key.getKeyTo(
+      e2e.openpgp.packet.Key.Usage.ENCRYPT, e2e.openpgp.packet.SecretKey);
+  assertArrayEquals(
+      [0x13, 0x89, 0xA7, 0x8D, 0x42, 0x06, 0xE4, 0xCD], subkey.keyId);
+}
+
+function testDSADSADefaultKeyUsage() {
+  var key = getKey('DSADSADefaultKeyUsage');
+  key.processSignatures();
+
+  function assertNoKeyFlags(immutableArray) {
+    assertTrue(immutableArray.state_);
+    assertEquals(1, immutableArray.elements_.length);
+    var signature = immutableArray.elements_[0];
+    assertFalse(signature.attributes.hasOwnProperty('KEY_FLAGS'));
+  }
+
+  // No explict usage flags on the primary or subkey.
+  assertEquals(1, key.userIds.length);
+  assertNoKeyFlags(key.userIds[0].keyIdSignatureMap_['b471d19456481c9a']);
+  assertEquals(1, key.subKeys.length);
+  assertNoKeyFlags(key.subKeys[0].bindingSignatures_);
+
+  // The subkey should be selected for signing
+  assertEquals(key.subKeys[0], key.getKeyToSign());
+
+  // No key should be selected for encryption
+  assertNull(
+      key.getKeyTo(
+          e2e.openpgp.packet.Key.Usage.ENCRYPT, e2e.openpgp.packet.SecretKey));
+}
+
+
+function testRSARSADefaultKeyUsage() {
+  var key = getKey('RSARSADefaultKeyUsage');
+  key.processSignatures();
+
+  // No explict usage flags on the primary or subkey, but
+  // algorithm ids carry usage information.
+  assertEquals(1, key.userIds.length);
+  assertEquals(1, key.subKeys.length);
+
+  // The subkey should be selected for encryption
+  assertEquals(key.subKeys[0], key.getKeyToEncrypt());
+
+  // The primary key should be selected for signing-related stuff
+  assertEquals(
+      key.keyPacket,
+      key.getKeyTo(
+          e2e.openpgp.packet.Key.Usage.SIGN, e2e.openpgp.packet.PublicKey));
 }
 
 function testExpiredUid() {
