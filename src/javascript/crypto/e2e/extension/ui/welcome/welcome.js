@@ -333,9 +333,3 @@ ui.Welcome.prototype.displayFailure_ = function(error) {
 };
 
 });  // goog.scope
-
-// Create the welcome page.
-if (Boolean(chrome.runtime) && location.protocol === 'chrome-extension:') {
-  var welcomePage = new e2e.ext.ui.Welcome();
-  welcomePage.decorate(document.documentElement);
-}

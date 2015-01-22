@@ -40,7 +40,6 @@ goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
-goog.require('goog.events');
 goog.require('goog.events.EventType');
 goog.require('goog.positioning.Corner');
 goog.require('goog.style');
@@ -639,19 +638,3 @@ ui.Prompt.prototype.startMessageListener = function() {
 
 
 });  // goog.scope
-
-// Create the prompt page.
-if (e2e.ext.utils.isChromeExtensionWindow() ||
-    e2e.ext.utils.isChromeAppWindow()) {
-  goog.events.listen(window, goog.events.EventType.LOAD, function() {
-    var isPopout = (location.search === '?popout');
-    /** @type {!e2e.ext.ui.Prompt} */
-    window.promptPage = new e2e.ext.ui.Prompt(isPopout);
-    if (isPopout) {
-      // Popouts are initialized by an event from the extension popup.
-      window.promptPage.startMessageListener();
-    } else {
-      window.promptPage.decorate(document.body);
-    }
-  });
-}

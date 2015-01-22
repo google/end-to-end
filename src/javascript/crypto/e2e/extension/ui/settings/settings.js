@@ -376,11 +376,3 @@ ui.Settings.prototype.clearFailure_ = function() {
 
 
 });  // goog.scope
-
-
-// Create the settings page.
-if (Boolean(chrome.runtime) && location.protocol === 'chrome-extension:') {
-  /** @type {!e2e.ext.ui.Settings} */
-  window.settingsPage = new e2e.ext.ui.Settings();
-  window.settingsPage.decorate(document.documentElement);
-}
