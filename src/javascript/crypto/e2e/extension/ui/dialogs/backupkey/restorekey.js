@@ -103,6 +103,7 @@ dialogs.RestoreKey.prototype.getEmailInput_ = function() {
 /**
  * Executes the action for restoring keyring data
  * @private
+ * @return {boolean}
  */
 dialogs.RestoreKey.prototype.executeRestore_ = function() {
   /* TODO(rcc): Remove email when we can use keyserver for lookups */

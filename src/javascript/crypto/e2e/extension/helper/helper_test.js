@@ -110,12 +110,12 @@ function testDisplay() {
   var callbackMock = mockControl.createFunctionMock();
   var callbackArg =
       new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
-    assertEquals(constants.Actions.ENCRYPT_SIGN, arg.action);
-    assertEquals(selectionBody, arg.selection);
-    assertTrue(goog.array.equals(recipients, arg.recipients));
+        assertEquals(constants.Actions.ENCRYPT_SIGN, arg.action);
+        assertEquals(selectionBody, arg.selection);
+        assertTrue(goog.array.equals(recipients, arg.recipients));
 
-    return true;
-  });
+        return true;
+      });
 
   callbackMock(callbackArg);
 

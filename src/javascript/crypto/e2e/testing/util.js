@@ -45,8 +45,8 @@ goog.setTestOnly();
  *     Defaults to 10.
  * @param {number=} opt_timeoutInterval Number of milliseconds after which the
  *     test is to be aborted. Defaults to 5000.
- * @return {!goog.Promise.<{!Object.<!string,!Object>} Performance stats promise
- *     Promise will be resolved when last test completes.
+ * @return {!goog.Promise.<!Object.<!string,!Object>>} Performance stats
+ *     promise. Promise will be resolved when last test completes.
  */
 e2e.testing.Util.runPerfTests = function(benchmarks, opt_numSamples,
     opt_timeoutInterval) {
