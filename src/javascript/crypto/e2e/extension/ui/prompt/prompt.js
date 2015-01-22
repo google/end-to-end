@@ -222,8 +222,7 @@ ui.Prompt.prototype.processSelectedContent_ =
       content = contentBlob.selection;
     }
     action = opt_action || contentBlob.action ||
-        utils.text.getPgpAction(content,
-            this.pgpLauncher_.getPreferences().isActionSniffingEnabled());
+        utils.text.getPgpAction(content);
     origin = contentBlob.origin;
     if (e2e.openpgp.asciiArmor.isDraft(content)) {
       action = constants.Actions.ENCRYPT_SIGN;

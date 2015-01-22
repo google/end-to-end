@@ -61,5 +61,4 @@ function testRender() {
   });
 
   assertTrue(preferences.isWelcomePageEnabled());
-  assertTrue(preferences.isActionSniffingEnabled());
 }

@@ -65,11 +65,6 @@ e2e.ext.Preferences.prototype.initDefaults = function() {
   }
 
   if (null === this.getItem(
-      constants.StorageKey.ENABLE_ACTION_SNIFFING)) {
-    this.setActionSniffingEnabled(true);
-  }
-
-  if (null === this.getItem(
       constants.StorageKey.ENABLE_LOOKING_GLASS)) {
     this.setLookingGlassEnabled(false);
   }
@@ -95,28 +90,6 @@ e2e.ext.Preferences.prototype.setWelcomePageEnabled = function(enable) {
 e2e.ext.Preferences.prototype.isWelcomePageEnabled = function() {
   return 'true' == this.storage_.get(
       constants.StorageKey.ENABLE_WELCOME_SCREEN);
-};
-
-
-/**
- * Enables/disables PGP action guessing.
- * @param {boolean} enable True if guess is to be enabled.
- * @expose
- */
-e2e.ext.Preferences.prototype.setActionSniffingEnabled = function(enable) {
-  this.storage_.set(
-      constants.StorageKey.ENABLE_ACTION_SNIFFING, enable.toString());
-};
-
-
-/**
- * Indicates whether PGP action guessing is enabled.
- * @return {boolean} True if enabled.
- * @expose
- */
-e2e.ext.Preferences.prototype.isActionSniffingEnabled = function() {
-  return 'true' == this.storage_.get(
-      constants.StorageKey.ENABLE_ACTION_SNIFFING);
 };
 
 

@@ -75,13 +75,6 @@ panels.PreferencesPanel.prototype.decorateInternal = function(elem) {
       setterCallback: goog.bind(this.preferences_.setWelcomePageEnabled,
           this.preferences_),
       isSet: this.preferences_.isWelcomePageEnabled()
-    },
-    {
-      name: constants.StorageKey.ENABLE_ACTION_SNIFFING,
-      description: chrome.i18n.getMessage('preferenceActionSniffing'),
-      setterCallback: goog.bind(this.preferences_.setActionSniffingEnabled,
-          this.preferences_),
-      isSet: this.preferences_.isActionSniffingEnabled()
     }
   ];
   goog.array.forEach(prefs, function(pref) {

@@ -46,13 +46,6 @@ function testWelcomeScreen() {
 }
 
 
-function testActionSniffing() {
-  assertFalse(preferences.isActionSniffingEnabled());
-  preferences.setActionSniffingEnabled(true);
-  assertTrue(preferences.isActionSniffingEnabled());
-}
-
-
 function testLookingGlass() {
   assertFalse(preferences.isLookingGlassEnabled());
   preferences.setLookingGlassEnabled(true);
@@ -63,5 +56,5 @@ function testLookingGlass() {
 function testDefaults() {
   preferences.initDefaults();
   assertTrue(preferences.isWelcomePageEnabled());
-  assertTrue(preferences.isActionSniffingEnabled());
+  assertFalse(preferences.isLookingGlassEnabled());
 }

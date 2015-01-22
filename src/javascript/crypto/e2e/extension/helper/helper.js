@@ -164,7 +164,7 @@ ext.Helper.prototype.getSelectedContent_ = function(req, sendResponse) {
       msgSubject) {
         var selectionBody =
             e2e.openpgp.asciiArmor.extractPgpBlock(msgBody);
-        var action = utils.text.getPgpAction(selectionBody, true);
+        var action = utils.text.getPgpAction(selectionBody);
         // Send response back to the extension.
         var response = /** @type {e2e.ext.messages.BridgeMessageRequest} */ ({
           selection: selectionBody,
@@ -201,7 +201,7 @@ ext.Helper.prototype.enableLookingGlass_ = function() {
     }
     var selectionBody = e2e.openpgp.asciiArmor.extractPgpBlock(
         messageElem.innerText);
-    var action = utils.text.getPgpAction(selectionBody, true);
+    var action = utils.text.getPgpAction(selectionBody);
     if (action == constants.Actions.DECRYPT_VERIFY) {
       var glass = new ui.GlassWrapper(messageElem);
       this.registerDisposable(glass);

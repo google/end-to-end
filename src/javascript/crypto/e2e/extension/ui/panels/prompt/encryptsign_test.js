@@ -338,8 +338,7 @@ function testLoadDraftFromPage() {
 
   stubs.setPath('e2e.ext.utils.text.getPgpAction',
       mockControl.createFunctionMock());
-  e2e.ext.utils.text.getPgpAction(
-      goog.testing.mockmatchers.ignoreArgument, true).
+  e2e.ext.utils.text.getPgpAction(goog.testing.mockmatchers.ignoreArgument).
       $returns(constants.Actions.DECRYPT_VERIFY).$atLeastOnce();
 
   mockControl.$replayAll();

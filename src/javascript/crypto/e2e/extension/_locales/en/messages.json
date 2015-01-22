@@ -363,10 +363,6 @@
     "message": "Show the welcome window when the extension loads the next time.",
     "description": "A sentence prompting the user to disable the extension's welcome window."
   },
-  "preferenceActionSniffing": {
-    "message": "Always try to anticipate End-To-End action.",
-    "description": "A sentence prompting the user to prevent the extension from guessing the intended actions."
-  },
   "preferenceLookingGlass": {
     "message": "Show the decrypted text inside Gmail when possible.",
     "description": "A sentence prompting the user to enable the looking glass for Gmail."

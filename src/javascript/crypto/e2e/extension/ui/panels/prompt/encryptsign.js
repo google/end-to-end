@@ -395,9 +395,8 @@ promptPanels.EncryptSign.prototype.loadSelectedContent_ = function() {
   var textArea = /** @type {HTMLTextAreaElement} */
       (this.getElement().querySelector('textarea'));
   var content = this.getContent().selection || '';
-  var sniffedAction = utils.text.getPgpAction(
-      content, this.preferences_.isActionSniffingEnabled());
-  if (sniffedAction == constants.Actions.DECRYPT_VERIFY) {
+  var detectedAction = utils.text.getPgpAction(content);
+  if (detectedAction == constants.Actions.DECRYPT_VERIFY) {
     this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
       action: constants.Actions.DECRYPT_VERIFY,
       content: content,

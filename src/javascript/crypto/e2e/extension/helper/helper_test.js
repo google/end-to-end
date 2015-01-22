@@ -149,7 +149,7 @@ function testEnableLookingGlass() {
 
   stubs.setPath(
       'e2e.ext.utils.text.getPgpAction', mockControl.createFunctionMock());
-  e2e.ext.utils.text.getPgpAction(selectionBody, true)
+  e2e.ext.utils.text.getPgpAction(selectionBody)
       .$returns(constants.Actions.DECRYPT_VERIFY);
 
   stubs.setPath('chrome.runtime.getURL', mockControl.createFunctionMock());
