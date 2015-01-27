@@ -23,10 +23,10 @@ goog.provide('e2e.ext.WebsiteApi.EmailAddressDescriptor');
 goog.provide('e2e.ext.WebsiteApi.Request');
 goog.provide('e2e.ext.WebsiteApi.Response');
 
+goog.require('e2e.ext.utils.CallbacksMap');
 goog.require('e2e.ext.utils.text');
 goog.require('goog.array');
 goog.require('goog.object');
-goog.require('goog.string');
 
 
 
@@ -36,10 +36,10 @@ goog.require('goog.string');
 e2e.ext.WebsiteApi = function() {
   /**
    * Object storing response callbacks for API calls in progress
-   * @type {!Object.<string, {callback:function(*), errback:function(Error)}>}
+   * @type {!e2e.ext.utils.CallbacksMap}
    * @private
    */
-  this.pendingCallbacks_ = {};
+  this.pendingCallbacks_ = new e2e.ext.utils.CallbacksMap();
 };
 
 
@@ -193,10 +193,7 @@ e2e.ext.WebsiteApi.prototype.sendWebsiteRequest_ = function(call, callback,
     return;
   }
 
-  do {
-    requestId = goog.string.getRandomString();
-  } while (goog.object.containsKey(this.pendingCallbacks_, requestId));
-  this.pendingCallbacks_[requestId] = {callback: callback, errback: errback};
+  requestId = this.pendingCallbacks_.addCallbacks(callback, errback);
   var request = {
     id: requestId,
     call: call,
@@ -354,17 +351,17 @@ e2e.ext.WebsiteApi.prototype.handleWebsiteRequest_ = function(port, request) {
  * @private
  */
 e2e.ext.WebsiteApi.prototype.processWebsiteResponse_ = function(response) {
-  if (!goog.object.containsKey(this.pendingCallbacks_, response.requestId)) {
+  try {
+    var callbacks = this.pendingCallbacks_.getAndRemove(response.requestId);
+    if (goog.object.containsKey(response, 'error')) {
+      callbacks.errback(new Error(response.error));
+    } else {
+      callbacks.callback(response.result);
+    }
+    return true;
+  } catch (e) {
     return false;
   }
-  var callbacks = this.pendingCallbacks_[response.requestId];
-  delete this.pendingCallbacks_[response.requestId];
-  if (goog.object.containsKey(response, 'error')) {
-    callbacks.errback(new Error(response.error));
-  } else {
-    callbacks.callback(response.result);
-  }
-  return true;
 };
 
 

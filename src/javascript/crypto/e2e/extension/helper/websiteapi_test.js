@@ -184,7 +184,7 @@ function testRequestResponseFlow() {
   var requestId;
   var handleResponseFunction = function(response) {
     assertEquals('booboo', response);
-    assertUndefined(e2eapi.pendingCallbacks_[requestId]);
+    assertFalse(e2eapi.pendingCallbacks_.containsKey(requestId));
     asyncTestCase.continueTesting();
   };
 
@@ -194,8 +194,8 @@ function testRequestResponseFlow() {
       assertEquals('bar', request.args);
       requestId = request.id;
       assertEquals(handleResponseFunction,
-          e2eapi.pendingCallbacks_[requestId].callback);
-      assertEquals(fail, e2eapi.pendingCallbacks_[requestId].errback);
+          e2eapi.pendingCallbacks_.get(requestId).callback);
+      assertEquals(fail, e2eapi.pendingCallbacks_.get(requestId).errback);
       // Simulate response
       assertTrue(e2eapi.processWebsiteMessage_({
         data: {
@@ -214,7 +214,7 @@ function testRequestResponseError() {
   var handleErrorFunction = function(error) {
     assertTrue(error instanceof Error);
     assertEquals('booboo', error.message);
-    assertUndefined(e2eapi.pendingCallbacks_[requestId]);
+    assertFalse(e2eapi.pendingCallbacks_.containsKey(requestId));
     asyncTestCase.continueTesting();
   };
 
@@ -223,9 +223,9 @@ function testRequestResponseError() {
       assertEquals('foo', request.call);
       assertEquals('bar', request.args);
       requestId = request.id;
-      assertEquals(fail, e2eapi.pendingCallbacks_[requestId].callback);
+      assertEquals(fail, e2eapi.pendingCallbacks_.get(requestId).callback);
       assertEquals(handleErrorFunction,
-          e2eapi.pendingCallbacks_[requestId].errback);
+          e2eapi.pendingCallbacks_.get(requestId).errback);
       // Simulate response
       assertTrue(e2eapi.processWebsiteMessage_({
         data: {
@@ -245,7 +245,7 @@ function testRequestResponseTimeout() {
     assertTrue(error instanceof Error);
     assertEquals('Timeout occurred while processing the request.',
         error.message);
-    assertUndefined(e2eapi.pendingCallbacks_[requestId]);
+    assertFalse(e2eapi.pendingCallbacks_.containsKey(requestId));
     asyncTestCase.continueTesting();
   };
 
@@ -255,9 +255,9 @@ function testRequestResponseTimeout() {
       assertEquals('timeouting', request.call);
       assertEquals('bar', request.args);
       requestId = request.id;
-      assertEquals(fail, e2eapi.pendingCallbacks_[requestId].callback);
+      assertEquals(fail, e2eapi.pendingCallbacks_.get(requestId).callback);
       assertEquals(handleErrorFunction,
-          e2eapi.pendingCallbacks_[requestId].errback);
+          e2eapi.pendingCallbacks_.get(requestId).errback);
     }
   };
   asyncTestCase.stepTimeout = e2e.ext.WebsiteApi.REQUEST_TIMEOUT + 10;
