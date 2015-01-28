@@ -157,8 +157,10 @@ ui.Prompt.prototype.getHelperProxy = function() {
 /** @override */
 ui.Prompt.prototype.disposeInternal = function() {
   goog.base(this, 'disposeInternal');
-
-  this.close();
+  goog.array.forEach(
+      document.querySelectorAll('textarea,input'), function(elem) {
+        elem.value = '';
+      });
 };
 
 
@@ -545,15 +547,6 @@ ui.Prompt.prototype.renderKeyringPassphrase_ = function(elem, contentBlob) {
  */
 ui.Prompt.prototype.close = function() {
   goog.dispose(this);
-
-  // Clear all input and text area fields to ensure that no data accidentally
-  // leaks to the user.
-  goog.array.forEach(
-      document.querySelectorAll('textarea,input'), function(elem) {
-        elem.value = '';
-      });
-
-  window.close();
 };
 
 

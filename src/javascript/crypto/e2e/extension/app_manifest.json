@@ -6,7 +6,7 @@
   "app": {
     "background": {"scripts": ["launcher_binary.js"]}
   },
-  "permissions": ["webview", "storage"],
+  "permissions": ["webview", "storage", "notifications"],
   "icons": {
     "16": "images/icon-16.png",
     "48": "images/icon-48.png",

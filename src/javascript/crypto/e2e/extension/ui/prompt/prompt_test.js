@@ -751,7 +751,7 @@ function testSetKeyringPassphraseError() {
 
 function testClose() {
   var closedWindow = false;
-  stubs.replace(window, 'close', function() {
+  prompt.addOnDisposeCallback(function() {
     closedWindow = true;
   });
 
@@ -759,7 +759,6 @@ function testClose() {
   prompt.close();
 
   assertTrue(prompt.isDisposed());
-  assertTrue(closedWindow);
 
   goog.array.forEach(
       document.querySelectorAll('textarea,input'), function(elem) {

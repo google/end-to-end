@@ -44,6 +44,7 @@ if (e2e.ext.utils.isChromeExtensionWindow() ||
 
     /** @type {!e2e.ext.utils.HelperProxy} */
     var helperProxy;
+    var promptCompleteHandler = goog.nullFunction;
 
     if (e2e.ext.utils.isChromeExtensionWindow()) {
       var tabId = parseInt(location.hash.substring(1), 10);
@@ -51,21 +52,30 @@ if (e2e.ext.utils.isChromeExtensionWindow() ||
         tabId = undefined;
       }
       helperProxy = new e2e.ext.utils.TabsHelperProxy(false, tabId);
+      promptCompleteHandler = function() {
+        window.close();
+      };
     } else if (e2e.ext.utils.isChromeAppWindow()) {
       var webviewId = location.hash.substring(1);
       helperProxy = new e2e.ext.utils.WebviewHelperProxy(false,
           /** @type {!Webview} */ (goog.asserts.assertObject(
               top.document.getElementById(webviewId))));
+      promptCompleteHandler = function() {
+        location.reload();
+      };
     }
 
     /** @type {e2e.ext.ui.Prompt} */
     window.promptPage = new e2e.ext.ui.Prompt(helperProxy, isPopout);
+    window.promptPage.addOnDisposeCallback(promptCompleteHandler);
+
     if (isPopout) {
       // Popouts are initialized by an event from the extension popup.
       window.promptPage.startMessageListener();
     } else {
       window.promptPage.decorate(document.body);
     }
+
     e2e.ext.ui.prompt.bootstrap = true;
   });
 }

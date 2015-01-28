@@ -6,11 +6,11 @@
 
 #prompt-container {
   float: right;
-  width: 40%;
+  width: 50%;
 }
 
 #webview-container {
-  width: 60%;
+  width: 50%;
 }
 
 #prompt {
