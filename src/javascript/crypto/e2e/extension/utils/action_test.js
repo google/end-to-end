@@ -30,8 +30,6 @@ goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
-goog.require('goog.testing.mockmatchers');
-goog.require('goog.testing.mockmatchers.SaveArgument');
 goog.require('goog.testing.storage.FakeMechanism');
 goog.setTestOnly();
 
@@ -102,44 +100,3 @@ function testGetContext() {
   mockControl.$verifyAll();
 }
 
-
-function testGetSelectedContent() {
-  var callback = mockControl.createFunctionMock();
-  callback();
-
-  var callbackArg = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  stubs.set(launcher, 'getSelectedContent', mockControl.createFunctionMock());
-  launcher.getSelectedContent(callbackArg,
-      goog.testing.mockmatchers.ignoreArgument);
-
-  mockControl.$replayAll();
-  utils.getSelectedContent(callback, goog.nullFunction);
-  callbackArg.arg();
-  mockControl.$verifyAll();
-}
-
-
-function testUpdateSelectedContent() {
-  var content = 'irrelevant';
-  var recipients = [];
-  var origin = 'irrelevant';
-  var subject = 'irrelevant';
-  var expectMoreUpdates = false;
-  var tabId = 1337;
-  var callback = mockControl.createFunctionMock();
-  callback();
-
-  var callbackArg = new goog.testing.mockmatchers.SaveArgument(goog.isFunction);
-  stubs.set(
-      launcher, 'updateSelectedContent', mockControl.createFunctionMock());
-  launcher.updateSelectedContent(
-      content, recipients, origin, expectMoreUpdates, callbackArg,
-      goog.testing.mockmatchers.ignoreArgument, subject, tabId);
-
-  mockControl.$replayAll();
-  utils.updateSelectedContent(
-      content, recipients, origin, expectMoreUpdates, callback,
-      goog.nullFunction, subject, undefined, tabId);
-  callbackArg.arg();
-  mockControl.$verifyAll();
-}

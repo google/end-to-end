@@ -23,6 +23,20 @@ goog.provide('e2e.ext.testingstubs');
 
 
 /**
+ * Stubbed out Tab ID.
+ * @type {number}
+ */
+e2e.ext.testingstubs.TAB_ID = 1;
+
+
+/**
+ * Stubbed out Tab ID.
+ * @type {string}
+ */
+e2e.ext.testingstubs.RUNTIME_ID = 'test-runtime-id';
+
+
+/**
  * Initializes the stubs.
  * @param {goog.testing.PropertyReplacer} replacer
  */
@@ -49,10 +63,11 @@ e2e.ext.testingstubs.initStubs = function(replacer) {
   replacer.setPath('chrome.tabs.onRemoved.addListener', goog.nullFunction);
   replacer.setPath('chrome.tabs.executeScript', goog.nullFunction);
   replacer.setPath('chrome.tabs.query', function(req, callback) {
-    callback([{id: 1}]);
+    callback([{id: e2e.ext.testingstubs.TAB_ID}]);
   });
   replacer.setPath('chrome.tabs.create', function(options, callback) {
     callback();
   });
   replacer.setPath('chrome.tabs.sendMessage', goog.nullFunction);
+  replacer.setPath('chrome.runtime.id', e2e.ext.testingstubs.RUNTIME_ID);
 };

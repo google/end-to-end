@@ -63,10 +63,12 @@ var utils = e2e.ext.utils;
 /**
  * Constructor for the UI prompt.
  * @constructor
+ * @param {!utils.HelperProxy} helperProxy HelperProxy object used to
+ *     communicate with the content script.
  * @param {boolean=} opt_isPopout Is the prompt displayed in a popout window.
  * @extends {goog.ui.Component}
  */
-ui.Prompt = function(opt_isPopout) {
+ui.Prompt = function(helperProxy, opt_isPopout) {
   goog.base(this);
 
   /**
@@ -123,6 +125,13 @@ ui.Prompt = function(opt_isPopout) {
    */
   this.panel_ = null;
 
+  /**
+   * Helper proxy object.
+   * @type {!utils.HelperProxy}
+   * @private
+   */
+  this.helperProxy_ = helperProxy;
+
 };
 goog.inherits(ui.Prompt, goog.ui.Component);
 
@@ -134,6 +143,15 @@ goog.inherits(ui.Prompt, goog.ui.Component);
  * @private
  */
 ui.Prompt.prototype.pgpLauncher_ = null;
+
+
+/**
+ * Returns the helper proxy object.
+ * @return  {!utils.HelperProxy}
+ */
+ui.Prompt.prototype.getHelperProxy = function() {
+  return this.helperProxy_;
+};
 
 
 /** @override */
@@ -168,10 +186,10 @@ ui.Prompt.prototype.decorateInternal = function(elem) {
     } else {
       // Ignore the error to also show the prompt for pages for which we cannot
       // inject code.
-      utils.action.getSelectedContent(
-          this.processSelectedContent_, function(error) {
-            this.processSelectedContent_(null);
-          }, this);
+      this.helperProxy_.getSelectedContent(
+          goog.bind(this.processSelectedContent_, this),
+          goog.bind(this.processSelectedContent_, this, null)
+      );
     }
   }, this.displayFailure_, this);
 };
@@ -343,7 +361,7 @@ ui.Prompt.prototype.handlePopout_ = function(event) {
   var currentTop = window.screenY;
   var windowBorder = 15;
   chrome.windows.create({
-    url: 'prompt.html?popout',
+    url: 'prompt.html?popout#' + this.helperProxy_.getHelperId(),
     focused: false,
     type: 'popup',
     width: currentWidth,

@@ -29,7 +29,6 @@ goog.require('e2e.ext.ui.panels.Chip');
 goog.require('e2e.ext.ui.panels.ChipHolder');
 goog.require('e2e.ext.ui.panels.prompt.PanelBase');
 goog.require('e2e.ext.ui.templates.panels.prompt');
-goog.require('e2e.ext.utils.action');
 goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.array');
@@ -378,11 +377,12 @@ promptPanels.EncryptSign.prototype.insertMessageIntoPage_ = function(origin) {
   var recipients = this.chipHolder_.getSelectedUids();
   var subject = goog.dom.getElement(constants.ElementId.SUBJECT) ?
       goog.dom.getElement(constants.ElementId.SUBJECT).value : undefined;
-  var tabId = this.getContent() ? this.getContent().tabId : undefined;
-  utils.action.updateSelectedContent(
+  var prompt = /** @type {e2e.ext.ui.Prompt} */ (this.getParent());
+  prompt.getHelperProxy().updateSelectedContent(
       textArea.value, recipients, origin, false,
-      goog.partial(goog.dispose, this.getParent()), this.errorCallback_,
-      subject, undefined, tabId);
+      goog.partial(goog.dispose, this.getParent()),
+      goog.bind(this.errorCallback_, this),
+      subject);
 };
 
 
@@ -434,10 +434,10 @@ promptPanels.EncryptSign.prototype.saveDraft_ = function(origin, evt) {
   }), this, goog.bind(function(encrypted) {
     var draft = e2e.openpgp.asciiArmor.markAsDraft(encrypted);
     // Inject the draft into website.
-    var tabId = this.getContent() ? this.getContent().tabId : undefined;
-    utils.action.updateSelectedContent(
+    var prompt = /** @type {e2e.ext.ui.Prompt} */ (this.getParent());
+    prompt.getHelperProxy().updateSelectedContent(
         draft, [], origin, true, goog.nullFunction,
-        this.errorCallback_, subject, undefined, tabId);
+        goog.bind(this.errorCallback_, this), subject);
   }, this), goog.bind(function(error) {
     if (error.messageId == 'promptNoEncryptionTarget') {
       var dialog = new dialogs.Generic(

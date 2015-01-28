@@ -24,7 +24,6 @@ goog.provide('e2e.ext.AppLauncher');
 goog.provide('e2e.ext.ExtensionLauncher');
 goog.provide('e2e.ext.Launcher');
 
-goog.require('e2e.async.Result');
 goog.require('e2e.ext.Preferences');
 goog.require('e2e.ext.api.Api');
 goog.require('e2e.ext.constants.StorageKey');
@@ -46,12 +45,6 @@ var messages = e2e.ext.messages;
  * @constructor
  */
 ext.Launcher = function(storage) {
-  /**
-   * The ID of the last used tab.
-   * @type {number}
-   * @private
-   */
-  this.lastTabId_ = window.NaN;
 
   /**
    * Whether the launcher was started correctly.
@@ -90,48 +83,6 @@ ext.Launcher = function(storage) {
    */
   this.ctxApi_ = new ext.api.Api();
 };
-
-
-/**
- * Delay in ms needed to initialize message listeners in helper.
- * @type {number}
- * @const
- */
-ext.Launcher.HELPER_CALLBACK_DELAY = 50;
-
-
-/**
- * Sets the provided content into the element on the page that the user has
- * selected.
- * Note: This function might not work while debugging the extension.
- * @param {string} content The content to write inside the selected element.
- * @param {!Array.<string>} recipients The recipients of the message.
- * @param {string} origin The web origin where the original message was created.
- * @param {boolean} expectMoreUpdates True if more updates are expected. False
- *     if this is the final update to the selected content.
- * @param {!function(...)} callback The function to invoke once the content has
- *     been updated.
- * @param {!function(Error)} errorCallback The callback to invoke if an error is
- *     encountered.
- * @param {string=} opt_subject The subject of the message if applicable.
- * @param {number=} opt_tabId Tab ID of the tab to update the content in.
- *     Defaults to active tab.
- * @expose
- */
-ext.Launcher.prototype.updateSelectedContent = goog.abstractMethod;
-
-
-/**
- * Retrieves the content that the user has selected.
- * @param {!function(...)} callback The callback where the selected content will
- *     be passed.
- * @param {!function(Error)} errorCallback The callback to invoke if an error is
- *     encountered.
- * @param {number=} opt_tabId Tab ID of the tab to get the content from.
- *     Defaults to active tab.
- * @expose
- */
-ext.Launcher.prototype.getSelectedContent = goog.abstractMethod;
 
 
 /**
@@ -253,59 +204,6 @@ ext.ExtensionLauncher = function(opt_storage) {
 goog.inherits(ext.ExtensionLauncher, ext.Launcher);
 
 
-/**
- * Finds the tab of with a current web application and determines if a helper
- * script is running inside of it. If no helper script is running, then one is
- * injected.
- * @param {!function(number)} callback The function to invoke once the active
- *     tab is found.
- * @param {number=} opt_tabId If present, forces query of a given tab ID instead
- *     of the current tab.
- * @protected
- */
-ext.ExtensionLauncher.prototype.getWebsiteTab = function(callback, opt_tabId) {
-  if (goog.isDefAndNotNull(opt_tabId)) {
-    this.connectToTab_(callback, opt_tabId);
-  } else {
-    // Query active tab.
-    chrome.tabs.query({
-      active: true,
-      currentWindow: true
-    }, goog.bind(function(tabs) {
-      var tabId = tabs[0] ? tabs[0].id : undefined;
-      this.connectToTab_(callback, tabId);
-    }, this));
-  }
-};
-
-
-/**
- * Connects to the helper in a given tab.
- * @param {!function(number)} callback The function to invoke once the active
- *     tab is found.
- * @param {number=} opt_tabId Tab ID to connect to.
- * @private
- */
-ext.ExtensionLauncher.prototype.connectToTab_ = function(callback, opt_tabId) {
-  if (!goog.isDef(opt_tabId)) {
-    // NOTE(radi): In some operating systems (OSX, CrOS), the query will be
-    // executed against the window holding the browser action. In such
-    // situations we'll provide the last used tab.
-    callback(this.lastTabId_);
-    return;
-  } else {
-    this.lastTabId_ = opt_tabId;
-    chrome.tabs.executeScript(opt_tabId, {
-      file: 'helper_binary.js'
-    }, function() {
-      setTimeout(function() {
-        callback(/** @type {number} */ (opt_tabId));
-      }, ext.Launcher.HELPER_CALLBACK_DELAY);
-    });
-  }
-};
-
-
 /** @override */
 ext.ExtensionLauncher.prototype.updatePassphraseWarning = function() {
   if (this.hasPassphrase()) {
@@ -319,53 +217,6 @@ ext.ExtensionLauncher.prototype.updatePassphraseWarning = function() {
       title: chrome.i18n.getMessage('passphraseEmptyWarning')
     });
   }
-};
-
-
-/** @override */
-ext.ExtensionLauncher.prototype.getSelectedContent =
-    function(callback, errorCallback, opt_tabId) {
-  this.getWebsiteTab(goog.bind(function(tabId) {
-    chrome.tabs.sendMessage(tabId, {
-      enableLookingGlass: this.preferences_.isLookingGlassEnabled()
-    }, function(response) {
-      if (arguments.length == 0 && chrome.runtime.lastError) {
-        errorCallback(new Error(chrome.runtime.lastError.message));
-      } else if (response instanceof Error) {
-        errorCallback(response);
-      } else {
-        if (goog.isObject(response)) {
-          response.tabId = tabId;
-        }
-        callback(response);
-      }
-    });
-  }, this), opt_tabId);
-};
-
-
-/** @override */
-ext.ExtensionLauncher.prototype.updateSelectedContent =
-    function(content, recipients, origin, expectMoreUpdates, callback,
-    errorCallback, opt_subject, opt_tabId) {
-  this.getWebsiteTab(goog.bind(function(tabId) {
-    chrome.tabs.sendMessage(tabId, {
-      value: content,
-      response: true,
-      detach: !Boolean(expectMoreUpdates),
-      origin: origin,
-      recipients: recipients,
-      subject: opt_subject
-    }, function(response) {
-      if (arguments.length == 0 && chrome.runtime.lastError) {
-        errorCallback(new Error(chrome.runtime.lastError.message));
-      } else if (response instanceof Error) {
-        errorCallback(response);
-      } else {
-        callback(response);
-      }
-    });
-  }, this), opt_tabId);
 };
 
 
@@ -387,17 +238,11 @@ ext.ExtensionLauncher.prototype.createWindow = function(url, isForeground,
  */
 ext.AppLauncher = function(storage) {
   ext.AppLauncher.base(this, 'constructor', storage);
-  this.webViewChannel = {
-    send: function(ignored) {
-      return e2e.async.Result.toError(new Error('Not implemented'));
-    }
-  };
   chrome.app.runtime.onLaunched.addListener(function() {
-    // TODO(evn): This should be webview.html rather than prompt.html
-    chrome.app.window.create('prompt.html', {
+    chrome.app.window.create('webview.html', {
       innerBounds: {
-        width: 680,
-        height: 480
+        width: 960,
+        height: 580
       }
     });
   });
@@ -412,50 +257,11 @@ ext.AppLauncher.prototype.updatePassphraseWarning = function() {
 
 
 /** @override */
-ext.AppLauncher.prototype.getSelectedContent =
-    function(callback, errorCallback, opt_tabId) {
-  this.webViewChannel.send({
-    enableLookingGlass: this.preferences_.isLookingGlassEnabled()
-  }).addCallback(function(response) {
-    if (arguments.length == 0 && chrome.runtime.lastError) {
-      errorCallback(new Error(chrome.runtime.lastError.message));
-    } else {
-      callback(response);
-    }
-  }).addErrback(function(error) {
-    errorCallback(error);
-  });
-};
-
-
-/** @override */
-ext.AppLauncher.prototype.updateSelectedContent =
-    function(content, recipients, origin, expectMoreUpdates, callback,
-    errorCallback, opt_subject, opt_tabId) {
-  this.webViewChannel.send({
-    value: content,
-    response: true,
-    detach: !Boolean(expectMoreUpdates),
-    origin: origin,
-    recipients: recipients,
-    subject: opt_subject
-  }).addCallback(function(response) {
-    if (arguments.length == 0 && chrome.runtime.lastError) {
-      errorCallback(new Error(chrome.runtime.lastError.message));
-    } else {
-      callback(response);
-    }
-  }).addErrback(function(error) {
-    errorCallback(error);
-  });
-};
-
-
-/** @override */
 ext.AppLauncher.prototype.createWindow = function(url, isForeground, callback) {
   chrome.app.window.create(url, {
     focused: isForeground
   }, callback);
 };
+
 
 });  // goog.scope

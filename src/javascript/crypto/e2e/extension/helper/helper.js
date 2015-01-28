@@ -242,4 +242,37 @@ ext.Helper.prototype.errorHandler_ = function(sendResponse, error) {
   sendResponse(error);
 };
 
+
+/**
+ * Handles requests sent from the Chrome App (Chrome App calls this function
+ * directly).
+ * @param {!e2e.ext.messages.GetSelectionRequest|
+ *     !e2e.ext.messages.BridgeMessageResponse} req The request.
+ * @param {string} requestId Identifier of the request to send it back in the
+ *     response.
+ * @expose
+ */
+ext.Helper.prototype.handleAppRequest = function(req, requestId) {
+  // NOTE(koto): We pass an empty sender object. handleMessage_ does not
+  // validate the sender anyway, as it's only listening for messages from the
+  // current extension/app only.
+  this.handleMessage_(req, /** @type {!MessageSender} */ ({}),
+      goog.partial(this.sendResponse_, requestId));
+};
+
+
+/**
+ * Sends a response by chrome.runtime.sendMessage
+ * @param {string} requestId Request ID
+ * @param {*} response Response
+ * @private
+ */
+ext.Helper.prototype.sendResponse_ = function(requestId, response) {
+  chrome.runtime.sendMessage(chrome.runtime.id, {
+    requestId: requestId,
+    response: response
+  });
+};
+
+
 });  // goog.scope

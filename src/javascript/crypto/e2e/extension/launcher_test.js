@@ -58,57 +58,6 @@ function tearDown() {
 }
 
 
-function testGetSelectedContent() {
-  var injectedScript = false;
-  stubs.replace(chrome.tabs, 'executeScript', function(a, b, callback) {
-    injectedScript = true;
-    callback();
-  });
-
-  var sentMessage = false;
-  stubs.replace(chrome.tabs, 'sendMessage', function(tabId) {
-    assertNotUndefined(tabId);
-    sentMessage = true;
-  });
-
-  launcher.getSelectedContent(function() {});
-  assertTrue('Failed to inject content script', injectedScript);
-  assertTrue(
-      'Failed to query content script for selected content', sentMessage);
-
-}
-
-
-function testUpdateSelectedContent() {
-  var content = 'some text';
-  var origin = 'http://www.example.com';
-  var recipients = ['a@example.com'];
-  var executeScriptArg = new mockmatchers.SaveArgument(goog.isFunction);
-  stubs.setPath('chrome.tabs.executeScript',
-      mockControl.createFunctionMock('executeScript'));
-  chrome.tabs.executeScript(mockmatchers.ignoreArgument,
-      mockmatchers.ignoreArgument, executeScriptArg);
-
-  var messageArg = new mockmatchers.SaveArgument();
-  stubs.setPath('chrome.tabs.sendMessage', function(tabId, msg, callback)  {
-    assertEquals(msg.value, content);
-    assertEquals(msg.origin, origin);
-    assertArrayEquals(msg.recipients, recipients);
-    callback(true);
-  });
-
-  var callbackMock = mockControl.createFunctionMock('callbackMock');
-  callbackMock(true);
-
-  mockControl.$replayAll();
-
-  launcher.updateSelectedContent(content, recipients, origin, false,
-      callbackMock);
-  executeScriptArg.arg();
-  mockControl.$verifyAll();
-}
-
-
 function testBadPassphrase() {
   var storage = new goog.testing.storage.FakeMechanism();
   var l1 = new e2e.ext.ExtensionLauncher(storage);
@@ -151,34 +100,6 @@ function testStart() {
   assertTrue(launcher.started_);
 
   mockControl.$verifyAll();
-}
-
-
-function testGetLastTab() {
-  var tabId = 123;
-  var tabs = [{id: tabId}];
-
-  stubs.replace(chrome.tabs, 'query', function(req, callback) {
-    callback(tabs);
-  });
-
-  stubs.replace(chrome.tabs, 'executeScript', function(a, b, callback) {
-    callback();
-  });
-
-  var returnedIds = 0;
-  launcher.getWebsiteTab(function(returnedId) {
-    assertEquals(tabId, returnedId);
-    returnedIds++;
-    tabs.splice(0, tabs.length);
-  });
-
-  launcher.getWebsiteTab(function(returnedId) {
-    assertEquals(tabId, returnedId);
-    returnedIds++;
-  });
-
-  assertEquals(2, returnedIds);
 }
 
 

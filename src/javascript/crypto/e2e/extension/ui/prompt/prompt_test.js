@@ -33,6 +33,7 @@ goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.Prompt');
 goog.require('e2e.ext.utils');
+goog.require('e2e.ext.utils.TabsHelperProxy');
 goog.require('e2e.ext.utils.text');
 /** @suppress {extraRequire} intentionally importing all signer functions */
 goog.require('e2e.signer.all');
@@ -59,6 +60,7 @@ var mockControl = null;
 var fakeStorage = null;
 var prompt = null;
 var stubs = new goog.testing.PropertyReplacer();
+var helperProxy;
 var utils = e2e.ext.utils;
 
 
@@ -70,7 +72,9 @@ function setUp() {
   stubs.replace(goog.Timer.prototype, 'start', goog.nullFunction);
 
   fakeStorage = new goog.testing.storage.FakeMechanism();
-  prompt = new e2e.ext.ui.Prompt();
+  helperProxy = new e2e.ext.utils.TabsHelperProxy(false);
+
+  prompt = new e2e.ext.ui.Prompt(helperProxy);
   prompt.pgpLauncher_ = new e2e.ext.ExtensionLauncher(fakeStorage);
   prompt.pgpLauncher_.start();
   stubs.setPath('window.chrome.runtime.getBackgroundPage', function(callback) {
@@ -99,7 +103,7 @@ function testGetSelectedContent() {
 
   var queriedForSelectedContent = false;
   stubs.replace(
-      e2e.ext.ExtensionLauncher.prototype, 'getSelectedContent', function() {
+      prompt.getHelperProxy(), 'getSelectedContent', function() {
         queriedForSelectedContent = true;
       });
 
@@ -109,6 +113,32 @@ function testGetSelectedContent() {
 
   prompt.decorate(document.documentElement);
   assertTrue('Failed to query for selected content', queriedForSelectedContent);
+}
+
+
+function testGetSelectedContentWithError() {
+  stubs.replace(e2e.ext.Launcher.prototype, 'hasPassphrase', function() {
+    return true;
+  });
+
+  stubs.replace(
+      prompt.getHelperProxy(), 'getSelectedContent', function(cb, errorCb) {
+        // Simulate an error.
+        errorCb();
+      });
+
+  stubs.replace(chrome.runtime, 'getBackgroundPage', function(callback) {
+    callback({launcher: new e2e.ext.ExtensionLauncher()});
+  });
+
+  stubs.replace(
+      prompt, 'processSelectedContent_', function(content) {
+        assertNull(content);
+        asyncTestCase.continueTesting();
+      });
+
+  asyncTestCase.waitForAsync('Decorating prompt');
+  prompt.decorate(document.documentElement);
 }
 
 
@@ -398,7 +428,6 @@ function testDecrypt() {
 
 
 function testOpenPopout() {
-  var tabId = 1;
   var selection = 'selected content';
   var stubWindow = {
     id: 5
@@ -410,7 +439,8 @@ function testOpenPopout() {
   });
 
   stubs.setPath('chrome.windows.create', function(windowOptions, callback) {
-    assertEquals('prompt.html?popout', windowOptions.url);
+    assertEquals('prompt.html?popout#' + e2e.ext.testingstubs.TAB_ID,
+        windowOptions.url);
     assertEquals('popup', windowOptions.type);
     callback(stubWindow);
   });
@@ -429,7 +459,6 @@ function testOpenPopout() {
   stubs.setPath('chrome.extension.getViews', function() {
     return [{location: {search: '?popout'}, postMessage: function(msg,
             senderOrigin) {
-          assertEquals(tabId, msg.tabId);
           assertEquals(selection, msg.selection);
           assertEquals(constants.Actions.ENCRYPT_SIGN, msg.action);
           assertEquals(location.origin, senderOrigin);
@@ -440,7 +469,6 @@ function testOpenPopout() {
   prompt.decorate(document.documentElement);
   prompt.processSelectedContent_({
     request: true,
-    tabId: tabId,
     selection: selection,
     action: constants.Actions.ENCRYPT_SIGN
   });
@@ -483,7 +511,6 @@ function testContentInsertedOnEncrypt() {
   var plaintext = 'irrelevant';
   var origin = 'http://www.example.com';
   var subject = 'encrypted message';
-  var tabId = 1337;
 
   stubs.replace(e2e.ext.utils.text, 'extractValidEmail',
       function(recipient) {
@@ -492,15 +519,15 @@ function testContentInsertedOnEncrypt() {
         }
         return null;
       });
-  stubs.set(prompt.pgpLauncher_, 'updateSelectedContent',
+  stubs.set(prompt.getHelperProxy(), 'updateSelectedContent',
       mockControl.createFunctionMock('updateSelectedContent'));
   var encryptedMsg = new goog.testing.mockmatchers.SaveArgument(goog.isString);
   var subjectMsg = new goog.testing.mockmatchers.SaveArgument(function(a) {
     return (!goog.isDef(a) || goog.isString(a));
   });
-  prompt.pgpLauncher_.updateSelectedContent(encryptedMsg, [USER_ID], origin,
+  prompt.getHelperProxy().updateSelectedContent(encryptedMsg, [USER_ID], origin,
       false, goog.testing.mockmatchers.ignoreArgument,
-      goog.testing.mockmatchers.ignoreArgument, subjectMsg, tabId);
+      goog.testing.mockmatchers.ignoreArgument, subjectMsg);
 
   mockControl.$replayAll();
   populatePgpKeys();
@@ -514,8 +541,7 @@ function testContentInsertedOnEncrypt() {
       recipients: [USER_ID],
       origin: origin,
       canInject: true,
-      subject: subject,
-      tabId: tabId
+      subject: subject
     }, constants.Actions.ENCRYPT_SIGN);
 
     var protectBtn = document.querySelector('button.action');

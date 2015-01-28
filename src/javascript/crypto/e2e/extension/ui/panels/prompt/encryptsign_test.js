@@ -29,6 +29,7 @@ goog.require('e2e.ext.constants');
 goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.panels.prompt.EncryptSign');
 goog.require('e2e.ext.utils');
+goog.require('e2e.ext.utils.TabsHelperProxy');
 goog.require('e2e.ext.utils.action');
 goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.asciiArmor');
@@ -279,17 +280,23 @@ function testSaveDraftIntoPage() {
     return null;
   });
 
-  stubs.set(e2e.ext.utils.action, 'updateSelectedContent',
+  var helperProxy = new e2e.ext.utils.TabsHelperProxy(false);
+
+  stubs.replace(panel, 'getParent', function() {
+    return {
+      'getHelperProxy' : function() { return helperProxy; }
+    };
+  });
+
+  stubs.replace(helperProxy, 'updateSelectedContent',
       mockControl.createFunctionMock('updateSelectedContent'));
   var contentArg = new goog.testing.mockmatchers.SaveArgument(goog.isString);
-  var tabIdArg = new goog.testing.mockmatchers.SaveArgument(goog.isNumber);
   var subjectArg = new goog.testing.mockmatchers.SaveArgument(function(a) {
     return (!goog.isDef(a) || goog.isString(a));
   });
-  e2e.ext.utils.action.updateSelectedContent(contentArg, [], origin, true,
+  helperProxy.updateSelectedContent(contentArg, [], origin, true,
       goog.testing.mockmatchers.ignoreArgument,
-      goog.testing.mockmatchers.ignoreArgument, subjectArg,
-      goog.testing.mockmatchers.ignoreArgument, tabIdArg);
+      goog.testing.mockmatchers.ignoreArgument, subjectArg);
 
   mockControl.$replayAll();
   panel.setContentInternal({
@@ -298,7 +305,6 @@ function testSaveDraftIntoPage() {
     recipients: [USER_ID],
     origin: origin,
     subject: subject,
-    tabId: tabId,
     canInject: true
   });
   panel.render(document.body);
@@ -309,7 +315,6 @@ function testSaveDraftIntoPage() {
 
   panel.saveDraft_(origin, {});
   encryptCb.arg(encrypted);
-  assertEquals(tabId, tabIdArg.arg);
   assertTrue(e2e.openpgp.asciiArmor.isDraft(contentArg.arg));
   assertContains('encrypted message', contentArg.arg);
   assertEquals(subject, subjectArg.arg);

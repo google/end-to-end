@@ -136,6 +136,34 @@ utils.showNotification = function(msg, callback) {
 
 
 /**
+ * Checks if the given window runs as part of a Chrome App execution
+ * environment.
+ * @param {Window=} opt_window Window object to test. Defaults to current.
+ * @return {boolean} True iff the code runs in a Chrome App.
+ */
+utils.runsInChromeApp = function(opt_window) {
+  var win = opt_window ? opt_window : window;
+  return Boolean(win.chrome.runtime) &&
+      goog.isFunction(win.chrome.runtime.getManifest) &&
+      goog.object.containsKey(win.chrome.runtime.getManifest(), 'app');
+};
+
+
+/**
+ * Checks if the given window runs as part of a Chrome Extension execution
+ * environment.
+ * @param {Window=} opt_window Window object to test. Defaults to current.
+ * @return {boolean} True iff the code runs in a Chrome Extension.
+ */
+utils.runsInChromeExtension = function(opt_window) {
+  var win = opt_window ? opt_window : window;
+  return Boolean(win.chrome.runtime) &&
+      goog.isFunction(win.chrome.runtime.getManifest) &&
+      !goog.object.containsKey(win.chrome.runtime.getManifest(), 'app');
+};
+
+
+/**
  * Checks if the given window is a Chrome App window. Defaults to checking
  * current window.
  * @param {Window=} opt_window Window object to test.
@@ -143,9 +171,7 @@ utils.showNotification = function(msg, callback) {
  */
 utils.isChromeAppWindow = function(opt_window) {
   var win = opt_window ? opt_window : window;
-  return (Boolean(win.chrome.runtime) &&
-      goog.isFunction(win.chrome.runtime.getManifest) &&
-      goog.object.containsKey(win.chrome.runtime.getManifest(), 'app') &&
+  return (utils.runsInChromeApp(opt_window) &&
       win.location.protocol == 'chrome-extension:');
 };
 
@@ -158,9 +184,7 @@ utils.isChromeAppWindow = function(opt_window) {
  */
 utils.isChromeExtensionWindow = function(opt_window) {
   var win = opt_window ? opt_window : window;
-  return (Boolean(win.chrome.runtime) &&
-      goog.isFunction(win.chrome.runtime.getManifest) &&
-      !goog.object.containsKey(win.chrome.runtime.getManifest(), 'app') &&
+  return (utils.runsInChromeExtension(opt_window) &&
       win.location.protocol == 'chrome-extension:');
 };
 

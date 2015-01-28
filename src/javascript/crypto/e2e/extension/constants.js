@@ -103,7 +103,11 @@ e2e.ext.constants.ElementId = {
   WELCOME_FOOTER: 'welcome-footer',
 
   // Chrome notifications
-  NOTIFICATION_SUCCESS: 'e2e-success'
+  NOTIFICATION_SUCCESS: 'e2e-success',
+
+  // Website container
+  WEBVIEW: 'webview',
+  PROMPT: 'prompt'
 };
 
 

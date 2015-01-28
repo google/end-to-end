@@ -228,6 +228,11 @@ e2e.ext.WebsiteApi.prototype.bootstrapChannelWithStub_ = function(stubFilename,
     onPortReadyCallback(/** @type {boolean} */ (this.apiAvailable_));
     return;
   }
+  // NOTE(koto): If this code is embedded in a webview, app resources are not
+  // available, even with appropriate accessible_resources entry in the
+  // manifest. They can't be loaded with XHR too.
+  // TODO(koto): Add a workaround - compile gmonkeystub and .toString() it or
+  // have it delivered by the app.
   var script = document.createElement('script');
   script.src = chrome.runtime.getURL(stubFilename);
   document.documentElement.appendChild(script);

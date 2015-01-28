@@ -20,8 +20,12 @@
 
 goog.require('e2e.ext.ui.Prompt');
 goog.require('e2e.ext.utils');
+goog.require('e2e.ext.utils.TabsHelperProxy');
+goog.require('e2e.ext.utils.WebviewHelperProxy');
+goog.require('goog.asserts');
 goog.require('goog.events');
 goog.require('goog.events.EventType');
+
 
 goog.provide('e2e.ext.ui.prompt.bootstrap');
 
@@ -37,8 +41,25 @@ if (e2e.ext.utils.isChromeExtensionWindow() ||
     e2e.ext.utils.isChromeAppWindow()) {
   goog.events.listen(window, goog.events.EventType.LOAD, function() {
     var isPopout = (location.search === '?popout');
+
+    /** @type {!e2e.ext.utils.HelperProxy} */
+    var helperProxy;
+
+    if (e2e.ext.utils.isChromeExtensionWindow()) {
+      var tabId = parseInt(location.hash.substring(1), 10);
+      if (!isPopout || isNaN(tabId) || tabId <= 0) {
+        tabId = undefined;
+      }
+      helperProxy = new e2e.ext.utils.TabsHelperProxy(false, tabId);
+    } else if (e2e.ext.utils.isChromeAppWindow()) {
+      var webviewId = location.hash.substring(1);
+      helperProxy = new e2e.ext.utils.WebviewHelperProxy(false,
+          /** @type {!Webview} */ (goog.asserts.assertObject(
+              top.document.getElementById(webviewId))));
+    }
+
     /** @type {e2e.ext.ui.Prompt} */
-    window.promptPage = new e2e.ext.ui.Prompt(isPopout);
+    window.promptPage = new e2e.ext.ui.Prompt(helperProxy, isPopout);
     if (isPopout) {
       // Popouts are initialized by an event from the extension popup.
       window.promptPage.startMessageListener();

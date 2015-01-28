@@ -1,0 +1,22 @@
+#webview {
+  height: 94vh;
+  margin-bottom: 1vh;
+  width: 100%;
+}
+
+#prompt-container {
+  float: right;
+  width: 40%;
+}
+
+#webview-container {
+  width: 60%;
+}
+
+#prompt {
+  border: none;
+  height: 94vh;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
