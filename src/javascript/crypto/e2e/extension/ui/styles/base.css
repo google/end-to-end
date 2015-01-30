@@ -87,7 +87,7 @@ button.back > img {
   padding: 0 8px;
 }
 
-#pgpHead {
+.pgpHead {
   border: solid #ebebeb;
   border-width: 0 0 1px;
   margin-bottom: 5px;
@@ -98,11 +98,11 @@ button.back > img {
   background-size: 32px;
 }
 
-#pgpHead > div {
+.pgpHead > div {
    padding: 0 15px;
 }
 
-#pgpHead h1 {
+.pgpHead h1 {
   color: #dd4b39;
   font-size: 1.53846154em;
   font-weight: normal;

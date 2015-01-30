@@ -165,6 +165,13 @@ ui.Prompt.prototype.disposeInternal = function() {
 
 
 /** @override */
+ui.Prompt.prototype.createDom = function() {
+  goog.base(this, 'createDom');
+  this.decorateInternal(this.getElement());
+};
+
+
+/** @override */
 ui.Prompt.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
 
@@ -172,13 +179,18 @@ ui.Prompt.prototype.decorateInternal = function(elem) {
     menuLabel: chrome.i18n.getMessage('actionOpenMenu'),
     popoutLabel: chrome.i18n.getMessage('actionOpenPopout')
   });
+};
 
-  var title = goog.dom.getElement(constants.ElementId.TITLE);
+
+/** @override */
+ui.Prompt.prototype.enterDocument = function() {
+  goog.base(this, 'enterDocument');
+  var title = this.getElementByClass(constants.CssClass.PROMPT_TITLE);
   title.textContent = chrome.i18n.getMessage('actionLoading');
 
   if (this.isPopout || !(utils.isChromeExtensionWindow())) {
     goog.dom.classlist.add(
-        goog.dom.getElement(constants.ElementId.POPOUT_BUTTON),
+        this.getElementByClass(constants.CssClass.POPOUT_BUTTON),
         constants.CssClass.HIDDEN);
   }
   utils.action.getLauncher(function(launcher) {
@@ -190,7 +202,8 @@ ui.Prompt.prototype.decorateInternal = function(elem) {
       // inject code.
       this.helperProxy_.getSelectedContent(
           goog.bind(this.processSelectedContent_, this),
-          goog.bind(this.processSelectedContent_, this, null)
+          goog.bind(this.processSelectedContent_, this, null,
+              constants.Actions.USER_SPECIFIED)
       );
     }
   }, this.displayFailure_, this);
@@ -262,7 +275,7 @@ ui.Prompt.prototype.processSelectedContent_ =
 
   var promptPanel = null;
   var elem = goog.dom.getElement(constants.ElementId.BODY);
-  var title = goog.dom.getElement(constants.ElementId.TITLE);
+  var title = this.getElementByClass(constants.CssClass.PROMPT_TITLE);
   title.textContent = this.getTitle_(action) || title.textContent;
   switch (action) {
     case constants.Actions.ENCRYPT_SIGN:
@@ -315,7 +328,7 @@ ui.Prompt.prototype.processSelectedContent_ =
 
   if (utils.isChromeExtensionWindow() && !this.isPopout) {
     this.getHandler().listen(
-        goog.dom.getElement(constants.ElementId.POPOUT_BUTTON),
+        this.getElementByClass(constants.CssClass.POPOUT_BUTTON),
         goog.events.EventType.CLICK,
         goog.bind(this.handlePopout_, this)
     );
@@ -330,8 +343,8 @@ ui.Prompt.prototype.processSelectedContent_ =
  * @private
  */
 ui.Prompt.prototype.hideHeaderButtons_ = function() {
-  var buttonsContainer = goog.dom.getElement(
-      constants.ElementId.BUTTONS_CONTAINER);
+  var buttonsContainer = this.getElementByClass(
+      constants.CssClass.BUTTONS_CONTAINER);
   goog.dom.classlist.add(buttonsContainer, constants.CssClass.HIDDEN);
 };
 
@@ -341,8 +354,8 @@ ui.Prompt.prototype.hideHeaderButtons_ = function() {
  * @private
  */
 ui.Prompt.prototype.showHeaderButtons_ = function() {
-  var buttonsContainer = goog.dom.getElement(
-      constants.ElementId.BUTTONS_CONTAINER);
+  var buttonsContainer = this.getElementByClass(
+      constants.CssClass.BUTTONS_CONTAINER);
   goog.dom.classlist.remove(buttonsContainer, constants.CssClass.HIDDEN);
 };
 
@@ -412,7 +425,7 @@ ui.Prompt.prototype.getPopouts_ = function() {
  * @private
  */
 ui.Prompt.prototype.showMenuInline_ = function(menu) {
-  var menuButton = goog.dom.getElement(constants.ElementId.MENU_BUTTON);
+  var menuButton = this.getElementByClass(constants.CssClass.MENU_BUTTON);
   this.hideHeaderButtons_();
   menu.detach(menuButton);
   // Show the menu inline instead and restyle it.
@@ -487,7 +500,7 @@ ui.Prompt.prototype.renderMenu_ = function(elem, blob) {
       goog.ui.Component.EventType.ACTION,
       goog.partial(this.selectAction_, contentBlob));
 
-  var menuButton = goog.dom.getElement(constants.ElementId.MENU_BUTTON);
+  var menuButton = this.getElementByClass(constants.CssClass.MENU_BUTTON);
 
   menu.setToggleMode(true);
   menu.attach(

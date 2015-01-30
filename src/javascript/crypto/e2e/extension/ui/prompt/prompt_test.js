@@ -177,7 +177,7 @@ function testLoadingState() {
 
   assertContains('actionLoading', elem.textContent);
   assertTrue(goog.dom.classlist.contains(
-      goog.dom.getElement(e2e.ext.constants.ElementId.BUTTONS_CONTAINER),
+      prompt.getElementByClass(e2e.ext.constants.CssClass.BUTTONS_CONTAINER),
       e2e.ext.constants.CssClass.HIDDEN));
 
 }
@@ -473,7 +473,7 @@ function testOpenPopout() {
     action: constants.Actions.ENCRYPT_SIGN
   });
   asyncTestCase.waitForAsync('Waiting for popout window to open.');
-  var popoutButton = document.querySelector('#popout-button');
+  var popoutButton = document.querySelector('.popout-button');
   popoutButton.click();
 }
 

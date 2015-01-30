@@ -57,16 +57,16 @@ textarea:focus,
   margin-bottom: 8px;
 }
 
-#buttons-container {
+.buttons-container {
   float: right;
 }
 
-#buttons-container img {
+.buttons-container img {
   cursor: auto;
   opacity: .4;
 }
 
-#buttons-container img:hover {
+.buttons-container img:hover {
   cursor: pointer;
   opacity: .8;
 }

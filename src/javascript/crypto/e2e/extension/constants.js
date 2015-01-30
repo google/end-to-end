@@ -64,9 +64,7 @@ e2e.ext.constants.Actions = {
  * @enum {string}
  */
 e2e.ext.constants.ElementId = {
-  HEADER: 'pgpHead',
   BODY: 'pgpBody',
-  TITLE: 'pgpTitle',
   MAIN_FORM: 'pgpMain',
   KEY_SELECT_FORM: 'pgpKeySelect',
   GENERATE_KEY_FORM: 'pgpGenerateKey',
@@ -85,11 +83,6 @@ e2e.ext.constants.ElementId = {
   FROM_HOLDER: 'fromHolder',
   SUBJECT_HOLDER: 'subjectHolder',
   SUBJECT: 'subject',
-
-  /* Used to display menus in the UI. */
-  BUTTONS_CONTAINER: 'buttons-container',
-  MENU_BUTTON: 'menu-button',
-  POPOUT_BUTTON: 'popout-button',
 
   // Welcome page
   WELCOME_BODY: 'welcome-main',
@@ -158,9 +151,16 @@ e2e.ext.constants.CssClass = {
   KEYRING_RESTORE_EMAIL: 'keyring-restore-email',
   KEYRING_PASSPHRASE_CHANGE: 'keyring-passphrase-change',
 
-  /** Used in the welcome page */
+  /** Used in the welcome page. */
   WELCOME_MENU_ICON: 'welcome-menu-icon',
-  WELCOME_SUBSECTION_HEADER: 'welcome-subsection-header'
+  WELCOME_SUBSECTION_HEADER: 'welcome-subsection-header',
+
+  /** Used in prompt. */
+  PROMPT_HEADER: 'pgpHead',
+  PROMPT_TITLE: 'pgpTitle',
+  BUTTONS_CONTAINER: 'buttons-container',
+  MENU_BUTTON: 'menu-button',
+  POPOUT_BUTTON: 'popout-button'
 };
 
 
