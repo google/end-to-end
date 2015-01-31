@@ -161,7 +161,7 @@ e2e_build_extension() {
   cp -fr "$SRC_EXT_DIR/_locales" "$BUILD_EXT_DIR"
   find "$SRC_EXT_DIR/ui" -regex .*.html -not -regex .*_test.html -exec cp -f "{}" "$BUILD_EXT_DIR" \;
   cp -f "$SRC_EXT_DIR/helper/gmonkeystub.js" "$BUILD_EXT_DIR"
-  cp -f "$SRC_EXT_DIR/manifest.json" "$BUILD_EXT_DIR"
+  cp -f "$SRC_EXT_DIR/extension_manifest.json" "$BUILD_EXT_DIR/manifest.json"
   echo "Done."
 }
 
