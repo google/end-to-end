@@ -275,4 +275,16 @@ ext.Helper.prototype.sendResponse_ = function(requestId, response) {
 };
 
 
+/**
+ * Sets the stub file contents for the Website API object. Used in the
+ * Chrome App in which the website cannot access chrome-extension:// URLs.
+ * @param {string} stubUrl Stub file URL.
+ * @param {string} contents Stub file contents.
+ * @expose
+ */
+ext.Helper.prototype.setApiStub = function(stubUrl, contents) {
+  this.api_.setStub(stubUrl, contents);
+};
+
+
 });  // goog.scope

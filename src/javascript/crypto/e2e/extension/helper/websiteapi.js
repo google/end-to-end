@@ -27,6 +27,7 @@ goog.require('e2e.ext.utils.CallbacksMap');
 goog.require('e2e.ext.utils.text');
 goog.require('goog.array');
 goog.require('goog.object');
+goog.require('goog.structs.Map');
 
 
 
@@ -40,6 +41,12 @@ e2e.ext.WebsiteApi = function() {
    * @private
    */
   this.pendingCallbacks_ = new e2e.ext.utils.CallbacksMap();
+  /**
+   * Map for storing the stub file contents.
+   * @type {!goog.structs.Map<string, string>}
+   * @private
+   */
+  this.stubContents_ = new goog.structs.Map();
 };
 
 
@@ -231,10 +238,12 @@ e2e.ext.WebsiteApi.prototype.bootstrapChannelWithStub_ = function(stubFilename,
   // NOTE(koto): If this code is embedded in a webview, app resources are not
   // available, even with appropriate accessible_resources entry in the
   // manifest. They can't be loaded with XHR too.
-  // TODO(koto): Add a workaround - compile gmonkeystub and .toString() it or
-  // have it delivered by the app.
   var script = document.createElement('script');
-  script.src = chrome.runtime.getURL(stubFilename);
+  if (this.stubContents_.containsKey(stubFilename)) {
+    script.textContent = this.stubContents_.get(stubFilename);
+  } else {
+    script.src = chrome.runtime.getURL(stubFilename);
+  }
   document.documentElement.appendChild(script);
   this.stubInjected_ = true;
   setTimeout(goog.bind(this.bootstrapChannel_, this, onPortReadyCallback),
@@ -664,4 +673,17 @@ e2e.ext.WebsiteApi.prototype.getActiveSelection_ = function() {
  */
 e2e.ext.WebsiteApi.prototype.isEditable_ = function(elem) {
   return goog.isDef(elem.value) || elem.contentEditable == 'true';
+};
+
+
+/**
+ * Sets the stub file contents. Used in the Chrome App in which the website
+ * cannot access chrome-extension:// URLs, so the stub file contents need to
+ * be supplied to  the content script.
+ * @param {string} stubUrl Stub file URL.
+ * @param {string} contents Stub file contents.
+ * @expose
+ */
+e2e.ext.WebsiteApi.prototype.setStub = function(stubUrl, contents) {
+  this.stubContents_.set(stubUrl, contents);
 };

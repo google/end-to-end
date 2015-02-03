@@ -25,6 +25,7 @@ goog.provide('e2e.ext.utils.WebviewHelperProxy');
 
 goog.require('e2e.ext.utils.CallbacksMap');
 goog.require('goog.asserts');
+goog.require('goog.net.XhrIo');
 
 
 
@@ -225,7 +226,7 @@ e2e.ext.utils.TabsHelperProxy.prototype.sendMessageImpl = function(
 /**
  * Connects to the helper, injecting it if the connection has not yet been
  *     setup.
- * @param {!function(number=)} callback The function to invoke once the
+ * @param {!function()} callback The function to invoke once the
  *     connection is established.
  * @param {!function(Error)} errorCallback Function to invoke if error occurred.
  * @private
@@ -350,7 +351,7 @@ e2e.ext.utils.WebviewHelperProxy.prototype.helperMessageListener_ = function(
 /**
  * Connects to the helper, injecting it if the connection has not yet been
  *     setup.
- * @param {!function(number=)} callback The function to invoke once the
+ * @param {!function()} callback The function to invoke once the
  *     connection is established.
  * @private
  */
@@ -366,13 +367,34 @@ e2e.ext.utils.WebviewHelperProxy.prototype.connectToHelper_ = function(
         } else {
           this.webview_.executeScript({
             file: 'helper_binary.js'
-          }, function() {
-            setTimeout(function() {
-              callback();
-            }, e2e.ext.utils.HelperProxy.HELPER_INIT_DELAY);
-          });
+          }, goog.bind(function() {
+            // NOTE(koto): A workaround - send gmonkeystub to the helper,
+            // as in a Chrome App the helper cannot access chrome-extension://
+            // URLs.
+            setTimeout(goog.bind(this.sendStubToHelper_, this, 'gmonkeystub.js',
+            callback), e2e.ext.utils.HelperProxy.HELPER_INIT_DELAY);
+          }, this));
         }
       }, this));
+};
+
+
+/**
+ * Send to the Helper the contents of a given stub file to inject into the web
+ * application.
+ * @param  {string}   stubUrl  URL of the stub file.
+ * @param  {function()} callback The function to invoke when stub
+ *     contents has been sent.
+ * @private
+ */
+e2e.ext.utils.WebviewHelperProxy.prototype.sendStubToHelper_ = function(stubUrl,
+    callback) {
+  goog.net.XhrIo.send(stubUrl, goog.bind(function(ev) {
+    var contents = ev.target.getResponseText();
+    this.webview_.executeScript({code: 'helper.setApiStub(' +
+          JSON.stringify(stubUrl) + ',' + JSON.stringify(contents) + ')'},
+        callback);
+  }, this));
 };
 
 
