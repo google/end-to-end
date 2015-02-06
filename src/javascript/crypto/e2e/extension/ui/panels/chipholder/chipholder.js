@@ -137,7 +137,7 @@ panels.ChipHolder.prototype.enterDocument = function() {
   this.getHandler().listen(
       this.getElement(),
       goog.events.EventType.CLICK,
-      this.refocus_,
+      this.focus,
       true);
 
   this.getHandler().listen(
@@ -220,9 +220,8 @@ panels.ChipHolder.prototype.getProvidedPassphrases = function() {
 
 /**
  * Changes focus to the input field.
- * @private
  */
-panels.ChipHolder.prototype.refocus_ = function() {
+panels.ChipHolder.prototype.focus = function() {
   this.shadowInputElem_.focus();
 };
 
@@ -246,7 +245,7 @@ panels.ChipHolder.prototype.handleKeyEvent_ = function(evt) {
       if (this.shadowInputElem_.value.length > 0) {
         evt.preventDefault();
         evt.stopPropagation();
-        this.refocus_();
+        this.focus();
       }
 
       var suggestion = this.autoComplete_.getSuggestion(0);

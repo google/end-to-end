@@ -31,6 +31,7 @@ goog.require('e2e.ext.ui.panels.prompt.PanelBase');
 goog.require('e2e.ext.ui.templates.panels.prompt');
 goog.require('e2e.ext.utils.text');
 goog.require('e2e.openpgp.asciiArmor');
+goog.require('goog.Promise');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
@@ -91,7 +92,6 @@ goog.inherits(promptPanels.EncryptSign, promptPanels.PanelBase);
 /** @override */
 promptPanels.EncryptSign.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
-
   var content = this.getContent();
   var origin = content.origin;
   var signInsertLabel = /^https:\/\/mail\.google\.com$/.test(origin) ?
@@ -118,20 +118,30 @@ promptPanels.EncryptSign.prototype.decorateInternal = function(elem) {
 };
 
 
+/**
+ * Populates the UI elements with the received data.
+ * @private
+ */
+promptPanels.EncryptSign.prototype.populateUi_ = function() {
+  goog.Promise.all([
+    // Populate the UI with the available encryption keys.
+    this.renderEncryptionKeys_(),
+    // Populate the UI with the available signing keys.
+    this.renderSigningKeys_(),
+    // Load selected content.
+    this.loadSelectedContent_()
+  ]).then(
+      // When all of the above steps completed, set up focus.
+      this.focusRelevantElement_, undefined, this);
+};
+
+
 /** @override */
 promptPanels.EncryptSign.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
-
   var origin = this.getContent().origin;
 
-  // Populate the UI with the available encryption keys.
-  this.renderEncryptionKeys_();
-
-  // Populate the UI with the available signing keys.
-  this.renderSigningKeys_();
-
-  // Load selected content.
-  this.loadSelectedContent_();
+  this.populateUi_();
 
   this.getHandler().listen(
       goog.dom.getElement(constants.ElementId.PASSPHRASE_ENCRYPTION_LINK),
@@ -160,69 +170,105 @@ promptPanels.EncryptSign.prototype.enterDocument = function() {
 
 /**
  * Renders the available encryption keys in the UI.
+ * @return {!goog.Promise} Promise resolved when the encryption keys have
+ *     been successfully rendered. It's never rejected.
  * @private
  */
 promptPanels.EncryptSign.prototype.renderEncryptionKeys_ = function() {
-  this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
-    action: constants.Actions.LIST_KEYS,
-    content: 'public'
-  }), this, goog.bind(function(searchResult) {
-    var providedRecipients = this.getContent().recipients || [];
-    var intendedRecipients = [];
-    var allAvailableRecipients = goog.object.getKeys(searchResult);
-    var recipientsEmailMap =
-        this.getRecipientsEmailMap_(allAvailableRecipients);
-    goog.array.forEach(providedRecipients, function(recipient) {
-      if (recipientsEmailMap.hasOwnProperty(recipient)) {
-        goog.array.extend(intendedRecipients, recipientsEmailMap[recipient]);
-      }
-    });
-
-    this.chipHolder_ = new panels.ChipHolder(
-        intendedRecipients, allAvailableRecipients);
-    this.addChild(this.chipHolder_, false);
-    this.chipHolder_.decorate(
-        goog.dom.getElement(constants.ElementId.CHIP_HOLDER));
-  }, this), goog.bind(function(error) {
-    this.chipHolder_ = new panels.ChipHolder([], []);
-    this.addChild(this.chipHolder_, false);
-    this.chipHolder_.decorate(
-        goog.dom.getElement(constants.ElementId.CHIP_HOLDER));
-    this.errorCallback_(error);
-  }, this));
+  return new goog.Promise(function(resolve, reject) {
+    this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
+      action: constants.Actions.LIST_KEYS,
+      content: 'public'
+    }), this, goog.bind(function(searchResult) {
+      var providedRecipients = this.getContent().recipients || [];
+      var intendedRecipients = [];
+      var allAvailableRecipients = goog.object.getKeys(searchResult);
+      var recipientsEmailMap =
+          this.getRecipientsEmailMap_(allAvailableRecipients);
+      goog.array.forEach(providedRecipients, function(recipient) {
+        if (recipientsEmailMap.hasOwnProperty(recipient)) {
+          goog.array.extend(intendedRecipients, recipientsEmailMap[recipient]);
+        }
+      });
+      this.chipHolder_ = new panels.ChipHolder(
+          intendedRecipients, allAvailableRecipients);
+      this.addChild(this.chipHolder_, false);
+      this.chipHolder_.decorate(
+          goog.dom.getElement(constants.ElementId.CHIP_HOLDER));
+      resolve();
+    }, this), goog.bind(function(error) {
+      this.chipHolder_ = new panels.ChipHolder([], []);
+      this.addChild(this.chipHolder_, false);
+      this.chipHolder_.decorate(
+          goog.dom.getElement(constants.ElementId.CHIP_HOLDER));
+      this.errorCallback_(error);
+      resolve();
+    }, this));
+  }, this);
 };
 
 
 /**
  * Renders the available signing keys in the UI.
+ * @return {!goog.Promise} Promise resolved when the signing keys have
+ *     been successfully rendered. It's never rejected.
  * @private
  */
 promptPanels.EncryptSign.prototype.renderSigningKeys_ = function() {
-  this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
-    action: constants.Actions.LIST_KEYS,
-    content: 'private'
-  }), this, goog.bind(function(privateKeyResult) {
-    var availableSigningKeys = goog.object.getKeys(privateKeyResult);
-    var signerSelect = goog.dom.getElement(constants.ElementId.SIGNER_SELECT);
-    var signCheck = goog.dom.getElement(constants.ElementId.SIGN_MESSAGE_CHECK);
+  return new goog.Promise(function(resolve, reject) {
+    this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
+      action: constants.Actions.LIST_KEYS,
+      content: 'private'
+    }), this, goog.bind(function(privateKeyResult) {
+      var availableSigningKeys = goog.object.getKeys(privateKeyResult);
+      var signerSelect = goog.dom.getElement(constants.ElementId.SIGNER_SELECT);
+      var signCheck = goog.dom.getElement(
+          constants.ElementId.SIGN_MESSAGE_CHECK);
 
-    if (availableSigningKeys.length == 0) {
-      signCheck.disabled = true;
-      signerSelect.disabled = true;
-      var noKeysLabel = document.createTextNode(
-          chrome.i18n.getMessage('promptNoPrivateKeysFound'));
-      var fromHolder = goog.dom.getElement(constants.ElementId.FROM_HOLDER);
-      fromHolder.appendChild(noKeysLabel);
-    } else {
-      signCheck.checked = true;
-    }
+      if (availableSigningKeys.length == 0) {
+        signCheck.disabled = true;
+        signerSelect.disabled = true;
+        var noKeysLabel = document.createTextNode(
+            chrome.i18n.getMessage('promptNoPrivateKeysFound'));
+        var fromHolder = goog.dom.getElement(constants.ElementId.FROM_HOLDER);
+        fromHolder.appendChild(noKeysLabel);
+      } else {
+        signCheck.checked = true;
+      }
 
-    goog.array.forEach(availableSigningKeys, function(key) {
-      var keyElem = document.createElement('option');
-      keyElem.textContent = key;
-      signerSelect.appendChild(keyElem);
-    });
-  }, this));
+      goog.array.forEach(availableSigningKeys, function(key) {
+        var keyElem = document.createElement('option');
+        keyElem.textContent = key;
+        signerSelect.appendChild(keyElem);
+      });
+      resolve();
+    }, this), goog.bind(function(error) {
+      this.errorCallback_(error);
+      resolve();
+    }, this));
+  }, this);
+};
+
+
+/**
+ * Puts the focus on the chip holder (if no user chips are present) or the
+ * textarea.
+ * @private
+ */
+promptPanels.EncryptSign.prototype.focusRelevantElement_ = function() {
+  if (!this.getElement()) {
+    return;
+  }
+  var textArea = /** @type {HTMLTextAreaElement} */
+      (this.getElement().querySelector('textarea'));
+  textArea.scrollTop = 0;
+  textArea.setSelectionRange(0, 0);
+  this.chipHolder_.focus();
+  if (this.chipHolder_.hasChildren()) {
+    // Double focus() workarounds a bug that prevents the caret from being
+    // displayed in Chrome if setSelectionRange() is used.
+    textArea.focus();
+  }
 };
 
 
@@ -388,27 +434,37 @@ promptPanels.EncryptSign.prototype.insertMessageIntoPage_ = function(origin) {
 
 /**
  * Loads the content that the user has selected in the web application.
+ * @return {!goog.Promise} Promise resolved when content has been loaded.
+ *     It's never rejected.
  * @private
  */
 promptPanels.EncryptSign.prototype.loadSelectedContent_ = function() {
-  var origin = this.getContent().origin;
-  var textArea = /** @type {HTMLTextAreaElement} */
-      (this.getElement().querySelector('textarea'));
-  var content = this.getContent().selection || '';
-  var detectedAction = utils.text.getPgpAction(content);
-  if (detectedAction == constants.Actions.DECRYPT_VERIFY) {
-    this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
-      action: constants.Actions.DECRYPT_VERIFY,
-      content: content,
-      passphraseCallback: goog.bind(this.renderPassphraseDialog, this)
-    }), this, goog.bind(function(decrypted) {
-      if (e2e.openpgp.asciiArmor.isDraft(content)) {
-        textArea.value = decrypted;
-      } else {
-        this.renderReply_(textArea, decrypted);
-      }
-    }, this));
-  }
+  return new goog.Promise(function(resolve, reject) {
+    var origin = this.getContent().origin;
+    var textArea = /** @type {HTMLTextAreaElement} */
+        (this.getElement().querySelector('textarea'));
+    var content = this.getContent().selection || '';
+    var detectedAction = utils.text.getPgpAction(content);
+    if (detectedAction == constants.Actions.DECRYPT_VERIFY) {
+      this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
+        action: constants.Actions.DECRYPT_VERIFY,
+        content: content,
+        passphraseCallback: goog.bind(this.renderPassphraseDialog, this)
+      }), this, goog.bind(function(decrypted) {
+        if (e2e.openpgp.asciiArmor.isDraft(content)) {
+          textArea.value = decrypted;
+        } else {
+          this.renderReply_(textArea, decrypted);
+        }
+        resolve();
+      }, this), goog.bind(function(error) {
+        this.errorCallback_(error);
+        resolve();
+      }, this));
+    } else {
+      resolve();
+    }
+  }, this);
 };
 
 
