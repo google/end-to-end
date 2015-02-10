@@ -36,7 +36,8 @@ e2e.ext.ui.webview.bootstrap = false;
 if (e2e.ext.utils.isChromeAppWindow()) {
   goog.events.listen(window, goog.events.EventType.LOAD, function() {
     /** @type {e2e.ext.ui.WebsiteContainer} */
-    window.websiteContainer = new e2e.ext.ui.WebsiteContainer();
+    window.websiteContainer = new e2e.ext.ui.WebsiteContainer(
+        'https://mail.google.com/');
     window.websiteContainer.decorate(document.body);
     e2e.ext.ui.webview.bootstrap = true;
   });

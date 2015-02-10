@@ -112,6 +112,10 @@ WebviewWebRequest.prototype.onBeforeSendHeaders;
 
 
 /** @type {WebRequestEvent} */
+WebviewWebRequest.prototype.onBeforeRequest;
+
+
+/** @type {WebRequestEvent} */
 WebviewWebRequest.prototype.onCompleted;
 
 

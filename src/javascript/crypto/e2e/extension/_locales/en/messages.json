@@ -386,6 +386,13 @@
   "dialogSelectAll": {
     "message": "Select all",
     "description": "A fragment indicating to the user to select all items in the dialog."
+  },
+  "interactionSuppressed": {
+    "message": "To start typing, tap left Ctrl-key. Everything you type will not be encrypted.",
+    "description": "A sentence explaining that the interaction with the web application is suppressed."
+  },
+  "interactionEnabled": {
+    "message": "Everything you type is now unencrypted. Tap left Ctrl-key to reenable secure mode.",
+    "description": "A sentence explaining that the interaction with the web application is enabled."
   }
-
 }

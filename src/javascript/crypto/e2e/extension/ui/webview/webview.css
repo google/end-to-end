@@ -1,22 +1,50 @@
+#prompt {
+  background: white;
+  border: 5px solid #888;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border-bottom: none;
+  bottom: 0;
+  height: 500px;
+  left: 0;
+  margin: auto;
+  overflow: auto;
+  padding: 0;
+  position: absolute;
+  right: 0;
+  width: 800px;
+  z-index: 2;
+}
+
 #webview {
   height: 94vh;
   margin-bottom: 1vh;
   width: 100%;
-}
-
-#prompt-container {
-  float: right;
-  width: 50%;
+  transition: all 0.1s ease-out;
 }
 
 #webview-container {
-  width: 50%;
+  width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
-#prompt {
-  border: none;
-  height: 94vh;
-  margin: 0;
-  padding: 0;
-  width: 100%;
+.typing-allowed {
+  -webkit-filter: grayscale(1);
+}
+
+.blurred {
+  -webkit-filter: blur(3px);
+}
+
+#show-prompt {
+  position: absolute;
+  right: 10px;
+  z-index: 2;
+}
+
+#focus-stealer {
+  position: absolute;
+  top: -100px;
+  visibility: hidden;
 }

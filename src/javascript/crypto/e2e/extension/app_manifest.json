@@ -16,7 +16,7 @@
     "partitions": [
       {
         "name": "gmail",
-        "accessible_resources": ["gmonkeystub.js"]
+        "accessible_resources": ["gmonkeystub.js", "glass.html"]
       }
     ]
   },
