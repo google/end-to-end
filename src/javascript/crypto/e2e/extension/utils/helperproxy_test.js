@@ -302,3 +302,21 @@ function testHelperNotInjectedTwiceWebview() {
         asyncTestCase.continueTesting();
       });
 }
+
+
+function testWebsiteRequests() {
+  var webview = {};
+  var extensionId = 123;
+  stubs.setPath('chrome.runtime.id', extensionId);
+  var proxy = new e2e.ext.utils.WebviewHelperProxy(false, webview);
+  var req = {
+    request: true,
+    id: 'foo'
+  };
+  proxy.setWebsiteRequestHandler(function(request) {
+    assertObjectEquals(req, request);
+    asyncTestCase.continueTesting();
+  });
+  asyncTestCase.waitForAsync('Waiting for request processing');
+  proxy.boundListener_(req, {id: extensionId});
+}

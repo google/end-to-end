@@ -99,7 +99,8 @@ ui.Prompt = function(helperProxy, opt_isPopout) {
   }];
 
   /**
-   * Content injected externally. Used for popout functionality.
+   * Content injected externally. Used for popout functionality and
+   * provider-initiated actions.
    * @private
    * @type {?messages.BridgeMessageRequest}
    */
@@ -195,7 +196,7 @@ ui.Prompt.prototype.enterDocument = function() {
   }
   utils.action.getLauncher(function(launcher) {
     this.pgpLauncher_ = launcher || this.pgpLauncher_;
-    if (this.isPopout) {
+    if (goog.isDefAndNotNull(this.injectedContent_)) {
       this.processSelectedContent_(this.injectedContent_);
     } else {
       // Ignore the error to also show the prompt for pages for which we cannot
@@ -217,15 +218,12 @@ ui.Prompt.prototype.getContentElement = function() {
 
 
 /**
- * Injects a content from external sources (used for popout functionality).
- * Needs to be called before decorate().
+ * Injects a content from external sources (used for popout functionality and
+ * provider-initiated actions). Needs to be called before decorate().
  * @param {?messages.BridgeMessageRequest} contentBlob The content to process.
  * @expose
  */
 ui.Prompt.prototype.injectContent = function(contentBlob) {
-  if (!this.isPopout) { // Only allowed in popouts.
-    return;
-  }
   if (this.wasDecorated()) {
     throw new Error('Prompt was already decorated.');
   }

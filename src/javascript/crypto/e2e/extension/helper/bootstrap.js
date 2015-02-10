@@ -36,5 +36,8 @@ e2e.ext.helper.bootstrap = false;
 if (e2e.ext.utils.isContentScript() && !goog.isDef(window.helper)) {
   /** @type {!e2e.ext.Helper} */
   window.helper = new e2e.ext.Helper(new e2e.ext.WebsiteApi());
+  if (e2e.ext.utils.runsInChromeApp()) {
+    window.helper.enableWebsiteRequests();
+  }
   e2e.ext.helper.bootstrap = true;
 }

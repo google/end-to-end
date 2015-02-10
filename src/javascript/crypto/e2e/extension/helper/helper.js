@@ -262,7 +262,31 @@ ext.Helper.prototype.handleAppRequest = function(req, requestId) {
 
 
 /**
- * Sends a response by chrome.runtime.sendMessage
+ * Handles success responses to Website API requests sent from the Chrome App
+ * (Chrome App calls this function directly).
+ * @param {string} requestId The request ID.
+ * @param {*} response The response.
+ * @expose
+ */
+ext.Helper.prototype.handleAppResponse = function(requestId, response) {
+  this.api_.sendEndToEndResponse(requestId, response);
+};
+
+
+/**
+ * Handles error responses to Website API requests sent from the Chrome App
+ * (Chrome App calls this function directly).
+ * @param {string} requestId The request ID.
+ * @param {string} errorMsg Error message.
+ * @expose
+ */
+ext.Helper.prototype.handleAppErrorResponse = function(requestId, errorMsg) {
+  this.api_.sendEndToEndErrorResponse(requestId, errorMsg);
+};
+
+
+/**
+ * Sends a response to the extension by chrome.runtime.sendMessage
  * @param {string} requestId Request ID
  * @param {*} response Response
  * @private
@@ -272,6 +296,61 @@ ext.Helper.prototype.sendResponse_ = function(requestId, response) {
     requestId: requestId,
     response: response
   });
+};
+
+
+/**
+ * Sends the request from the web application to the extension.
+ * @param  {e2e.ext.WebsiteApi.Request} request
+ * @private
+ */
+ext.Helper.prototype.sendWebsiteRequest_ = function(request) {
+  if (goog.object.containsKey(request, 'id') &&
+      !goog.object.containsKey(request, 'requestId')) {
+    switch (request.call) {
+      case 'openCompose':
+        chrome.runtime.sendMessage(chrome.runtime.id,
+            this.convertOpenComposeRequest_(request));
+        break;
+    }
+  }
+};
+
+
+/**
+ * Converts a WebsiteAPI request to BridgeMessageRequest.
+ * @param  {e2e.ext.WebsiteApi.Request} request
+ * @return {e2e.ext.messages.BridgeMessageRequest} Request
+ * @private
+ */
+ext.Helper.prototype.convertOpenComposeRequest_ = function(request) {
+  return /** @type {e2e.ext.messages.BridgeMessageRequest} */ ({
+    selection: request.args.body,
+    recipients: request.args.recipients,
+    action: utils.text.getPgpAction(request.args.body),
+    request: true,
+    origin: this.getOrigin_(),
+    subject: request.args.subject,
+    canInject: true,
+    canSaveDraft: true
+  });
+};
+
+
+/**
+ * Enables handling requests from web applications.
+ */
+ext.Helper.prototype.enableWebsiteRequests = function() {
+  this.api_.setWebsiteRequestForwarder(
+      goog.bind(this.sendWebsiteRequest_, this));
+};
+
+
+/**
+ * Disables handling requests from web applications (the default state).
+ */
+ext.Helper.prototype.disableWebsiteRequests = function() {
+  this.api_.setWebsiteRequestForwarder(null);
 };
 
 

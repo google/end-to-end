@@ -306,6 +306,13 @@ e2e.ext.utils.WebviewHelperProxy = function(isLookingGlassEnabled,
    * @type {function(*,MessageSender):undefined}
    */
   this.boundListener_ = goog.bind(this.helperMessageListener_, this);
+  /**
+   * Handler processing requests from the web application. Set to null to
+   * disable handling web application requests.
+   * @type {?function(!e2e.ext.messages.BridgeMessageRequest)}
+   * @private
+   */
+  this.websiteRequestHandler_ = null;
 };
 goog.inherits(e2e.ext.utils.WebviewHelperProxy, e2e.ext.utils.HelperProxy);
 
@@ -329,6 +336,17 @@ e2e.ext.utils.WebviewHelperProxy.prototype.sendMessageImpl = function(
 
 
 /**
+ * Sets the function to process the website-originating requests.
+ * @param {?function(!e2e.ext.messages.BridgeMessageRequest)} requestHandler
+ *    Handler processing requests from the web application.
+ */
+e2e.ext.utils.WebviewHelperProxy.prototype.setWebsiteRequestHandler = function(
+    requestHandler) {
+  this.websiteRequestHandler_ = requestHandler;
+};
+
+
+/**
  * Processes message sent by the helper, calling appropriate response callbacks.
  * @param  {*} message Received message.
  * @param  {MessageSender} sender The sender.
@@ -339,6 +357,13 @@ e2e.ext.utils.WebviewHelperProxy.prototype.helperMessageListener_ = function(
   if (sender.id !== chrome.runtime.id) {
     return;
   }
+  // Request from the web application.
+  if (message.request && goog.isFunction(this.websiteRequestHandler_)) {
+    this.websiteRequestHandler_(
+        /** @type {!e2e.ext.messages.BridgeMessageRequest} */ (message));
+    return;
+  }
+  // Response from the web application.
   if (!message.requestId ||
       !this.pendingCallbacks_.containsKey(message.requestId)) {
     return;
@@ -382,8 +407,8 @@ e2e.ext.utils.WebviewHelperProxy.prototype.connectToHelper_ = function(
 /**
  * Send to the Helper the contents of a given stub file to inject into the web
  * application.
- * @param  {string}   stubUrl  URL of the stub file.
- * @param  {function()} callback The function to invoke when stub
+ * @param {string} stubUrl URL of the stub file.
+ * @param {function()} callback The function to invoke when stub
  *     contents has been sent.
  * @private
  */

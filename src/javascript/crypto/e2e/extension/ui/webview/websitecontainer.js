@@ -33,6 +33,7 @@ goog.require('goog.dom');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
+goog.require('goog.object');
 goog.require('goog.ui.Component');
 goog.require('soy');
 
@@ -136,11 +137,29 @@ ui.WebsiteContainer.prototype.decorateInternal = function(elem) {
 
   webview.src = this.url_;
   this.helperProxy_ = new e2e.ext.utils.WebviewHelperProxy(true, webview);
+  this.helperProxy_.setWebsiteRequestHandler(goog.bind(
+      this.handleWebsiteRequest_, this));
   this.getHandler().listen(
       goog.dom.getElement('show-prompt'),
       goog.events.EventType.CLICK,
       goog.bind(this.togglePrompt_, this)
   );
+};
+
+
+/**
+ * Handles incoming web application request.
+ * @param {!e2e.ext.messages.BridgeMessageRequest} request Request from the
+ *    web application displayed in the webview.
+ * @private
+ */
+ui.WebsiteContainer.prototype.handleWebsiteRequest_ = function(request) {
+  if (request.request && goog.object.containsKey(request, 'action')) {
+    // This is an openCompose request.
+    if (!this.isPromptDisplayed_()) {
+      this.openPrompt_(request);
+    }
+  }
 };
 
 
@@ -187,26 +206,49 @@ ui.WebsiteContainer.prototype.webviewNewWindowHandler_ = function(event) {
 
 /**
  * Toggles the prompt element.
- * @param  {!Event} event The event.
+ * @param  {Event=} opt_event The event.
  * @private
  */
-ui.WebsiteContainer.prototype.togglePrompt_ = function(event) {
-  var promptElement = goog.dom.getElement('prompt');
+ui.WebsiteContainer.prototype.togglePrompt_ = function(opt_event) {
   if (this.isPromptDisplayed_()) {
-    this.removeChildAt(0, false);
-    this.prompt_.dispose();
-    this.prompt_ = null;
+    this.closePrompt_();
   } else {
-    this.prompt_ = new e2e.ext.ui.Prompt(
-        goog.asserts.assertObject(this.helperProxy_), false);
-    this.prompt_.addOnDisposeCallback(goog.bind(function() {
-      goog.dom.classlist.add(promptElement, constants.CssClass.HIDDEN);
-    }, this));
-    this.addChildAt(this.prompt_, 0, false);
-    this.prompt_.render(promptElement);
-    goog.dom.classlist.remove(promptElement, constants.CssClass.HIDDEN);
-    this.enterInteractionSuppressedMode_();
+    this.openPrompt_();
   }
+};
+
+
+/**
+ * Opens the prompt element.
+ * @param  {e2e.ext.messages.BridgeMessageRequest=} opt_content Content to
+ *    initialize the prompt with.
+ * @private
+ */
+ui.WebsiteContainer.prototype.openPrompt_ = function(opt_content) {
+  var promptElement = goog.dom.getElement('prompt');
+  this.prompt_ = new e2e.ext.ui.Prompt(
+      goog.asserts.assertObject(this.helperProxy_), false);
+  if (goog.isDef(opt_content)) {
+    this.prompt_.injectContent(opt_content);
+  }
+  this.prompt_.addOnDisposeCallback(goog.bind(function() {
+    goog.dom.classlist.add(promptElement, constants.CssClass.HIDDEN);
+  }, this));
+  this.addChildAt(this.prompt_, 0, false);
+  this.prompt_.render(promptElement);
+  goog.dom.classlist.remove(promptElement, constants.CssClass.HIDDEN);
+  this.enterInteractionSuppressedMode_();
+};
+
+
+/**
+ * Closes the prompt element.
+ * @private
+ */
+ui.WebsiteContainer.prototype.closePrompt_ = function() {
+  this.removeChildAt(0, false);
+  this.prompt_.dispose();
+  this.prompt_ = null;
 };
 
 

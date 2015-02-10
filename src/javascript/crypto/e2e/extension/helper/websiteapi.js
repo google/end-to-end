@@ -47,6 +47,13 @@ e2e.ext.WebsiteApi = function() {
    * @private
    */
   this.stubContents_ = new goog.structs.Map();
+  /**
+   * Function sending the requests from the web application to the extension.
+   * Null if web application requests are not supported.
+   * @type {?function(!e2e.ext.WebsiteApi.Request)}
+   * @private
+   */
+  this.websiteRequestForwarder_ = null;
 };
 
 
@@ -191,7 +198,7 @@ e2e.ext.WebsiteApi.prototype.supportsApi_ = function(origin) {
  * @param {Object=} opt_args The arguments to pass to the Website API.
  * @private
  */
-e2e.ext.WebsiteApi.prototype.sendWebsiteRequest_ = function(call, callback,
+e2e.ext.WebsiteApi.prototype.sendEndToEndRequest_ = function(call, callback,
     errback, opt_args) {
   var requestId;
   var port = this.port_;
@@ -284,7 +291,8 @@ e2e.ext.WebsiteApi.prototype.bootstrapChannel_ = function(onPortReadyCallback) {
       }
       onPortReadyCallback(this.apiAvailable_);
       if (this.apiAvailable_) {
-        this.sendWebsiteRequest_('ready', goog.nullFunction, goog.nullFunction);
+        this.sendEndToEndRequest_('ready', goog.nullFunction,
+            goog.nullFunction);
       }
     }
   }, this);
@@ -347,14 +355,71 @@ e2e.ext.WebsiteApi.prototype.processWebsiteMessage_ = function(event) {
 
 
 /**
+ * @param {?function(!e2e.ext.WebsiteApi.Request)} forwarder Function
+ *     sending the web application request to the extension.
+ */
+e2e.ext.WebsiteApi.prototype.setWebsiteRequestForwarder = function(forwarder) {
+  this.websiteRequestForwarder_ = forwarder;
+};
+
+
+/**
  * Handles an incoming Website API request.
  * @param  {MessagePort} port Port to send the response to.
  * @param  {e2e.ext.WebsiteApi.Request} request Incoming request.
  * @private
  */
 e2e.ext.WebsiteApi.prototype.handleWebsiteRequest_ = function(port, request) {
-  // For now, no incoming requests are supported.
-  this.sendWebsiteErrorResponse_(port, request, 'Not supported.');
+  if (!request.id) {
+    return; // Ignore the request.
+  }
+  if (!goog.isFunction(this.websiteRequestForwarder_)) {
+    this.sendEndToEndErrorResponse(request.id,
+        'Web application originating requests are not supported.');
+    return;
+  }
+  if (!request.call) {
+    this.sendEndToEndErrorResponse(request.id, 'Invalid request.');
+    return;
+  }
+  var validatedRequest;
+  switch (request.call) {
+    case 'openCompose':
+      validatedRequest = this.validateOpenCompose_(request);
+      break;
+  }
+  if (!validatedRequest) {
+    this.sendEndToEndErrorResponse(request.id, 'Invalid request.');
+    return;
+  }
+  this.websiteRequestForwarder_(validatedRequest);
+};
+
+
+/**
+ * Validates the openCompose request originated from the web application.
+ * @param  {e2e.ext.WebsiteApi.Request} request Incoming request.
+ * @return {e2e.ext.WebsiteApi.Request} Validated request.
+ * @private
+ */
+e2e.ext.WebsiteApi.prototype.validateOpenCompose_ = function(request) {
+  var validatedRequest = /** @type {e2e.ext.WebsiteApi.Request} */ ({});
+
+  validatedRequest.id = request.id;
+  validatedRequest.call = request.call;
+  validatedRequest.args = {};
+  if (!goog.isDefAndNotNull(request.args)) {
+    request.args = {};
+  }
+  var recipients = [];
+  goog.array.extend(recipients,
+      e2e.ext.WebsiteApi.getEmailsFromAddressDescriptors_(request.args['to']),
+      e2e.ext.WebsiteApi.getEmailsFromAddressDescriptors_(request.args['cc'])
+  );
+  validatedRequest.args.recipients = recipients;
+  validatedRequest.args.body = request.args.body || '';
+  validatedRequest.args.subject = request.args.subject;
+  return validatedRequest;
 };
 
 
@@ -381,17 +446,30 @@ e2e.ext.WebsiteApi.prototype.processWebsiteResponse_ = function(response) {
 
 /**
  * Sends an error response for a web application initiated API request.
- * @param  {MessagePort} port Port to send the response to.
- * @param  {e2e.ext.WebsiteApi.Request} request Incoming request.
+ * @param  {string} requestId The request ID.
  * @param {string} errorMessage The error message.
- * @private
  */
-e2e.ext.WebsiteApi.prototype.sendWebsiteErrorResponse_ = function(port,
-    request, errorMessage) {
-  port.postMessage({
+e2e.ext.WebsiteApi.prototype.sendEndToEndErrorResponse = function(requestId,
+    errorMessage) {
+  this.port_.postMessage({
     error: errorMessage,
     result: null,
-    requestId: request.id
+    requestId: requestId
+  });
+};
+
+
+/**
+ * Sends a response to web application request.
+ * @param  {string} requestId The request ID.
+ * @param  {*} response Response.
+ */
+e2e.ext.WebsiteApi.prototype.sendEndToEndResponse = function(requestId,
+    response) {
+  this.port_.postMessage({
+    error: null,
+    result: response,
+    requestId: requestId
   });
 };
 
@@ -446,7 +524,7 @@ e2e.ext.WebsiteApi.getAddressDescriptorsFromEmails_ = function(recipients) {
 e2e.ext.WebsiteApi.prototype.getCurrentMessage = function(callback, errback) {
   this.isApiAvailable_(goog.bind(function(available) {
     if (available) {
-      this.sendWebsiteRequest_('getCurrentMessage', function(result) {
+      this.sendEndToEndRequest_('getCurrentMessage', function(result) {
         if (!result) {
           callback(undefined, undefined);
         } else {
@@ -469,7 +547,7 @@ e2e.ext.WebsiteApi.prototype.getCurrentMessage = function(callback, errback) {
  * @private
  */
 e2e.ext.WebsiteApi.prototype.getActiveDraft_ = function(callback, errback) {
-  this.sendWebsiteRequest_('getActiveDraft', function(result) {
+  this.sendEndToEndRequest_('getActiveDraft', function(result) {
     var recipients = [];
     var body = '';
     var subject;
@@ -492,7 +570,7 @@ e2e.ext.WebsiteApi.prototype.getActiveDraft_ = function(callback, errback) {
  * @private
  */
 e2e.ext.WebsiteApi.prototype.hasActiveDraft_ = function(callback, errback) {
-  this.sendWebsiteRequest_('hasActiveDraft', callback, errback);
+  this.sendEndToEndRequest_('hasActiveDraft', callback, errback);
 };
 
 
@@ -516,7 +594,7 @@ e2e.ext.WebsiteApi.prototype.setActiveDraft_ = function(recipients, msgBody,
   if (goog.isDef(opt_subject)) {
     message.subject = opt_subject;
   }
-  this.sendWebsiteRequest_('setActiveDraft', callback, errback, message);
+  this.sendEndToEndRequest_('setActiveDraft', callback, errback, message);
 };
 
 

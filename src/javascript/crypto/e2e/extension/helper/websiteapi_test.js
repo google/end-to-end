@@ -123,7 +123,6 @@ function testBootstrap() {
   e2eapi.bootstrapChannel_(function(available) {
     assertEquals(true, available);
     asyncTestCase.continueTesting();
-    stubs.reset();
   });
 }
 
@@ -206,7 +205,7 @@ function testRequestResponseFlow() {
     }
   };
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
-  e2eapi.sendWebsiteRequest_('foo', handleResponseFunction, fail, 'bar');
+  e2eapi.sendEndToEndRequest_('foo', handleResponseFunction, fail, 'bar');
 }
 
 function testRequestResponseError() {
@@ -236,7 +235,7 @@ function testRequestResponseError() {
     }
   };
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
-  e2eapi.sendWebsiteRequest_('foo', fail, handleErrorFunction, 'bar');
+  e2eapi.sendEndToEndRequest_('foo', fail, handleErrorFunction, 'bar');
 }
 
 function testRequestResponseTimeout() {
@@ -262,7 +261,7 @@ function testRequestResponseTimeout() {
   };
   asyncTestCase.stepTimeout = e2e.ext.WebsiteApi.REQUEST_TIMEOUT + 10;
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
-  e2eapi.sendWebsiteRequest_('timeouting', fail, handleErrorFunction, 'bar');
+  e2eapi.sendEndToEndRequest_('timeouting', fail, handleErrorFunction, 'bar');
 }
 
 function testIgnoreUnrelatedResponses() {
@@ -318,7 +317,7 @@ function testGetCurrentMessageDom() {
 
 function testNoPortTriggersErrback() {
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
-  e2eapi.sendWebsiteRequest_('irrelevant', function() {
+  e2eapi.sendEndToEndRequest_('irrelevant', function() {
     fail('Should not call this function.');
   }, function(msg) {
     asyncTestCase.continueTesting();
@@ -330,7 +329,7 @@ function testUnknownWebsiteApiCall() {
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
-    e2eapi.sendWebsiteRequest_('nonexistent', fail, function(e) {
+    e2eapi.sendEndToEndRequest_('nonexistent', fail, function(e) {
       assertTrue(e instanceof Error);
       assertEquals('Unsupported API call.', e.message);
       asyncTestCase.continueTesting();
@@ -585,21 +584,73 @@ function testUpdateSelectedContentDomTextarea() {
   });
 }
 
-function testWebsiteInitiatedRequest() {
+function testDisabledWebsiteInitiatedRequest() {
   var port_ = {
     postMessage: function(response) {
       assertEquals(null, response.result);
       assertEquals('foo', response.requestId);
-      assertEquals('Not supported.', response.error);
+      assertEquals('Web application originating requests are not supported.',
+          response.error);
       asyncTestCase.continueTesting();
     }
   };
+  e2eapi.port_ = port_;
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.processWebsiteMessage_({
     target: port_,
     data: {
       id: 'foo',
       call: 'unsupported'
+    }
+  });
+}
+
+function testInvalidWebsiteInitiatedRequest() {
+  var port_ = {
+    postMessage: function(response) {
+      assertEquals(null, response.result);
+      assertEquals('foo', response.requestId);
+      assertEquals('Invalid request.',
+          response.error);
+      asyncTestCase.continueTesting();
+    }
+  };
+  e2eapi.setWebsiteRequestForwarder(fail);
+  e2eapi.port_ = port_;
+  asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
+  e2eapi.processWebsiteMessage_({
+    target: port_,
+    data: {
+      id: 'foo',
+      call: 'unsupported'
+    }
+  });
+}
+
+
+function testOpenComposeWebsiteRequest() {
+  var requestId = 'foo';
+  var body = 'test body';
+  var email = 'example@example.com';
+  e2eapi.setWebsiteRequestForwarder(function(request) {
+    assertEquals(requestId, request.id);
+    assertEquals(body, request.args.body);
+    assertEquals(1, request.args.recipients.length);
+    assertEquals(email, request.args.recipients[0]);
+    assertEquals(undefined, request.args.subject);
+    assertEquals('openCompose', request.call);
+    asyncTestCase.continueTesting();
+  });
+  asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
+  e2eapi.processWebsiteMessage_({
+    target: {},
+    data: {
+      id: requestId,
+      call: 'openCompose',
+      args: {
+        to: [{address: email}, {address: 'invalid'}],
+        body: body,
+      }
     }
   });
 }

@@ -36,13 +36,19 @@ var constants = e2e.ext.constants;
 var mockControl = null;
 var page = null;
 var stubs = new goog.testing.PropertyReplacer();
-var testCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 
 
 function setUp() {
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
   page = new e2e.ext.ui.WebsiteContainer('about:blank');
+}
+
+function tearDown() {
+  stubs.reset();
+  mockControl.$tearDown();
+  goog.dispose(page);
 }
 
 function testRendering() {
@@ -108,9 +114,23 @@ function testKeyboardEnter() {
 }
 
 
-function tearDown() {
-  stubs.reset();
-  mockControl.$tearDown();
-  goog.dispose(page);
-}
+function testWebsiteRequest() {
+  var request = {
+    request: true,
+    action: undefined,
+    selection: 'test body'
+  };
+  stubs.replace(chrome.i18n, 'getMessage', function(a) {
+    return a;
+  });
+  page.decorate(document.documentElement);
+  asyncTestCase.waitForAsync('Waiting for the prompt');
+  page.handleWebsiteRequest_(request);
+  asyncTestCase.timeout(function() {
+    assertTrue(page.getChildAt(0) instanceof e2e.ext.ui.Prompt);
+    assertTrue(page.interactionSuppressed_);
+    assertObjectEquals(request, page.prompt_.injectedContent_);
+    asyncTestCase.continueTesting();
+  }, 100);
 
+}
