@@ -136,18 +136,17 @@ e2e_build_extension() {
   do
     jscompile_e2e+=" --js='$var/**.js' --js='!$var/**_test.js'"
   done
-  csscompile_e2e="java -jar lib/closure-stylesheets-20111230.jar src/javascript/crypto/e2e/extension/ui/styles/base.css"
+  csscompile_e2e="java -jar lib/closure-stylesheets/build/closure-stylesheets.jar src/javascript/crypto/e2e/extension/ui/styles/base.css"
   # compile javascript files
   echo "Compiling JS files..."
   if [ "$1" == "debug" ]; then
     jscompile_e2e+=" --debug --formatting=PRETTY_PRINT"
   fi
   echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.bootstrap" --js_output_file "$BUILD_EXT_DIR/launcher_binary.js"
-  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.Helper" --js_output_file "$BUILD_EXT_DIR/helper_binary.js"
-  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.glass.bootstrap" --js_output_file "$BUILD_EXT_DIR/glass_binary.js"
-  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.Prompt" --js_output_file "$BUILD_EXT_DIR/prompt_binary.js"
-  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.Settings" --js_output_file "$BUILD_EXT_DIR/settings_binary.js"
-  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.Welcome" --js_output_file "$BUILD_EXT_DIR/welcome_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.helper.bootstrap" --js_output_file "$BUILD_EXT_DIR/helper_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.prompt.bootstrap" --js_output_file "$BUILD_EXT_DIR/prompt_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.settings.bootstrap" --js_output_file "$BUILD_EXT_DIR/settings_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.welcome.bootstrap" --js_output_file "$BUILD_EXT_DIR/welcome_binary.js"
   echo ""
   # compile css files
   echo "Compiling CSS files..."
@@ -184,18 +183,19 @@ e2e_build_app() {
   do
     jscompile_e2e+=" --js='$var/**.js' --js='!$var/**_test.js'"
   done
-  csscompile_e2e="java -jar lib/closure-stylesheets-20111230.jar src/javascript/crypto/e2e/extension/ui/styles/base.css"
+  csscompile_e2e="java -jar lib/closure-stylesheets/build/closure-stylesheets.jar src/javascript/crypto/e2e/extension/ui/styles/base.css"
   # compile javascript files
   echo "Compiling JS files..."
   if [ "$1" == "debug" ]; then
     jscompile_e2e+=" --debug --formatting=PRETTY_PRINT"
   fi
   echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.bootstrap" --js_output_file "$BUILD_EXT_DIR/launcher_binary.js"
-  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.Helper" --js_output_file "$BUILD_EXT_DIR/helper_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.helper.bootstrap" --js_output_file "$BUILD_EXT_DIR/helper_binary.js"
   echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.glass.bootstrap" --js_output_file "$BUILD_EXT_DIR/glass_binary.js"
-  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.Prompt" --js_output_file "$BUILD_EXT_DIR/prompt_binary.js"
-  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.Settings" --js_output_file "$BUILD_EXT_DIR/settings_binary.js"
-  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.Welcome" --js_output_file "$BUILD_EXT_DIR/welcome_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.prompt.bootstrap" --js_output_file "$BUILD_EXT_DIR/prompt_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.settings.bootstrap" --js_output_file "$BUILD_EXT_DIR/settings_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.welcome.bootstrap" --js_output_file "$BUILD_EXT_DIR/welcome_binary.js"
+  echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.webview.bootstrap" --js_output_file "$BUILD_EXT_DIR/webview_binary.js"
   echo ""
   # compile css files
   echo "Compiling CSS files..."
@@ -203,7 +203,8 @@ e2e_build_app() {
   $csscompile_e2e "$SRC_EXT_DIR/ui/prompt/prompt.css" > "$BUILD_EXT_DIR/prompt_styles.css"
   $csscompile_e2e "$SRC_EXT_DIR/ui/settings/settings.css" > "$BUILD_EXT_DIR/settings_styles.css"
   $csscompile_e2e "$SRC_EXT_DIR/ui/welcome/welcome.css" > "$BUILD_EXT_DIR/welcome_styles.css"
-  echo "Copying extension files..."
+  $csscompile_e2e "$SRC_EXT_DIR/ui/webview/webview.css" > "$BUILD_EXT_DIR/webview_styles.css"
+  echo "Copying app files..."
   # copy extension files
   cp -fr "$SRC_EXT_DIR/images" "$BUILD_EXT_DIR"
   cp -fr "$SRC_EXT_DIR/_locales" "$BUILD_EXT_DIR"

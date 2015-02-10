@@ -72,8 +72,11 @@ if [ ! -d closure-templates-compiler ]; then
 fi
 
 # checkout css compiler
-if [ ! -f closure-stylesheets-20111230.jar ]; then
-  curl https://closure-stylesheets.googlecode.com/files/closure-stylesheets-20111230.jar -O
+if [ ! -d closure-stylesheets ]; then
+  git clone https://github.com/google/closure-stylesheets
+  cd closure-stylesheets
+  ant
+  cd ..
 fi
 
 if [ ! -f chrome_extensions.js ]; then
