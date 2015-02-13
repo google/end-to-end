@@ -39,7 +39,7 @@ cd lib
 
 # checkout closure library
 if [ ! -d closure-library/.git ]; then
-  git clone --depth 1 https://github.com/google/closure-library/ closure-library
+  git clone --depth 1 https://github.com/google/closure-library closure-library
 fi
 
 # checkout zlib.js
