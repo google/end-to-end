@@ -194,7 +194,7 @@ ui.Prompt.prototype.enterDocument = function() {
         this.getElementByClass(constants.CssClass.POPOUT_BUTTON),
         constants.CssClass.HIDDEN);
   }
-  utils.action.getLauncher(function(launcher) {
+  utils.action.getLauncher(/** @this {ui.Prompt} */ (function(launcher) {
     this.pgpLauncher_ = launcher || this.pgpLauncher_;
     if (goog.isDefAndNotNull(this.injectedContent_)) {
       this.processSelectedContent_(this.injectedContent_);
@@ -207,7 +207,7 @@ ui.Prompt.prototype.enterDocument = function() {
               constants.Actions.USER_SPECIFIED)
       );
     }
-  }, this.displayFailure_, this);
+  }), this.displayFailure_, this);
 };
 
 
