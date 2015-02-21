@@ -35,11 +35,12 @@ e2e_assert_dependencies() {
     exit 1
   fi
   # Check if required files are present.
-  files=(lib/closure-library \
-    lib/closure-templates-compiler \
+  files=(
+    lib/closure-library \
+    lib/closure-templates \
     lib/typedarray \
     lib/zlib.js \
-    lib/closure-stylesheets-20111230.jar \
+    lib/closure-stylesheets/build/closure-stylesheets.jar \
     lib/closure-compiler/build/compiler.jar \
     lib/chrome_extensions.js \
   )
@@ -68,7 +69,7 @@ e2e_build_templates() {
   echo "Compiling Soy templates..."
   rm -f "$BUILD_TPL_DIR/cksum"
   e2e_get_file_cksum '*.soy' > "$BUILD_TPL_DIR/cksum"
-  find src -name '*.soy' -exec java -jar lib/closure-templates-compiler/SoyToJsSrcCompiler.jar \
+  find src -name '*.soy' -exec java -jar lib/closure-templates/build/SoyToJsSrcCompiler.jar \
   --shouldProvideRequireSoyNamespaces --shouldGenerateJsdoc --shouldDeclareTopLevelNamespaces --isUsingIjData --srcs {} \
   --outputPathFormat "$BUILD_TPL_DIR/{INPUT_DIRECTORY}{INPUT_FILE_NAME}.js" \;
   echo "Done."
@@ -128,7 +129,7 @@ e2e_build_extension() {
   rm -rf "$BUILD_EXT_DIR"
   mkdir -p "$BUILD_EXT_DIR"
   SRC_EXT_DIR="src/javascript/crypto/e2e/extension"
-  SRC_DIRS=( src lib/closure-library lib/closure-templates-compiler $BUILD_TPL_DIR \
+  SRC_DIRS=( src lib/closure-library lib/closure-templates/build/javascript $BUILD_TPL_DIR \
     lib/zlib.js/src lib/typedarray )
 
   jscompile_e2e="$JSCOMPILE_CMD"
@@ -232,7 +233,7 @@ e2e_generate_jsdeps() {
   $PYTHON_CMD lib/closure-library/closure/bin/build/depswriter.py \
     --root_with_prefix="build/templates/ build/templates/" \
     --root_with_prefix="src/javascript/crypto/e2e/ src/javascript/crypto/e2e/" \
-    --root_with_prefix="lib/closure-templates-compiler/ lib/closure-templates-compiler/" \
+    --root_with_prefix="lib/closure-templates/build/javascript lib/closure-templates/build/javascript" \
     --root_with_prefix="lib/zlib.js/ lib/zlib.js/" \
     > "$BUILD_DIR/deps.js"
 }
@@ -244,7 +245,7 @@ e2e_testserver() {
   $PYTHON_CMD lib/closure-library/closure/bin/build/depswriter.py \
     --root_with_prefix="build/templates/ ../../../build/templates/" \
     --root_with_prefix="src/javascript/crypto/e2e/ ../crypto/e2e/" \
-    --root_with_prefix="lib/closure-templates-compiler/ ../../../../lib/closure-templates-compiler/" \
+    --root_with_prefix="lib/closure-templates/build/javascript ../../../../lib/closure-templates/build/javascript" \
     --root_with_prefix="lib/zlib.js/ ../../../lib/zlib.js/" \
     > "$BUILD_DIR/test_js_deps-runfiles.js"
 

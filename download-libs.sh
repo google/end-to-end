@@ -39,12 +39,12 @@ cd lib
 
 # checkout closure library
 if [ ! -d closure-library/.git ]; then
-  git clone --depth 1 https://github.com/google/closure-library/ closure-library
+  git clone https://github.com/google/closure-library
 fi
 
 # checkout zlib.js
 if [ ! -d zlib.js/.git ]; then
-  git clone --depth 1 https://github.com/imaya/zlib.js zlib.js
+  git clone https://github.com/imaya/zlib.js zlib.js
   mkdir typedarray
   ln -s ../zlib.js/define/typedarray/use.js typedarray/use.js
 fi
@@ -52,23 +52,23 @@ fi
 # checkout closure compiler
 if [ ! -d closure-compiler/.git ]; then
   if [ -d closure-compiler ]; then # remove binary release directory
-    rm -rf closure-compiler
+    rm -rf closure-compiler 
   fi
-  git clone --depth 1 https://github.com/google/closure-compiler/ closure-compiler
-fi
-
-# build closure compiler
-if [ ! -f closure-compiler/build/compiler.jar ]; then
+  git clone https://github.com/google/closure-compiler
   cd closure-compiler
   ant jar
   cd ..
 fi
 
 # checkout closure templates compiler
-if [ ! -d closure-templates-compiler ]; then
-  curl https://dl.google.com/closure-templates/closure-templates-for-javascript-latest.zip -O # -k --ssl-added-and-removed-here-;-)
-  unzip closure-templates-for-javascript-latest.zip -d closure-templates-compiler
-  rm closure-templates-for-javascript-latest.zip
+if [ ! -d closure-templates ]; then
+  git clone https://github.com/google/closure-templates
+  cd closure-templates
+  # hack because things there's a warning on OSX if you're using Java 8
+  sed -i -e 's_<compilerarg value="-Werror"/>__' build.xml
+  ant SoyToJsSrcCompiler generated-soyutils
+  ln -s build/javascript/soyutils_usegoog.js build/
+  cd ..
 fi
 
 # checkout css compiler
@@ -80,14 +80,9 @@ if [ ! -d closure-stylesheets ]; then
 fi
 
 if [ ! -f chrome_extensions.js ]; then
-  curl https://raw.githubusercontent.com/google/closure-compiler/master/contrib/externs/chrome_extensions.js -O
+  ln -s closure-compiler/contrib/externs/chrome_extensions.js
 fi
 
-# Temporary fix
-# Soy file bundled with the compiler does not compile with strict settings:
-# lib/closure-templates-compiler/soyutils_usegoog.js:1762: ERROR - element JS_STR_CHARS does not exist on this enum
-cd closure-templates-compiler
-curl https://raw.githubusercontent.com/google/closure-templates/master/javascript/soyutils_usegoog.js -O
 cd ..
 
 cd ..
