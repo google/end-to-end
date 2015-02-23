@@ -237,9 +237,28 @@
   }
 
 
-  function testExctractPgpBlockMultiple() {
+  function testExtractPgpBlockMultiple() {
     var blocks = [PGP_MESSAGE, PUBLIC_KEY_ASCII, PUBLIC_KEY_ASCII];
     assertEquals(PGP_MESSAGE, e2e.openpgp.asciiArmor.extractPgpBlock(
+        'non-pgp content' + blocks.join('\n') + 'more non-pgp content'));
+  }
+
+
+  function testExtractPgpBlockClearsignedWithBlocksInside() {
+    var clearSign =
+      '-----BEGIN PGP SIGNED MESSAGE-----\r\n' +
+      'Hash: SHA1\r\n' +
+      '\r\n' +
+      'anything here\r\n' +
+      e2e.openpgp.asciiArmor.dashEscape(PUBLIC_KEY_ASCII) + '\r\n' +
+      '-----BEGIN PGP SIGNATURE-----\r\n' +
+      'Version: GnuPG v1.4.11 (GNU/Linux)\r\n' +
+      '\r\n' +
+      'doesn\'t matter in this test\r\n' +
+      '=qRFP\r\n' +
+      '-----END PGP SIGNATURE-----';
+    var blocks = [clearSign, PUBLIC_KEY_ASCII, PGP_MESSAGE];
+    assertEquals(clearSign, e2e.openpgp.asciiArmor.extractPgpBlock(
         'non-pgp content' + blocks.join('\n') + 'more non-pgp content'));
   }
 

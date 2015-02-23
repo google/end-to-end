@@ -326,13 +326,22 @@ e2e.openpgp.asciiArmor.encode = function(type, payload, opt_headers) {
  */
 e2e.openpgp.asciiArmor.extractPgpBlock = function(content) {
   var extractRe =
-      /-----BEGIN\sPGP\s[\w\s]+-----[\s\S.]*(MESSAGE|BLOCK|SIGNATURE)-----/;
+      /-----BEGIN\sPGP\s([\w\s]+)-----[\s\S.]*(?:MESSAGE|BLOCK|SIGNATURE)-----/;
   var result = extractRe.exec(content);
   if (result) {
     var pgpBlock = result[0];
+    var firstPrefixType = result[1];
+    var expectedSuffixType = firstPrefixType;
+    if (firstPrefixType == 'SIGNED MESSAGE') {
+      expectedSuffixType = 'SIGNATURE';
+    }
+    // Check if more then one blocks are present.
     if (/-----BEGIN\sPGP/.test(pgpBlock.substring(1))) {
-      pgpBlock = pgpBlock.replace(
-          /(-----END\sPGP[\w\s]+-----)([\s\S.]*)$/g, '$1');
+      // Cutoff at first Armor Suffix
+      pgpBlock = pgpBlock.replace(new RegExp(
+          '(-----END\\sPGP\\s' + expectedSuffixType + '-----)([\\s\\S.]*)$',
+          'g'),
+          '$1');
     }
     return pgpBlock;
   } else {
