@@ -39,7 +39,7 @@ e2e_assert_dependencies() {
     lib/closure-templates-compiler \
     lib/typedarray \
     lib/zlib.js \
-    lib/closure-stylesheets-20111230.jar \
+    lib/closure-stylesheets/build/closure-stylesheets.jar \
     lib/closure-compiler/build/compiler.jar \
     lib/chrome_extensions.js \
   )
@@ -131,17 +131,19 @@ e2e_build_extension() {
   SRC_DIRS=( src lib/closure-library lib/closure-templates-compiler $BUILD_TPL_DIR \
     lib/zlib.js/src lib/typedarray )
 
+  # compile javascript files
   jscompile_e2e="$JSCOMPILE_CMD"
   for var in "${SRC_DIRS[@]}"
   do
     jscompile_e2e+=" --js='$var/**.js' --js='!$var/**_test.js'"
   done
-  csscompile_e2e="java -jar lib/closure-stylesheets/build/closure-stylesheets.jar src/javascript/crypto/e2e/extension/ui/styles/base.css"
   # compile javascript files
   echo "Compiling JS files..."
   if [ "$1" == "debug" ]; then
+    echo "Debug mode enabled"
     jscompile_e2e+=" --debug --formatting=PRETTY_PRINT"
   fi
+  echo "Compiling JS files..."
   echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.bootstrap" --js_output_file "$BUILD_EXT_DIR/launcher_binary.js"
   echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.helper.bootstrap" --js_output_file "$BUILD_EXT_DIR/helper_binary.js"
   echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.prompt.bootstrap" --js_output_file "$BUILD_EXT_DIR/prompt_binary.js"
@@ -149,6 +151,7 @@ e2e_build_extension() {
   echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.welcome.bootstrap" --js_output_file "$BUILD_EXT_DIR/welcome_binary.js"
   echo ""
   # compile css files
+  csscompile_e2e="java -jar lib/closure-stylesheets/build/closure-stylesheets.jar src/javascript/crypto/e2e/extension/ui/styles/base.css"
   echo "Compiling CSS files..."
   $csscompile_e2e "$SRC_EXT_DIR/ui/glass/glass.css" > "$BUILD_EXT_DIR/glass_styles.css"
   $csscompile_e2e "$SRC_EXT_DIR/ui/prompt/prompt.css" > "$BUILD_EXT_DIR/prompt_styles.css"
@@ -178,17 +181,19 @@ e2e_build_app() {
   SRC_DIRS=( src lib/closure-library lib/closure-templates-compiler $BUILD_TPL_DIR \
     lib/zlib.js/src lib/typedarray )
 
+  # compile javascript files
   jscompile_e2e="$JSCOMPILE_CMD"
   for var in "${SRC_DIRS[@]}"
   do
     jscompile_e2e+=" --js='$var/**.js' --js='!$var/**_test.js'"
   done
-  csscompile_e2e="java -jar lib/closure-stylesheets/build/closure-stylesheets.jar src/javascript/crypto/e2e/extension/ui/styles/base.css"
   # compile javascript files
   echo "Compiling JS files..."
   if [ "$1" == "debug" ]; then
+    echo "Debug mode enabled"
     jscompile_e2e+=" --debug --formatting=PRETTY_PRINT"
   fi
+  echo "Compiling JS files..."
   echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.bootstrap" --js_output_file "$BUILD_EXT_DIR/launcher_binary.js"
   echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.helper.bootstrap" --js_output_file "$BUILD_EXT_DIR/helper_binary.js"
   echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.glass.bootstrap" --js_output_file "$BUILD_EXT_DIR/glass_binary.js"
@@ -198,6 +203,7 @@ e2e_build_app() {
   echo -n "." && $jscompile_e2e --closure_entry_point "e2e.ext.ui.webview.bootstrap" --js_output_file "$BUILD_EXT_DIR/webview_binary.js"
   echo ""
   # compile css files
+  csscompile_e2e="java -jar lib/closure-stylesheets/build/closure-stylesheets.jar src/javascript/crypto/e2e/extension/ui/styles/base.css"
   echo "Compiling CSS files..."
   $csscompile_e2e "$SRC_EXT_DIR/ui/glass/glass.css" > "$BUILD_EXT_DIR/glass_styles.css"
   $csscompile_e2e "$SRC_EXT_DIR/ui/prompt/prompt.css" > "$BUILD_EXT_DIR/prompt_styles.css"
@@ -271,21 +277,6 @@ e2e_lint() {
   fi
 }
 
-e2e_build() {
-  TARGET=$1
-  shift
-  if [ "$TARGET" == "extension" ]; then
-    e2e_build_extension $*;
-  elif [ "$TARGET" == "library" ]; then
-    e2e_build_library $*;
-  elif [ "$TARGET" == "templates" ]; then
-    e2e_build_templates $*;
-  else
-    echo "Invalid build target $TARGET"
-    exit 1
-  fi
-}
-
 RETVAL=0
 
 CMD=$1
@@ -298,20 +289,11 @@ case "$CMD" in
   install_deps)
     e2e_install_deps;
     ;;
-  build)
-    e2e_build $*;
-    ;;
   build_extension)
-    e2e_build_extension;
-    ;;
-  build_extension_debug)
-    e2e_build_extension "debug";
+    e2e_build_extension $1;
     ;;
   build_app)
-    e2e_build_app;
-    ;;
-  build_app_debug)
-    e2e_build_app "debug";
+    e2e_build_app $1;
     ;;
   build_library)
     e2e_build_library;
@@ -332,7 +314,7 @@ case "$CMD" in
     e2e_generate_deps;
     ;;
   *)
-    echo "Usage: $0 {build_extension|build_extension_debug|build_library|build_templates|clean|check_deps|install_deps|testserver|lint}"
+    echo "Usage: $0 {build_app|build_extension|build_library|build_templates|clean|check_deps|install_deps|testserver|lint} [debug]"
     RETVAL=1
 esac
 
