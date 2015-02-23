@@ -39,7 +39,7 @@ cd lib
 
 # checkout closure library
 if [ ! -d closure-library/.git ]; then
-  git clone --depth 1 https://github.com/google/closure-library/ closure-library
+  git clone --depth 1 https://github.com/google/closure-library closure-library
 fi
 
 # checkout zlib.js
@@ -54,7 +54,7 @@ if [ ! -d closure-compiler/.git ]; then
   if [ -d closure-compiler ]; then # remove binary release directory
     rm -rf closure-compiler
   fi
-  git clone --depth 1 https://github.com/google/closure-compiler/ closure-compiler
+  git clone --depth 1 https://github.com/google/closure-compiler closure-compiler
 fi
 
 # build closure compiler
