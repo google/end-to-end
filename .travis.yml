@@ -1,6 +1,5 @@
 install:
   - sudo pip install svn+https://closure-linter.googlecode.com/svn/trunk#egg=gjslint
-  - sudo pip install svn+https://closure-linter.googlecode.com/svn/trunk#egg=gjslint
   - ./do.sh install_deps
 
 script:
