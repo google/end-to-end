@@ -1,0 +1,11 @@
+install:
+  - sudo pip install svn+http://closure-linter.googlecode.com/svn/trunk#egg=gjslint
+  - ./do.sh install_deps
+
+script:
+  - ./do.sh build_app_debug
+  - ./do.sh clean
+  - ./do.sh build_extension_debug
+
+after_script:
+  - ./do.sh lint
