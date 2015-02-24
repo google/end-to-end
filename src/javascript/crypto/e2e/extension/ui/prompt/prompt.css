@@ -31,9 +31,12 @@ input[type="password"] {
 
 textarea {
   border: 1px solid #acacac;
+  box-sizing: border-box;
+  display: block;
   height: 200px;
   min-width: 650px;
-  display: block;
+  resize: vertical;
+  width: 100%;
 }
 
 textarea:hover,
