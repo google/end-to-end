@@ -25,6 +25,7 @@ goog.require('e2e.ext.constants');
 goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.Prompt');
 goog.require('e2e.ext.ui.WebsiteContainer');
+goog.require('e2e.ext.utils.action');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
@@ -72,6 +73,21 @@ function testPrompt() {
   assertTrue(page.interactionSuppressed_);
 }
 
+function testOptions() {
+  var launcher = {
+    createWindow: function(url, isForeground) {
+      assertEquals('settings.html', url);
+      assertTrue(isForeground);
+      asyncTestCase.continueTesting();
+    }
+  };
+  stubs.replace(e2e.ext.utils.action, 'getLauncher', function(cb) {
+    cb(launcher);
+  });
+  page.decorate(document.documentElement);
+  asyncTestCase.waitForAsync('Waiting for launcher');
+  document.getElementById('options').click();
+}
 
 function testKeyboardSuppression() {
   stubs.replace(chrome.i18n, 'getMessage', function(a) {

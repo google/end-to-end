@@ -27,6 +27,7 @@ goog.require('e2e.ext.ui.Prompt');
 goog.require('e2e.ext.ui.templates.webview');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.WebviewHelperProxy');
+goog.require('e2e.ext.utils.action');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.dom');
@@ -51,9 +52,9 @@ var utils = e2e.ext.utils;
  * Embeds a website in a Webview element.
  * @constructor
  * @extends {goog.ui.Component}
- * @param {string} url URL to display in a webview.
+ * @param {string} startUrl URL to load in a webview.
  */
-ui.WebsiteContainer = function(url) {
+ui.WebsiteContainer = function(startUrl) {
   goog.base(this);
   /**
    * Helper proxy attached to the displayed Webview.
@@ -86,11 +87,11 @@ ui.WebsiteContainer = function(url) {
    */
   this.toggleInteractionSuppressKeyDown_ = false;
   /**
-   * URL to display in a webview.
+   * URL to load in a webview.
    * @type {string}
    * @private
    */
-  this.url_ = url;
+  this.startUrl_ = startUrl;
 };
 goog.inherits(ui.WebsiteContainer, goog.ui.Component);
 
@@ -135,8 +136,8 @@ ui.WebsiteContainer.prototype.decorateInternal = function(elem) {
       toggleListenter,
       true);
 
-  webview.src = this.url_;
-  this.helperProxy_ = new e2e.ext.utils.WebviewHelperProxy(true, webview);
+  webview.src = this.startUrl_;
+  this.helperProxy_ = new e2e.ext.utils.WebviewHelperProxy(false, webview);
   this.helperProxy_.setWebsiteRequestHandler(goog.bind(
       this.handleWebsiteRequest_, this));
   this.getHandler().listen(
@@ -144,6 +145,12 @@ ui.WebsiteContainer.prototype.decorateInternal = function(elem) {
       goog.events.EventType.CLICK,
       goog.bind(this.togglePrompt_, this)
   );
+  this.getHandler().listen(
+      goog.dom.getElement('options'),
+      goog.events.EventType.CLICK,
+      goog.bind(this.showSettingsPage_, this)
+  );
+
 };
 
 
@@ -215,6 +222,18 @@ ui.WebsiteContainer.prototype.togglePrompt_ = function(opt_event) {
   } else {
     this.openPrompt_();
   }
+};
+
+
+/**
+ * Toggles the prompt element.
+ * @param  {Event=} opt_event The event.
+ * @private
+ */
+ui.WebsiteContainer.prototype.showSettingsPage_ = function(opt_event) {
+  e2e.ext.utils.action.getLauncher(function(launcher) {
+    launcher.createWindow('settings.html', true);
+  }, this.displayError_, this);
 };
 
 

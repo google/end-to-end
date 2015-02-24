@@ -19,7 +19,8 @@
  * Renders the base layout for the Webview UI.
  */
 {template .main}
-  <button id="show-prompt">=)</button>
+  <button id="show-prompt" class="{e2e.ext.constants.CssClass.OPTIONS}">E2E</button>
+  <button id="options" class="{e2e.ext.constants.CssClass.OPTIONS}">Options</button>
   <div id="prompt" class="{e2e.ext.constants.CssClass.HIDDEN}"></div>
   <div id="webview-container">
     <webview partition="persist:gmail" id="{e2e.ext.constants.ElementId.WEBVIEW}"></webview>

@@ -1,8 +1,6 @@
 #prompt {
   background: white;
-  border: 5px solid #888;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
+  border: 1px solid #888;
   border-bottom: none;
   bottom: 0;
   height: 500px;
@@ -17,7 +15,7 @@
 }
 
 #webview {
-  height: 94vh;
+  height: 93vh;
   margin-bottom: 1vh;
   width: 100%;
   transition: all 0.1s ease-out;
@@ -38,8 +36,16 @@
 }
 
 #show-prompt {
+  bottom: 0;
   position: absolute;
   right: 10px;
+  z-index: 2;
+}
+
+#options {
+  bottom: 0;
+  left: 10px;
+  position: absolute;
   z-index: 2;
 }
 
