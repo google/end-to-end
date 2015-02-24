@@ -259,7 +259,11 @@ ext.AppLauncher.prototype.updatePassphraseWarning = function() {
 /** @override */
 ext.AppLauncher.prototype.createWindow = function(url, isForeground, callback) {
   chrome.app.window.create(url, {
-    focused: isForeground
+    focused: isForeground,
+    innerBounds: {
+      width: 900,
+      height: 700
+    }
   }, callback);
 };
 
