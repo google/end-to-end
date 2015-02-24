@@ -41,6 +41,7 @@ goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
+goog.require('goog.events.KeyCodes');
 goog.require('goog.positioning.Corner');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
@@ -324,6 +325,10 @@ ui.Prompt.prototype.processSelectedContent_ =
       elem, goog.events.EventType.CLICK,
       goog.bind(this.buttonClick_, this, action, origin, contentBlob));
 
+  this.getHandler().listen(
+      elem, goog.events.EventType.KEYDOWN,
+      goog.bind(this.keypressListener_, this));
+
   if (utils.isChromeExtensionWindow() && !this.isPopout) {
     this.getHandler().listen(
         this.getElementByClass(constants.CssClass.POPOUT_BUTTON),
@@ -344,6 +349,18 @@ ui.Prompt.prototype.hideHeaderButtons_ = function() {
   var buttonsContainer = this.getElementByClass(
       constants.CssClass.BUTTONS_CONTAINER);
   goog.dom.classlist.add(buttonsContainer, constants.CssClass.HIDDEN);
+};
+
+
+/**
+ * Closes the prompt if ESC key has been pressed.
+ * @param  {!goog.events.BrowserEvent} event The KeyboardEvent.
+ * @private
+ */
+ui.Prompt.prototype.keypressListener_ = function(event) {
+  if (event.keyCode == goog.events.KeyCodes.ESC) {
+    this.close();
+  }
 };
 
 
