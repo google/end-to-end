@@ -193,6 +193,7 @@ textarea:focus,
   cursor: pointer;
   padding: 10px;
   position: absolute;
+  z-index: 100;
 }
 
 .ac-row {
