@@ -43,6 +43,10 @@
     "message": "Insert into the compose window",
     "description": "A sentence fragment prompting the user whether to insert the encrypted/decrypted text into Gmail."
   },
+  "promptEncryptSignSendLabel": {
+    "message": "Send protected message",
+    "description": "A sentence fragment prompting the user to send a protected message."
+  },
   "promptEncryptSignSaveDraftLabel": {
     "message": "Save encrypted draft",
     "description": "A sentence fragment prompting the user to save the working draft into the visiting page."

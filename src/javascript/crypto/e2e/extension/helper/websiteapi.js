@@ -579,6 +579,8 @@ e2e.ext.WebsiteApi.prototype.hasActiveDraft_ = function(callback, errback) {
  * @param {!Array.<string>} recipients E-mail addresses of the recipients of
  *     the message.
  * @param {string} msgBody The content body of the message.
+ * @param  {boolean} shouldSend Iff true, instruct the web application to send
+ *     the new content to the intended recipients.
  * @param {function(boolean)} callback A callback to invoke once the draft's
  *     contents have been set.
  * @param {function(Error)} errback The function that will be called upon error.
@@ -586,10 +588,11 @@ e2e.ext.WebsiteApi.prototype.hasActiveDraft_ = function(callback, errback) {
  * @private
  */
 e2e.ext.WebsiteApi.prototype.setActiveDraft_ = function(recipients, msgBody,
-    callback, errback, opt_subject) {
+    shouldSend, callback, errback, opt_subject) {
   var message = {
     to: e2e.ext.WebsiteApi.getAddressDescriptorsFromEmails_(recipients),
-    body: msgBody
+    body: msgBody,
+    send: shouldSend
   };
   if (goog.isDef(opt_subject)) {
     message.subject = opt_subject;
@@ -665,19 +668,23 @@ e2e.ext.WebsiteApi.prototype.getSelectedContentDom_ = function(callback,
 
 
 /**
- * Updates currently selected content.
+ * Updates currently selected content, optionally instructing the web
+ * application to send it.
  * @param  {!Array.<!string>} recipients E-mail addresses of recipients.
  * @param  {string} value Message content.
+ * @param  {boolean} shouldSend Iff true, instruct the web application to send
+ *     the new content to the intended recipients.
  * @param  {function(boolean)} callback Callback to call after content has
  *     been updated.
  * @param {function(Error)} errback The function that will be called upon error.
  * @param {string=} opt_subject New subject of the message.
  */
 e2e.ext.WebsiteApi.prototype.updateSelectedContent = function(recipients, value,
-    callback, errback, opt_subject) {
+    shouldSend, callback, errback, opt_subject) {
   this.isApiAvailable_(goog.bind(function(available) {
     if (available) {
-      this.setActiveDraft_(recipients, value, callback, errback, opt_subject);
+      this.setActiveDraft_(recipients, value, shouldSend, callback, errback,
+          opt_subject);
     } else {
       this.updateSelectedContentDom_(value, callback, errback);
     }

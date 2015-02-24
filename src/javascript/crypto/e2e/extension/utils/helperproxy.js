@@ -86,8 +86,8 @@ e2e.ext.utils.HelperProxy.prototype.getSelectedContent = function(callback,
  * @param {string} content The content to write inside the selected element.
  * @param {!Array.<string>} recipients The recipients of the message.
  * @param {string} origin The web origin where the original message was created.
- * @param {boolean} expectMoreUpdates True if more updates are expected. False
- *     if this is the final update to the selected content.
+ * @param {boolean} shouldSend True iff the protected message should be sent
+ *     by the web application to the recipients.
  * @param {!function(...)} callback The function to invoke once the content has
  *     been updated.
  * @param {!function(Error)} errorCallback The callback to invoke if an error is
@@ -96,12 +96,12 @@ e2e.ext.utils.HelperProxy.prototype.getSelectedContent = function(callback,
  * @expose
  */
 e2e.ext.utils.HelperProxy.prototype.updateSelectedContent =
-    function(content, recipients, origin, expectMoreUpdates, callback,
+    function(content, recipients, origin, shouldSend, callback,
     errorCallback, opt_subject) {
   this.sendMessage_({
     value: content,
     response: true,
-    detach: !Boolean(expectMoreUpdates),
+    send: shouldSend,
     origin: origin,
     recipients: recipients,
     subject: opt_subject
@@ -143,8 +143,8 @@ e2e.ext.utils.HelperProxy.prototype.getHelperId = goog.abstractMethod;
 
 
 /**
- * Finds the tab of with a current web application and determines if a helper
- * script is running inside of it. If no helper script is running, then one is
+ * Finds the current web application and determines if a helper script is
+ * running inside of it. If no helper script is running, then one is
  * injected.
  * @param {!function()} callback The function to invoke once the active
  *     tab is found.

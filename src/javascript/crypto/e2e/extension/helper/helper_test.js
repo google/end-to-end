@@ -70,7 +70,7 @@ function testSetValue() {
   helper.setValue_({
     recipients: [],
     response: true,
-    detach: true,
+    send: true,
     value: '<b>\n</b>',
     origin: helper.getOrigin_()
   }, function(isSuccess) {
@@ -88,7 +88,7 @@ function testErrorHandler() {
   helper.setValue_({
     recipients: [],
     response: true,
-    detach: true,
+    send: true,
     value: '<b>\n</b>',
     origin: helper.getOrigin_()
   }, function(error) {

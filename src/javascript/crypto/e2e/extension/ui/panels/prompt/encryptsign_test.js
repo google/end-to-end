@@ -297,7 +297,7 @@ function testSaveDraftIntoPage() {
   var subjectArg = new goog.testing.mockmatchers.SaveArgument(function(a) {
     return (!goog.isDef(a) || goog.isString(a));
   });
-  helperProxy.updateSelectedContent(contentArg, [], ORIGIN, true,
+  helperProxy.updateSelectedContent(contentArg, [], ORIGIN, false,
       goog.testing.mockmatchers.ignoreArgument,
       goog.testing.mockmatchers.ignoreArgument, subjectArg);
 
@@ -466,4 +466,42 @@ function testOnlyExactAddressesMatch() {
         panel.chipHolder_.children_[0].getValue());
     asyncTestCase.continueTesting();
   }, 500);
+}
+
+
+function testUpdateButtonTextNonGmail() {
+  panel.setContentInternal({
+    request: true,
+    selection: PLAINTEXT,
+    recipients: [],
+    origin: ORIGIN,
+    canInject: true
+  });
+  panel.render(document.body);
+  asyncTestCase.waitForAsync('Waiting for rendering to finish.');
+  asyncTestCase.timeout(function() {
+    assertContains(
+        'promptEncryptSignInsertLabel', document.body.textContent);
+    asyncTestCase.continueTesting();
+  }, 50);
+}
+
+
+function testUpdateButtonTextGmail() {
+  panel.setContentInternal({
+    request: true,
+    selection: PLAINTEXT,
+    recipients: [],
+    origin: 'https://mail.google.com',
+    canInject: true
+  });
+  panel.render(document.body);
+  asyncTestCase.waitForAsync('Waiting for rendering to finish.');
+  asyncTestCase.timeout(function() {
+    assertNotContains(
+        'promptEncryptSignInsertLabel', document.body.textContent);
+    assertContains(
+        'promptEncryptSignSendLabel', document.body.textContent);
+    asyncTestCase.continueTesting();
+  }, 50);
 }

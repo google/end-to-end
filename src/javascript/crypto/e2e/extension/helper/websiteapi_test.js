@@ -50,6 +50,7 @@ function setUp() {
       {address: 'fails#e2e.regexp.vali@dation.com'}],
     cc: [{address: 'cc@example.com'}],
     subject: TEST_SUBJECT,
+    wasSent: false,
 
     body: 'some text<br>with new<br>lines',
     getToEmails: function() { return this.to; },
@@ -59,7 +60,8 @@ function setUp() {
     getPlainTextBody: function() { return this.body.replace(/\<br\>/g, '\n'); },
     setBody: function(value) { this.body = value; },
     getSubject: function() { return this.subject; },
-    setSubject: function(value) { this.subject = value; }
+    setSubject: function(value) { this.subject = value; },
+    send: function() { this.wasSent = true; }
   };
   api = {
     getContentElement: function() { return document.documentElement; },
@@ -374,12 +376,14 @@ function testSetActiveDraft() {
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
     e2eapi.setActiveDraft_(['foo@example.com', 'noemail', '<a@>',
-      'first,"""last <bar@example.com>'], 'secret message', function(success) {
+      'first,"""last <bar@example.com>'], 'secret message', true,
+    function(success) {
       assertArrayEquals([
         {address: 'foo@example.com', name: undefined},
         {address: 'bar@example.com', name: undefined}
       ], draft.to);
       assertEquals('secret message', draft.body);
+      assertTrue(draft.wasSent);
       assertTrue(success);
       asyncTestCase.continueTesting();
     }, fail);
@@ -431,17 +435,18 @@ function testGetSelectedContentPriority() {
 function testUpdateSelectedContentPriority() {
   stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
   stubs.replace(e2eapi, 'setActiveDraft_', function(recipients, value,
-      callback, errback, subject) {
+      shouldSend, callback, errback, subject) {
         assertArrayEquals(RECIPIENTS, recipients);
         assertEquals('foo', value);
         assertEquals('bar', subject);
+        assertEquals(true, shouldSend);
         asyncTestCase.continueTesting();
       });
   stubs.replace(e2eapi, 'updateSelectedContentDom_', fail);
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
-    e2eapi.updateSelectedContent(RECIPIENTS, 'foo', goog.nullFunction,
+    e2eapi.updateSelectedContent(RECIPIENTS, 'foo', true, goog.nullFunction,
         goog.nullFunction, 'bar');
   });
 }
@@ -452,7 +457,7 @@ function testUpdateSelectedContentWebsite() {
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
-    e2eapi.updateSelectedContent(RECIPIENTS, 'foo', function(success) {
+    e2eapi.updateSelectedContent(RECIPIENTS, 'foo', true, function(success) {
       assertTrue(success);
       assertEquals('foo', draft.body);
       assertEquals('subject bar', draft.subject);

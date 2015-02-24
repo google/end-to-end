@@ -52,9 +52,9 @@ messages.BridgeMessageRequest;
  * @typedef {{
  *   value: string,
  *   response: boolean,
- *   detach: boolean,
  *   origin: string,
  *   subject: (string|undefined),
+ *   send: boolean,
  *   recipients: !Array.<string>
  * }}
  */

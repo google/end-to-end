@@ -202,6 +202,10 @@
             draft.setSubject(args['subject']);
           }
 
+          if (args['send']) {
+            draft.send();
+          }
+
           sendResult(port, request, true);
         });
         break;

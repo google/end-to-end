@@ -120,8 +120,9 @@ ext.Helper.prototype.disposeInternal = function() {
  * @private
  */
 ext.Helper.prototype.setValue_ = function(msg, sendResponse) {
-  this.api_.updateSelectedContent(msg.recipients, msg.value, sendResponse,
-      goog.bind(this.errorHandler_, this, sendResponse), msg.subject);
+  this.api_.updateSelectedContent(msg.recipients, msg.value, msg.send,
+      sendResponse, goog.bind(this.errorHandler_, this, sendResponse),
+      msg.subject);
 };
 
 
