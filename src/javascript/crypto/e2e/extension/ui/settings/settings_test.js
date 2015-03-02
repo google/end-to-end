@@ -21,6 +21,7 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.SettingsTest');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.ext.ExtensionLauncher');
 goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants');
@@ -261,7 +262,9 @@ function testUpdateKeyringPassphrase() {
       goog.testing.mockmatchers.ignoreArgument);
 
   stubs.set(
-      launcher.pgpContext_, 'isKeyRingEncrypted', function() {return true;});
+      launcher.pgpContext_, 'isKeyRingEncrypted', function() {
+        return e2e.async.Result.toResult(true);
+      });
   stubs.set(page.keyringMgmtPanel_, 'setKeyringEncrypted',
       mockControl.createFunctionMock('setKeyringEncrypted'));
   page.keyringMgmtPanel_.setKeyringEncrypted(true);

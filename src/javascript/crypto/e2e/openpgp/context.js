@@ -83,14 +83,16 @@ e2e.openpgp.Context.prototype.changeKeyRingPassphrase;
 
 
 /**
- * @return {boolean} True if there is a correct keyring passphrase set.
+ * @return {!e2e.async.Result.<boolean>} True if there is a correct keyring
+ *     passphrase set.
  * @expose
  */
 e2e.openpgp.Context.prototype.hasPassphrase;
 
 
 /**
- * @return {boolean} True if the keyring is encrypted in persistent storage.
+ * @return {!e2e.async.Result.<boolean>} True if the keyring is encrypted
+ *     in persistent storage.
  * @expose
  */
 e2e.openpgp.Context.prototype.isKeyRingEncrypted;

@@ -124,13 +124,14 @@ e2e.openpgp.ContextImpl.prototype.changeKeyRingPassphrase = function(
 
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.hasPassphrase = function() {
-  return goog.isDefAndNotNull(this.keyRing_) && this.keyRing_.hasPassphrase();
+  return e2e.async.Result.toResult(
+      goog.isDefAndNotNull(this.keyRing_) && this.keyRing_.hasPassphrase());
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.isKeyRingEncrypted = function() {
-  return this.keyRing_.isEncrypted();
+  return e2e.async.Result.toResult(this.keyRing_.isEncrypted());
 };
 
 
