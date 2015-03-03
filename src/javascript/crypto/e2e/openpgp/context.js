@@ -43,6 +43,7 @@ e2e.openpgp.Context.prototype.armorOutput;
  * Specifies the value of an armor header.
  * @param {string} name The name of the header.
  * @param {string} version The value of the header.
+ * @expose
  */
 e2e.openpgp.Context.prototype.setArmorHeader;
 
