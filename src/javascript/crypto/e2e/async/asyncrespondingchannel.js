@@ -193,7 +193,9 @@ e2e.messaging.AsyncRespondingChannel.prototype.callbackServiceHandler_ =
     var callback = /** @type {function(Object)} */ (this.sigCallbackMap_[
         signature]);
     delete this.sigCallbackMap_[signature];
-    callback(result);
+    if (goog.isFunction(callback)) {
+      callback(result);
+    }
   } else {
     goog.log.warning(this.logger_, 'Received signature is invalid');
   }

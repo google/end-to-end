@@ -1,0 +1,123 @@
+<!-- Copyright 2015 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.openpgp.WorkerContextImpl</title>
+<script src="../../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.async.Result');
+  goog.require('e2e.openpgp.ContextImpl');
+  goog.require('e2e.openpgp.ContextService');
+  goog.require('e2e.openpgp.WorkerContextImpl');
+  goog.require('goog.events.Event');
+  goog.require('goog.events.EventTarget');
+  goog.require('goog.events.EventType');
+  goog.require('goog.messaging.BufferedChannel');
+  goog.require('goog.messaging.PortChannel');
+  goog.require('goog.string');
+  goog.require('goog.testing.AsyncTestCase');
+  goog.require('goog.testing.MockControl');
+  goog.require('goog.testing.jsunit');
+  goog.require('goog.testing.storage.FakeMechanism');
+</script>
+<script>
+var stubs = null;
+var localPort = null;
+var portChannel = null;
+var asyncTest = goog.testing.AsyncTestCase.createAndInstall(document.title);
+var workerService = null;
+var workerPort = null;
+var workerThread = null;
+var workerContext = null;
+var localContext = null;
+
+function setUp() {
+  stubs = new goog.testing.PropertyReplacer();
+
+  localPort = new goog.events.EventTarget();
+  workerPort = new goog.events.EventTarget();
+
+  // Setup worker context
+  workerPort.postMessage = function(message) {
+    var e = new goog.events.Event(goog.events.EventType.MESSAGE);
+    e.data = message;
+    localPort.dispatchEvent(new goog.events.BrowserEvent(e));
+  };
+  var workerChannel = new goog.messaging.BufferedChannel(
+    new goog.messaging.PortChannel(workerPort));
+  workerContext = new e2e.openpgp.ContextImpl(
+    new goog.testing.storage.FakeMechanism());
+  workerService = new e2e.openpgp.ContextService(workerContext, workerChannel);
+
+  // Setup local context
+  localPort.postMessage = function(message) {
+    var e = new goog.events.Event(goog.events.EventType.MESSAGE);
+    e.data = message;
+    workerPort.dispatchEvent(new goog.events.BrowserEvent(e));
+  };
+  stubs.replace(e2e.openpgp.WorkerContextImpl.prototype, 'initWorker_',
+      function() {
+    this.worker_ = localPort;
+  });
+  localContext = new e2e.openpgp.WorkerContextImpl('_');
+}
+
+function tearDown() {
+  goog.dispose(workerService);
+  goog.dispose(localContext);
+  goog.dispose(workerContext);
+  stubs.reset();
+}
+
+function testNoParam() {
+  var dummyResult = 'yay!';
+  stubs.replace(workerContext, 'hasPassphrase', function() {
+    return e2e.async.Result.toResult(dummyResult);
+  });
+  asyncTest.waitForAsync('Wait for hasPassphrase callback');
+  localContext.hasPassphrase().addCallback(function(result) {
+    assertEquals(result, dummyResult);
+    asyncTest.continueTesting();
+  });
+}
+
+function testSyncResult() {
+  var dummyResult = 'yay!';
+  stubs.replace(workerContext, 'hasPassphrase', function() {
+    return dummyResult;
+  });
+  asyncTest.waitForAsync('Wait for hasPassphrase callback');
+  localContext.hasPassphrase().addCallback(function(result) {
+    assertEquals(result, dummyResult);
+    asyncTest.continueTesting();
+  });
+}
+
+function testWithParams() {
+  var param = 1337;
+  var param2 = 'Second parameter';
+  stubs.replace(workerContext, 'encryptSign', function(p1, p2) {
+    assertEquals(param, p1);
+    assertEquals(param2, p2);
+    return p1;
+  });
+  asyncTest.waitForAsync('Wait for hasPassphrase callback');
+  localContext.encryptSign(param, param2).addCallback(function(result) {
+    assertEquals(param, result);
+    asyncTest.continueTesting();
+  });
+}
+
+</script>
