@@ -166,6 +166,12 @@ ext.Helper.prototype.getSelectedContent_ = function(req, sendResponse) {
         var selectionBody =
             e2e.openpgp.asciiArmor.extractPgpBlock(msgBody);
         var action = utils.text.getPgpAction(selectionBody);
+        // Correct action for draft and reply-to messages.
+        if (e2e.openpgp.asciiArmor.isDraft(selectionBody) ||
+            (recipients.length > 0 &&
+        action == constants.Actions.DECRYPT_VERIFY)) {
+          action = constants.Actions.ENCRYPT_SIGN;
+        }
         // Send response back to the extension.
         var response = /** @type {e2e.ext.messages.BridgeMessageRequest} */ ({
           selection: selectionBody,

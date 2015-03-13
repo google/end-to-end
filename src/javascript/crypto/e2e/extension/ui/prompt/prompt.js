@@ -36,7 +36,6 @@ goog.require('e2e.ext.ui.templates.prompt');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.action');
 goog.require('e2e.ext.utils.text');
-goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
@@ -248,7 +247,6 @@ ui.Prompt.prototype.processSelectedContent_ =
   var origin = '';
   var recipients = [];
   var canInject = false;
-
   if (contentBlob) {
     if (contentBlob.request) {
       content = contentBlob.selection;
@@ -256,9 +254,6 @@ ui.Prompt.prototype.processSelectedContent_ =
     action = opt_action || contentBlob.action ||
         utils.text.getPgpAction(content);
     origin = contentBlob.origin;
-    if (e2e.openpgp.asciiArmor.isDraft(content)) {
-      action = constants.Actions.ENCRYPT_SIGN;
-    }
     recipients = contentBlob.recipients || [];
     contentBlob.action = action;
     canInject = contentBlob.canInject;
