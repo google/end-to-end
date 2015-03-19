@@ -103,8 +103,6 @@ promptPanels.EncryptSign.prototype.decorateInternal = function(elem) {
     canSaveDraft: content.canSaveDraft,
     signerCheckboxTitle: chrome.i18n.getMessage('promptSignMessageAs'),
     fromLabel: chrome.i18n.getMessage('promptFromLabel'),
-    passphraseEncryptionLinkTitle: chrome.i18n.getMessage(
-        'promptEncryptionPassphraseLink'),
     actionButtonTitle: chrome.i18n.getMessage(
         'promptEncryptSignActionLabel'),
     cancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction'),
@@ -156,10 +154,6 @@ promptPanels.EncryptSign.prototype.enterDocument = function() {
   this.populateUi_();
 
   this.getHandler().listen(
-      goog.dom.getElement(constants.ElementId.PASSPHRASE_ENCRYPTION_LINK),
-      goog.events.EventType.CLICK, this.renderEncryptionPassphraseDialog_);
-
-  this.getHandler().listen(
       this.getElementByClass(constants.CssClass.ACTION),
       goog.events.EventType.CLICK,
       goog.bind(this.encryptSign_, this));
@@ -203,13 +197,15 @@ promptPanels.EncryptSign.prototype.renderEncryptionKeys_ = function() {
         }
       });
       this.chipHolder_ = new panels.ChipHolder(
-          intendedRecipients, allAvailableRecipients);
+          intendedRecipients, allAvailableRecipients,
+          goog.bind(this.renderEncryptionPassphraseDialog_, this));
       this.addChild(this.chipHolder_, false);
       this.chipHolder_.decorate(
           goog.dom.getElement(constants.ElementId.CHIP_HOLDER));
       resolve();
     }, this), goog.bind(function(error) {
-      this.chipHolder_ = new panels.ChipHolder([], []);
+      this.chipHolder_ = new panels.ChipHolder([], [],
+          goog.bind(this.renderEncryptionPassphraseDialog_, this));
       this.addChild(this.chipHolder_, false);
       this.chipHolder_.decorate(
           goog.dom.getElement(constants.ElementId.CHIP_HOLDER));
@@ -409,10 +405,6 @@ promptPanels.EncryptSign.prototype.encryptSign_ = function() {
     textArea.disabled = true;
     textArea.value = encrypted;
     this.chipHolder_.lock();
-    var passphraseEncryptionLink = goog.dom.getElement(
-        constants.ElementId.PASSPHRASE_ENCRYPTION_LINK);
-    goog.dom.classlist.add(
-        passphraseEncryptionLink, constants.CssClass.INVISIBLE);
     var signCheckbox = goog.dom.getElement(
         constants.ElementId.SIGN_MESSAGE_CHECK);
     signCheckbox.disabled = true;

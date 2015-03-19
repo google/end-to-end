@@ -23,8 +23,10 @@
  */
 {template .renderGenericForm}
   <textarea placeholder="{$textAreaPlaceholder}"></textarea>
-  <button class="{e2e.ext.constants.CssClass.ACTION}">{$actionButtonTitle}</button>
-  <button class="{e2e.ext.constants.CssClass.CANCEL}">{$cancelButtonTitle}</button>
+  <div class="{e2e.ext.constants.CssClass.PROMPT_ACTIONS}">
+    <button class="{e2e.ext.constants.CssClass.ACTION}">{$actionButtonTitle}</button>
+    <button class="{e2e.ext.constants.CssClass.CANCEL}">{$cancelButtonTitle}</button>
+  </div>
 {/template}
 
 
@@ -34,7 +36,6 @@
  * @param canSaveDraft A boolean flag if the save draft feature should be enabled.
  * @param fromLabel The label to describe the "From:" select box.
  * @param signerCheckboxTitle The label for the checkbox to sign messages.
- * @param passphraseEncryptionLinkTitle The title for the passphrase encryption link.
  * @param actionButtonTitle The title of the prompt button.
  * @param saveDraftButtonTitle The title of the save button.
  * @param insertButtonTitle The title of the insert button.
@@ -49,9 +50,6 @@
     <select id="{e2e.ext.constants.ElementId.SIGNER_SELECT}"></select>
   </div>
   <div id="{e2e.ext.constants.ElementId.CHIP_HOLDER}"></div>
-  <div id="{e2e.ext.constants.ElementId.PASSPHRASE_ENCRYPTION_LINK}">
-    + {$passphraseEncryptionLinkTitle}
-  </div>
   {if isNonnull($subject)}
   <div id="{e2e.ext.constants.ElementId.SUBJECT_HOLDER}">
     <div>{$subjectLabel}</div>
@@ -59,21 +57,23 @@
   </div>
   {/if}
   <textarea data-origin="{$origin}"></textarea>
-  <div>
-    <input type="checkbox" id="{e2e.ext.constants.ElementId.SIGN_MESSAGE_CHECK}">
-    <label for="{e2e.ext.constants.ElementId.SIGN_MESSAGE_CHECK}">
-      {$signerCheckboxTitle}
-    </label>
+  <div class="{e2e.ext.constants.CssClass.PROMPT_ACTIONS}">
+    <div>
+      <input type="checkbox" id="{e2e.ext.constants.ElementId.SIGN_MESSAGE_CHECK}">
+      <label for="{e2e.ext.constants.ElementId.SIGN_MESSAGE_CHECK}">
+        {$signerCheckboxTitle}
+      </label>
+    </div>
+    <button class="{e2e.ext.constants.CssClass.ACTION}">{$actionButtonTitle}</button>
+    {if $insertCheckboxEnabled}
+      <button class="{e2e.ext.constants.CssClass.INSERT}{sp}
+                     {e2e.ext.constants.CssClass.HIDDEN}">
+        {$insertButtonTitle}
+      </button>
+    {/if}
+    {if $canSaveDraft}
+      <button class="{e2e.ext.constants.CssClass.SAVE}">{$saveDraftButtonTitle}</button>
+    {/if}
+    <button class="{e2e.ext.constants.CssClass.CANCEL}">{$cancelButtonTitle}</button>
   </div>
-  <button class="{e2e.ext.constants.CssClass.ACTION}">{$actionButtonTitle}</button>
-  {if $insertCheckboxEnabled}
-    <button class="{e2e.ext.constants.CssClass.INSERT}{sp}
-                   {e2e.ext.constants.CssClass.HIDDEN}">
-      {$insertButtonTitle}
-    </button>
-  {/if}
-  {if $canSaveDraft}
-    <button class="{e2e.ext.constants.CssClass.SAVE}">{$saveDraftButtonTitle}</button>
-  {/if}
-  <button class="{e2e.ext.constants.CssClass.CANCEL}">{$cancelButtonTitle}</button>
 {/template}

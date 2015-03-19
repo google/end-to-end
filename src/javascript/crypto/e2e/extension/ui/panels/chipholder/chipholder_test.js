@@ -41,7 +41,8 @@ var stubs = new goog.testing.PropertyReplacer();
 function setUp() {
   e2e.ext.testingstubs.initStubs(stubs);
 
-  chipHolder = new e2e.ext.ui.panels.ChipHolder(['1'], ['1', '2', '3']);
+  chipHolder = new e2e.ext.ui.panels.ChipHolder(['1'], ['1', '2', '3'],
+      goog.nullFunction);
   chipHolder.decorate(document.body);
 }
 
@@ -53,7 +54,8 @@ function tearDown() {
 
 
 function testRender() {
-  assertEquals('promptRecipientsPlaceholder1', document.body.textContent);
+  assertContains('promptRecipientsPlaceholder1', document.body.textContent);
+  assertContains('promptEncryptionPassphraseLink', document.body.textContent);
 }
 
 
@@ -182,6 +184,10 @@ function testLock() {
   chipHolder.lock();
   assertTrue(chipHolder.isLocked());
   assertTrue(chipHolder.getChildAt(0).isLocked());
+  assertTrue(goog.dom.classlist.contains
+      (chipHolder.getElementByClass(
+      constants.CssClass.PASSPHRASE_ENCRYPTION_LINK),
+      constants.CssClass.INVISIBLE));
   chipHolder.handleKeyEvent_({keyCode: goog.events.KeyCodes.BACKSPACE});
   assertEquals('1', chipHolder.getSelectedUids().join(','));
   chipHolder.addChip('2');

@@ -48,10 +48,13 @@ var templates = e2e.ext.ui.templates.panels.chipholder;
  * @param {!Array.<string>} selectedUids The UIDs that have already been
  *     selected.
  * @param {!Array.<string>} allUids All UIDs that are available for selection.
+ * @param {Function} renderEncryptionPassphraseCallback Callback for rendering
+ *     an encryption passphrase dialog.
  * @constructor
  * @extends {goog.ui.Component}
  */
-panels.ChipHolder = function(selectedUids, allUids) {
+panels.ChipHolder = function(selectedUids, allUids,
+    renderEncryptionPassphraseCallback) {
   goog.base(this);
 
   /**
@@ -75,6 +78,13 @@ panels.ChipHolder = function(selectedUids, allUids) {
    */
   this.isLocked_ = false;
 
+  /**
+   * Callback for rendering an passphrase encryption dialog.
+   * @type {Function}
+   * @private
+   */
+  this.renderEncryptionPassphraseCallback_ =
+      renderEncryptionPassphraseCallback;
 };
 goog.inherits(panels.ChipHolder, goog.ui.Component);
 
@@ -109,7 +119,9 @@ panels.ChipHolder.prototype.decorateInternal = function(elem) {
   this.keyHandler_ = new goog.events.KeyHandler(elem, true);
 
   soy.renderElement(elem, templates.renderChipHolder, {
-    recipientsTitle: chrome.i18n.getMessage('promptRecipientsPlaceholder')
+    recipientsTitle: chrome.i18n.getMessage('promptRecipientsPlaceholder'),
+    passphraseEncryptionLinkTitle: chrome.i18n.getMessage(
+        'promptEncryptionPassphraseLink'),
   });
 
   this.shadowInputElem_ = elem.querySelector('input');
@@ -149,6 +161,10 @@ panels.ChipHolder.prototype.enterDocument = function() {
       this.keyHandler_,
       goog.events.KeyHandler.EventType.KEY,
       this.handleKeyEvent_);
+
+  this.getHandler().listen(
+      this.getElementByClass(constants.CssClass.PASSPHRASE_ENCRYPTION_LINK),
+      goog.events.EventType.CLICK, this.renderEncryptionPassphraseCallback_);
 };
 
 
@@ -334,6 +350,10 @@ panels.ChipHolder.prototype.lock = function() {
     chip.lock();
   });
   goog.dom.classlist.add(this.shadowInputElem_, constants.CssClass.INVISIBLE);
+  var passphraseEncryptionLink = this.getElementByClass(
+      constants.CssClass.PASSPHRASE_ENCRYPTION_LINK);
+  goog.dom.classlist.add(
+      passphraseEncryptionLink, constants.CssClass.INVISIBLE);
 };
 
 

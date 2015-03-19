@@ -443,8 +443,7 @@ ui.Prompt.prototype.showMenuInline_ = function(menu) {
   goog.style.setStyle(menu.getElement(), {
     'display': 'block',
     'outline': 'none',
-    'position': 'relative',
-    'top': '-10px'
+    'position': 'relative'
   });
 };
 

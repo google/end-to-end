@@ -79,7 +79,6 @@ e2e.ext.constants.ElementId = {
   ERROR_DIV: 'errorDiv',
   CALLBACK_DIALOG: 'callbackDialog',
   CHIP_HOLDER: 'chipHolder',
-  PASSPHRASE_ENCRYPTION_LINK: 'passphraseEncryptionLink',
   FROM_HOLDER: 'fromHolder',
   SUBJECT_HOLDER: 'subjectHolder',
   SUBJECT: 'subject',
@@ -158,9 +157,11 @@ e2e.ext.constants.CssClass = {
   /** Used in prompt. */
   PROMPT_HEADER: 'pgpHead',
   PROMPT_TITLE: 'pgpTitle',
+  PROMPT_ACTIONS: 'pgpActions',
   BUTTONS_CONTAINER: 'buttons-container',
   MENU_BUTTON: 'menu-button',
-  POPOUT_BUTTON: 'popout-button'
+  POPOUT_BUTTON: 'popout-button',
+  PASSPHRASE_ENCRYPTION_LINK: 'passphraseEncryptionLink'
 };
 
 

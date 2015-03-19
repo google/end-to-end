@@ -30,24 +30,17 @@ input[type="password"] {
 }
 
 textarea {
-  border: 1px solid #acacac;
+  border: none;
+  border-bottom: 1px solid #cfcfcf;
   box-sizing: border-box;
   display: block;
-  height: 200px;
+  height: 240px;
   min-width: 650px;
   resize: vertical;
   width: 100%;
 }
 
-textarea:hover,
-textarea:focus,
-#pgpKeySelect:hover,
-#pgpKeySelect:focus,
-#fromHolder:hover,
-#fromHolder:focus,
-#subjectHolder:hover,
-#subjectHolder:focus {
-  border: 1px solid #0c0c0c;
+textarea:focus {
   outline: none;
 }
 
@@ -58,6 +51,10 @@ textarea:focus,
 
 #pgpBody > #pgpKeySelect {
   margin-bottom: 8px;
+}
+
+#pgpBody .pgpActions {
+  padding: 0 8px;
 }
 
 .buttons-container {
@@ -83,12 +80,15 @@ textarea:focus,
   text-align: center;
 }
 
-#pgpKeySelect,
-#fromHolder, #subjectHolder {
-  border: 1px solid #acacac;
-  color: #acacac;
+#chipHolder, #fromHolder {
+  min-height: 33px;
+}
+
+#chipHolder, #fromHolder, #subjectHolder {
+  border-bottom: 1px solid #cfcfcf;
+  color: #777;
   line-height: 18px;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 
 #fromHolder > * {
@@ -102,6 +102,11 @@ textarea:focus,
 #pgpKeySelect > .uid-chips > input,
 #pgpKeySelect > .uid-chips > span {
   margin-left: 7px;
+}
+
+#pgpKeySelect > .uid-chips > input {
+  margin: 8px;
+  height: 20px;
 }
 
 #subjectHolder > div:first-child {
@@ -175,16 +180,21 @@ textarea:focus,
   -webkit-appearance: initial;
 }
 
-#passphraseEncryptionLink,
+.passphraseEncryptionLink {
+  float: right;
+  margin-top: 10px;
+}
+
+.passphraseEncryptionLink,
 .select-all-link {
-  color: #acacac;
+  color: #777;
   cursor: pointer;
   margin-right: 10px;
   padding-bottom: 8px;
   text-align: right;
 }
 
-#passphraseEncryptionLink:hover,
+.passphraseEncryptionLink:hover,
 .select-all-link:hover {
   color: #0c0c0c;
 }
@@ -194,13 +204,17 @@ textarea:focus,
   border: 1px solid #acacac;
   box-shadow: 0 4px 16px rgba(0,0,0,0.2);
   cursor: pointer;
-  padding: 10px;
+  padding: 6px 0;
   position: absolute;
   z-index: 100;
 }
 
 .ac-row {
   padding: 10px;
+}
+
+.ac-active {
+  background: #eeeeee;
 }
 
 .uid-chip > div,
