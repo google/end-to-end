@@ -72,7 +72,7 @@ e2e.compression.Compression.prototype.algorithm;
 
 
 /**
- * Compresses the given data..
+ * Compresses the given data.
  * @param {!e2e.ByteArray} data The data to compress.
  * @return {!e2e.async.Result} The compressed data.
  */
