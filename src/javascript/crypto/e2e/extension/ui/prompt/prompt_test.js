@@ -21,6 +21,7 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.ui.PromptTest');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.ext.ExtensionLauncher');
 goog.require('e2e.ext.Launcher');
 goog.require('e2e.ext.actions.DecryptVerify');
@@ -800,8 +801,8 @@ function testNoOp() {
 
 function populatePgpKeys() {
   var ctx = prompt.pgpLauncher_.getContext();
-  ctx.importKey(function(uid, callback) {
-    callback('test');
+  ctx.importKey(function(uid) {
+    return e2e.async.Result.toResult('test');
   }, PRIVATE_KEY_ASCII);
 
   ctx.importKey(function() {}, PUBLIC_KEY_ASCII);

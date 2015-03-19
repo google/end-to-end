@@ -20,6 +20,7 @@
 
 goog.provide('e2e.ext.ui.panels.prompt.PanelBase');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.dialogs.Generic');
@@ -170,23 +171,25 @@ promptPanels.PanelBase.prototype.renderDialog = function(dialog) {
  * Renders the UI elements needed for requesting the passphrase of an individual
  * PGP key.
  * @param {string} uid The UID of the PGP key.
- * @param {!function(string)} callback The callback to invoke when the
- *     passphrase has been provided.
+ * @return {!e2e.async.Result<string>} A promise resolved with the user-provided
+ *     passphrase.
  * @protected
  */
 promptPanels.PanelBase.prototype.renderPassphraseDialog =
-    function(uid, callback) {
+    function(uid) {
+  var result = new e2e.async.Result();
   var dialog = new dialogs.Generic(chrome.i18n.getMessage(
       'promptPassphraseCallbackMessage', uid),
       function(passphrase) {
         goog.dispose(dialog);
-        callback(/** @type {string} */ (passphrase));
+        result.callback(/** @type {string} */ (passphrase));
       },
       dialogs.InputType.SECURE_TEXT,
       '',
       chrome.i18n.getMessage('actionEnterPassphrase'),
       chrome.i18n.getMessage('actionCancelPgpAction'));
   this.renderDialog(dialog);
+  return result;
 };
 
 

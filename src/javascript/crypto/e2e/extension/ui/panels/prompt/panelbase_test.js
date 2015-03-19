@@ -121,7 +121,7 @@ function testRenderPassphraseDialog() {
   chrome.i18n.getMessage(goog.testing.mockmatchers.ignoreArgument).$times(2);
 
   mockControl.$replayAll();
-  panel.renderPassphraseDialog(uid, callback);
+  panel.renderPassphraseDialog(uid).addCallback(callback);
   assertContains(uid, document.body.textContent);
 
   for (var childIdx = 0; childIdx < panel.getChildCount(); childIdx++) {

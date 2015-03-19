@@ -1197,7 +1197,9 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
     var results = goog.array.map(
       encryptedMsgs,
       function(msg, index) {
-        var deferred = context.verifyDecrypt(function(_, cb) {  cb('a')}, msg);
+        var deferred = context.verifyDecrypt(function(_) {
+          return e2e.async.Result.toResult('a');
+        }, msg);
         deferred.addCallback(function(vd) {
           return vd;
         }).addErrback(function(e) {
@@ -1213,28 +1215,27 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
   }
 
   function testInboundRsa() {
-    context.importKey(function(uid, cb) {
-      cb('test');
-    }, RSA_PRIVATE_KEY);
-
-    var assertDecrypts = function(encryptedMsgs, all, opt_plaintext) {
-      var plaintext = e2e.stringToByteArray(opt_plaintext || 'susheep\n');
-      goog.array.forEach(all, function(r) {
-        assertArrayEquals(plaintext, r.decrypt.data);
-      });
-      assertEquals(encryptedMsgs.length, all.length);
-      assert(all.length > 0);
-      asyncTest.continueTesting();
-    };
-    var assertDecryptsCr = function(encryptedMsgs, all) {
-      assertDecrypts(encryptedMsgs, all, 'susheep\r\n');  // \r added by openpgpjs.
-    };
-    var msgRegex = /-----BEGIN[\s\S]*?END PGP MESSAGE-----/g;
-    runTestFor('InboundRsaEncryptGnupg1_4_11', assertDecrypts, msgRegex);
-    runTestFor('InboundRsaEncryptGnupg2_0_17', assertDecrypts, msgRegex);
-    runTestFor('InboundRsaEncryptGnupg2_1_0beta3', assertDecrypts, msgRegex);
-    runTestFor('InboundRsaEncryptPgp10_0_0_674', assertDecrypts, msgRegex);
-    runTestFor('InboundRsaEncryptOpenpgpjs0_7_2', assertDecryptsCr, msgRegex);
+    context.importKey(buildPassphraseCallback('test'), RSA_PRIVATE_KEY)
+      .addCallback(function() {
+        var assertDecrypts = function(encryptedMsgs, all, opt_plaintext) {
+          var plaintext = e2e.stringToByteArray(opt_plaintext || 'susheep\n');
+          goog.array.forEach(all, function(r) {
+            assertArrayEquals(plaintext, r.decrypt.data);
+          });
+          assertEquals(encryptedMsgs.length, all.length);
+          assert(all.length > 0);
+          asyncTest.continueTesting();
+        };
+        var assertDecryptsCr = function(encryptedMsgs, all) {
+          assertDecrypts(encryptedMsgs, all, 'susheep\r\n');  // \r added by openpgpjs.
+        };
+        var msgRegex = /-----BEGIN[\s\S]*?END PGP MESSAGE-----/g;
+        runTestFor('InboundRsaEncryptGnupg1_4_11', assertDecrypts, msgRegex);
+        runTestFor('InboundRsaEncryptGnupg2_0_17', assertDecrypts, msgRegex);
+        runTestFor('InboundRsaEncryptGnupg2_1_0beta3', assertDecrypts, msgRegex);
+        runTestFor('InboundRsaEncryptPgp10_0_0_674', assertDecrypts, msgRegex);
+        runTestFor('InboundRsaEncryptOpenpgpjs0_7_2', assertDecryptsCr, msgRegex);
+    }).addErrback(fail);
   }
 
   function testInboundPlaintext() {
@@ -1252,13 +1253,12 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
   }
 
   function testInboundRsaSign() {
-    context.importKey(function(uid, cb) {
-      cb('test');
-    }, RSA_PRIVATE_KEY);
-    context.importKey(function(uid, cb) {
-      fail("Should not call callback");
-    }, RSA_PUBLIC_KEY);
-
+    var deferred = goog.async.DeferredList.gatherResults([
+      context.importKey(buildPassphraseCallback('test'), RSA_PRIVATE_KEY),
+      context.importKey(function(uid) {
+        fail("Should not call callback");
+      }, RSA_PUBLIC_KEY)
+    ]);
     var assertCorrectlySigned = function(encryptedMsgs, all) {
       goog.array.forEach(all, function(r) {
         var plaintext = e2e.stringToByteArray('signed');
@@ -1269,13 +1269,15 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
       });
     }
     var msgRegex = /-----BEGIN[\s\S]*?END PGP MESSAGE-----/g;
-    runTestFor('InboundRsaSignGnupg1_4_11', assertCorrectlySigned, msgRegex);
+    deferred.addCallback(function() {
+        runTestFor('InboundRsaSignGnupg1_4_11', assertCorrectlySigned, msgRegex);
+    });
   }
 
   function testInboundIntertwinedUserAttributeAndUserId() {
     var key = document.getElementById('InboundKeyGnuPg1_UserAttribute').value;
     asyncTest.waitForAsync('Waiting for import.');
-    context.importKey(function(uid, cb) {
+    context.importKey(function(uid) {
       fail("Should not call callback");
     }, key).addCallback(function(importedUids) {
         assertEquals(importedUids.length, 2);
@@ -1286,9 +1288,8 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
   function testInboundDummyS2k() {
     var key = document.getElementById('InboundKeyGnuPg1_DummyS2k').value;
     asyncTest.waitForAsync('Waiting for import.');
-    context.importKey(function(uid, cb) {
-      cb('a')
-    }, key).addCallback(function(_) {
+    context.importKey(buildPassphraseCallback('a'), key)
+      .addCallback(function(_) {
         fail('should not import the key');
     }).addErrback(function (e) {
         assertTrue(e instanceof e2e.openpgp.error.UnsupportedError);
@@ -1300,7 +1301,7 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
     var key = document.getElementById('InboundClearSignKey').value;
     var msg = document.getElementById('InboundClearSignOnelineMsg').value;
     asyncTest.waitForAsync('Waiting for import.');
-    context.importKey(function(uid, cb) {
+    context.importKey(function(uid) {
       fail("Should not call callback");
     }, key).addCallback(function(importedUids) {
         assertEquals(importedUids.length, 1);
@@ -1323,7 +1324,7 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
   function testInboundClearsignMultiline() {
     var key = document.getElementById('InboundClearSignKey').value;
     asyncTest.waitForAsync('Waiting for import.');
-    context.importKey(function(uid, cb) {
+    context.importKey(function(uid) {
       fail("Should not call callback");
     }, key).addCallback(function(importedUids) {
 
@@ -1352,7 +1353,7 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
     var key = document.getElementById('InboundClearSignKey').value;
     var msgs = document.getElementById('InboundClearSignKeyUnsupportedAlgo').value;
     asyncTest.waitForAsync('Waiting for import.');
-    context.importKey(function(uid, cb) {
+    context.importKey(function(uid) {
       fail("Should not call callback");
     }, key).addCallback(function(importedUids) {
       assertEquals(importedUids.length, 1);
@@ -1376,7 +1377,7 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
     var key = document.getElementById(
         'InboundKeyGnuPg1_RevocationRightAfterSubKey').value;
     asyncTest.waitForAsync('Waiting for import.');
-    context.importKey(function(uid, cb) {
+    context.importKey(function(uid) {
       fail("Should not call callback");
     }, key).addCallback(function(importedUids) {
         assertArrayEquals(['revoked <revoked@revoked.net>'], importedUids);
@@ -1388,7 +1389,7 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
     var key = document.getElementById(
         'BasicUnicodeUserId').value;
     asyncTest.waitForAsync('Waiting for import.');
-    context.importKey(function(uid, cb) {
+    context.importKey(function(uid) {
       fail("Should not call callback");
     }, key).addCallback(function(importedUids) {
         assertArrayEquals(['\u0150ry M\u00e1t\u00e9 '], importedUids);
@@ -1400,7 +1401,7 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
     var key = document.getElementById(
         'SupplementaryUnicodeUserId').value;
     asyncTest.waitForAsync('Waiting for import.');
-    context.importKey(function(uid, cb) {
+    context.importKey(function(uid) {
       fail("Should not call callback");
     }, key).addCallback(function(importedUids) {
         assertArrayEquals(['The \ud834\udf06'], importedUids);
@@ -1412,9 +1413,8 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
     var key = document.getElementById(
         'ExperimentalPackets').value;
     asyncTest.waitForAsync('Waiting for import.');
-    context.importKey(function(uid, cb) {
-      cb('test');
-    }, key).addCallback(function(importedUids) {
+    context.importKey(buildPassphraseCallback('test'), key)
+      .addCallback(function(importedUids) {
         assertArrayEquals(['with-experimental'], importedUids);
         asyncTest.continueTesting();
     });
@@ -1423,9 +1423,7 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
   function testRSAVariantAlgorithms() {
     var key = document.getElementById('RSAVariantAlgorithms').value;
     var message = document.getElementById('RSAVariantAlgorithmsMessage').value;
-    var pw = function(uid, cb) {
-        cb('test');
-    };
+    var pw = buildPassphraseCallback('test');
     asyncTest.waitForAsync('Waiting for import.');
     context.importKey(pw, key).addCallback(function(uids) {
         assertArrayEquals(['rsa-rsa-default'], uids);
@@ -1440,5 +1438,11 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
             }).addErrback(fail);
        });
   }
+
+  function buildPassphraseCallback(passphrase) {
+    return (function(uid) {
+      return e2e.async.Result.toResult(passphrase);
+    });
+  };
 
 </script>

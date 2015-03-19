@@ -200,7 +200,8 @@ e2e.openpgp.ContextImpl.prototype.importKey = function(
 
 /**
  * Attempts to decrypt and import the key with the given passphrase.
- * @param {function(string, function(string))} callback
+ * @param {function(string):!e2e.async.Result<string>} callback Callback used
+ *     to provide a passphrase.
  * @param {!e2e.openpgp.block.TransferableKey} block
  * @param {e2e.async.Result.<!Array.<string>>=} opt_result
  * @param {string=} opt_passphrase
@@ -221,15 +222,14 @@ e2e.openpgp.ContextImpl.prototype.tryToImportKey_ = function(
         // Allow the user to bail out.
         result.callback(null);
       } else {
-        callback(
-            block.getUserIds().join('\n'),
+        callback(block.getUserIds().join('\n')).addCallback(
             goog.bind(this.tryToImportKey_, this, callback, block, result));
       }
     } else {
       result.errback(e);
     }
   }
-  return result;
+  return /** @type !e2e.async.Result.<!Array.<string>> */ (result.branch());
 };
 
 
@@ -296,8 +296,9 @@ e2e.openpgp.ContextImpl.prototype.verifyDecrypt = function(
 
 /**
  * Internal implementation of the verification/decryption operation.
- * @param {function(string, function(string))} passphraseCallback This callback
- *     is used for requesting an action-specific passphrase from the user.
+ * @param {function(string):!e2e.async.Result<string>} passphraseCallback This
+ *     callback is used for requesting an action-specific passphrase from the
+ *     user.
  * @param {!e2e.ByteArray} encryptedMessage The encrypted data.
  * @param {string=} opt_charset The (optional) charset to decrypt with.
  * @protected

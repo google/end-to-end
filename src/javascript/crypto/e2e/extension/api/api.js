@@ -23,6 +23,7 @@
 
 goog.provide('e2e.ext.api.Api');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.api.RequestThrottle');
 goog.require('e2e.ext.constants.Actions');
@@ -133,14 +134,9 @@ api.Api.prototype.executeAction_ = function(callback, req) {
     case constants.Actions.ENCRYPT_SIGN:
     case constants.Actions.DECRYPT_VERIFY:
       // Propagate the decryptPassphrase if needed.
-      incoming.passphraseCallback = function(uid, passphraseCallback) {
-        if (incoming.decryptPassphrase) {
-          passphraseCallback(incoming.decryptPassphrase);
-        }
-
-        outgoing.selectedUid = uid;
-        outgoing.retry = true;
-        callback(outgoing);
+      incoming.passphraseCallback = function(uid) {
+        // Note: The passphrase needs to be known when calling executeAction_.
+        return e2e.async.Result.toResult(incoming.decryptPassphrase || '');
       };
       break;
     default:

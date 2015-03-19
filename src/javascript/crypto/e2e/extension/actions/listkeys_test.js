@@ -21,6 +21,7 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.actions.ListKeysTest');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.ext.actions.ListKeys');
 goog.require('e2e.ext.testingstubs');
 goog.require('e2e.openpgp.ContextImpl');
@@ -175,8 +176,8 @@ function testExecutePrivateKeys() {
 
   mockControl.$replayAll();
   testCase.waitForAsync('Waiting for keys to be populated.');
-  pgpContext.importKey(function(uid, callback) {
-    callback('test');
+  pgpContext.importKey(function(uid) {
+    return e2e.async.Result.toResult('test');
   }, PRIVATE_KEY_ASCII).addCallback(function() {
     action.execute(pgpContext, {
       content: 'private'

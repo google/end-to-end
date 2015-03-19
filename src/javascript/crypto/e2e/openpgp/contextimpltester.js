@@ -1285,7 +1285,7 @@ e2e.openpgp.ContextImplTester.runBenchmark = function() {
   e2e.testing.Util.addBenchmark(tests,
       function() {
         var deferred = new goog.async.Deferred();
-        context.importKey(function() {},
+        context.importKey(fail,
             e2e.openpgp.ContextImplTester.LINUS_KEY).
             addCallback(function(r) {
               deferred.callback();

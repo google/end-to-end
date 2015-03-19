@@ -104,8 +104,7 @@ ui.Glass.prototype.decorateInternal = function(elem) {
     } else {
       this.renderContents_({
         completedAction: constants.Actions.DECRYPT_VERIFY,
-        error: chrome.i18n.getMessage('glassCannotDecrypt'),
-        retry: false
+        error: chrome.i18n.getMessage('glassCannotDecrypt')
       });
     }
   }, this), e2e.random.getRandomBytes(1, [0])[0]);

@@ -286,7 +286,7 @@ function testRenderPassphraseCallback() {
   mockControl.$replayAll();
 
   page.decorate(document.documentElement);
-  page.renderPassphraseCallback_('test_uid', callback);
+  page.renderPassphraseCallback_('test_uid').addCallback(callback);
 
   assertContains('test_uid', document.body.textContent);
   for (var childIdx = 0; childIdx < page.getChildCount(); childIdx++) {
@@ -303,11 +303,10 @@ function testRenderPassphraseCallback() {
 
 function populatePgpKeys() {
   var ctx = launcher.getContext();
-  ctx.importKey(function(uid, callback) {
-    console.debug(arguments);
-    callback('test');
+  ctx.importKey(function(uid) {
+    return e2e.async.Result.toResult('test');
   }, PRIVATE_KEY_ASCII);
 
-  ctx.importKey(function() {}, PUBLIC_KEY_ASCII);
+  ctx.importKey(goog.nullFunction, PUBLIC_KEY_ASCII);
 }
 

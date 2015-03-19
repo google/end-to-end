@@ -58,7 +58,7 @@ actions.ImportKey.prototype.execute =
               constants.ElementId.CALLBACK_DIALOG);
 
           ctx.importKey(
-              /** @type {!function(string, !function(string))} */
+              /** @type {!function(string): !e2e.async.Result<string>} */
               (request.passphraseCallback), request.content).
               addCallback(callback).addErrback(errorCallback);
         }
