@@ -284,7 +284,7 @@ e2e.ext.WebsiteApi.prototype.bootstrapChannel_ = function(onPortReadyCallback) {
       }
       bootstrapReceived = true;
       this.port_ = msgEvent.target;
-      this.apiAvailable_ = msgEvent.data.available;
+      this.apiAvailable_ = Boolean(msgEvent.data.available);
       if (msgEvent.target) {
         msgEvent.target.addEventListener('message',
             goog.bind(this.processWebsiteMessage_, this));
