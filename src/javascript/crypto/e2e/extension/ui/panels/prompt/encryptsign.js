@@ -124,7 +124,7 @@ promptPanels.EncryptSign.prototype.decorateInternal = function(elem) {
  * @private
  */
 promptPanels.EncryptSign.prototype.canSend_ = function(origin) {
-  return utils.text.isGmailOrigin(origin);
+  return false;
 };
 
 

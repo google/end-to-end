@@ -469,13 +469,16 @@ function testOnlyExactAddressesMatch() {
 }
 
 
-function testUpdateButtonTextNonGmail() {
+function testUpdateButtonTextNoSend() {
   panel.setContentInternal({
     request: true,
     selection: PLAINTEXT,
     recipients: [],
     origin: ORIGIN,
     canInject: true
+  });
+  stubs.replace(panel, 'canSend_', function() {
+    return false;
   });
   panel.render(document.body);
   asyncTestCase.waitForAsync('Waiting for rendering to finish.');
@@ -487,13 +490,16 @@ function testUpdateButtonTextNonGmail() {
 }
 
 
-function testUpdateButtonTextGmail() {
+function testUpdateButtonTextSend() {
   panel.setContentInternal({
     request: true,
     selection: PLAINTEXT,
     recipients: [],
-    origin: 'https://mail.google.com',
+    origin: ORIGIN,
     canInject: true
+  });
+  stubs.replace(panel, 'canSend_', function() {
+    return true;
   });
   panel.render(document.body);
   asyncTestCase.waitForAsync('Waiting for rendering to finish.');
