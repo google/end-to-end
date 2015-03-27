@@ -262,6 +262,46 @@
         'non-pgp content' + blocks.join('\n') + 'more non-pgp content'));
   }
 
+  function testExtractPgpBlockQuoted() {
+    var escapedPublicKey =
+        '- -----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
+        'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
+        '\n' +
+        'doesntmatter\n' +
+        '=nHBL\n' +
+        '- -----END PGP PUBLIC KEY BLOCK-----';
+    var linePrefix = '> ';
+    var clearSignQuoted =
+      linePrefix + '-----BEGIN PGP SIGNED MESSAGE-----\r\n' +
+      linePrefix + 'Hash: SHA1\r\n' +
+      '>\r\n' + // Trailing space from the prefix removed in empty lines.
+      linePrefix + 'anything here\r\n' +
+      linePrefix + escapedPublicKey +
+      '\r\n' +
+      linePrefix + '-----BEGIN PGP SIGNATURE-----\r\n' +
+      linePrefix + 'Version: GnuPG v1.4.11 (GNU/Linux)\r\n' +
+      linePrefix + '\r\n' +
+      linePrefix + 'doesn\'t matter in this test\r\n' +
+      linePrefix + '=qRFP\r\n' +
+      linePrefix + '-----END PGP SIGNATURE-----';
+    var clearSign =
+      '-----BEGIN PGP SIGNED MESSAGE-----\r\n' +
+      'Hash: SHA1\r\n' +
+      '\r\n' + // Trailing space from the prefix removed in empty lines.
+      'anything here\r\n' +
+      escapedPublicKey + '\r\n' +
+      '-----BEGIN PGP SIGNATURE-----\r\n' +
+      'Version: GnuPG v1.4.11 (GNU/Linux)\r\n' +
+      '\r\n' +
+      'doesn\'t matter in this test\r\n' +
+      '=qRFP\r\n' +
+      '-----END PGP SIGNATURE-----';
+
+    var blocks = [clearSignQuoted, PUBLIC_KEY_ASCII, PGP_MESSAGE];
+    assertEquals(clearSign, e2e.openpgp.asciiArmor.extractPgpBlock(
+        'Something\n' + blocks.join('\n') + 'Something else\n'));
+  }
+
 
   function testMarkAsDraft() {
     var expected =

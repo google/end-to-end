@@ -326,11 +326,12 @@ e2e.openpgp.asciiArmor.encode = function(type, payload, opt_headers) {
  */
 e2e.openpgp.asciiArmor.extractPgpBlock = function(content) {
   var extractRe =
-      /-----BEGIN\sPGP\s([\w\s]+)-----[\s\S.]*(?:MESSAGE|BLOCK|SIGNATURE)-----/;
+      /(.*)-----BEGIN\sPGP\s([\w\s]+)-----[\s\S.]*(?:MESSAGE|BLOCK|SIGNATURE)-----/;
   var result = extractRe.exec(content);
   if (result) {
     var pgpBlock = result[0];
-    var firstPrefixType = result[1];
+    var linePrefix = result[1];
+    var firstPrefixType = result[2];
     var expectedSuffixType = firstPrefixType;
     if (firstPrefixType == 'SIGNED MESSAGE') {
       expectedSuffixType = 'SIGNATURE';
@@ -342,6 +343,15 @@ e2e.openpgp.asciiArmor.extractPgpBlock = function(content) {
           '(-----END\\sPGP\\s' + expectedSuffixType + '-----)([\\s\\S.]*)$',
           'g'),
           '$1');
+    }
+    if (linePrefix.length > 0) {
+      // Make trailing spaces optional in the line prefix.
+      // They get removed for otherwise empty lines.
+      pgpBlock = pgpBlock.replace(new RegExp(
+          '^' + goog.string.regExpEscape(goog.string.trimRight(linePrefix)) +
+              '[\\t ]*',
+          'gm'),
+          '');
     }
     return pgpBlock;
   } else {
