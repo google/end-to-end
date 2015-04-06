@@ -16,5 +16,41 @@
 <title>Unit Test of e2e.otr.session/</title>
 <script src="../../../../../javascript/closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
-<script src="session_test.js"></script>
+<script>
+goog.require('e2e.otr.Session');
+goog.require('e2e.otr.constants');
+goog.require('e2e.otr.testing');
+goog.require('goog.testing.asserts');
+goog.require('goog.testing.jsunit');
+</script>
+<script>
+var constants = e2e.otr.constants;
+var tag = new Uint8Array([1, 2, 3, 4]);
+
+function testConstructor() {
+  var s = new e2e.otr.Session(null, tag);
+  assertObjectEquals(constants.DEFAULT_POLICY, s.policy);
+  assertEquals(constants.MSGSTATE.PLAINTEXT, s.msgState_);
+  assertEquals(constants.AUTHSTATE.NONE, s.authState_);
+  e2e.otr.testing.assertTypedArrayEquals(tag, s.instanceTag);
+  e2e.otr.testing.assertTypedArrayEquals([0, 0, 0, 0], s.remoteInstanceTag);
+
+  s = new e2e.otr.Session(null, tag, {testProperty: 123});
+  assertEquals(123, s.policy.testProperty);
+
+  assertThrows(function() {
+    new e2e.otr.Session(null, new Uint8Array([0, 0, 0, 0]));
+  });
+}
+
+function testUpdateAuthState() {
+  var s = new e2e.otr.Session(null, tag);
+  assertEquals(constants.AUTHSTATE.NONE, s.authState_);
+  assertThrows(function() {
+    s.setAuthState(constants.AUTHSTATE.AWAITING_SIG);
+  });
+  s.setAuthState(constants.AUTHSTATE.AWAITING_DHKEY);
+  assertEquals(constants.AUTHSTATE.AWAITING_DHKEY, s.authState_);
+}
+</script>
 

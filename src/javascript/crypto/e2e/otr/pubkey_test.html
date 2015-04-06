@@ -16,5 +16,69 @@
 <title>Unit Test of e2e.otr.pubkey/</title>
 <script src="../../../../../javascript/closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
-<script src="pubkey_test.js"></script>
+<script>
+goog.require('e2e.error.UnsupportedError');
+goog.require('e2e.otr.error.ParseError');
+goog.require('e2e.otr.pubkey.Pubkey');
+goog.require('e2e.otr.testing');
+goog.require('goog.testing.PropertyReplacer');
+goog.require('goog.testing.asserts');
+goog.require('goog.testing.jsunit');
+</script>
+<script>
+var stubs = null;
+
+var pkImpl = function(data) {
+  goog.base(this);
+  this.data_ = data;
+};
+goog.inherits(pkImpl, e2e.otr.pubkey.Pubkey);
+
+pkImpl.PUBKEY_TYPE = new Uint8Array([0, 0]);
+
+pkImpl.prototype.serializePubkey = function() {
+  return this.data_;
+};
+
+function setUp() {
+  stubs = new goog.testing.PropertyReplacer();
+}
+
+function tearDown() {
+  stubs.reset();
+}
+
+function testConstructor() {
+  var construct = function() {
+    new pkImpl(new Uint8Array([1, 2, 3]));
+  };
+  assertThrows(function() {
+    new e2e.otr.pubkey.Pubkey();
+  });
+
+  stubs.remove(pkImpl, 'PUBKEY_TYPE');
+  assertThrows(construct);
+  stubs.reset();
+
+  stubs.setPath('pkImpl.PUBKEY_TYPE', new Uint8Array([0xFF, 0xFF]));
+  assertThrows(construct);
+  stubs.reset();
+
+  assertNotThrows(construct);
+}
+
+function testSerialize() {
+  var pk = new pkImpl(new Uint8Array([1, 2, 3]));
+  e2e.otr.testing.assertTypedArrayEquals([0, 0, 1, 2, 3], pk.serialize());
+}
+
+function testParse() {
+  assertTrue(assertThrows(function() {
+    e2e.otr.pubkey.Pubkey.parse(new Uint8Array([0]));
+  }) instanceof e2e.otr.error.ParseError);
+  assertTrue(assertThrows(function() {
+    e2e.otr.pubkey.Pubkey.parse(new Uint8Array([0xFF, 0xFF]));
+  }) instanceof e2e.error.UnsupportedError);
+}
+</script>
 
