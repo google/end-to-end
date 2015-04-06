@@ -74,7 +74,7 @@ e2e.otr.Session = function(context, instanceTag, opt_policy) {
  * @param {!Uint8Array} serialized A serialized message.
  */
 e2e.otr.Session.prototype.processMessage = function(serialized) {
-  throw new Error('Not yet implemented.');
+  e2e.otr.message.handler.parse(this, serialized);
 };
 
 
