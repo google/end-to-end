@@ -171,6 +171,6 @@ e2e.otr.message.Encoded.parse = function(session, data) {
     return null; // ignore invalid recipient tag.
   }
 
-  return [type[0], iter.rest()];
+  return [type, iter.rest()];
 };
 });  // goog.scope
