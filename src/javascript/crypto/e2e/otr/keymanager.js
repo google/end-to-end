@@ -88,6 +88,7 @@ e2e.otr.KeyManager.prototype.storeKey = function(key) {
  */
 e2e.otr.KeyManager.prototype.storeRemoteKey = function(keyid, pubkey) {
   this.remoteKeys_[e2e.otr.intToNum(keyid)] = pubkey;
+  this.lastRemote_ = keyid;
 };
 
 
