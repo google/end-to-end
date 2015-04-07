@@ -246,7 +246,8 @@ e2e.otr.Session.prototype.deriveKeyValues = function() {
    *     (5+len) bytes consisting of the byte b followed by secbytes.
    */
   var h2 = function(b) {
-    return new e2e.hash.Sha256().hash([b].concat(secbytes.serialize()));
+    return new e2e.hash.Sha256().hash(
+        [b].concat(Array.apply([], secbytes.serialize())));
   };
 
   var h20x01 = h2(0x01);
