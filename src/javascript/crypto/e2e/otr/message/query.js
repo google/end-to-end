@@ -26,7 +26,6 @@ goog.provide('e2e.otr.message.Query');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.constants.Version');
 goog.require('e2e.otr.error.ParseError');
-goog.require('e2e.otr.message.DhCommit');
 goog.require('e2e.otr.message.Message');
 goog.require('e2e.otr.util.Iterator');
 
@@ -140,8 +139,7 @@ e2e.otr.message.Query.parseEmbedded = function(str) {
  */
 e2e.otr.message.Query.process = function(session, version) {
   if (version & versions.V3 && session.policy.ALLOW_V3) {
-    session.send(new e2e.otr.message.DhCommit(session));
-    session.setAuthState(constants.AUTHSTATE.AWAITING_DHKEY);
+    session.initiateOtr();
   }
 };
 });  // goog.scope
