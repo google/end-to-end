@@ -143,7 +143,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
       }
 
       var s = dh.generate(gx);
-      var keys = session.deriveKeyValues();
+      var keys = session.deriveKeyValues(s);
 
       var calculatedMac = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m2)
           .getHmac(Array.apply([], aesxb));
