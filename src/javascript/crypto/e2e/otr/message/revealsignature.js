@@ -114,7 +114,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
     case AUTHSTATE.AWAITING_REVEALSIG:
       var iter = new e2e.otr.util.Iterator(data);
       var r = e2e.otr.Data.parse(iter.nextEncoded()).deconstruct();
-      var aesxb = e2e.otr.Data.parse(iter.nextEncoded()).deconstruct();
+      var aesxb = iter.nextEncoded();
       var mac = iter.next(20);
 
       if (iter.hasNext() || mac.length != 20) {
@@ -124,7 +124,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
       // TODO(rcc): Remove annotation when closure-compiler #260 is fixed.
       var gxmpi = e2e.otr.util.aes128ctr.decrypt(r, /** @type {!Uint8Array} */ (
           e2e.otr.assertState(session.authData.aesgx, 'AES(gx) not defined')));
-      var gxmpiHash = new e2e.hash.Sha256().hash(gxmpi);
+      var gxmpiHash = new e2e.hash.Sha256().hash(Array.apply([], gxmpi));
 
       var gx = Array.apply([], e2e.otr.Mpi.parse(gxmpi).deconstruct());
       var dh = session.keymanager.getKey().key;
@@ -155,7 +155,8 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
         return;
       }
 
-      var xb = e2e.otr.util.aes128ctr.decrypt(keys.c, aesxb);
+      var xb = e2e.otr.util.aes128ctr.decrypt(keys.c,
+          e2e.otr.Data.parse(aesxb).deconstruct());
 
       iter = new e2e.otr.util.Iterator(xb);
       var pubBType = iter.next(2);
