@@ -133,6 +133,6 @@ e2e.otr.ContextImpl.prototype.defineLocalStorageProperties_ = function(props) {
 
 /** @inheritDoc */
 e2e.otr.ContextImpl.prototype.getSigner = function() {
-  return goog.partial(e2e.otr.Sig, this.privkey_);
+  return e2e.otr.Sig.bind(null, this.privkey_);
 };
 });  // goog.scope
