@@ -29,6 +29,7 @@ goog.require('e2e.otr.Serializable');
 goog.require('e2e.otr.Storable');
 goog.require('e2e.otr.error.NotImplementedError');
 goog.require('e2e.signer.Algorithm');
+goog.require('e2e.signer.Dsa');
 goog.require('e2e.signer.factory');
 goog.require('goog.object');
 
