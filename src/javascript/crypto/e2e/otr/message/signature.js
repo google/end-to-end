@@ -102,7 +102,7 @@ e2e.otr.message.Signature.process = function(session, data) {
   switch (session.getAuthState()) {
     case AUTHSTATE.AWAITING_SIG:
       var iter = new e2e.otr.util.Iterator(data);
-      var aesxa = e2e.otr.Data.parse(iter.nextEncoded()).deconstruct();
+      var aesxa = iter.nextEncoded();
       var mac = iter.next(20);
 
       var keys = session.deriveKeyValues();
@@ -117,7 +117,8 @@ e2e.otr.message.Signature.process = function(session, data) {
         return;
       }
 
-      var xa = e2e.otr.util.aes128ctr.decrypt(keys.cprime, aesxa);
+      var xa = e2e.otr.util.aes128ctr.decrypt(keys.cprime,
+          e2e.otr.Data.parse(aesxa).deconstruct());
 
       iter = new e2e.otr.util.Iterator(xa);
 
