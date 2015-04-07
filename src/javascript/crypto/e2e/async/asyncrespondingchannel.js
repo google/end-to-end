@@ -58,7 +58,9 @@ e2e.messaging.AsyncRespondingChannel = function(messageChannel) {
    * Map of invocation signatures to function callbacks. These are used to keep
    * track of the asyncronous service invocations so the result of a service
    * call can be passed back to a callback in the calling frame.
-   * @type {Object<number, function(Object)>}
+   * @type {
+   *     Object<number, {callback: function(Object), errback: function(Object)}>
+   * }
    * @private
    */
   this.sigCallbackMap_ = {};
@@ -159,15 +161,18 @@ e2e.messaging.AsyncRespondingChannel.prototype.disposeInternal = function() {
  * @param {string|!Object} payload The value of the message. If this is an
  *     Object, it is serialized to a string before sending if necessary.
  * @param {function(?Object)} callback The callback invoked with
- *     the result of the service call.
+ *     a successful result of the service call.
+ * @param {function(?Object)} errback The callback invoked with
+ *     an erroneous result of the service call.
  */
 e2e.messaging.AsyncRespondingChannel.prototype.send = function(
     serviceName,
     payload,
-    callback) {
+    callback,
+    errback) {
 
   var signature = this.getNextSignature_();
-  this.sigCallbackMap_[signature] = callback;
+  this.sigCallbackMap_[signature] = {'callback': callback, 'errback': errback};
 
   var message = {};
   message['signature'] = signature;
@@ -188,13 +193,26 @@ e2e.messaging.AsyncRespondingChannel.prototype.callbackServiceHandler_ =
 
   var signature = message['signature'];
   var result = message['data'];
+  var errorResult = message['error'];
 
   if (signature in this.sigCallbackMap_) {
-    var callback = /** @type {function(Object)} */ (this.sigCallbackMap_[
-        signature]);
+    var callback = this.sigCallbackMap_[signature].callback;
+    var errback = this.sigCallbackMap_[signature].errback;
     delete this.sigCallbackMap_[signature];
-    if (goog.isFunction(callback)) {
-      callback(result);
+    if (goog.isDefAndNotNull(errorResult)) {
+      // We have an error.
+      if (goog.isFunction(errback)) {
+        errback(errorResult);
+      } else {
+        goog.log.warning(this.logger_, 'No callback to handle error.');
+      }
+    } else {
+      // We have a successful response.
+      if (goog.isFunction(callback)) {
+        callback(result);
+      } else {
+        goog.log.warning(this.logger_, 'No callback to handle response.');
+      }
     }
   } else {
     goog.log.warning(this.logger_, 'Received signature is invalid');
@@ -230,28 +248,54 @@ e2e.messaging.AsyncRespondingChannel.prototype.registerService = function(
  */
 e2e.messaging.AsyncRespondingChannel.prototype.callbackProxy_ = function(
     callback, message) {
-  var result = callback(message['data']);
-  if (result instanceof goog.async.Deferred) {
-    // Send the response asynchronously.
-    result.addCallback(goog.bind(this.sendResponse_, this, message));
-  } else {
-    // Respond immediately.
-    this.sendResponse_(message, result);
+  try {
+    var result = callback(message['data']);
+    if (result instanceof goog.async.Deferred) {
+      // Send the response asynchronously.
+      result.addCallbacks(
+          goog.bind(this.sendSuccessResponse_, this, message),
+          goog.bind(this.sendErrorResponse_, this, message));
+    } else {
+      // Respond immediately.
+      this.sendSuccessResponse_(message, result);
+    }
+  } catch (anyError) {
+    this.sendErrorResponse_(message, anyError);
   }
 };
 
 
 /**
- * Sends response to a certain message to the other peer.
+ * Sends a successful response to a certain message to the other peer.
  * @param  {!Object|string} message  The original message.
  * @param  {*} response Response to send back.
  * @private
  */
-e2e.messaging.AsyncRespondingChannel.prototype.sendResponse_ = function(
+e2e.messaging.AsyncRespondingChannel.prototype.sendSuccessResponse_ = function(
     message, response) {
-  var resultMessage = {};
-  resultMessage['data'] = response;
-  resultMessage['signature'] = message['signature'];
+  this.sendResponse_({'data': response, 'signature': message['signature']});
+};
+
+
+/**
+ * Sends an error response to a certain message to the other peer.
+ * @param  {!Object|string} message  The original message.
+ * @param  {*} response Response to send back.
+ * @private
+ */
+e2e.messaging.AsyncRespondingChannel.prototype.sendErrorResponse_ = function(
+    message, response) {
+  this.sendResponse_({'error': response, 'signature': message['signature']});
+};
+
+
+/**
+ * Sends response to a certain message to the other peer.
+ * @param {!Object} resultMessage The result message object to send back.
+ * @private
+ */
+e2e.messaging.AsyncRespondingChannel.prototype.sendResponse_ = function(
+    resultMessage) {
   if (this.privateChannel_) {
     // The callback invoked above may have disposed the channel so check if it
     // exists.

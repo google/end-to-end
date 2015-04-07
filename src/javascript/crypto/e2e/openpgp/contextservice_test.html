@@ -53,11 +53,11 @@ function testService() {
   service.channel_.send(e2e.openpgp.ContextService.SERVICE_NAME, {
     name: 'changeKeyRingPassphrase',
     params: [pass]
-  });
+  }, goog.nullFunction, goog.nullFunction);
   service.channel_.send(e2e.openpgp.ContextService.SERVICE_NAME, {
     name: 'invalid',
     params: [pass]
-  });
+  }, goog.nullFunction, goog.nullFunction);
   assertEquals(1, called);
 }
 </script>

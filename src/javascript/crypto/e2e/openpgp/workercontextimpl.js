@@ -113,9 +113,7 @@ e2e.openpgp.WorkerContextImpl.prototype.sendRequest_ = function(name, params) {
       {
         name: name,
         params: params
-      }, function(res) {
-        result.callback(res);
-      });
+      }, goog.bind(result.callback, result), goog.bind(result.errback, result));
   return result;
 };
 
@@ -132,7 +130,7 @@ e2e.openpgp.WorkerContextImpl.prototype.sendBlindRequest_ = function(name,
       {
         name: name,
         params: params
-      }, goog.nullFunction);
+      }, goog.nullFunction, goog.nullFunction);
 };
 
 
