@@ -141,7 +141,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
         return;
       }
 
-      session.authData.s = dh.generate(gx);
+      var s = dh.generate(gx);
       var keys = session.deriveKeyValues();
 
       var calculatedMac = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m2)
@@ -187,6 +187,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
       }
 
       session.keymanager.storeRemoteKey(keyidB, gx);
+      session.authData.s = s;
       session.send(new e2e.otr.message.Signature(session));
       session.setAuthState(AUTHSTATE.NONE);
       session.setMsgState(constants.MSGSTATE.ENCRYPTED);
