@@ -105,10 +105,8 @@ e2e.otr.Session.prototype.getAuthState = function() { return this.authState_; };
  * @param {!e2e.otr.constants.AUTHSTATE} nextState The new auth state.
  */
 e2e.otr.Session.prototype.setAuthState = function(nextState) {
-  if (nextState) {
-    assert(this.isValidAuthStateTransition_(nextState));
-    this.authState_ = nextState;
-  }
+  assert(this.isValidAuthStateTransition_(nextState));
+  this.authState_ = nextState;
 };
 
 
