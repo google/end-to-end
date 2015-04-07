@@ -20,6 +20,7 @@
 goog.require('e2e.otr.Session');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.testing');
+goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 </script>
@@ -52,5 +53,21 @@ function testUpdateAuthState() {
   s.setAuthState(constants.AUTHSTATE.AWAITING_DHKEY);
   assertEquals(constants.AUTHSTATE.AWAITING_DHKEY, s.authState_);
 }
-</script>
 
+function testProcessMessage() {
+  var stubs = new goog.testing.PropertyReplacer();
+  var methodCalled = false;
+  stubs.setPath('e2e.otr.message.handler.parse', function(session, receivedArg) {
+    methodCalled = true;
+    assertEquals(s, session);
+    assertEquals(arg, receivedArg);
+  });
+
+  var s = new e2e.otr.Session(null, tag);
+  var arg = new Object();
+  s.processMessage(arg);
+  assertTrue(methodCalled);
+
+  stubs.reset();
+}
+</script>
