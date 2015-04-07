@@ -74,7 +74,13 @@ e2e.otr.Sig.prototype.deconstruct = function() {
  * @return {!e2e.otr.Sig} The generated packet.
  */
 e2e.otr.Sig.parse = function(body) {
-  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+  if (body.length != 40) {
+    throw new e2e.otr.error.ParseError('Malformed SIG.');
+  }
+  return e2e.otr.Sig.unpack({
+    r: Array.apply([], body.subarray(0, 20)),
+    s: Array.apply([], body.subarray(20))
+  });
 };
 
 
