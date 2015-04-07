@@ -125,12 +125,12 @@ e2e.otr.message.Signature.process = function(session, data) {
 
       // TODO(rcc): Make Type.parse accept Iterator to pull appropriate data.
       var pubAType = iter.next(2);
-      var pubA = {
-        p: Array.apply([], iter.nextEncoded()),
-        q: Array.apply([], iter.nextEncoded()),
-        g: Array.apply([], iter.nextEncoded()),
-        y: Array.apply([], iter.nextEncoded())
-      };
+      var pubA = new e2e.otr.pubkey.Dsa({
+        p: Array.apply([], e2e.otr.Mpi.parse(iter.nextEncoded()).deconstruct()),
+        q: Array.apply([], e2e.otr.Mpi.parse(iter.nextEncoded()).deconstruct()),
+        g: Array.apply([], e2e.otr.Mpi.parse(iter.nextEncoded()).deconstruct()),
+        y: Array.apply([], e2e.otr.Mpi.parse(iter.nextEncoded()).deconstruct())
+      });
       var keyidA = iter.next(4);
       var sigma = e2e.otr.Sig.parse(iter.next(40));
 
@@ -142,7 +142,7 @@ e2e.otr.message.Signature.process = function(session, data) {
             keyidA
           ])));
 
-      if (!e2e.otr.Sig.verify(pubA, ma, sigma)) {
+      if (!e2e.otr.Sig.verify(pubA.deconstruct(), ma, sigma)) {
         // TODO(rcc): Log the error and/or warn the user.
         return;
       }
