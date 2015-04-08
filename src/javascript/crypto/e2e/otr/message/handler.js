@@ -64,8 +64,8 @@ e2e.otr.message.handler.parse = function(session, data) {
     }
   } else if (goog.string.startsWith(data,
                                     e2e.otr.constants.MESSAGE_PREFIX.ERROR)) {
-    throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
-
+    // Display "Error: <error message>" without ?OTR prefix.
+    session.display(data.substring(5));
   } else {
     var versionBits = e2e.otr.message.Query.parseEmbedded(data);
     if (versionBits) {
@@ -85,8 +85,9 @@ e2e.otr.message.handler.parse = function(session, data) {
  * @param {!Uint8Array} data The data to be processed.
  */
 e2e.otr.message.handler.process = function(session, type, data) {
-  if (e2e.otr.message.handler.handlers_.hasOwnProperty(type)) {
-    e2e.otr.message.handler.handlers_[e2e.otr.byteToNum(type)](session, data);
+  var type = e2e.otr.byteToNum(type);
+  if (!e2e.otr.message.handler.handlers_.hasOwnProperty(type)) {
+    throw new e2e.error.UnsupportedError('Message type not supported.');
   }
-  throw new e2e.error.UnsupportedError('Message type not supported.');
+  e2e.otr.message.handler.handlers_[type](session, data);
 };
