@@ -44,13 +44,13 @@ var AUTHSTATE = constants.AUTHSTATE;
 /**
  * An OTRv3 SIGNATURE.
  * @constructor
- * @extends {e2e.otr.message.Message}
+ * @extends {e2e.otr.message.Encoded}
  * @param {!e2e.otr.Session} session The enclosing session.
  */
 e2e.otr.message.Signature = function(session) {
   goog.base(this, session);
 };
-goog.inherits(e2e.otr.message.Signature, e2e.otr.message.Message);
+goog.inherits(e2e.otr.message.Signature, e2e.otr.message.Encoded);
 
 
 /**

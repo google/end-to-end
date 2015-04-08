@@ -47,13 +47,13 @@ var AUTHSTATE = constants.AUTHSTATE;
 /**
  * An OTRv3 REVEAL SIGNATURE.
  * @constructor
- * @extends {e2e.otr.message.Message}
+ * @extends {e2e.otr.message.Encoded}
  * @param {!e2e.otr.Session} session The enclosing session.
  */
 e2e.otr.message.RevealSignature = function(session) {
   goog.base(this, session);
 };
-goog.inherits(e2e.otr.message.RevealSignature, e2e.otr.message.Message);
+goog.inherits(e2e.otr.message.RevealSignature, e2e.otr.message.Encoded);
 
 
 /**
