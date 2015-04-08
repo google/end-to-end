@@ -283,4 +283,13 @@ e2e.otr.Session.prototype.getPublicKey = function() {
 e2e.otr.Session.prototype.getSigner = function() {
   return this.context_.getSigner();
 };
+
+
+/**
+ * Initiates OTR AKE, sending DH_COMMIT and entering AUTHSTATE_AWAITING_DHKEY.
+ */
+e2e.otr.Session.prototype.initiateOtr = function() {
+    this.send(new e2e.otr.message.DhCommit(this));
+    this.setAuthState(constants.AUTHSTATE.AWAITING_DHKEY);
+};
 });  // goog.scope
