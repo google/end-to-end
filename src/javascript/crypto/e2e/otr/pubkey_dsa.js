@@ -88,7 +88,16 @@ e2e.otr.pubkey.Dsa.prototype.deconstruct = function() {
  */
 e2e.otr.pubkey.Dsa.parse = function(body) {
   var iter = new e2e.otr.util.Iterator(body);
-  throw new e2e.otr.error.NotImplementedError('Not yet implemented.');
+  var key = {
+    p: e2e.otr.Mpi.parse(iter.nextEncoded()),
+    q: e2e.otr.Mpi.parse(iter.nextEncoded()),
+    g: e2e.otr.Mpi.parse(iter.nextEncoded()),
+    y: e2e.otr.Mpi.parse(iter.nextEncoded())
+  };
+  if (iter.hasNext()) {
+    throw new e2e.otr.error.ParseError('Malformed DSA PUBKEY.');
+  }
+  return new e2e.otr.pubkey.Dsa(key);
 };
 
 
