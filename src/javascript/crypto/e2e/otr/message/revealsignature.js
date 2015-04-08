@@ -161,12 +161,12 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
       iter = new e2e.otr.util.Iterator(xb);
       var pubBType = iter.next(2);
       // TODO(rcc): Make Type.parse accept Iterator to pull appropriate data.
-      var pubB = {
-        p: Array.apply([], iter.nextEncoded()),
-        q: Array.apply([], iter.nextEncoded()),
-        g: Array.apply([], iter.nextEncoded()),
-        y: Array.apply([], iter.nextEncoded())
-      };
+      var pubB = new e2e.otr.pubkey.Dsa({
+        p: Array.apply([], e2e.otr.Mpi.parse(iter.nextEncoded()).deconstruct()),
+        q: Array.apply([], e2e.otr.Mpi.parse(iter.nextEncoded()).deconstruct()),
+        g: Array.apply([], e2e.otr.Mpi.parse(iter.nextEncoded()).deconstruct()),
+        y: Array.apply([], e2e.otr.Mpi.parse(iter.nextEncoded()).deconstruct())
+      });
       var keyidB = iter.next(4);
       var sigmb = e2e.otr.Sig.parse(iter.next(40));
 
@@ -182,7 +182,7 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
             keyidB
           ])));
 
-      if (!e2e.otr.Sig.verify(pubB, mb, sigmb)) {
+      if (!e2e.otr.Sig.verify(pubB.deconstruct(), mb, sigmb)) {
         // TODO(rcc): Log the error and/or warn the user.
         return;
       }
