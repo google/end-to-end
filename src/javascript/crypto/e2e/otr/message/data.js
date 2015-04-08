@@ -33,6 +33,7 @@ goog.require('e2e.otr.constants.MessageType');
 goog.require('e2e.otr.error.InvalidArgumentsError');
 goog.require('e2e.otr.error.NotImplementedError');
 goog.require('e2e.otr.message.Encoded');
+goog.require('e2e.otr.message.handler');
 goog.require('e2e.otr.util.Iterator');
 goog.require('e2e.otr.util.Tee');
 goog.require('e2e.otr.util.aes128ctr');
@@ -216,4 +217,6 @@ e2e.otr.message.Data.process = function(session, data) {
       e2e.otr.assertState(false, 'Invalid message state.');
   }
 };
+
+e2e.otr.message.handler.add(e2e.otr.message.Data);
 });  // goog.scope
