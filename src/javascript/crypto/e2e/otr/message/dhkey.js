@@ -29,6 +29,7 @@ goog.require('e2e.otr.constants');
 goog.require('e2e.otr.constants.MessageType');
 goog.require('e2e.otr.message.Encoded');
 goog.require('e2e.otr.message.RevealSignature');
+goog.require('e2e.otr.message.handler');
 
 
 goog.scope(function() {
@@ -118,4 +119,6 @@ e2e.otr.message.DhKey.process = function(session, data) {
       e2e.otr.assertState(false, 'Invalid auth state.');
   }
 };
+
+e2e.otr.message.handler.add(e2e.otr.message.DhKey);
 });  // goog.scope

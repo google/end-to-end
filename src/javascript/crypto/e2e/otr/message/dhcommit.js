@@ -32,6 +32,7 @@ goog.require('e2e.otr.constants.MessageType');
 goog.require('e2e.otr.error.ParseError');
 goog.require('e2e.otr.message.DhKey');
 goog.require('e2e.otr.message.Encoded');
+goog.require('e2e.otr.message.handler');
 goog.require('e2e.otr.util.Iterator');
 goog.require('e2e.otr.util.aes128ctr');
 goog.require('e2e.random');
@@ -143,4 +144,6 @@ e2e.otr.message.DhCommit.process = function(session, data) {
   session.authData.aesgx = aesgx;
   session.authData.hgx = hgx;
 };
+
+e2e.otr.message.handler.add(e2e.otr.message.DhCommit);
 });  // goog.scope
