@@ -81,7 +81,7 @@ e2e_assert_templates() {
     # If cmp is unavailable, just ignore the check, instead of exiting
     type cmp >/dev/null 2>&1 && (e2e_get_file_cksum '*.soy' | cmp "$BUILD_TPL_DIR/cksum" - >/dev/null 2>&1) || true
     if [ -f "$BUILD_TPL_DIR/cksum" -a $? -eq 0 ] ; then
-      echo "Using previous template build - ./do.sh clean if you with to rebuild the templates."
+      echo "Using previous template build - ./do.sh clean if you wish to rebuild the templates."
     else
       echo "Template files changed since last build. Rebuilding..."
       e2e_build_templates
