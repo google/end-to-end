@@ -237,7 +237,7 @@ e2e.otr.Session.prototype.display = function(data) {
  */
 e2e.otr.Session.prototype.deriveKeyValues = function(s) {
   s = s || this.authData.s;
-  assert(this.authData.s);
+  assert(Boolean(s));
   var secbytes = new e2e.otr.Mpi(new Uint8Array(s));
 
   /**
