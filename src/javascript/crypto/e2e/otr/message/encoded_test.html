@@ -139,7 +139,7 @@ function testParse() {
       'AAAAAAAFAAAAA6ieozDvz1/G4YRQvZ3qzwSmNQpdVvy6AAAAAA==' +
       constants.MESSAGE_SUFFIX_ENCODED);
   // TODO(adhintz) Should suffix really be outside of this parse() ?
-  assertEquals(constants.MessageType.DATA[0], msg[0]);
+  e2e.otr.testing.assertTypedArrayEquals(constants.MessageType.DATA, msg[0]);
   e2e.otr.testing.assertTypedArrayEquals([
     0x05, 0x00, 0x00, 0x00, 0xC0, 0x96, 0x62, 0x09, 0x47, 0x3A, 0x8B, 0x0B,
     0xF9, 0x23, 0x93, 0x7A, 0x97, 0x85, 0x4F, 0xEE, 0xBD, 0x7B, 0x3A, 0xDB,

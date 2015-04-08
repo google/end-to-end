@@ -1,0 +1,139 @@
+<!-- Copyright 2015 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.otr.message.handler/</title>
+<script src="../../../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+goog.require('e2e.otr.Session');
+goog.require('e2e.otr.constants');
+goog.require('e2e.otr.message.Encoded');
+goog.require('e2e.otr.message.handler');
+goog.require('e2e.otr.testing');
+goog.require('goog.testing.PropertyReplacer');
+goog.require('goog.testing.asserts');
+goog.require('goog.testing.jsunit');
+</script>
+<script>
+var constants = e2e.otr.constants;
+
+var processFn = function() {};
+
+/**
+ * A test message.
+ * @constructor
+ * @extends {e2e.otr.message.Encoded}
+ * @param {!e2e.otr.Session} session The enclosing session.
+ */
+var TestMessage = function(session) {
+  goog.base(this, session);
+};
+goog.inherits(TestMessage, e2e.otr.message.Encoded);
+
+TestMessage.MESSAGE_TYPE = constants.MessageType.DATA;
+TestMessage.process = processFn;
+
+function setUp() {
+  stubs = new goog.testing.PropertyReplacer();
+}
+
+function tearDown() {
+  stubs.reset();
+}
+
+function testAdd() {
+  stubs.setPath('e2e.otr.message.handler.handlers_', {});
+  e2e.otr.message.handler.add(TestMessage);
+  assertEquals(processFn, e2e.otr.message.handler.handlers_[
+      e2e.otr.byteToNum(constants.MessageType.DATA)]);
+}
+
+function testParseEncoded() {
+  var called = false;
+  var session = {};
+  var type = new Uint8Array([3]);
+  var data = 'Message data is here';
+
+  stubs.setPath('e2e.otr.message.Encoded.parse', function(session, data) {
+    data = data.slice(constants.MESSAGE_PREFIX.ENCODED.length,
+      -constants.MESSAGE_SUFFIX_ENCODED.length);
+    return [type, data];
+  });
+
+  stubs.setPath('e2e.otr.message.handler.process', function() {
+    called = true;
+    assertArrayEquals([session, type, data],
+        Array.prototype.slice.call(arguments));
+  });
+
+  e2e.otr.message.handler.parse(session,
+      constants.MESSAGE_PREFIX.ENCODED + data + constants.MESSAGE_SUFFIX_ENCODED);
+
+  assertTrue(called);
+}
+
+function testParseError() {
+  var called = false;
+  var data = 'Error data is here';
+  var session = {
+    display: function() {
+      called = true;
+      assertArrayEquals(['Error:' + data],
+          Array.prototype.slice.call(arguments));
+    }
+  };
+
+  e2e.otr.message.handler.parse(session,
+      constants.MESSAGE_PREFIX.ERROR + data);
+
+  assertTrue(called);
+}
+
+function testParseEmbedded() {
+  var called = false;
+  var session = {};
+  var version = {};
+  var data = 'Version data is here';
+
+  stubs.setPath('e2e.otr.message.Query.parseEmbedded', function() {
+    return version;
+  });
+  stubs.setPath('e2e.otr.message.Query.process', function() {
+    called = true;
+    assertArrayEquals([session, version],
+        Array.prototype.slice.call(arguments));
+  });
+
+  e2e.otr.message.handler.parse(session, data);
+  assertTrue(called);
+}
+
+function testProcess() {
+  var called = false;
+  var session = {};
+  var data = {};
+  var type = e2e.otr.byteToNum(constants.MessageType.DATA);
+
+  stubs.setPath('e2e.otr.message.handler.handlers_', {});
+  stubs.setPath('TestMessage.process', function() {
+    called = true;
+    assertArrayEquals([session, data], Array.prototype.slice.call(arguments));
+  });
+
+  e2e.otr.message.handler.handlers_[type] = TestMessage.process;
+  e2e.otr.message.handler.process(session, constants.MessageType.DATA, data);
+  assertTrue(called);
+}
+</script>
