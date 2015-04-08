@@ -236,7 +236,7 @@ e2e.otr.Session.prototype.display = function(data) {
  *     ssid: !e2e.ByteArray}}
  */
 e2e.otr.Session.prototype.deriveKeyValues = function() {
-  assert(this.authData.s);
+  assert(Boolean(this.authData.s));
   var secbytes = new e2e.otr.Mpi(new Uint8Array(this.authData.s));
 
   /**
