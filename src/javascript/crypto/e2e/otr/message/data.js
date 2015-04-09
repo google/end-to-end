@@ -66,7 +66,7 @@ e2e.otr.message.Data = function(session, plaintext, opt_tlvs, opt_flags) {
   }
 
   this.plaintext_ = plaintext;
-  this.tlvs_ = opt_tlvs;
+  this.tlvs_ = opt_tlvs || [];
   this.flags_ = new Uint8Array([0x00 | opt_flags]);
 };
 goog.inherits(e2e.otr.message.Data, e2e.otr.message.Encoded);
