@@ -60,7 +60,7 @@ var MSGSTATE = constants.MSGSTATE;
 e2e.otr.message.Data = function(session, plaintext, opt_tlvs, opt_flags) {
   goog.base(this, session);
 
-  if (this.plaintext_.indexOf('\0') > -1) {
+  if (plaintext.indexOf('\0') > -1) {
     throw new e2e.otr.error.InvalidArgumentsError(
         'Plaintext may not contain \\0');
   }
