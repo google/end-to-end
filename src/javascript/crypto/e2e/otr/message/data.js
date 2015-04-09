@@ -197,7 +197,7 @@ e2e.otr.message.Data.process = function(session, data) {
       }
 
       session.keymanager.storeRemoteKey(e2e.incrementByteArray(Array.apply([],
-          remoteKeyid)));
+          remoteKeyid)), Array.apply([], nextDh));
 
       var message = e2e.otr.util.aes128ctr.decrypt(keys.receivingAes,
           encryptedMessage, ctrTop.concat(goog.array.repeat(0, 8)));
