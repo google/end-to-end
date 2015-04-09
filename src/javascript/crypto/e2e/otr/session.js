@@ -229,14 +229,14 @@ e2e.otr.Session.prototype.display = function(data) {
 
 /**
  * Computes c, c', m1, m2, m1', m2' and session id from shared secret s.
- * @param {?e2e.ByteArray=} s The optional shared secret.
+ * @param {?e2e.ByteArray=} opt_s The optional shared secret.
  *     If none specified, uses stored secret if one exists.
  * @return {!{c: !e2e.ByteArray, cprime: !e2e.ByteArray, m1: !e2e.ByteArray,
  *     m2: !e2e.ByteArray, m1prime: !e2e.ByteArray, m2prime: !e2e.ByteArray,
  *     ssid: !e2e.ByteArray}}
  */
-e2e.otr.Session.prototype.deriveKeyValues = function(s) {
-  s = s || this.authData.s;
+e2e.otr.Session.prototype.deriveKeyValues = function(opt_s) {
+  var s = opt_s || this.authData.s;
   assert(Boolean(s));
   var secbytes = new e2e.otr.Mpi(new Uint8Array(s));
 
