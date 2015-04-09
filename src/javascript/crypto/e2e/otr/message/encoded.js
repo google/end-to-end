@@ -169,7 +169,7 @@ e2e.otr.message.Encoded.parse = function(session, data) {
   var recipient_tag = iter.next(4);
   var recipient_tag_value = e2e.otr.intToNum(recipient_tag)[0];
   if (recipient_tag_value && (recipient_tag_value < 0x100 ||
-      e2e.otr.compareByteArray(recipient_tag, session.instsanceTag))) {
+      e2e.otr.compareByteArray(recipient_tag, session.instanceTag))) {
     return null; // ignore invalid recipient tag.
   }
 
