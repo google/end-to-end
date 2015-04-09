@@ -157,11 +157,11 @@ e2e.otr.message.Encoded.parse = function(session, data) {
 
   var type = iter.next();
 
-  var sender_tag = e2e.otr.intToNum(iter.next(4));
+  session.remoteInstanceTag = iter.next(4);
   // TODO(adhintz) Investigate if we need this check.
   // Sender seems to be 0 in pidgin-otr, or are we incorrectly parsing?
   /*
-  if (sender_tag < 0x100) {
+  if (e2e.otr.compareByteArray(sender_tag, new Uint8Array([0, 0, 1, 0])) < 0) {
     return null; // ignore invalid sender tag.
   }
   */
