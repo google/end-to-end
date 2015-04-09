@@ -60,13 +60,13 @@ var MSGSTATE = constants.MSGSTATE;
 e2e.otr.message.Data = function(session, plaintext, opt_tlvs, opt_flags) {
   goog.base(this, session);
 
-  if (this.plaintext_.indexOf('\0') > -1) {
+  if (plaintext.indexOf('\0') > -1) {
     throw new e2e.otr.error.InvalidArgumentsError(
         'Plaintext may not contain \\0');
   }
 
   this.plaintext_ = plaintext;
-  this.tlvs_ = opt_tlvs;
+  this.tlvs_ = opt_tlvs || [];
   this.flags_ = new Uint8Array([0x00 | opt_flags]);
 };
 goog.inherits(e2e.otr.message.Data, e2e.otr.message.Encoded);
@@ -129,7 +129,7 @@ e2e.otr.message.Data.prototype.serializeMessageContent = function() {
     [0x00] // NULL BYTE
   ].concat(this.tlvs_));
 
-  var keys = e2e.otr.message.Data.computeKeys(dh, remoteKey);
+  var keys = e2e.otr.message.Data.computeKeys(dh.key, remoteKey.key);
 
   var encryptedMessage = e2e.otr.util.aes128ctr.encrypt(keys.sendingAes,
       message, ctrTop.concat(goog.array.repeat(0, 8)));
@@ -142,7 +142,7 @@ e2e.otr.message.Data.prototype.serializeMessageContent = function() {
     this.flags_,
     dh.keyid,
     remoteKey.keyid,
-    nextDh.generate(),
+    new e2e.otr.Mpi(new Uint8Array(nextDh.generate())),
     ctrTop,
     new e2e.otr.Data(new Uint8Array(encryptedMessage))
   ]);
@@ -177,6 +177,7 @@ e2e.otr.message.Data.process = function(session, data) {
       var encryptedMessage = e2e.otr.Data.parse(tee.tee(iter.nextEncoded()))
           .deconstruct();
       var mac = iter.next(20);
+      // TODO(rcc): handle revealing old MAC keys.
 
       var key = session.keymanager.getKey(keyid);
       var remoteKey = session.keymanager.getRemoteKey(remoteKeyid);
@@ -196,7 +197,7 @@ e2e.otr.message.Data.process = function(session, data) {
       }
 
       session.keymanager.storeRemoteKey(e2e.incrementByteArray(Array.apply([],
-          remoteKeyid)));
+          remoteKeyid)), Array.apply([], nextDh));
 
       var message = e2e.otr.util.aes128ctr.decrypt(keys.receivingAes,
           encryptedMessage, ctrTop.concat(goog.array.repeat(0, 8)));
