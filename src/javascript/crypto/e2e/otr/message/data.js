@@ -129,7 +129,7 @@ e2e.otr.message.Data.prototype.serializeMessageContent = function() {
     [0x00] // NULL BYTE
   ].concat(this.tlvs_));
 
-  var keys = e2e.otr.message.Data.computeKeys(dh, remoteKey);
+  var keys = e2e.otr.message.Data.computeKeys(dh.key, remoteKey.key);
 
   var encryptedMessage = e2e.otr.util.aes128ctr.encrypt(keys.sendingAes,
       message, ctrTop.concat(goog.array.repeat(0, 8)));
