@@ -18,6 +18,8 @@
 #  * @author koto@google.com (Krzysztof Kotowicz)
 #  */
 
+export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
+
 type ant >/dev/null 2>&1 || {
   echo >&2 "Ant is required to build End-To-End dependencies."
   exit 1
@@ -60,6 +62,7 @@ fi
 # build closure compiler
 if [ ! -f closure-compiler/build/compiler.jar ]; then
   cd closure-compiler
+  ant clean
   ant jar
   cd ..
 fi
