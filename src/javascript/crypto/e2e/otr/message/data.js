@@ -177,6 +177,7 @@ e2e.otr.message.Data.process = function(session, data) {
       var encryptedMessage = e2e.otr.Data.parse(tee.tee(iter.nextEncoded()))
           .deconstruct();
       var mac = iter.next(20);
+      // TODO(rcc): handle revealing old MAC keys.
 
       var key = session.keymanager.getKey(keyid);
       var remoteKey = session.keymanager.getRemoteKey(remoteKeyid);
