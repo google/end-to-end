@@ -482,11 +482,18 @@ e2e.ecc.DomainParam.Ed25519.prototype.bigNumFromPrivateKey =
 
 
 /**
- * Expands a 32-byte private key into 64 bytes.  The low 32bytes are converted
- * to a multiplier to be used to calculate the public key.  The high 32 bytes
- * are returned as extra bytes
- * @param {!e2e.hash.Hash} hash The hasher
- * @param {!e2e.ByteArray} privateKey  The private key.
+ * Expands a 32-byte protokey into a 64 byte EdDSA private key.
+ *
+ * p = bytes[0:32] are used as a private scalar; p*B = the public key
+ *
+ * Several bits are clamped to zero or one in order to clear the cofactor
+ * of 8 (equivalently, clear the torsion), and to make it more difficult
+ * to implement scalar multiplication incorrectly.
+ *
+ * k = bytes[32:64] is used as the key input to the nonce-derivation PRF.
+ *
+ * @param {!e2e.hash.Hash} hash The hash function.
+ * @param {!e2e.ByteArray} privateKey  The private (proto-)key.
  * @return {{multiplier: !e2e.BigNum, extra: !e2e.ByteArray}}
  */
 e2e.ecc.DomainParam.Ed25519.prototype.expandPrivateKey = function(hash,
