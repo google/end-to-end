@@ -142,7 +142,7 @@ e2e.otr.message.Data.prototype.serializeMessageContent = function() {
     this.flags_,
     dh.keyid,
     remoteKey.keyid,
-    nextDh.generate(),
+    new e2e.otr.Mpi(new Uint8Array(nextDh.generate())),
     ctrTop,
     new e2e.otr.Data(new Uint8Array(encryptedMessage))
   ]);
