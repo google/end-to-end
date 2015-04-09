@@ -134,9 +134,10 @@ e2e.otr.message.Signature.process = function(session, data) {
       var keyidA = iter.next(4);
       var sigma = e2e.otr.Sig.parse(iter.next(40));
 
+      var gy = session.keymanager.getRemoteKey(new Uint8Array(4)).key;
       var ma = new goog.crypt.Hmac(new e2e.hash.Sha256(), keys.m1prime)
           .getHmac(Array.apply([], e2e.otr.serializeBytes([
-            session.keymanager.getRemoteKey(new Uint8Array(4)).key,
+            gy,
             session.keymanager.getKey().key.generate(),
             pubA,
             keyidA
@@ -147,6 +148,7 @@ e2e.otr.message.Signature.process = function(session, data) {
         return;
       }
 
+      session.keymanager.storeRemoteKey(keyidA, gy);
       session.setAuthState(AUTHSTATE.NONE);
       session.setMsgState(constants.MSGSTATE.ENCRYPTED);
 
