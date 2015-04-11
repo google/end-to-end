@@ -189,23 +189,24 @@
 
     function testInteractive() {
       var bindIo = function(input, history, session, otherSession) {
+        var logHistory = function(data, us) {
+          var div = document.createElement('div');
+          div.classList.add(us ? 'us' : 'them');
+          div.innerText = data;
+          history.appendChild(div);
+          history.scrollTop = history.scrollHeight;
+        };
+
         input.addEventListener('keydown', function(e) {
           if (e.keyCode == 13) {
             session.send(new e2e.otr.message.Data(session, this.value));
             otherSession.processMessage(lastSent);
-
-            var div = document.createElement('div');
-            div.classList.add('us');
-            div.innerText = this.value;
-            history.appendChild(div);
+            logHistory(this.value, true);
             this.value = '';
           }
         });
         persistentStubs.replace(session, 'display', function(data) {
-          var div = document.createElement('div');
-          div.classList.add('them');
-          div.innerText = data;
-          history.appendChild(div);
+          logHistory(data, false);
         });
       };
 
@@ -238,6 +239,7 @@
         height: 570px;
         padding: 20px;
         border: 1px solid black;
+        overflow: auto;
       }
       .chat-history > div {
         color: white;
