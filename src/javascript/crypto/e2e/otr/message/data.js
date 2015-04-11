@@ -172,7 +172,7 @@ e2e.otr.message.Data.process = function(session, data) {
       var ignoreUnreadable = flags & 0x01;
       var remoteKeyid = tee.tee(iter.next(4));
       var keyid = tee.tee(iter.next(4));
-      var nextDh = e2e.otr.Mpi.parse(tee.tee(iter.nextEncoded())).serialize();
+      var nextDh = e2e.otr.Mpi.parse(tee.tee(iter.nextEncoded())).deconstruct();
       var ctrTop = Array.apply([], tee.tee(iter.next(8)));
       var encryptedMessage = e2e.otr.Data.parse(tee.tee(iter.nextEncoded()))
           .deconstruct();
