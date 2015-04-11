@@ -155,8 +155,8 @@ e2e_build_extension() {
   echo "Compiling CSS files..."
   $csscompile_e2e "$SRC_EXT_DIR/ui/glass/glass.css" > "$BUILD_EXT_DIR/glass_styles.css"
   $csscompile_e2e "$SRC_EXT_DIR/ui/prompt/prompt.css" > "$BUILD_EXT_DIR/prompt_styles.css"
-  $csscompile_e2e "$SRC_EXT_DIR/ui/settings/settings.css" > "$BUILD_EXT_DIR/settings_styles.css"
-  $csscompile_e2e "$SRC_EXT_DIR/ui/welcome/welcome.css" > "$BUILD_EXT_DIR/welcome_styles.css"
+  $csscompile_e2e "$SRC_EXT_DIR/ui/dialogs/overlay/dialog.css" "$SRC_EXT_DIR/ui/settings/settings.css" > "$BUILD_EXT_DIR/settings_styles.css"
+  $csscompile_e2e "$SRC_EXT_DIR/ui/dialogs/overlay/dialog.css" "$SRC_EXT_DIR/ui/welcome/welcome.css" > "$BUILD_EXT_DIR/welcome_styles.css"
   echo "Copying extension files..."
   # copy extension files
   cp -fr "$SRC_EXT_DIR/images" "$BUILD_EXT_DIR"
