@@ -29,8 +29,15 @@
       blockSize: 1,
       encrypt: e2e.async.Result.toResult
     }
-    var ctr = new e2e.ciphermode.Ctr(cipher);
     var iv = goog.array.repeat(0x77, cipher.blockSize);
+    
+    // Simple overflow should pass.
+    var ctr = new e2e.ciphermode.Ctr(cipher);
+    var plaintext = goog.array.repeat(0x22, Math.pow(256, cipher.blockSize) - 1);
+    ctr.encrypt(plaintext, iv);
+
+    // Cycle should fail.
+    var ctr = new e2e.ciphermode.Ctr(cipher);
     var plaintext = goog.array.repeat(0x22, Math.pow(256, cipher.blockSize));
 
     var err = assertThrows(ctr.encrypt.bind(ctr, plaintext, iv));
