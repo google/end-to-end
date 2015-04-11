@@ -187,7 +187,6 @@ e2e_build_app() {
     jscompile_e2e+=" --js='$var/**.js' --js='!$var/**_test.js'"
   done
   # compile javascript files
-  echo "Compiling JS files..."
   if [ "$1" == "debug" ]; then
     echo "Debug mode enabled"
     jscompile_e2e+=" --debug --formatting=PRETTY_PRINT"
