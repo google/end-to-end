@@ -56,7 +56,7 @@ if [ ! -d closure-compiler/.git ]; then
   if [ -d closure-compiler ]; then # remove binary release directory
     rm -rf closure-compiler
   fi
-  git clone --depth 1 https://github.com/google/closure-compiler closure-compiler
+  git clone --branch maven-release-v20150315 --depth 1 https://github.com/google/closure-compiler closure-compiler
 fi
 
 # build closure compiler
