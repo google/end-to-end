@@ -102,15 +102,24 @@ ext.Launcher.prototype.start = function(opt_passphrase) {
  * @private
  */
 ext.Launcher.prototype.start_ = function(passphrase) {
-  this.pgpContext_.setKeyRingPassphrase(passphrase);
-  if (goog.global.chrome &&
-      goog.global.chrome.runtime &&
-      goog.global.chrome.runtime.getManifest) {
-    var manifest = chrome.runtime.getManifest();
-    this.pgpContext_.setArmorHeader(
-        'Version',
-        manifest.name + ' v' + manifest.version);
-  }
+  this.pgpContext_.setKeyRingPassphrase(passphrase).addCallback(function() {
+    if (goog.global.chrome &&
+        goog.global.chrome.runtime &&
+        goog.global.chrome.runtime.getManifest) {
+      var manifest = chrome.runtime.getManifest();
+      this.pgpContext_.setArmorHeader(
+          'Version',
+          manifest.name + ' v' + manifest.version).addCallback(
+              this.completeStart_, this);
+    } else {
+      this.completeStart_();
+    }
+  }, this);
+};
+
+
+/** @private */
+ext.Launcher.prototype.completeStart_ = function() {
   this.ctxApi_.installApi();
   this.started_ = true;
   this.preferences_.initDefaults();

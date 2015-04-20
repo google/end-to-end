@@ -246,9 +246,10 @@ function testImportKeyring() {
 
 function testUpdateKeyringPassphrase() {
   page.decorate(document.documentElement);
-  stubs.set(launcher.pgpContext_, 'changeKeyRingPassphrase',
-      mockControl.createFunctionMock('changeKeyRingPassphrase'));
-  launcher.pgpContext_.changeKeyRingPassphrase('testPass');
+  stubs.set(launcher.pgpContext_, 'changeKeyRingPassphrase', function(pass) {
+    assertEquals('testPass', pass);
+    return e2e.async.Result.toResult(undefined);
+  });
 
   stubs.set(
       launcher.pgpContext_, 'isKeyRingEncrypted', function() {

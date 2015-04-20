@@ -91,7 +91,8 @@ e2e.openpgp.WorkerContextImpl.prototype.armorOutput = true;
 
 /** @override */
 e2e.openpgp.WorkerContextImpl.prototype.setArmorHeader = function(name, value) {
-  this.sendBlindRequest_('setArmorHeader', [name, value]);
+  return /** @type {!e2e.async.Result.<undefined>} */ (
+      this.sendRequest_('setArmorHeader', [name, value]));
 };
 
 
@@ -118,33 +119,19 @@ e2e.openpgp.WorkerContextImpl.prototype.sendRequest_ = function(name, params) {
 };
 
 
-/**
- * Sends a request to the worker service, ignoring the response processing.
- * @param {string} name Call name.
- * @param {Array<*>} params Call parameters.
- * @private
- */
-e2e.openpgp.WorkerContextImpl.prototype.sendBlindRequest_ = function(name,
-    params) {
-  this.channel_.send(e2e.openpgp.ContextService.SERVICE_NAME,
-      {
-        name: name,
-        params: params
-      }, goog.nullFunction, goog.nullFunction);
-};
-
-
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.setKeyRingPassphrase = function(
     passphrase) {
-  this.sendBlindRequest_('setKeyRingPassphrase', [passphrase]);
+  return /** @type {!e2e.async.Result.<undefined>} */ (
+      this.sendRequest_('setKeyRingPassphrase', [passphrase]));
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.changeKeyRingPassphrase = function(
     passphrase) {
-  this.sendBlindRequest_('changeKeyRingPassphrase', [passphrase]);
+  return /** @type {!e2e.async.Result.<undefined>} */ (
+      this.sendRequest_('changeKeyRingPassphrase', [passphrase]));
 };
 
 
@@ -232,7 +219,8 @@ e2e.openpgp.WorkerContextImpl.prototype.getAllKeys = function(opt_priv) {
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.deleteKey = function(uid) {
-  this.sendBlindRequest_('deleteKey', [uid]);
+  return /** @type {!e2e.async.Result.<undefined>} */ (
+      this.sendRequest_('deleteKey', [uid]));
 };
 
 

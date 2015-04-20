@@ -211,8 +211,9 @@ ui.Settings.prototype.removeKey_ = function(keyUid) {
           prompt += '\n\nWARNING: This will delete some private keys!';
         }
         if (window.confirm(prompt)) {
-          this.pgpContext_.deleteKey(keyUid);
-          this.keyringMgmtPanel_.removeKey(keyUid);
+          this.pgpContext_.deleteKey(keyUid).addCallback(function() {
+            this.keyringMgmtPanel_.removeKey(keyUid);
+          }, this);
         }
       }, this)
       .addErrback(this.displayFailure_, this);
@@ -351,12 +352,14 @@ ui.Settings.prototype.exportKeyring_ = function() {
  * @private
  */
 ui.Settings.prototype.updateKeyringPassphrase_ = function(passphrase) {
-  this.pgpContext_.changeKeyRingPassphrase(passphrase);
-  utils.showNotification(
-      chrome.i18n.getMessage('keyMgmtChangePassphraseSuccessMsg'),
-      goog.nullFunction);
-  this.pgpContext_.isKeyRingEncrypted().addCallback(
-      this.keyringMgmtPanel_.setKeyringEncrypted, this.keyringMgmtPanel_);
+  this.pgpContext_.changeKeyRingPassphrase(passphrase).addCallback(
+      /** @this ui.Settings */ (function() {
+    utils.showNotification(
+        chrome.i18n.getMessage('keyMgmtChangePassphraseSuccessMsg'),
+        goog.nullFunction);
+    this.pgpContext_.isKeyRingEncrypted().addCallback(
+        this.keyringMgmtPanel_.setKeyringEncrypted, this.keyringMgmtPanel_);
+  }), this);
 };
 
 

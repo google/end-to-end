@@ -121,7 +121,8 @@ function tearDown() {
 function testExecute() {
   var pgpContext = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  pgpContext.setKeyRingPassphrase(''); // No passphrase.
+  // No passphrase.
+  e2e.async.Result.getValue(pgpContext.setKeyRingPassphrase(''));
 
   var pwdCallback = function(uid) {
     return e2e.async.Result.toResult('test');

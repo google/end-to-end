@@ -21,6 +21,7 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.LauncherTest');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.ext.ExtensionLauncher');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.testingstubs');
@@ -74,9 +75,10 @@ function testBadPassphrase() {
 
 function testStart() {
   var passphrase = 'test';
-  stubs.set(launcher.pgpContext_, 'setKeyRingPassphrase',
-      mockControl.createFunctionMock('setKeyRingPassphrase'));
-  launcher.pgpContext_.setKeyRingPassphrase(passphrase);
+  stubs.set(launcher.pgpContext_, 'setKeyRingPassphrase', function(p) {
+    assertEquals(passphrase, p);
+    return e2e.async.Result.toResult(undefined);
+  });
 
   stubs.set(launcher.preferences_, 'initDefaults',
       mockControl.createFunctionMock('initDefaults'));

@@ -1081,6 +1081,7 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
 
 <script>
   goog.require('e2e');
+  goog.require('e2e.async.Result');
   goog.require('e2e.openpgp.ContextImpl');
   goog.require('goog.async.DeferredList');
   goog.require('goog.testing.AsyncTestCase');
@@ -1188,7 +1189,8 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
   function setUp() {
     context = new e2e.openpgp.ContextImpl(
         new goog.testing.storage.FakeMechanism());
-    context.setKeyRingPassphrase('');
+    // No passphrase.
+    e2e.async.Result.getValue(context.setKeyRingPassphrase(''));
   }
 
   function runTestFor(version, assertionsCb, regexp) {

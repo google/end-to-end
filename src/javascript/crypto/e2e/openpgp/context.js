@@ -43,6 +43,7 @@ e2e.openpgp.Context.prototype.armorOutput;
  * Specifies the value of an armor header.
  * @param {string} name The name of the header.
  * @param {string} version The value of the header.
+ * @return {!e2e.async.Result.<undefined>}
  * @expose
  */
 e2e.openpgp.Context.prototype.setArmorHeader;
@@ -70,6 +71,7 @@ e2e.openpgp.Context.KeyType = {
 /**
  * @param {string} passphrase The passphrase for encrypting the KeyRing
  *     when stored locally.
+ * @return {!e2e.async.Result.<undefined>}
  * @expose
  */
 e2e.openpgp.Context.prototype.setKeyRingPassphrase;
@@ -78,6 +80,7 @@ e2e.openpgp.Context.prototype.setKeyRingPassphrase;
 /**
  * @param {string} passphrase Change the passphrase for encrypting the KeyRing
  *     when stored locally. Empty string for unencrypted.
+ * @return {!e2e.async.Result.<undefined>}
  * @expose
  */
 e2e.openpgp.Context.prototype.changeKeyRingPassphrase;
@@ -211,6 +214,7 @@ e2e.openpgp.Context.prototype.getAllKeys;
 /**
  * Deletes all keys for a user identifier.
  * @param {string} uid The user id to delete all keys.
+ * @return {!e2e.async.Result.<undefined>}
  * @expose
  */
 e2e.openpgp.Context.prototype.deleteKey;

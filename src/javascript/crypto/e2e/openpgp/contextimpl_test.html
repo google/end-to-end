@@ -385,7 +385,7 @@ var mockControl_;
 function setUp() {
   context = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  context.setKeyRingPassphrase(KEY_PW);
+  e2e.async.Result.getValue(context.setKeyRingPassphrase(KEY_PW));
   mockControl_ = new goog.testing.MockControl();
 }
 
@@ -404,7 +404,8 @@ function testMojibakeInternally() {
       context.importKey(fail, publicKeyAscii));
   asyncTestCase.waitForAsync('waiting for importKey.');
   context.importKey(passphraseCallback, privateKeyAscii).addCallback(function() {
-    context.setArmorHeader('Comment', 'маймуница');
+    syncThisCall = e2e.async.Result.getValue(
+        context.setArmorHeader('Comment', 'маймуница'));
     asyncTestCase.waitForAsync('waiting for encryptSign1.');
     context.encryptSign(
       mojibake, // plaintext
@@ -650,7 +651,7 @@ function testEncryptSymmetricRetry() {
   };
   var contextInc = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  contextInc.setKeyRingPassphrase(KEY_PW);
+  e2e.async.Result.getValue(contextInc.setKeyRingPassphrase(KEY_PW));
 
   var plaintext = 'plaintext for symmetric';
   var res = contextInc.encryptSign(
@@ -736,7 +737,7 @@ function testParseErrorsDontAskForPassphrase() {
   };
   var contextInc = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  contextInc.setKeyRingPassphrase(KEY_PW);
+  e2e.async.Result.getValue(contextInc.setKeyRingPassphrase(KEY_PW));
 
   var plaintext = 'plaintext for symmetric';
   var res = contextInc.encryptSign(
@@ -766,7 +767,7 @@ function testParseErrorsDontAskForPassphrase() {
 function testNestingLimitOnDecryption() {
   var contextInc = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  contextInc.setKeyRingPassphrase(KEY_PW);
+  e2e.async.Result.getValue(contextInc.setKeyRingPassphrase(KEY_PW));
 
   var plaintext = 'plaintext for symmetric';
   var res = contextInc.encryptSign(
@@ -905,14 +906,14 @@ function testSetPassphraseImportExportImportSecretKey() {
   // Set passphrase, import a key, export it, and try to import it again.
   var context = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  context.setKeyRingPassphrase(KEY_PW);
+  e2e.async.Result.getValue(context.setKeyRingPassphrase(KEY_PW));
   asyncTestCase.waitForAsync('Waiting for first import of key.');
   context.importKey(passphraseCallback, privateKeyAscii).addCallback(function() {
     asyncTestCase.continueTesting();
     context.exportKeyring(true).addCallback(function(kr) {
       var context = new e2e.openpgp.ContextImpl(
           new goog.testing.storage.FakeMechanism());
-      context.setKeyRingPassphrase(KEY_PW);
+      e2e.async.Result.getValue(context.setKeyRingPassphrase(KEY_PW));
       asyncTestCase.waitForAsync('Waiting for second import of key.');
       var counter = 0;
       context.importKey(function(uid) {
@@ -933,14 +934,14 @@ function testSetPassphraseImportExportChangePassphraseImportSecretKey() {
   // Set passphrase, import a key, export it, change passphrase and try to import it again.
   var context = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  context.setKeyRingPassphrase(KEY_PW);
+  e2e.async.Result.getValue(context.setKeyRingPassphrase(KEY_PW));
   asyncTestCase.waitForAsync('Waiting for first import of key.');
   context.importKey(passphraseCallback, privateKeyAscii).addCallback(function() {
     asyncTestCase.continueTesting();
     context.exportKeyring(true).addCallback(function(kr) {
       var context = new e2e.openpgp.ContextImpl(
           new goog.testing.storage.FakeMechanism());
-      context.setKeyRingPassphrase('omg');
+      e2e.async.Result.getValue(context.setKeyRingPassphrase('omg'));
       asyncTestCase.waitForAsync('Waiting for second import of key.');
       var counter;
       context.importKey(function(uid) {

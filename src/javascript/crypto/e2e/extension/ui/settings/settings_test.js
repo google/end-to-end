@@ -121,9 +121,11 @@ function testGenerateKey() {
 
 
 function testRemoveKey() {
-  stubs.set(launcher.pgpContext_, 'deleteKey',
-      mockControl.createFunctionMock('deleteKey'));
-  launcher.pgpContext_.deleteKey('test@example.com');
+  var called = false;
+  stubs.set(launcher.pgpContext_, 'deleteKey', function() {
+    called = true;
+    return new e2e.async.Result.toResult(undefined);
+  });
 
   stubs.replace(e2e.ext.ui.panels.KeyringMgmtFull.prototype, 'removeKey',
       mockControl.createFunctionMock('removeKey'));
@@ -136,6 +138,7 @@ function testRemoveKey() {
   fakeGenerateKey().addCallback(function() {
     page.removeKey_('test@example.com');
     window.setTimeout(function() {
+      assertTrue(called);
       mockControl.$verifyAll();
       testCase.continueTesting();
     }, 500);
@@ -246,9 +249,9 @@ function testExportKeyring() {
 
 function testUpdateKeyringPassphrase() {
   page.decorate(document.documentElement);
-  stubs.set(launcher.pgpContext_, 'changeKeyRingPassphrase',
-      mockControl.createFunctionMock('changeKeyRingPassphrase'));
-  launcher.pgpContext_.changeKeyRingPassphrase('testPass');
+  stubs.set(launcher.pgpContext_, 'changeKeyRingPassphrase', function() {
+    return e2e.async.Result.toResult(undefined);
+  });
 
   stubs.replace(chrome.notifications, 'create',
       mockControl.createFunctionMock('create'));

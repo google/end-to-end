@@ -258,26 +258,26 @@ ui.Welcome.prototype.importKeyring_ = function(file) {
 ui.Welcome.prototype.updateKeyringPassphrase_ = function(passphrase) {
   utils.action.getContext(
       /** @type {!function(!e2e.openpgp.ContextImpl)} */ (function(pgpCtx) {
-        pgpCtx.changeKeyRingPassphrase(passphrase);
-
-        var dialog = new dialogs.Generic(
-            chrome.i18n.getMessage('keyMgmtChangePassphraseSuccessMsg'),
-            goog.bind(function() {
-              this.removeChild(dialog, false);
-              this.keyringMgmt_ = new ui.panels.KeyringMgmtMini(
-                  goog.nullFunction,
-                  goog.bind(this.importKeyring_, this),
-                  goog.bind(this.updateKeyringPassphrase_, this));
-              this.addChild(this.keyringMgmt_, false);
-              pgpCtx.isKeyRingEncrypted().addCallback(function(isEncrypted) {
-                this.keyringMgmt_.decorate(dialog.getElement());
-                this.keyringMgmt_.setKeyringEncrypted(isEncrypted);
-              }, this);
-            }, this),
-            dialogs.InputType.NONE);
-        this.removeChild(this.keyringMgmt_, false);
-        this.addChild(dialog, false);
-        dialog.decorate(this.keyringMgmt_.getElement());
+        pgpCtx.changeKeyRingPassphrase(passphrase).addCallback(function() {
+          var dialog = new dialogs.Generic(
+              chrome.i18n.getMessage('keyMgmtChangePassphraseSuccessMsg'),
+              goog.bind(function() {
+                this.removeChild(dialog, false);
+                this.keyringMgmt_ = new ui.panels.KeyringMgmtMini(
+                    goog.nullFunction,
+                    goog.bind(this.importKeyring_, this),
+                    goog.bind(this.updateKeyringPassphrase_, this));
+                this.addChild(this.keyringMgmt_, false);
+                pgpCtx.isKeyRingEncrypted().addCallback(function(isEncrypted) {
+                  this.keyringMgmt_.decorate(dialog.getElement());
+                  this.keyringMgmt_.setKeyringEncrypted(isEncrypted);
+                }, this);
+              }, this),
+              dialogs.InputType.NONE);
+          this.removeChild(this.keyringMgmt_, false);
+          this.addChild(dialog, false);
+          dialog.decorate(this.keyringMgmt_.getElement());
+        }, this);
       }), this.displayFailure_, this);
 };
 

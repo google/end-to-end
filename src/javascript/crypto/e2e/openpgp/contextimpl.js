@@ -96,6 +96,7 @@ e2e.openpgp.ContextImpl.prototype.keyServerUrl;
 /** @override */
 e2e.openpgp.ContextImpl.prototype.setArmorHeader = function(name, value) {
   this.armorHeaders_[name] = value;
+  return e2e.async.Result.toResult(undefined);
 };
 
 
@@ -112,6 +113,7 @@ e2e.openpgp.ContextImpl.prototype.setKeyRingPassphrase = function(
     passphrase) {
   this.keyRing_ = new e2e.openpgp.KeyRing(passphrase,
       this.keyRingStorageMechanism_, this.keyServerUrl);
+  return e2e.async.Result.toResult(undefined);
 };
 
 
@@ -119,6 +121,7 @@ e2e.openpgp.ContextImpl.prototype.setKeyRingPassphrase = function(
 e2e.openpgp.ContextImpl.prototype.changeKeyRingPassphrase = function(
     passphrase) {
   this.keyRing_.changePassphrase(passphrase);
+  return e2e.async.Result.toResult(undefined);
 };
 
 
@@ -229,7 +232,7 @@ e2e.openpgp.ContextImpl.prototype.tryToImportKey_ = function(
       result.errback(e);
     }
   }
-  return /** @type !e2e.async.Result.<!Array.<string>> */ (result.branch());
+  return /** @type {!e2e.async.Result.<!Array.<string>>} */ (result.branch());
 };
 
 
@@ -551,6 +554,7 @@ e2e.openpgp.ContextImpl.prototype.getAllKeys = function(opt_priv) {
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.deleteKey = function(uid) {
   this.keyRing_.deleteKey(uid);
+  return e2e.async.Result.toResult(undefined);
 };
 
 

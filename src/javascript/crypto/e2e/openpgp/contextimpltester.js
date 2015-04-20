@@ -22,6 +22,7 @@
 
 goog.provide('e2e.openpgp.ContextImplTester');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.openpgp.ContextImpl');
 goog.require('e2e.testing.Util');
 goog.require('goog.async.Deferred');
@@ -1278,7 +1279,7 @@ e2e.openpgp.ContextImplTester.LINUS_KEY = atob('LS0tLS1CRUdJTiBQR1AgUFVCTElDI' +
 e2e.openpgp.ContextImplTester.runBenchmark = function() {
   var context = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  context.setKeyRingPassphrase('test');
+  e2e.async.Result.getValue(context.setKeyRingPassphrase('test'));
 
   var tests = [];
 
