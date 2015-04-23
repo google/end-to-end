@@ -28,9 +28,8 @@
 function testSelect() {
   assertEquals(1, e2e.fixedtiming.select(1, 2, 1));
   assertEquals(2, e2e.fixedtiming.select(1, 2, 0));
-  assertThrows('Wrong bit.', function() {
-    e2e.fixedtiming.select(1, 2, 2);
-  });
+  assertEquals(-1, e2e.fixedtiming.select(-1, -2, 1));
+  assertEquals(-2, e2e.fixedtiming.select(-1, -2, 0));
 }
 
 
