@@ -55,6 +55,14 @@ e2e.pkcs.eme.Oaep = function() {
 
 
 /**
+ * The length of hash output used in OAEP encoding.
+ * @type {number}
+ * @const
+ */
+e2e.pkcs.eme.Oaep.HASH_LENGTH = 20;
+
+
+/**
  * Encodes the given message according to the OAEP method as described in
  *     RFC 3447 section 7.1.1 with SHA-1, MGF1 and an empty label.
  * @param {number} k The size of the key in bytes.
