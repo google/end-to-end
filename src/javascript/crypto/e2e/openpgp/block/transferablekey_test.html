@@ -1358,6 +1358,61 @@ U7pO4eF05VViUJ2mmfoivL3tkhoTUWhx8xs8xCUcCg8DoEoSIhxtOmoTPR22Z9BL
 =Dhm4
 -----END PGP PUBLIC KEY BLOCK-----
 </textarea>
+<!--
+Signature subpacket has an invalid length for one of its attributes
+(The issuer key ID is tagged with a length of 190 bytes, but is
+ only 8 bytes in reality.)
+The signature packet should be discarded, which should then cause the
+certificate to be rejected.
+Old: Public Key Packet(tag 6)(269 bytes)
+  Ver 4 - new
+  Public key creation time - Sat Aug  9 16:31:45 PDT 2014
+  Pub alg - RSA Encrypt or Sign(pub 1)
+  RSA n(2048 bits) - ...
+  RSA e(17 bits) - ...
+New: User ID Packet(tag 13)(8 bytes)
+  User ID - The 𝌆
+Old: Signature Packet(tag 2)(296 bytes)
+  Ver 4 - new
+  Sig type - Positive certification of a User ID and Public Key packet(0x13).
+  Pub alg - RSA Encrypt or Sign(pub 1)
+  Hash alg - SHA1(hash 2)
+  Hashed Sub: key flags(sub 27)(1 bytes)
+    Flag - This key may be used to certify other keys
+  Hashed Sub: preferred symmetric algorithms(sub 11)(1 bytes)
+    Sym alg - AES with 128-bit key(sym 7)
+  Hashed Sub: preferred hash algorithms(sub 21)(1 bytes)
+    Hash alg - SHA256(hash 8)
+  Hashed Sub: features(sub 30)(1 bytes)
+    Flag - Modification detection (packets 18 and 19)
+  Hashed Sub: signature creation time(sub 2)(4 bytes)
+    Time - Sat Aug  9 16:31:45 PDT 2014
+  Sub: issuer key ID(sub 16)(190 bytes)
+    Key ID - 0x38D48534E5B68CCB
+  Hash left 2 bytes - 84 16
+  RSA m^d mod n(2048 bits) - ...
+    -> PKCS-1
+-->
+<textarea id="InvalidSubpacketLength">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v1
+
+mQENBFPmr2EBCACn2FimzdgSY7K1CG8M7hdz3/nQ7hHVM2ulG/WtEe6ZdlHG1mo7
+i4jo2JzlAdLhnF/mZwuMJ72Wy+QUJ5Um38d6ly95RmlXPkNDz01Mb+f9YF3u36TV
+o7NTIzcgK6T9kVp6ksr3IktoW3rKKFUsTkKnUuCCbl843x0uqGu3fv7JEC/AVPUt
+hPNYFCttDr07p00cNbrBr8+QJXBDx//SZtCYmjrtpFP0HmARvRknx1tAun0+S9AG
+AsOJLdXu8ZJPWHqwNb38J69uVk5W7dpGe0ZQdx9n9EfYXDv/wWT+8/c7YGLqCtIf
+qMXW+PKdgAo5xqL4S+rqfGZHlT5y8fyIhY45ABEBAAHNCFRoZSDwnYyGiQEoBBMB
+AgASAhsBAgsHAhUIAh4BBQJT5q9hAAq/EDjUhTTltozLhBYIAJYP08yoeKWk5cj0
+B9Y51PEzII8fGrJDeoltJ+O1iPBteiA0Es3Q3XOXtkjqPFMzDpgjEpqAj+fSE5VC
+AsGP63ozSg4zOCDF8k++/iX+t5A3i+xGTZmknisccjVdcx/1nVFBK8dEy6WE+ir9
+f74GEqERKGvgLyFXlS6dXzs5J1gSY0pOq5NxYkHauz/9QIKSoxMxDad0AJbVegBX
+ESFbpA5UETgojzviA6Q/jz6c0N1cHTEQD2MnTsk8xRSnRsYG6AL96f4i6cwpdV2I
+CW4s/mR2ZILuKKsS6WxY8Q8AVeKMW4cXWJZO/cMwok9Gk8oZORdWr8AkVxOLfvf/
+aCOr+QE=
+=d3vQ
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
 
 <script>
 function getKey(id) {
@@ -1765,6 +1820,19 @@ function testBadSubkeys() {
   });
   assertTrue(e instanceof e2e.openpgp.error.SignatureError);
   assertEquals(e.message, 'Cross-signature verification failed.');
+}
+
+function testInvalidSubpacketLength() {
+  var data = e2e.openpgp.asciiArmor.parse(
+    document.getElementById('InvalidSubpacketLength').value);
+  var keys = e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(
+    data.data, true);
+  assertEquals(keys.length, 1);
+  var e = assertThrows(function() {
+    keys[0].processSignatures();
+  });
+  assertTrue(e instanceof e2e.openpgp.error.SignatureError);
+  assertEquals(e.message, 'No certified user IDs.');
 }
 
 </script>
