@@ -19,6 +19,7 @@
 #  */
 
 export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
+CLOSURE_LIB_COMMIT="35c9311042b95796d7b12f58cd2bec6086052f7e"
 
 type ant >/dev/null 2>&1 || {
   echo >&2 "Ant is required to build End-To-End dependencies."
@@ -41,7 +42,10 @@ cd lib
 
 # checkout closure library
 if [ ! -d closure-library/.git ]; then
-  git clone --depth 1 https://github.com/google/closure-library closure-library
+  git clone https://github.com/google/closure-library closure-library
+  cd closure-library
+  git checkout $CLOSURE_LIB_COMMIT
+  cd ..
 fi
 
 # checkout zlib.js
