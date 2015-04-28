@@ -28,6 +28,7 @@ goog.require('e2e.ext.api.Api');
 goog.require('e2e.ext.api.RequestThrottle');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.testingstubs');
+goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
@@ -131,7 +132,8 @@ function setUp() {
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
 
-  extensionLauncher = new e2e.ext.ExtensionLauncher(storage);
+  extensionLauncher = new e2e.ext.ExtensionLauncher(
+      new e2e.openpgp.ContextImpl(storage), storage);
   extensionLauncher.start();
 
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
@@ -268,8 +270,8 @@ function testWithAppLauncher() {
   extensionLauncher = null;
   stubs.setPath('chrome.app.runtime.onLaunched.addListener', goog.nullFunction);
   stubs.setPath('chrome.app.window.create', goog.nullFunction);
-
-  appLauncher = new e2e.ext.AppLauncher(storage);
+  appLauncher = new e2e.ext.AppLauncher(
+      new e2e.openpgp.ContextImpl(storage), storage);
   appLauncher.start();
 
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {

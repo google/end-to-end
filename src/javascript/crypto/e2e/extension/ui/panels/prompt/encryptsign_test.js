@@ -32,6 +32,7 @@ goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.TabsHelperProxy');
 goog.require('e2e.ext.utils.action');
 goog.require('e2e.ext.utils.text');
+goog.require('e2e.openpgp.ContextImpl');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('goog.dom');
 goog.require('goog.testing.AsyncTestCase');
@@ -62,7 +63,9 @@ function setUp() {
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
 
-  launcher = new e2e.ext.ExtensionLauncher(fakeStorage);
+  launcher = new e2e.ext.ExtensionLauncher(
+      new e2e.openpgp.ContextImpl(new goog.testing.storage.FakeMechanism()),
+      fakeStorage);
   launcher.start();
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
     callback({launcher: launcher});

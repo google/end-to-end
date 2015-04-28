@@ -30,6 +30,7 @@ goog.require('e2e.ext.ui.Settings');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.panels.KeyringMgmtFull');
 goog.require('e2e.ext.utils');
+goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
@@ -77,6 +78,7 @@ function setUp() {
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
   launcher = new e2e.ext.ExtensionLauncher(
+      new e2e.openpgp.ContextImpl(new goog.testing.storage.FakeMechanism()),
       new goog.testing.storage.FakeMechanism());
   launcher.start();
 

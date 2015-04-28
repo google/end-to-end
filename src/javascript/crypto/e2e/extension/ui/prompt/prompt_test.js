@@ -36,6 +36,7 @@ goog.require('e2e.ext.ui.Prompt');
 goog.require('e2e.ext.utils');
 goog.require('e2e.ext.utils.TabsHelperProxy');
 goog.require('e2e.ext.utils.text');
+goog.require('e2e.openpgp.ContextImpl');
 /** @suppress {extraRequire} intentionally importing all signer functions */
 goog.require('e2e.signer.all');
 goog.require('goog.Timer');
@@ -76,7 +77,9 @@ function setUp() {
   helperProxy = new e2e.ext.utils.TabsHelperProxy(false);
 
   prompt = new e2e.ext.ui.Prompt(helperProxy);
-  prompt.pgpLauncher_ = new e2e.ext.ExtensionLauncher(fakeStorage);
+  prompt.pgpLauncher_ = new e2e.ext.ExtensionLauncher(
+      new e2e.openpgp.ContextImpl(new goog.testing.storage.FakeMechanism()),
+      fakeStorage);
   prompt.pgpLauncher_.start();
   stubs.setPath('window.chrome.runtime.getBackgroundPage', function(callback) {
     callback({launcher: prompt.pgpLauncher_});
@@ -109,7 +112,10 @@ function testGetSelectedContent() {
       });
 
   stubs.replace(chrome.runtime, 'getBackgroundPage', function(callback) {
-    callback({launcher: new e2e.ext.ExtensionLauncher()});
+    callback({launcher: new e2e.ext.ExtensionLauncher(
+        new e2e.openpgp.ContextImpl(new goog.testing.storage.FakeMechanism()),
+        new goog.testing.storage.FakeMechanism()
+      )});
   });
 
   prompt.decorate(document.documentElement);
@@ -129,7 +135,10 @@ function testGetSelectedContentWithError() {
       });
 
   stubs.replace(chrome.runtime, 'getBackgroundPage', function(callback) {
-    callback({launcher: new e2e.ext.ExtensionLauncher()});
+    callback({launcher: new e2e.ext.ExtensionLauncher(
+        new e2e.openpgp.ContextImpl(new goog.testing.storage.FakeMechanism()),
+        new goog.testing.storage.FakeMechanism()
+      )});
   });
 
   stubs.replace(
@@ -639,7 +648,10 @@ function testSelectAction() {
 
 
 function testIfNoPassphrase() {
-  prompt.pgpLauncher_ = new e2e.ext.ExtensionLauncher();
+  prompt.pgpLauncher_ = new e2e.ext.ExtensionLauncher(
+      new e2e.openpgp.ContextImpl(new goog.testing.storage.FakeMechanism()),
+      new goog.testing.storage.FakeMechanism()
+      );
   stubs.replace(e2e.ext.Launcher.prototype, 'hasPassphrase', function() {
     return false;
   });
