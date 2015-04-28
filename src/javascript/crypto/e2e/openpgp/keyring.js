@@ -256,13 +256,14 @@ e2e.openpgp.KeyRing.prototype.importKey = function(
   } else {
     return false;
   }
+  // This will throw on signature verification failures.
   keyBlock.processSignatures();
   var uids = keyBlock.getUserIds();
   goog.array.removeDuplicates(uids);
   var importedKeys = goog.array.map(uids, function(uid) {
     return this.importKey_(uid, keyBlock, keyRing, opt_passphrase);
   }, this);
-  // Return false if any key failed to import.
+  // Return false if any key failed to import (e.g. because it already existed).
   return importedKeys.indexOf(false) > -1;
 };
 
@@ -722,7 +723,8 @@ e2e.openpgp.KeyRing.prototype.searchPublicKeyRemote_ = function(email) {
  * @param {!e2e.openpgp.KeyRingType} keyRing The keyring to add the keys to.
  * @param {!e2e.ByteArray=} opt_passphrase The passphrase used to
  *     protect the key.
- * @return {boolean} If the key import was successful.
+ * @return {boolean} If the key import was successful. False if the key for a
+ *     given email address with the same ID already exists in a keyring.
  * @private
  */
 e2e.openpgp.KeyRing.prototype.importKey_ = function(

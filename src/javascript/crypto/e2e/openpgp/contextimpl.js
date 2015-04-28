@@ -188,10 +188,9 @@ e2e.openpgp.ContextImpl.prototype.importKey = function(
   var importedBlocksResult = goog.array.map(blocks, function(block) {
     return this.tryToImportKey_(passphraseCallback, block);
   }, this);
-  var allResults =
-      /** @type {!goog.async.Deferred.<!Array.<!string>>} */ (
-          goog.async.DeferredList.gatherResults(importedBlocksResult)
-              .addCallback(function(importedBlocks) {
+  var allResults = (
+      goog.async.DeferredList.gatherResults(importedBlocksResult)
+      .addCallback(function(importedBlocks) {
         return goog.array.flatten(goog.array.map(importedBlocks,
             function(block) {
               return block ? block.getUserIds() : [];
@@ -206,9 +205,11 @@ e2e.openpgp.ContextImpl.prototype.importKey = function(
  * @param {function(string):!e2e.async.Result<string>} callback Callback used
  *     to provide a passphrase.
  * @param {!e2e.openpgp.block.TransferableKey} block
- * @param {e2e.async.Result.<!Array.<string>>=} opt_result
+ * @param {e2e.async.Result.<e2e.openpgp.block.TransferableKey>=}
+ *     opt_result Result from the previous call.
  * @param {string=} opt_passphrase
- * @return {!e2e.async.Result.<!Array.<string>>} Result with all imported uids.
+ * @return {!e2e.async.Result.<
+ *     e2e.openpgp.block.TransferableKey>} Result with all imported uids.
  * @private
  */
 e2e.openpgp.ContextImpl.prototype.tryToImportKey_ = function(
@@ -217,6 +218,9 @@ e2e.openpgp.ContextImpl.prototype.tryToImportKey_ = function(
   try {
     var passphrase = goog.isDef(opt_passphrase) ?
         e2e.stringToByteArray(opt_passphrase) : undefined;
+    // Ignore the return value. If the key is invalid (e.g. because of wrong
+    // certification), importKey throws. False as a return value only indicates
+    // duplicate keys already existing.
     this.keyRing_.importKey(block, passphrase);
     result.callback(block);
   } catch (e) {
@@ -232,7 +236,8 @@ e2e.openpgp.ContextImpl.prototype.tryToImportKey_ = function(
       result.errback(e);
     }
   }
-  return /** @type {!e2e.async.Result.<!Array.<string>>} */ (result.branch());
+  return /** @type {!e2e.async.Result.<e2e.openpgp.block.TransferableKey>} */ (
+      result.branch());
 };
 
 
