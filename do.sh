@@ -41,7 +41,7 @@ e2e_assert_dependencies() {
     lib/zlib.js \
     lib/closure-stylesheets/build/closure-stylesheets.jar \
     lib/closure-compiler/build/compiler.jar \
-    lib/chrome_extensions.js \
+    lib/closure-compiler/contrib/externs/chrome_extensions.js \
   )
   for var in "${files[@]}"
   do
