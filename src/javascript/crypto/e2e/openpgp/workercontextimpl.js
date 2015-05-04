@@ -20,68 +20,62 @@
  */
 goog.provide('e2e.openpgp.WorkerContextImpl');
 
+goog.require('e2e.async.Client');
 goog.require('e2e.async.Result');
-goog.require('e2e.messaging.AsyncRespondingChannel');
 goog.require('e2e.openpgp.Context');
-goog.require('e2e.openpgp.ContextService');
-goog.require('goog.messaging.BufferedChannel');
-goog.require('goog.messaging.PortChannel');
 
 
 
 /**
  * OpenPGP Context implementation, that relays all operations to a
- * {@link ContextService} installed in a WebWorker thread over a {@link
- * e2e.messaging.AsyncRespondingChannel}. Use to unblock UI thread when using
- * OpenPGP Context.
+ * {@link ContextService} available over a {@link MessagePort}. Use to create
+ * a WebWorker and unblock the UI thread when using OpenPGP Context.
  * @implements {e2e.openpgp.Context}
- * @param {string} workerBootstrapPath Path to a worker bootstrap file that
- *     registers a ContextService over an AsyncRespondingChannel.
+ * @param {!MessagePort} port Port to use to communicate with the
+ *     ContextService.
  * @constructor
+ * @extends {e2e.async.Client}
  */
-e2e.openpgp.WorkerContextImpl = function(workerBootstrapPath) {
-  /**
-   * @type {!WebWorker}
-   * @private
-   */
-  this.worker_;
-  /**
-   * @type {e2e.messaging.AsyncRespondingChannel}
-   * @private
-   */
-  this.channel_ = null;
-  this.initWorker_(workerBootstrapPath);
-  this.initChannel_();
+e2e.openpgp.WorkerContextImpl = function(port) {
+  goog.base(this, port);
 };
+goog.inherits(e2e.openpgp.WorkerContextImpl, e2e.async.Client);
 
 
 /**
- * Creates a WebWorker thread.
- * @param {string} workerBootstrapPath Path to worker.
- * @private
- * @suppress {invalidCasts} Worker is a WebWorker.
+ * Name of the service to connect to.
+ * @type {string}
  */
-e2e.openpgp.WorkerContextImpl.prototype.initWorker_ = function(
-    workerBootstrapPath) {
-  this.worker_ = /** @type {!WebWorker} */ (new Worker(workerBootstrapPath));
-};
+e2e.openpgp.WorkerContextImpl.SERVICE_NAME = 'e2e.openpgp.ContextService';
 
 
 /**
- * Sets up a messaging channel with the worker.
- * @private
+ * Launches the worker context implementation. Connects to a ContextService
+ * entangled with a Peer and waits for that service's Context to initialize.
+ * WorkerContextImpl resolved in the result is then ready to accept requests.
+ * @param {!e2e.async.Peer} peer Peer that is connected to the ContextService
+ *   implementation.
+ * @return {!e2e.async.Result.<!e2e.openpgp.WorkerContextImpl>} The context.
  */
-e2e.openpgp.WorkerContextImpl.prototype.initChannel_ = function() {
-  this.channel_ = new e2e.messaging.AsyncRespondingChannel(
-      new goog.messaging.BufferedChannel(
-          new goog.messaging.PortChannel(this.worker_)));
+e2e.openpgp.WorkerContextImpl.launch = function(peer) {
+  var result = new e2e.async.Result();
+  peer.findService(e2e.openpgp.WorkerContextImpl.SERVICE_NAME, {}, function(
+      res, port) {
+        try {
+          var contextImpl = new e2e.openpgp.WorkerContextImpl(port);
+          result.callback(contextImpl);
+        } catch (e) {
+          result.errback(e.message);
+        }
+      });
+  return result;
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.hasPassphrase = function() {
   return /** @type {!e2e.async.Result.<boolean>} */ (
-      this.sendRequest_('hasPassphrase', []));
+      this.deferredCall('hasPassphrase', []));
 };
 
 
@@ -92,7 +86,7 @@ e2e.openpgp.WorkerContextImpl.prototype.armorOutput = true;
 /** @override */
 e2e.openpgp.WorkerContextImpl.prototype.setArmorHeader = function(name, value) {
   return /** @type {!e2e.async.Result.<undefined>} */ (
-      this.sendRequest_('setArmorHeader', [name, value]));
+      this.deferredCall('setArmorHeader', [name, value]));
 };
 
 
@@ -100,30 +94,11 @@ e2e.openpgp.WorkerContextImpl.prototype.setArmorHeader = function(name, value) {
 e2e.openpgp.WorkerContextImpl.prototype.keyServerUrl = null;
 
 
-/**
- * Sends a request to the worker service and returns an async result object.
- * @param {string} name Call name.
- * @param {Array<*>} params Call parameters.
- * @return {!e2e.async.Result} Result object that will be resolved with the
- *     service response.
- * @private
- */
-e2e.openpgp.WorkerContextImpl.prototype.sendRequest_ = function(name, params) {
-  var result = new e2e.async.Result();
-  this.channel_.send(e2e.openpgp.ContextService.SERVICE_NAME,
-      {
-        name: name,
-        params: params
-      }, goog.bind(result.callback, result), goog.bind(result.errback, result));
-  return result;
-};
-
-
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.setKeyRingPassphrase = function(
     passphrase) {
   return /** @type {!e2e.async.Result.<undefined>} */ (
-      this.sendRequest_('setKeyRingPassphrase', [passphrase]));
+      this.deferredCall('setKeyRingPassphrase', [passphrase]));
 };
 
 
@@ -131,30 +106,29 @@ e2e.openpgp.WorkerContextImpl.prototype.setKeyRingPassphrase = function(
 e2e.openpgp.WorkerContextImpl.prototype.changeKeyRingPassphrase = function(
     passphrase) {
   return /** @type {!e2e.async.Result.<undefined>} */ (
-      this.sendRequest_('changeKeyRingPassphrase', [passphrase]));
+      this.deferredCall('changeKeyRingPassphrase', [passphrase]));
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.isKeyRingEncrypted = function() {
   return /** @type {!e2e.async.Result.<boolean>} */ (
-      this.sendRequest_('isKeyRingEncrypted', []));
+      this.deferredCall('isKeyRingEncrypted', []));
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.getKeyDescription = function(key) {
   return /** @type {!e2e.openpgp.KeyResult} */ (
-      this.sendRequest_('getKeyDescription', [key]));
+      this.deferredCall('getKeyDescription', [key]));
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.importKey = function(
     passphraseCallback, key) {
-  // TODO(koto): handle callbacks locally.
   return /** @type {!e2e.openpgp.ImportKeyResult} */ (
-      this.sendRequest_('importKey', [null, key]));
+      this.deferredCall('importKey', [passphraseCallback, key]));
 };
 
 
@@ -163,7 +137,7 @@ e2e.openpgp.WorkerContextImpl.prototype.generateKey = function(
     keyAlgo, keyLength, subkeyAlgo, subkeyLength,
     name, comment, email, expirationDate) {
   return /** @type {!e2e.openpgp.GenerateKeyResult} */ (
-      this.sendRequest_('generateKey', [
+      this.deferredCall('generateKey', [
         keyAlgo, keyLength, subkeyAlgo, subkeyLength,
         name, comment, email, expirationDate]));
 };
@@ -173,7 +147,7 @@ e2e.openpgp.WorkerContextImpl.prototype.generateKey = function(
 e2e.openpgp.WorkerContextImpl.prototype.encryptSign = function(
     plaintext, options, encryptionKeys, passphrases, opt_signatureKey) {
   return /** @type {!e2e.openpgp.EncryptSignResult} */ (
-      this.sendRequest_('encryptSign', [
+      this.deferredCall('encryptSign', [
         plaintext, options, encryptionKeys, passphrases, opt_signatureKey
       ]));
 };
@@ -182,64 +156,63 @@ e2e.openpgp.WorkerContextImpl.prototype.encryptSign = function(
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.verifyDecrypt = function(
     passphraseCallback, encryptedMessage) {
-  // TODO(koto): handle callbacks locally.
   return /** @type {!e2e.openpgp.VerifyDecryptResult} */ (
-      this.sendRequest_('verifyDecrypt', [
-        null, encryptedMessage]));
+      this.deferredCall('verifyDecrypt', [
+        passphraseCallback, encryptedMessage]));
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.searchPublicKey = function(uid) {
   return /** @type {!e2e.openpgp.KeyResult} */ (
-      this.sendRequest_('searchPublicKey', [uid]));
+      this.deferredCall('searchPublicKey', [uid]));
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.searchPrivateKey = function(uid) {
   return /** @type {!e2e.openpgp.KeyResult} */ (
-      this.sendRequest_('searchPrivateKey', [uid]));
+      this.deferredCall('searchPrivateKey', [uid]));
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.searchKey = function(uid) {
   return /** @type {!e2e.openpgp.KeyResult} */ (
-      this.sendRequest_('searchKey', [uid]));
+      this.deferredCall('searchKey', [uid]));
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.getAllKeys = function(opt_priv) {
   return /** @type {!e2e.async.Result.<!e2e.openpgp.KeyRingMap>} */ (
-      this.sendRequest_('getAllKeys', [opt_priv]));
+      this.deferredCall('getAllKeys', [opt_priv]));
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.deleteKey = function(uid) {
   return /** @type {!e2e.async.Result.<undefined>} */ (
-      this.sendRequest_('deleteKey', [uid]));
+      this.deferredCall('deleteKey', [uid]));
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.exportKeyring = function(armored) {
   return /** @type {!e2e.async.Result.<!e2e.ByteArray|string>} */ (
-      this.sendRequest_('exportKeyring', [armored]));
+      this.deferredCall('exportKeyring', [armored]));
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.getKeyringBackupData = function() {
   return /** @type {!e2e.async.Result.<e2e.openpgp.KeyringBackupInfo>} */ (
-      this.sendRequest_('getKeyringBackupData', []));
+      this.deferredCall('getKeyringBackupData', []));
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.restoreKeyring = function(data, email) {
   return /** @type {!e2e.async.Result.<undefined>} */ (
-      this.sendRequest_('restoreKeyring', [data, email]));
+      this.deferredCall('restoreKeyring', [data, email]));
 };

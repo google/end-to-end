@@ -20,26 +20,23 @@
 
 goog.provide('e2e.openpgp.worker.bootstrap');
 
+goog.require('e2e.async.Result');
+goog.require('e2e.async.WorkerSelf');
 goog.require('e2e.ext.utils.IndexedDbStorage');
 goog.require('e2e.openpgp.ContextImpl');
 goog.require('e2e.openpgp.ContextService');
-goog.require('goog.messaging.BufferedChannel');
-goog.require('goog.messaging.PortChannel');
 
 
 /**
  * Bootstrap function for the code in the Web Worker.
- * @suppress {checkTypes} Workaround. 'self' is a DedicatedWorkerGlobalScope,
- *     but is also a WebWorker that PortChannel requires.
  */
 e2e.openpgp.worker.bootstrap = function() {
-  // Initialize keyring storage mechanism and create a context service.
+  var contextPromise = new e2e.async.Result();
   new e2e.ext.utils.IndexedDbStorage('keyring', function(storage) {
-    var context = new e2e.openpgp.ContextImpl(storage);
-    var channel = new goog.messaging.BufferedChannel(
-        new goog.messaging.PortChannel(/* type !WebWorker */ (self)));
-    self.service = new e2e.openpgp.ContextService(context, channel);
+    contextPromise.callback(new e2e.openpgp.ContextImpl(storage));
   });
+  var workerPeer = new e2e.async.WorkerSelf();
+  e2e.openpgp.ContextService.launch(workerPeer, contextPromise);
 };
 
 e2e.openpgp.worker.bootstrap();

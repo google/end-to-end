@@ -17,15 +17,11 @@
 <script src="../../../../../javascript/closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
+  goog.require('e2e.async.ChildPeer');
+  goog.require('e2e.async.Peer');
   goog.require('e2e.async.Result');
-  goog.require('e2e.openpgp.ContextImpl');
-  goog.require('e2e.openpgp.ContextService');
+  goog.require('e2e.async.Service');
   goog.require('e2e.openpgp.WorkerContextImpl');
-  goog.require('goog.events.Event');
-  goog.require('goog.events.EventTarget');
-  goog.require('goog.events.EventType');
-  goog.require('goog.messaging.BufferedChannel');
-  goog.require('goog.messaging.PortChannel');
   goog.require('goog.string');
   goog.require('goog.testing.AsyncTestCase');
   goog.require('goog.testing.MockControl');
@@ -34,90 +30,111 @@
 </script>
 <script>
 var stubs = null;
-var localPort = null;
-var portChannel = null;
 var asyncTest = goog.testing.AsyncTestCase.createAndInstall(document.title);
-var workerService = null;
-var workerPort = null;
-var workerThread = null;
 var workerContext = null;
-var localContext = null;
+var localContextPromise = null;
+var FakeService;
+var fakeNetwork;
+var servicePeer;
+var clientPeer;
 
 function setUp() {
   stubs = new goog.testing.PropertyReplacer();
+  fakeNetwork = new MessageChannel();
+  servicePeer = new e2e.async.ChildPeer();
+  servicePeer.addPort(fakeNetwork.port1);
+  clientPeer = new e2e.async.Peer();
+  clientPeer.addPort(fakeNetwork.port2);
+  clientPeer.init = servicePeer.init = goog.nullFunction;
 
-  localPort = new goog.events.EventTarget();
-  workerPort = new goog.events.EventTarget();
+  FakeService = function(port) {
+    goog.base(this, port);
+  }
+  goog.inherits(FakeService, e2e.async.Service);
 
-  // Setup worker context
-  workerPort.postMessage = function(message) {
-    var e = new goog.events.Event(goog.events.EventType.MESSAGE);
-    e.data = message;
-    localPort.dispatchEvent(new goog.events.BrowserEvent(e));
-  };
-  var workerChannel = new goog.messaging.BufferedChannel(
-    new goog.messaging.PortChannel(workerPort));
-  workerContext = new e2e.openpgp.ContextImpl(
-    new goog.testing.storage.FakeMechanism());
-  workerService = new e2e.openpgp.ContextService(workerContext, workerChannel);
-
-  // Setup local context
-  localPort.postMessage = function(message) {
-    var e = new goog.events.Event(goog.events.EventType.MESSAGE);
-    e.data = message;
-    workerPort.dispatchEvent(new goog.events.BrowserEvent(e));
-  };
-  stubs.replace(e2e.openpgp.WorkerContextImpl.prototype, 'initWorker_',
-      function() {
-    this.worker_ = localPort;
-  });
-  localContext = new e2e.openpgp.WorkerContextImpl('_');
+  servicePeer.registerService(e2e.openpgp.WorkerContextImpl.SERVICE_NAME,
+      FakeService);
+  localContextPromise = e2e.openpgp.WorkerContextImpl.launch(clientPeer);
 }
 
 function tearDown() {
-  goog.dispose(workerService);
-  goog.dispose(localContext);
-  goog.dispose(workerContext);
   stubs.reset();
 }
 
 function testNoParam() {
   var dummyResult = 'yay!';
-  stubs.replace(workerContext, 'hasPassphrase', function() {
+  stubs.set(FakeService.prototype, '_public_hasPassphrase', function() {
     return e2e.async.Result.toResult(dummyResult);
   });
-  asyncTest.waitForAsync('Wait for hasPassphrase callback');
-  localContext.hasPassphrase().addCallback(function(result) {
-    assertEquals(result, dummyResult);
-    asyncTest.continueTesting();
-  });
+
+  asyncTest.waitForAsync('Wait for local context being ready.');
+  localContextPromise.addCallbacks(function(localContext) {
+    asyncTest.waitForAsync('Wait for hasPassphrase callback');
+    localContext.hasPassphrase().addCallbacks(function(result) {
+      assertEquals(result, dummyResult);
+      asyncTest.continueTesting();
+    }, fail);
+  }, fail);
 }
 
 function testSyncResult() {
   var dummyResult = 'yay!';
-  stubs.replace(workerContext, 'hasPassphrase', function() {
+  stubs.set(FakeService.prototype, '_public_hasPassphrase', function() {
     return dummyResult;
   });
-  asyncTest.waitForAsync('Wait for hasPassphrase callback');
-  localContext.hasPassphrase().addCallback(function(result) {
-    assertEquals(result, dummyResult);
-    asyncTest.continueTesting();
-  });
+  asyncTest.waitForAsync('Wait for local context being ready.');
+  localContextPromise.addCallbacks(function(localContext) {
+    asyncTest.waitForAsync('Wait for hasPassphrase callback');
+    localContext.hasPassphrase().addCallback(function(result) {
+      assertEquals(result, dummyResult);
+      asyncTest.continueTesting();
+    }, fail);
+  }, fail);
 }
+
 
 function testWithParams() {
   var param = 1337;
   var param2 = 'Second parameter';
-  stubs.replace(workerContext, 'encryptSign', function(p1, p2) {
+  stubs.set(FakeService.prototype, '_public_encryptSign', function(p1, p2) {
     assertEquals(param, p1);
     assertEquals(param2, p2);
     return p1;
   });
-  asyncTest.waitForAsync('Wait for hasPassphrase callback');
-  localContext.encryptSign(param, param2).addCallback(function(result) {
-    assertEquals(param, result);
-    asyncTest.continueTesting();
+  asyncTest.waitForAsync('Wait for local context being ready.');
+  localContextPromise.addCallbacks(function(localContext) {
+    asyncTest.waitForAsync('Wait for encryptSign callback');
+    localContext.encryptSign(param, param2).addCallbacks(function(result) {
+      assertEquals(param, result);
+      asyncTest.continueTesting();
+    }, fail);
+  }, fail);
+}
+
+
+function testFunctionCallbacks() {
+  var param = 1337;
+  var param2 = 'Second parameter';
+  stubs.set(FakeService.prototype, '_public_importKey', function(
+      passphraseCallback, key) {
+    var result = new e2e.async.Result();
+    passphraseCallback('dummy').addCallbacks(function(res) {
+      result.callback('nested(' + res + ')');
+    }, fail);
+    return result;
   });
+  asyncTest.waitForAsync('Wait for local context being ready.');
+  localContextPromise.addCallbacks(function(localContext) {
+    asyncTest.waitForAsync('Wait for importKey callback');
+    var passphraseCallback = function(p) {
+      return 'fromcb(' + p + ')';
+    };
+    localContext.importKey(passphraseCallback, undefined).addCallbacks(
+        function(result) {
+      assertEquals('nested(fromcb(dummy))', result);
+      asyncTest.continueTesting();
+    }, fail);
+  }, fail);
 }
 
 </script>
