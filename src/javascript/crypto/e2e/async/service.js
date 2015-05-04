@@ -22,7 +22,8 @@
 
 goog.provide('e2e.async.Service');
 
-goog.require('e2e.async.Result');
+goog.require('e2e.async.util');
+goog.require('goog.async.Deferred');
 
 
 
@@ -83,8 +84,17 @@ e2e.async.Service.prototype.handleMessage_ = function(event) {
   if (typeof this[methodName] == 'function') {
     var methodFunction = this[methodName];
     try {
-      returnValue = methodFunction.apply(this, event.data.arguments);
-      if (e2e.async.Result && returnValue instanceof e2e.async.Result) {
+      var args = event.data.arguments;
+      if (event.data.arguments instanceof Array) {
+        for (var i = 0; i < args.length; i++) {
+          if (goog.isNumber(args[i].__port__)) {
+            args[i] = e2e.async.util.unwrapFunction(
+                event.ports[args[i].__port__]);
+          }
+        }
+      }
+      returnValue = methodFunction.apply(this, args);
+      if (goog.async.Deferred && returnValue instanceof goog.async.Deferred) {
         returnValue.addCallback(function(ret) {
           this.return_(port, ret, '');
         }, this).addErrback(function(err) {
