@@ -46,7 +46,7 @@ e2e.async.Client = function(port, opt_errback) {
    * @type {function(*)}
    * @private
    */
-  this.errback_ = opt_errback || function() {};
+  this.errback_ = opt_errback || goog.nullFunction;
 };
 
 

@@ -88,7 +88,7 @@ e2e.async.Service.prototype.handleMessage_ = function(event) {
       var args = event.data.arguments;
       if (event.data.arguments instanceof Array) {
         for (var i = 0; i < args.length; i++) {
-          if (goog.isNumber(args[i].__port__)) {
+          if (goog.isObject(args[i]) && goog.isNumber(args[i].__port__)) {
             args[i] = e2e.async.util.unwrapFunction(
                 event.ports[args[i].__port__]);
           }

@@ -194,7 +194,7 @@ e2e.async.Broker.prototype.registerService = function(serviceName, service) {
 
 
 /**
- * Finds a service of a specific name and returns it's URL.
+ * Finds a service of a specific name and returns its URL.
  * @param {string} serviceName The name of the service in the format of a URL.
  * @param {!e2e.async.Bid} bid An object that has details specific to the
  *     service.

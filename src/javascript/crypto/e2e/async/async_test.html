@@ -46,6 +46,15 @@
         }
       });
     };
+    FakeClient.prototype.undef = function(one, two, callback, opt_errback) {
+      this.call("undef", [one, undefined, two], callback, function(error) {
+        if (!opt_errback) {
+          fail("Error while invoking async method.");
+        } else {
+          opt_errback(error);
+        }
+      });
+    };
     FakeClient.prototype.err = function(errback) {
       this.call("err", [], function(error) {
         fail("Error wasn't propagated to client.");
@@ -72,6 +81,10 @@
     FakeService.prototype._public_err = function() {
       throw new Error(ERROR_MSG);
     };
+    FakeService.prototype._public_undef = function(one, undef, two) {
+      return one + undef + two;
+    };
+
     function FakeServiceChild(port) {
       goog.base(this, port);
     }
@@ -126,7 +139,13 @@
               fail('Unserializable object should trigger an error.' + x.x);
             }, function(error) {
               assertTrue(goog.isString(error));
-              asyncTestCase.continueTesting();
+              asyncTestCase.waitForAsync("Waiting for undef RPC");
+              fc.undef('1', undefined, function(result) {
+                assertEquals('1undefinedundefined', result);
+                asyncTestCase.continueTesting();
+              }, function() {
+                fail('Undefined parameters should not trigger errors');
+              });
             });
           });
         });
