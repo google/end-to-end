@@ -22,6 +22,7 @@
 
 goog.provide('e2e.async.Service');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.async.util');
 goog.require('goog.async.Deferred');
 
@@ -126,10 +127,11 @@ e2e.async.Service.prototype.name = 'Generic Service';
 /**
  * Returns the response to a bid from a client.
  * @param {!e2e.async.Bid} bid Service specific information.
- * @return {!e2e.async.BidResponse} The response to the bid.
+ * @return {!e2e.async.Result.<!e2e.async.BidResponse>} The response to the bid.
  */
 e2e.async.Service.prototype.getResponse = function(bid) {
-  return {
+  var response = /** @type {!e2e.async.BidResponse} */ ({
     'name': this.name
-  };
+  });
+  return e2e.async.Result.toResult(response);
 };

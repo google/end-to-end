@@ -60,7 +60,15 @@
       goog.base(this, port);
     }
     goog.inherits(FakeService, e2e.async.Service);
-    FakeService.prototype.name = TEST_SERVICE_NAME;
+    FakeService.prototype.getResponse = function() {
+      var result = new e2e.async.Result();
+      asyncTestCase.timeout(function() {
+        result.callback({
+          name: TEST_SERVICE_NAME
+        });
+      }, 100);
+      return result;
+    };
     FakeService.prototype._public_err = function() {
       throw new Error(ERROR_MSG);
     };

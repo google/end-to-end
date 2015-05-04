@@ -155,7 +155,10 @@ e2e.async.Broker.prototype.createService_ = function(
     responsePort, bid, service) {
   var mc = new MessageChannel();
   var svc = new service(mc.port1);
-  this.respondBid(responsePort, svc.getResponse(bid), mc.port2);
+  svc.getResponse(bid).addCallback(function(bidResponse) {
+    this.respondBid(responsePort, bidResponse, mc.port2);
+  }, this);
+
 };
 
 
