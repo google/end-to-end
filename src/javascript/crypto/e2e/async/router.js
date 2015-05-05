@@ -21,6 +21,7 @@
 goog.provide('e2e.async.Router');
 
 goog.require('e2e.async.Broker');
+goog.require('goog.array');
 
 
 
@@ -36,8 +37,15 @@ goog.inherits(e2e.async.Router, e2e.async.Broker);
 
 
 /** @override */
-e2e.async.Router.prototype.createServices = function(service, bid, port) {
-  this.findService(service, bid, goog.bind(this.respondBid, this, port));
+e2e.async.Router.prototype.createServices = function(name, bid, port) {
+  goog.array.forEach(this.findServices(name, bid), function(result) {
+    result.addCallbacks(function(response) {
+      this.respondBid(port, response.response, response.port);
+    },
+    goog.bind(this.respondBidError, this, port),
+    this);
+  }, this);
+  this.findService(name, bid);
 };
 
 

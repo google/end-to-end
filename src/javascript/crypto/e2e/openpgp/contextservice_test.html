@@ -59,7 +59,9 @@ function testFunctionCalled() {
   e2e.openpgp.ContextService.launch(servicePeer, contextPromise);
 
   asyncTestCase.waitForAsync('Waiting for findService()');
-  clientPeer.findService(SERVICE_NAME, {}, function(res, port) {
+  clientPeer.findService(SERVICE_NAME, {}).addCallback(function(response) {
+    var res = response.response;
+    var port = response.port;
     assertEquals(res.name, e2e.openpgp.ContextService.NAME);
     client = new e2e.async.Client(port);
     asyncTestCase.waitForAsync('Waiting for remote RPC');
@@ -82,7 +84,9 @@ function testFunctionImmediateResult() {
   e2e.openpgp.ContextService.launch(servicePeer, contextPromise);
 
   asyncTestCase.waitForAsync('Waiting for findService()');
-  clientPeer.findService(SERVICE_NAME, {}, function(res, port) {
+  clientPeer.findService(SERVICE_NAME, {}).addCallback(function(response) {
+    var res = response.response;
+    var port = response.port;
     assertEquals(res.name, e2e.openpgp.ContextService.NAME);
     client = new e2e.async.Client(port);
     asyncTestCase.waitForAsync('Waiting for remote RPC');
@@ -107,7 +111,9 @@ function testFunctionDeferredResult() {
   e2e.openpgp.ContextService.launch(servicePeer, contextPromise);
 
   asyncTestCase.waitForAsync('Waiting for findService()');
-  clientPeer.findService(SERVICE_NAME, {}, function(res, port) {
+  clientPeer.findService(SERVICE_NAME, {}).addCallback(function(response) {
+    var res = response.response;
+    var port = response.port;
     assertEquals(res.name, e2e.openpgp.ContextService.NAME);
     client = new e2e.async.Client(port);
     asyncTestCase.waitForAsync('Waiting for remote RPC');
@@ -132,7 +138,9 @@ function testFunctionErrors() {
   e2e.openpgp.ContextService.launch(servicePeer, contextPromise);
 
   asyncTestCase.waitForAsync('Waiting for findService()');
-  clientPeer.findService(SERVICE_NAME, {}, function(res, port) {
+  clientPeer.findService(SERVICE_NAME, {}).addCallback(function(response) {
+    var res = response.response;
+    var port = response.port;
     assertEquals(res.name, e2e.openpgp.ContextService.NAME);
     client = new e2e.async.Client(port);
     asyncTestCase.waitForAsync('Waiting for error in remote RPC');
@@ -172,7 +180,9 @@ function testDeferredContextInitialization() {
     contextPromise.callback(fakeContext);
   }, 500);
   asyncTestCase.waitForAsync('Waiting for findService()');
-  clientPeer.findService(SERVICE_NAME, {}, function(res, port) {
+  clientPeer.findService(SERVICE_NAME, {}).addCallback(function(response) {
+    var res = response.response;
+    var port = response.port;
     assertEquals(res.name, e2e.openpgp.ContextService.NAME);
     assertTrue(contextResolved);
     client = new e2e.async.Client(port);

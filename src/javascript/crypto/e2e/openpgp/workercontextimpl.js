@@ -59,15 +59,15 @@ e2e.openpgp.WorkerContextImpl.SERVICE_NAME = 'e2e.openpgp.ContextService';
  */
 e2e.openpgp.WorkerContextImpl.launch = function(peer) {
   var result = new e2e.async.Result();
-  peer.findService(e2e.openpgp.WorkerContextImpl.SERVICE_NAME, {}, function(
-      res, port) {
+  peer.findService(e2e.openpgp.WorkerContextImpl.SERVICE_NAME, {}).addCallback(
+      function(response) {
         try {
-          var contextImpl = new e2e.openpgp.WorkerContextImpl(port);
+          var contextImpl = new e2e.openpgp.WorkerContextImpl(response.port);
           result.callback(contextImpl);
         } catch (e) {
           result.errback(e.message);
         }
-      });
+      }, result.errback);
   return result;
 };
 
