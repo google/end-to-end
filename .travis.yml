@@ -3,9 +3,7 @@ install:
   - ./do.sh install_deps
 
 script:
+  - ./do.sh lint
   - ./do.sh build_app debug
   - ./do.sh clean
   - ./do.sh build_extension debug
-
-after_script:
-  - ./do.sh lint
