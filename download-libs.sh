@@ -20,6 +20,7 @@
 
 export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 CLOSURE_LIB_COMMIT="35c9311042b95796d7b12f58cd2bec6086052f7e"
+CLOSURE_STYLESHEETS_COMMIT="fd1095b9a5e84a9a6a9c00cf24949cabe33478b6"
 
 type ant >/dev/null 2>&1 || {
   echo >&2 "Ant is required to build End-To-End dependencies."
@@ -82,6 +83,7 @@ fi
 if [ ! -d closure-stylesheets ]; then
   git clone https://github.com/google/closure-stylesheets
   cd closure-stylesheets
+  git checkout $CLOSURE_STYLESHEETS_COMMIT
   ant
   cd ..
 fi
