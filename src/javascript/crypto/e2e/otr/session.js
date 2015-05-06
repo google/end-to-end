@@ -30,7 +30,9 @@ goog.require('e2e.otr.Mpi');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.error.IllegalStateError');
 goog.require('e2e.otr.error.NotImplementedError');
+goog.require('e2e.otr.message.DhCommit');
 goog.require('e2e.otr.message.Message');
+goog.require('e2e.otr.message.handler');
 goog.require('goog.array');
 goog.require('goog.object');
 
@@ -287,7 +289,7 @@ e2e.otr.Session.prototype.getSigner = function() {
  * Initiates OTR AKE, sending DH_COMMIT and entering AUTHSTATE_AWAITING_DHKEY.
  */
 e2e.otr.Session.prototype.initiateOtr = function() {
-    this.send(new e2e.otr.message.DhCommit(this));
-    this.setAuthState(constants.AUTHSTATE.AWAITING_DHKEY);
+  this.send(new e2e.otr.message.DhCommit(this));
+  this.setAuthState(constants.AUTHSTATE.AWAITING_DHKEY);
 };
 });  // goog.scope
