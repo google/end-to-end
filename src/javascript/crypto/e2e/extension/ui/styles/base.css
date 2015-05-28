@@ -172,6 +172,23 @@ input:focus {
   vertical-align: middle;
 }
 
+.keyring-signup {
+	position: relative;
+	padding-left: 10px;
+}
+
+.keyring-signup:before {
+	content: '+';
+	position: absolute;
+	left: 0;
+	margin-top: 2px;
+	font-size: 11px;
+}
+
+.keyring-signup:hover {
+	text-decoration: underline;
+}
+
 .key-type-description {
   display: inline-block;
   min-width: 140px;

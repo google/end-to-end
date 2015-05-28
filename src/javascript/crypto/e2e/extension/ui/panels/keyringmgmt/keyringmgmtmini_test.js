@@ -87,6 +87,27 @@ function testRender() {
 }
 
 
+function testRenderWithoutSignupPrompt() {
+  panel = new e2e.ext.ui.panels.KeyringMgmtMini;
+  panel.render(document.body);
+
+  var signupPrompt = goog.dom.getElement(constants.ElementId.SIGNUP_PROMPT);
+  assertTrue(goog.dom.classlist.contains(
+      signupPrompt, constants.CssClass.HIDDEN));
+}
+
+
+function testRenderWithSignupPrompt() {
+  keys = {'test@example.com': []};
+  panel = new e2e.ext.ui.panels.KeyringMgmtMini;
+  panel.render(document.body);
+
+  assertFalse(goog.dom.classlist.contains(
+      panel.getElement(constants.ElementId.SIGNUP_PROMPT),
+      constants.CssClass.HIDDEN));
+}
+
+
 function testRenderWithoutExport() {
   panel = new e2e.ext.ui.panels.KeyringMgmtMini(
       goog.nullFunction, goog.abstractMethod, goog.abstractMethod);

@@ -21,8 +21,11 @@
 goog.provide('e2e.ext.ui.panels.GenerateKey');
 
 goog.require('e2e.ext.constants.CssClass');
+goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.templates.panels.generatekey');
 goog.require('goog.array');
+goog.require('goog.dom');
+goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
 goog.require('goog.ui.Component');
@@ -88,12 +91,14 @@ panels.GenerateKey.prototype.createDom = function() {
 /** @override */
 panels.GenerateKey.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
+  elem.id = constants.ElementId.GENERATE_KEY_FORM;
 
   soy.renderElement(elem, templates.generateKeyForm, {
     sectionTitle: this.sectionTitle_,
     emailLabel: chrome.i18n.getMessage('genKeyEmailLabel'),
     commentsLabel: chrome.i18n.getMessage('genKeyCommentsLabel'),
-    actionButtonTitle: this.actionButtonTitle_
+    actionButtonTitle: this.actionButtonTitle_,
+    signupCancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction')
   });
 };
 
@@ -110,6 +115,10 @@ panels.GenerateKey.prototype.enterDocument = function() {
           this.getElementByClass(constants.CssClass.ACTION),
           goog.events.EventType.CLICK,
           this.generate_).
+      listen(
+          this.getElementByClass(constants.CssClass.CANCEL),
+          goog.events.EventType.CLICK,
+          this.hideSignupForm_).
       listen(
           keyboardHandler,
           goog.ui.KeyboardShortcutHandler.EventType.SHORTCUT_TRIGGERED,
@@ -141,6 +150,28 @@ panels.GenerateKey.prototype.reset = function() {
   goog.array.forEach(inputs, function(input) {
     input.value = '';
   });
+};
+
+
+/**
+ * Hides the signup form.
+ * @private
+ */
+panels.GenerateKey.prototype.hideSignupForm_ = function() {
+  var signupForm = goog.dom.getElement(
+      e2e.ext.constants.ElementId.GENERATE_KEY_FORM);
+  var cancelButton = goog.dom.getElementByClass(
+      e2e.ext.constants.CssClass.CANCEL, signupForm);
+  var signupPrompt = goog.dom.getElement(
+      e2e.ext.constants.ElementId.SIGNUP_PROMPT);
+  var keyringOptions = goog.dom.getElement(
+      e2e.ext.constants.ElementId.KEYRING_OPTIONS_DIV);
+
+  goog.dom.classlist.add(signupForm, e2e.ext.constants.CssClass.HIDDEN);
+  goog.dom.classlist.add(cancelButton, e2e.ext.constants.CssClass.HIDDEN);
+  goog.dom.classlist.remove(signupPrompt, e2e.ext.constants.CssClass.HIDDEN);
+  goog.dom.classlist.remove(keyringOptions, e2e.ext.constants.CssClass.HIDDEN);
+
 };
 
 

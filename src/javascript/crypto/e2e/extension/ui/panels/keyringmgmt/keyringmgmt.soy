@@ -76,6 +76,7 @@
 
 /**
  * A form that allows the user to manage the collection of PGP keys stored by the extension.
+ * @param signupPromptLabel The label to use when prompting the user to show the signup form.
  * @param importKeyringLabel The label to use when asking the user to import a keyring.
  * @param exportKeyringLabel The label to use when asking the user to export the existing keyring.
  * @param changePassphraseLabel The label to use when asking the user to change the passphrase to
@@ -118,6 +119,10 @@
     </button>
   </div>
   <div id="{e2e.ext.constants.ElementId.KEYRING_OPTIONS_DIV}">
+    <p id="{e2e.ext.constants.ElementId.SIGNUP_PROMPT}"
+          class="{e2e.ext.constants.CssClass.SIGNUP_PROMPT}
+                 {sp}{e2e.ext.constants.CssClass.HIDDEN}">{$signupPromptLabel}
+    </p>
     <button class="{e2e.ext.constants.CssClass.KEYRING_IMPORT}
                    {sp}{e2e.ext.constants.CssClass.CANCEL}">{$importKeyringLabel}</button>
     <button class="{e2e.ext.constants.CssClass.KEYRING_EXPORT}

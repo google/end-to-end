@@ -155,6 +155,10 @@
     "message": "None",
     "description": "A noun indicating that there are no PGP keys to display."
   },
+  "keyMgmtSignupPromptLabel": {
+      "message": "Sign up with another email address",
+      "description": "A sentence prompting the user sign up with another email address."
+  },
   "keyMgmtImportKeyringLabel": {
     "message": "Import a keyring",
     "description": "A sentence prompting the user to import an existing PGP keyring."
