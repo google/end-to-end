@@ -164,6 +164,7 @@ ui.Settings.prototype.renderTemplate_ = function(pgpKeys) {
       goog.bind(this.renderNewKey_, this),
       goog.bind(this.exportKey_, this),
       goog.bind(this.removeKey_, this));
+
   this.pgpContext_.isKeyRingEncrypted().addCallback(function(isEncrypted) {
     this.addChild(this.keyringMgmtPanel_, true);
     this.keyringMgmtPanel_.setKeyringEncrypted(isEncrypted);
@@ -263,7 +264,7 @@ ui.Settings.prototype.removeKey_ = function(keyUid) {
 
 /**
  * Exports a PGP key.
- * @param {string} keyUid Tjhe ID of the key to export.
+ * @param {string} keyUid The ID of the key to export.
  * @private
  */
 ui.Settings.prototype.exportKey_ = function(keyUid) {
