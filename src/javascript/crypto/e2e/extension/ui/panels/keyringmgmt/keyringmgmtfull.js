@@ -142,8 +142,12 @@ panels.KeyringMgmtFull.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
   var keyringTable = this.getElement().querySelector('table');
-  this.getHandler().listen(
-      keyringTable, goog.events.EventType.CLICK, this.handleClick_, true);
+  this.getHandler()
+      .listen(
+          keyringTable,
+          goog.events.EventType.CLICK,
+          this.handleClick_,
+          true);
 };
 
 

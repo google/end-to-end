@@ -25,6 +25,7 @@ goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.constants.Actions');
+goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.dialogs.InputType');
@@ -41,6 +42,7 @@ goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.crypt');
 goog.require('goog.dom');
+goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
 goog.require('goog.ui.Component');
 goog.require('soy');
@@ -148,9 +150,10 @@ ui.Settings.prototype.renderTemplate_ = function(pgpKeys) {
   this.addChild(new panels.PreferencesPanel(
       goog.asserts.assert(this.preferences_)), true);
 
-  var generateKeyPanel =
-      new panels.GenerateKey(goog.bind(this.generateKey_, this));
-  this.addChild(generateKeyPanel, true);
+  this.generateKeyPanel_ = new panels.GenerateKey(
+      goog.bind(this.generateKey_, this));
+
+  this.addChild(this.generateKeyPanel_, true);
 
   this.keyringMgmtPanel_ = new panels.KeyringMgmtFull(
       pgpKeys,
@@ -161,13 +164,51 @@ ui.Settings.prototype.renderTemplate_ = function(pgpKeys) {
       goog.bind(this.renderNewKey_, this),
       goog.bind(this.exportKey_, this),
       goog.bind(this.removeKey_, this));
+
   this.pgpContext_.isKeyRingEncrypted().addCallback(function(isEncrypted) {
     this.addChild(this.keyringMgmtPanel_, true);
     this.keyringMgmtPanel_.setKeyringEncrypted(isEncrypted);
   }, this);
 
-  this.getHandler().listen(
-      this.getElement(), goog.events.EventType.CLICK, this.clearFailure_);
+  this.renderPanels_();
+
+  this.getHandler().
+      listen(
+          this.getElement(),
+          goog.events.EventType.CLICK,
+          this.clearFailure_);
+
+};
+
+
+/**
+ * Renders the panels.
+ * @private
+ */
+ui.Settings.prototype.renderPanels_ = function() {
+  this.pgpContext_.getAllKeys(true)
+      .addCallback(function(keysObj) {
+        var privateKeys = Object.keys(keysObj);
+        var hiddenClass = constants.CssClass.HIDDEN;
+        var signupForm = goog.dom.getElement(
+            constants.ElementId.GENERATE_KEY_FORM);
+        var cancelButton = goog.dom.getElementByClass(
+            constants.CssClass.CANCEL, signupForm);
+        var signupPrompt = goog.dom.getElement(
+            constants.ElementId.SIGNUP_PROMPT);
+
+        goog.dom.classlist.add(cancelButton, hiddenClass);
+
+        if (privateKeys.length) {
+          goog.dom.classlist.remove(signupPrompt, hiddenClass);
+          goog.dom.classlist.add(signupForm, hiddenClass);
+        }
+        else {
+          goog.dom.classlist.add(signupPrompt, hiddenClass);
+          goog.dom.classlist.remove(signupForm, hiddenClass);
+        }
+      })
+      .addErrback(this.displayFailure_, this);
 };
 
 
@@ -213,6 +254,7 @@ ui.Settings.prototype.removeKey_ = function(keyUid) {
         if (window.confirm(prompt)) {
           this.pgpContext_.deleteKey(keyUid).addCallback(function() {
             this.keyringMgmtPanel_.removeKey(keyUid);
+            this.renderPanels_();
           }, this);
         }
       }, this)
@@ -256,6 +298,7 @@ ui.Settings.prototype.renderNewKey_ = function(keyUid) {
       .searchKey(keyUid)
       .addCallback(function(pgpKeys) {
         this.keyringMgmtPanel_.addNewKey(keyUid, pgpKeys);
+        this.renderPanels_();
       }, this)
       .addErrback(this.displayFailure_, this);
 };

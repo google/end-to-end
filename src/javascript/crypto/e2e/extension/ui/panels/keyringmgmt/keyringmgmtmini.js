@@ -129,6 +129,7 @@ panels.KeyringMgmtMini.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
 
   soy.renderElement(elem, templates.manageKeyring, {
+    signupPromptLabel: chrome.i18n.getMessage('keyMgmtSignupPromptLabel'),
     importKeyringLabel: chrome.i18n.getMessage('keyMgmtImportKeyringLabel'),
     exportKeyringLabel: chrome.i18n.getMessage('keyMgmtExportKeyringLabel'),
     backupKeyringLabel: chrome.i18n.getMessage('keyMgmtBackupKeyringLabel'),
@@ -175,12 +176,21 @@ panels.KeyringMgmtMini.prototype.decorateInternal = function(elem) {
 panels.KeyringMgmtMini.prototype.enterDocument = function() {
   goog.base(this, 'enterDocument');
 
+  var signupPrompt = goog.dom.getElement(
+      constants.ElementId.SIGNUP_PROMPT);
   var importDiv = goog.dom.getElement(constants.ElementId.KEYRING_IMPORT_DIV);
   var passphraseChangeDiv = goog.dom.getElement(
       constants.ElementId.KEYRING_PASSPHRASE_CHANGE_DIV);
   var passphraseConfirmDiv = goog.dom.getElement(
       constants.ElementId.KEYRING_PASSPHRASE_CONFIRM_DIV);
+
   this.getHandler().
+      listen(
+          this.getElementByClass(constants.CssClass.SIGNUP_PROMPT),
+          goog.events.EventType.CLICK,
+          goog.partial(
+              this.showKeyringMgmtForm_,
+              constants.ElementId.GENERATE_KEY_FORM)).
       listen(
           this.getElementByClass(constants.CssClass.KEYRING_IMPORT),
           goog.events.EventType.CLICK,
@@ -257,6 +267,21 @@ panels.KeyringMgmtMini.prototype.showKeyringMgmtForm_ = function(formId) {
 
   goog.dom.classlist.remove(
       goog.dom.getElement(formId), constants.CssClass.HIDDEN);
+
+  if (formId == constants.ElementId.GENERATE_KEY_FORM) {
+    var signupForm = goog.dom.getElement(
+        constants.ElementId.GENERATE_KEY_FORM);
+    var signupPrompt = goog.dom.getElement(
+        constants.ElementId.SIGNUP_PROMPT);
+    var cancelButton = goog.dom.getElementByClass(
+        constants.CssClass.HIDDEN, signupForm);
+    var keyringOptions = goog.dom.getElement(
+        constants.ElementId.KEYRING_OPTIONS_DIV);
+
+    goog.dom.classlist.add(signupPrompt, constants.CssClass.HIDDEN);
+    goog.dom.classlist.remove(cancelButton, constants.CssClass.HIDDEN);
+    goog.dom.classlist.remove(keyringOptions, constants.CssClass.HIDDEN);
+  }
 
   if (formId == constants.ElementId.KEYRING_PASSPHRASE_CHANGE_DIV ||
       formId == constants.ElementId.KEYRING_PASSPHRASE_CONFIRM_DIV) {
