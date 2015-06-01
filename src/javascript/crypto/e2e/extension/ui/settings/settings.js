@@ -398,10 +398,10 @@ ui.Settings.prototype.updateKeyringPassphrase_ = function(passphrase) {
   this.pgpContext_.changeKeyRingPassphrase(passphrase).addCallback(
       /** @this ui.Settings */ (function() {
         utils.showNotification(
-        chrome.i18n.getMessage('keyMgmtChangePassphraseSuccessMsg'),
-        goog.nullFunction);
+            chrome.i18n.getMessage('keyMgmtChangePassphraseSuccessMsg'),
+            goog.nullFunction);
         this.pgpContext_.isKeyRingEncrypted().addCallback(
-        this.keyringMgmtPanel_.setKeyringEncrypted, this.keyringMgmtPanel_);
+            this.keyringMgmtPanel_.setKeyringEncrypted, this.keyringMgmtPanel_);
       }), this);
 };
 
