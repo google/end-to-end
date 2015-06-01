@@ -182,11 +182,11 @@ input:focus {
   position: absolute;
   left: 0;
   margin-top: 2px;
- font-size: 11px;
+  font-size: 11px;
 }
 
 .keyring-signup:hover {
- text-decoration: underline;
+  text-decoration: underline;
 }
 
 .key-type-description {
