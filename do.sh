@@ -224,6 +224,12 @@ e2e_build_clean() {
   echo "Done."
 }
 
+e2e_clean_deps() {
+  echo "Removing all build dependencies. Install them with ./do.sh install_deps."
+  rm -rfv lib
+  echo "Done."
+}
+
 e2e_install_deps() {
   set -e
   echo "Installing build dependencies..."
@@ -302,6 +308,9 @@ case "$CMD" in
   clean)
     e2e_build_clean;
     ;;
+  clean_deps)
+    e2e_clean_deps;
+    ;;
   testserver)
     e2e_testserver $*;
     ;;
@@ -312,7 +321,7 @@ case "$CMD" in
     e2e_generate_deps;
     ;;
   *)
-    echo "Usage: $0 {build_app|build_extension|build_library|build_templates|clean|check_deps|install_deps|testserver|lint} [debug]"
+    echo "Usage: $0 {build_app|build_extension|build_library|build_templates|clean|check_deps|clean_deps|install_deps|testserver|lint} [debug]"
     RETVAL=1
 esac
 
