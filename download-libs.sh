@@ -53,7 +53,10 @@ fi
 if [ ! -d zlib.js/.git ]; then
   git clone --depth 1 https://github.com/imaya/zlib.js zlib.js
   mkdir typedarray
-  ln -s ../zlib.js/define/typedarray/use.js typedarray/use.js
+  if ! ln -s ../zlib.js/define/typedarray/use.js typedarray/use.js
+    # symlink failed; strange filesystem? Let's copy...
+    then cp ../zlib.js/define/typedarray/use.js typedarray/use.js
+  fi
 fi
 
 # checkout closure compiler
