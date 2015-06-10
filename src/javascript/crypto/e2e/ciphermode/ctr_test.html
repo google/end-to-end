@@ -112,5 +112,39 @@
     ];
     var cipherText = e2e.async.Result.getValue(aesctr.encrypt(testvector, iv))
     assertArrayEquals(expectedCipherText, cipherText);
+    var plainText = e2e.async.Result.getValue(aesctr.decrypt(cipherText, iv))
+    assertArrayEquals(testvector, plainText);
+
+
+    aes = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES192, {
+      key: goog.crypt.hexToByteArray(
+          '8e73b0f7da0e6452c810f32b809079e562f8ead2522c6b7b')
+    });
+    aesctr = new e2e.ciphermode.Ctr(aes);
+
+    expectedCipherText = goog.crypt.hexToByteArray('1abc932417521ca24f2b0459f' +
+        'e7e6e0b090339ec0aa6faefd5ccc2c6f4ce8e941e36b26bd1ebc670d1bd1d665620a' +
+        'bf74f78a7f6d29809585a97daec58c6b050');
+
+    cipherText = e2e.async.Result.getValue(aesctr.encrypt(testvector, iv))
+    assertArrayEquals(expectedCipherText, cipherText);
+    plainText = e2e.async.Result.getValue(aesctr.decrypt(cipherText, iv))
+    assertArrayEquals(testvector, plainText);
+
+
+    aes = new e2e.cipher.Aes(e2e.cipher.Algorithm.AES256, {
+      key: goog.crypt.hexToByteArray(
+          '603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4')
+    });
+    aesctr = new e2e.ciphermode.Ctr(aes);
+
+    expectedCipherText = goog.crypt.hexToByteArray('601ec313775789a5b7a7f504b' +
+        'bf3d228f443e3ca4d62b59aca84e990cacaf5c52b0930daa23de94ce87017ba2d849' +
+        '88ddfc9c58db67aada613c2dd08457941a6');
+
+    cipherText = e2e.async.Result.getValue(aesctr.encrypt(testvector, iv))
+    assertArrayEquals(expectedCipherText, cipherText);
+    plainText = e2e.async.Result.getValue(aesctr.decrypt(cipherText, iv))
+    assertArrayEquals(testvector, plainText);
   }
 </script>
