@@ -69,7 +69,7 @@ e2e.ext.utils.HelperProxy.prototype.isLookingGlassEnabled = function() {
  *     be passed.
  * @param {!function(Error)} errorCallback The callback to invoke if an error is
  *     encountered.
- * @expose
+ * @export
  */
 e2e.ext.utils.HelperProxy.prototype.getSelectedContent = function(callback,
     errorCallback) {
@@ -93,7 +93,7 @@ e2e.ext.utils.HelperProxy.prototype.getSelectedContent = function(callback,
  * @param {!function(Error)} errorCallback The callback to invoke if an error is
  *     encountered.
  * @param {string=} opt_subject The subject of the message if applicable.
- * @expose
+ * @export
  */
 e2e.ext.utils.HelperProxy.prototype.updateSelectedContent =
     function(content, recipients, origin, shouldSend, callback,

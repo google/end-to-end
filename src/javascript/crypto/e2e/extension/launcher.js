@@ -79,7 +79,7 @@ ext.Launcher = function(pgpContext, preferencesStorage) {
  * Asks for the keyring passphrase and start the launcher. Will throw an
  * exception if the password is wrong.
  * @param {string=} opt_passphrase The passphrase of the keyring.
- * @expose
+ * @export
  */
 ext.Launcher.prototype.start = function(opt_passphrase) {
   this.start_(opt_passphrase || '');
@@ -122,7 +122,7 @@ ext.Launcher.prototype.completeStart_ = function() {
 /**
  * Returns the PGP context used within the extension.
  * @return {e2e.openpgp.Context} The PGP context.
- * @expose
+ * @export
  */
 ext.Launcher.prototype.getContext = function() {
   return this.pgpContext_;
@@ -132,7 +132,7 @@ ext.Launcher.prototype.getContext = function() {
 /**
  * Returns the Preferences object used within the extension.
  * @return {e2e.ext.Preferences} The Preferences object.
- * @expose
+ * @export
  */
 ext.Launcher.prototype.getPreferences = function() {
   return this.preferences_;
@@ -142,7 +142,7 @@ ext.Launcher.prototype.getPreferences = function() {
 /**
  * Indicates if the keyring was loaded with the correct passphrase.
  * @return {boolean} True if the keyring was loaded with the correct passphrase.
- * @expose
+ * @export
  */
 ext.Launcher.prototype.hasPassphrase = function() {
   return this.started_;

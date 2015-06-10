@@ -519,7 +519,7 @@ e2e.ext.WebsiteApi.getAddressDescriptorsFromEmails_ = function(recipients) {
  * @param {!function(string=,string=)} callback The callback where the element
  *     containing the last selected message should be passed.
  * @param {function(Error)} errback The function that will be called upon error.
- * @expose
+ * @export
  */
 e2e.ext.WebsiteApi.prototype.getCurrentMessage = function(callback, errback) {
   this.isApiAvailable_(goog.bind(function(available) {
@@ -606,7 +606,7 @@ e2e.ext.WebsiteApi.prototype.setActiveDraft_ = function(recipients, msgBody,
  * @param  {!function(!Array.<string>,string,boolean,string=)} callback A
  *     callback to process the results.
  * @param {function(Error)} errback The function that will be called upon error.
- * @expose
+ * @export
  */
 e2e.ext.WebsiteApi.prototype.getSelectedContent = function(callback, errback) {
   this.isApiAvailable_(goog.bind(function(available) {
@@ -767,7 +767,7 @@ e2e.ext.WebsiteApi.prototype.isEditable_ = function(elem) {
  * be supplied to  the content script.
  * @param {string} stubUrl Stub file URL.
  * @param {string} contents Stub file contents.
- * @expose
+ * @export
  */
 e2e.ext.WebsiteApi.prototype.setStub = function(stubUrl, contents) {
   this.stubContents_.set(stubUrl, contents);

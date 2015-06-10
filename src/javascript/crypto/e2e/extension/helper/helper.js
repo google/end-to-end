@@ -257,7 +257,7 @@ ext.Helper.prototype.errorHandler_ = function(sendResponse, error) {
  *     !e2e.ext.messages.BridgeMessageResponse} req The request.
  * @param {string} requestId Identifier of the request to send it back in the
  *     response.
- * @expose
+ * @export
  */
 ext.Helper.prototype.handleAppRequest = function(req, requestId) {
   // NOTE(koto): We pass an empty sender object. handleMessage_ does not
@@ -273,7 +273,7 @@ ext.Helper.prototype.handleAppRequest = function(req, requestId) {
  * (Chrome App calls this function directly).
  * @param {string} requestId The request ID.
  * @param {*} response The response.
- * @expose
+ * @export
  */
 ext.Helper.prototype.handleAppResponse = function(requestId, response) {
   this.api_.sendEndToEndResponse(requestId, response);
@@ -285,7 +285,7 @@ ext.Helper.prototype.handleAppResponse = function(requestId, response) {
  * (Chrome App calls this function directly).
  * @param {string} requestId The request ID.
  * @param {string} errorMsg Error message.
- * @expose
+ * @export
  */
 ext.Helper.prototype.handleAppErrorResponse = function(requestId, errorMsg) {
   this.api_.sendEndToEndErrorResponse(requestId, errorMsg);
@@ -366,7 +366,7 @@ ext.Helper.prototype.disableWebsiteRequests = function() {
  * Chrome App in which the website cannot access chrome-extension:// URLs.
  * @param {string} stubUrl Stub file URL.
  * @param {string} contents Stub file contents.
- * @expose
+ * @export
  */
 ext.Helper.prototype.setApiStub = function(stubUrl, contents) {
   this.api_.setStub(stubUrl, contents);

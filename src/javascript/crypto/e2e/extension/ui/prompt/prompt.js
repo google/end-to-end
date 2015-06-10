@@ -221,7 +221,7 @@ ui.Prompt.prototype.getContentElement = function() {
  * Injects a content from external sources (used for popout functionality and
  * provider-initiated actions). Needs to be called before decorate().
  * @param {?messages.BridgeMessageRequest} contentBlob The content to process.
- * @expose
+ * @export
  */
 ui.Prompt.prototype.injectContent = function(contentBlob) {
   if (this.wasDecorated()) {
