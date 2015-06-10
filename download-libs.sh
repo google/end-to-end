@@ -19,8 +19,6 @@
 #  */
 
 export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
-CLOSURE_LIB_COMMIT="35c9311042b95796d7b12f58cd2bec6086052f7e"
-CLOSURE_STYLESHEETS_COMMIT="fd1095b9a5e84a9a6a9c00cf24949cabe33478b6"
 
 type ant >/dev/null 2>&1 || {
   echo >&2 "Ant is required to build End-To-End dependencies."
@@ -41,27 +39,13 @@ if [ ! -d lib ]; then
 fi
 cd lib
 
-# checkout closure library
-if [ ! -d closure-library/.git ]; then
-  git clone https://github.com/google/closure-library closure-library
-  cd closure-library
-  git checkout $CLOSURE_LIB_COMMIT
-  cd ..
-fi
+git submodule init
+git submodule update
 
-# checkout zlib.js
-if [ ! -d zlib.js/.git ]; then
-  git clone --depth 1 https://github.com/imaya/zlib.js zlib.js
+# symlink typedarray
+if [ ! -d typedarray ]; then
   mkdir typedarray
   ln -s ../zlib.js/define/typedarray/use.js typedarray/use.js
-fi
-
-# checkout closure compiler
-if [ ! -d closure-compiler/.git ]; then
-  if [ -d closure-compiler ]; then # remove binary release directory
-    rm -rf closure-compiler
-  fi
-  git clone --branch maven-release-v20150315 --depth 1 https://github.com/google/closure-compiler closure-compiler
 fi
 
 # build closure compiler
@@ -79,11 +63,9 @@ if [ ! -d closure-templates-compiler ]; then
   rm closure-templates-for-javascript-latest.zip
 fi
 
-# checkout css compiler
-if [ ! -d closure-stylesheets ]; then
-  git clone https://github.com/google/closure-stylesheets
+# build css compiler
+if [ ! -f lib/closure-stylesheets/build/closure-stylesheets.jar ]; then
   cd closure-stylesheets
-  git checkout $CLOSURE_STYLESHEETS_COMMIT
   ant
   cd ..
 fi
