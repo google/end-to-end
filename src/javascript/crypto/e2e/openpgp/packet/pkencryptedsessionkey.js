@@ -43,7 +43,7 @@ goog.require('goog.array');
  * Representation of a Public-Key Encrypted Session-Key Packet (Tag 1).
  * As defined in RFC 4880 Section 5.1.
  * @param {number} version The Encrypted Session Key Packet version.
- * @param {!e2e.ByteArray} keyId The keyId of the public key.
+ * @param {!e2e.openpgp.KeyId} keyId The keyId of the public key.
  * @param {e2e.cipher.Algorithm} algorithm The public key algorithm.
  * @param {e2e.cipher.ciphertext.CipherText} encryptedKey The encrypted
  *     key material with values as MPIs.
@@ -260,7 +260,7 @@ e2e.openpgp.packet.PKEncryptedSessionKey.parse = function(body) {
     throw new e2e.openpgp.error.ParseError(
         'Unknown PKESK packet version.');
   }
-  var keyId = body.splice(0, 8);
+  var keyId = /** @type {!e2e.openpgp.KeyId} */ (body.splice(0, 8));
   var algorithmId = body.shift();
   var algorithm = e2e.openpgp.constants.getAlgorithm(
       e2e.openpgp.constants.Type.PUBLIC_KEY, algorithmId);

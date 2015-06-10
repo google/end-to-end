@@ -465,12 +465,12 @@ e2e.openpgp.KeyRing.prototype.getKey_ = function(keyId, opt_secret) {
   var result;
   // Using goog.array.find to break on first match.
   goog.array.find(goog.array.flatten(keyRing.getValues()), function(key) {
-    if (goog.array.equals(keyId, key.keyPacket.keyId)) {
+    if (e2e.compareByteArray(keyId, key.keyPacket.keyId)) {
       result = key.keyPacket;
       return true;
     }
     return Boolean(goog.array.find(key.subKeys, function(subKey) {
-      if (goog.array.equals(keyId, subKey.keyId)) {
+      if (e2e.compareByteArray(keyId, subKey.keyId)) {
         result = subKey;
         return true;
       }
@@ -493,7 +493,8 @@ e2e.openpgp.KeyRing.prototype.getKeyBlock = function(keyObject) {
   var ret = goog.array.find(
       goog.array.flatten(keyRing.getValues()),
       function(keyBlock) {
-        return goog.array.equals(keyBlock.keyPacket.fingerprint, fingerprint);
+        return e2e.compareByteArray(keyBlock.keyPacket.fingerprint,
+            fingerprint);
       });
   return this.lockSecretKey_(ret);
 };
@@ -742,7 +743,7 @@ e2e.openpgp.KeyRing.prototype.importKey_ = function(
   if (keyRing.containsKey(email)) {
     emailKeyBlocks = keyRing.get(email);
     addKey = !goog.array.some(emailKeyBlocks, function(emailKeyBlock) {
-      return goog.isDef(keyBlock.keyPacket.keyId) && goog.array.equals(
+      return goog.isDef(keyBlock.keyPacket.keyId) && e2e.compareByteArray(
           emailKeyBlock.keyPacket.keyId, keyBlock.keyPacket.keyId);
     });
     // TODO(evn): Merge information when the key block is already in keyring.

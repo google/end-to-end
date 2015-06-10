@@ -21,6 +21,7 @@
 
 goog.provide('e2e.openpgp.block.TransferableKey');
 
+goog.require('e2e');
 goog.require('e2e.debug.Console');
 goog.require('e2e.openpgp.block.Block');
 goog.require('e2e.openpgp.error.ParseError');
@@ -299,22 +300,23 @@ e2e.openpgp.block.TransferableKey.prototype.SERIALIZE_IN_KEY_OBJECT = false;
 
 /**
  * Returns a key or one of the subkeys of a given key ID.
- * @param {!e2e.ByteArray} keyId Key ID to find the key by.
+ * @param {!e2e.openpgp.KeyId} keyId Key ID to find the key by.
  * @return {?e2e.openpgp.packet.Key} Found key
  */
 e2e.openpgp.block.TransferableKey.prototype.getKeyById = function(keyId) {
-  if (this.keyPacket.keyId && goog.array.equals(this.keyPacket.keyId, keyId)) {
+  if (this.keyPacket.keyId &&
+      e2e.compareByteArray(this.keyPacket.keyId, keyId)) {
     return this.keyPacket;
   }
   return goog.array.find(this.subKeys, function(key) {
-    return !!key.keyId && goog.array.equals(key.keyId, keyId);
+    return !!key.keyId && e2e.compareByteArray(key.keyId, keyId);
   });
 };
 
 
 /**
  * Checks if a key or one of the subkeys has a given key ID.
- * @param {!e2e.ByteArray} keyId Key ID to find the key by.
+ * @param {!e2e.openpgp.KeyId} keyId Key ID to find the key by.
  * @return {boolean} If true, this TransferableKey has a key with given ID.
  */
 e2e.openpgp.block.TransferableKey.prototype.hasKeyById = function(keyId) {

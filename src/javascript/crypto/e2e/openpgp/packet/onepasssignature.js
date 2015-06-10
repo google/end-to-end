@@ -30,7 +30,7 @@ goog.require('e2e.openpgp.packet.factory');
  * @param {number} type
  * @param {number} hashAlgo
  * @param {number} pubkeyAlgo
- * @param {!e2e.ByteArray} keyId
+ * @param {!e2e.openpgp.KeyId} keyId
  * @param {boolean} nested
  * @constructor
  * @extends {e2e.openpgp.packet.Packet}
@@ -95,7 +95,7 @@ e2e.openpgp.packet.OnePassSignature.prototype.verify = function(
 /**
  * Extracts key ID used to place the signature (if possible, forwards the call
  * to the related Signature object, as key ID there might be signed as well.
- * @return {!e2e.ByteArray} signer key ID
+ * @return {!e2e.openpgp.KeyId} signer key ID
  */
 e2e.openpgp.packet.OnePassSignature.prototype.getSignerKeyId = function() {
   if (this.signature) {

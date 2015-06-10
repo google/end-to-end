@@ -203,7 +203,7 @@ e2e.openpgp.packet.UserId.prototype.addToKeyIdMap_ = function(signature) {
 /**
  * Given a Key ID bytearray, convert it into a hex string
  * to be used as an index into the keyIdSignatureMap.
- * @param {!e2e.ByteArray} keyid
+ * @param {!e2e.openpgp.KeyId} keyid
  * @return {string}
  * @private
  */
@@ -257,7 +257,7 @@ e2e.openpgp.packet.UserId.prototype.addRevocation = function(signature) {
  */
 e2e.openpgp.packet.UserId.prototype.verifySignatureInternal_ = function(
     signature, verifyingKey, signedData, verificationErrorMsg) {
-  if (!verifyingKey.keyId || !goog.array.equals(signature.getSignerKeyId(),
+  if (!verifyingKey.keyId || !e2e.compareByteArray(signature.getSignerKeyId(),
       verifyingKey.keyId)) {
     // Different key, ignore signature.
     return false;

@@ -193,7 +193,7 @@ e2e.openpgp.block.Message.prototype.getBytesToSign = function() {
 
 /**
  * Returns key IDs for all the signatures in this message.
- * @return {!Array.<!e2e.ByteArray>} Key IDs extracted from signatures.
+ * @return {!Array.<!e2e.openpgp.KeyId>} Key IDs extracted from signatures.
  */
 e2e.openpgp.block.Message.prototype.getSignatureKeyIds = function() {
   var keyIds = goog.array.map(this.signatures, function(signature) {

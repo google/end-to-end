@@ -43,8 +43,9 @@ goog.require('goog.asserts');
  * @param {number} version The version of the key.
  * @param {number} timestamp The creation time of the key.
  * @param {!e2e.cipher.Cipher} cipher The cipher with the keys.
- * @param {!e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
- * @param {!e2e.ByteArray=} opt_keyId The key ID of the key. Should be
+ * @param {!e2e.openpgp.KeyFingerprint=} opt_fingerprint The fingerprint of the
+ *     key.
+ * @param {!e2e.openpgp.KeyId=} opt_keyId The key ID of the key. Should be
  *     passed in for v3 keys, but not for v4 keys.
  * @extends {e2e.openpgp.packet.Key}
  * @constructor

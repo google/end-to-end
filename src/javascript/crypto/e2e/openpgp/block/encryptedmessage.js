@@ -91,10 +91,12 @@ goog.inherits(e2e.openpgp.block.EncryptedMessage,
 e2e.openpgp.block.EncryptedMessage.prototype.decrypt = function(
     getKeyForSessionKeyCallback, passphraseCallback) {
   // Search for a secret key that can decrypt the session key. foundSecretKeys
-  // will contain an entry for each of eskPackets. Some entries might be null
-  // e.g. when eskPacket is for a passhphrase.
+  // will contain an entry for each of public-key encrypted eskPackets.
+  // Some entries might be null if a matching key has not been found.
   var foundSecretKeys = goog.array.map(
-      this.eskPackets,
+      goog.array.filter(this.eskPackets, function(eskPacket) {
+        return eskPacket instanceof e2e.openpgp.packet.PKEncryptedSessionKey;
+      }),
       function(eskPacket) {
         return getKeyForSessionKeyCallback(eskPacket.keyId);
       }, this);

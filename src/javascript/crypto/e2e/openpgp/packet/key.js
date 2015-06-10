@@ -60,8 +60,9 @@ e2e.openpgp.packet.KeyCertificationState_ = {
  * @param {number} timestamp The creation time of the key.
  * @param {!e2e.cipher.Cipher|!e2e.signer.Signer} cipher An
  *     instance of the cipher used.
- * @param {!e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
- * @param {!e2e.ByteArray=} opt_keyId The key ID of the key. Should be
+ * @param {!e2e.openpgp.KeyFingerprint=} opt_fingerprint The fingerprint of the
+ *     key.
+ * @param {!e2e.openpgp.KeyId=} opt_keyId The key ID of the key. Should be
  *     passed in for v3 keys, but not for v4 keys.
  * @extends {e2e.openpgp.packet.Packet}
  * @constructor
@@ -83,7 +84,7 @@ e2e.openpgp.packet.Key = function(
   if (goog.isDefAndNotNull(opt_fingerprint)) {
     /**
      * The fingerprint of the key.
-     * @type {!e2e.ByteArray}
+     * @type {!e2e.openpgp.KeyFingerprint}
      */
     this.fingerprint = opt_fingerprint;
 
@@ -93,7 +94,7 @@ e2e.openpgp.packet.Key = function(
   }
   /**
    * If available, the key ID of the key.
-   * @type {!e2e.ByteArray|undefined}
+   * @type {!e2e.openpgp.KeyId|undefined}
    */
   this.keyId = keyId;
   /**
@@ -171,7 +172,7 @@ e2e.openpgp.packet.Key.prototype.addBindingSignature = function(signature) {
     }
     var crossSignature = signature.embeddedSignature;
     if (!this.keyId ||
-        !goog.array.equals(crossSignature.getSignerKeyId(), this.keyId) ||
+        !e2e.compareByteArray(crossSignature.getSignerKeyId(), this.keyId) ||
         crossSignature.signatureType !==
         e2e.openpgp.packet.Signature.SignatureType.PRIMARY_KEY) {
       throw new e2e.openpgp.error.ParseError('Invalid key cross-signature.');
@@ -208,7 +209,7 @@ e2e.openpgp.packet.Key.prototype.verifySignatures = function(verifyingKey) {
 
   // If we're a primary key, we can only be verified by ourselves.
   if (!this.isSubkey &&
-      !goog.array.equals(this.keyId, verifyingKeyId)) {
+      !e2e.compareByteArray(this.keyId, verifyingKeyId)) {
     throw new e2e.openpgp.error.SignatureError(
         'Cannot verify primary key with a different key.');
   }
@@ -354,7 +355,7 @@ e2e.openpgp.packet.Key.prototype.verifyBindingSignature_ = function(signature,
  */
 e2e.openpgp.packet.Key.prototype.verifySignatureInternal_ = function(signature,
     verifyingKey, signedData, verificationErrorMsg) {
-  if (!verifyingKey.keyId || !goog.array.equals(signature.getSignerKeyId(),
+  if (!verifyingKey.keyId || !e2e.compareByteArray(signature.getSignerKeyId(),
       verifyingKey.keyId)) {
     // Key mismatch, ignore signature.
     return false;
@@ -595,7 +596,7 @@ e2e.openpgp.packet.Key.prototype.getVerifiedCertification_ = function(
 
   // 3. Binding signature must be made by the verifyingKey
   if (!verifyingKey.keyId ||
-      !goog.array.equals(verifyingKey.keyId, signature.getSignerKeyId())) {
+      !e2e.compareByteArray(verifyingKey.keyId, signature.getSignerKeyId())) {
     throw new e2e.openpgp.error.SignatureError(
         'This key was certified by a different issuer.');
   }

@@ -67,7 +67,7 @@ goog.require('goog.asserts');
  *     The hashed subpackets of the signature.
  * @param {Array.<e2e.openpgp.packet.SignatureSub>=} opt_unhashedSubpackets
  *     The non hashed subpackets of the signature.
- * @param {!e2e.ByteArray=} opt_signerKeyId The key id of the signer.
+ * @param {!e2e.openpgp.KeyId=} opt_signerKeyId The key id of the signer.
  * @param {number=} opt_creationTime The time the signature was created.
  * @constructor
  * @extends {e2e.openpgp.packet.Packet}
@@ -137,7 +137,7 @@ e2e.openpgp.packet.Signature = function(
     creationTime = opt_creationTime;
     /**
      * ID of the key that generated this signature..
-     * @type {!e2e.ByteArray}
+     * @type {!e2e.openpgp.KeyId}
      */
     this.signerKeyId = opt_signerKeyId;
   } else {
@@ -356,7 +356,7 @@ e2e.openpgp.packet.Signature.parse = function(data) {
 /**
  * Extracts key ID used to place the signature directly from the packet
  *     (for version 3 packets) or from subpackets (for version 4 packets).
- * @return {!e2e.ByteArray} signer key ID
+ * @return {!e2e.openpgp.KeyId} signer key ID
  */
 e2e.openpgp.packet.Signature.prototype.getSignerKeyId = function() {
   if (this.version == 0x03 || this.version == 0x02) {
@@ -364,11 +364,11 @@ e2e.openpgp.packet.Signature.prototype.getSignerKeyId = function() {
   }
   if (this.version == 0x04) {
     if (this.attributes.hasOwnProperty('ISSUER')) {
-      return /** @type {!e2e.ByteArray} */ (this.attributes['ISSUER']);
+      return /** @type {!e2e.openpgp.KeyId} */ (this.attributes['ISSUER']);
     }
     if (this.untrustedAttributes.hasOwnProperty('ISSUER')) {
       // GnuPG puts Key ID in unhashed subpacket.
-      return /** @type {!e2e.ByteArray} */ (
+      return /** @type {!e2e.openpgp.KeyId} */ (
           this.untrustedAttributes['ISSUER']);
     }
   }

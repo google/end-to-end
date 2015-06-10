@@ -33,7 +33,8 @@ goog.require('e2e.openpgp.packet.factory');
  * @param {number} timestamp The creation time of the key.
  * @param {!e2e.cipher.Cipher|!e2e.signer.Signer} cipher An
  *     instance of the cipher used.
- * @param {!e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
+ * @param {!e2e.openpgp.KeyFingerprint=} opt_fingerprint The fingerprint of the
+ *     key.
  * @extends {e2e.openpgp.packet.PublicKey}
  * @constructor
  */
