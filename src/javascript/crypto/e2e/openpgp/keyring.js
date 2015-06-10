@@ -276,8 +276,8 @@ e2e.openpgp.KeyRing.prototype.importKey = function(
  * The generated public key and secret key in an array.
  */
 e2e.openpgp.KeyRing.prototype.generateECKey = function(email) {
-  return this.generateKey(email, e2e.signer.Algorithm.ECDSA, 256,
-      e2e.cipher.Algorithm.ECDH, 256);
+  return this.generateKey(email, e2e.signer.Algorithm.ECDSA, 384,
+      e2e.cipher.Algorithm.ECDH, 384);
 };
 
 
@@ -340,17 +340,33 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(email,
 
   if (opt_keyLocation == e2e.algorithm.KeyLocations.JAVASCRIPT) {
     var fingerprint;
-    if (keyAlgo == e2e.signer.Algorithm.ECDSA &&
-        keyLength == 256) {
-      var ecdsa = e2e.openpgp.keygenerator.newEcdsaWithP256(
-          this.getNextKey_(keyLength));
+    if (keyAlgo == e2e.signer.Algorithm.ECDSA) {
+      var ecdsa;
+      if (keyLength == 256) {
+        ecdsa = e2e.openpgp.keygenerator.newEcdsaWithP256(
+            this.getNextKey_(keyLength));
+      } else if (keyLength == 384) {
+        ecdsa = e2e.openpgp.keygenerator.newEcdsaWithP384(
+            this.getNextKey_(keyLength));
+      } else {
+        throw new e2e.openpgp.error.UnsupportedError(
+            'Only secp256r1 and secp384r1 supported');
+      }
       this.extractKeyData_(keyData, ecdsa);
       fingerprint = keyData.pubKey[0].fingerprint;
     }
-    if (subkeyAlgo == e2e.cipher.Algorithm.ECDH &&
-        subkeyLength == 256) {
-      var ecdh = e2e.openpgp.keygenerator.newEcdhWithP256(
-          this.getNextKey_(subkeyLength));
+    if (subkeyAlgo == e2e.cipher.Algorithm.ECDH) {
+      var ecdh;
+      if (subkeyLength == 256) {
+        ecdh = e2e.openpgp.keygenerator.newEcdhWithP256(
+            this.getNextKey_(subkeyLength));
+      } else if (subkeyLength == 384) {
+        ecdh = e2e.openpgp.keygenerator.newEcdhWithP384(
+            this.getNextKey_(subkeyLength));
+      } else {
+        throw new e2e.openpgp.error.UnsupportedError(
+            'Only secp256r1 and secp384r1 supported');
+      }
       this.extractKeyData_(keyData, ecdh, true);
     }
     return e2e.async.Result.toResult(this.certifyKeys_(email, keyData));
