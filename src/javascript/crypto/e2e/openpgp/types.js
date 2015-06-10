@@ -29,10 +29,10 @@ goog.provide('e2e.openpgp.Key');
 goog.provide('e2e.openpgp.KeyPacketInfo');
 goog.provide('e2e.openpgp.KeyResult');
 goog.provide('e2e.openpgp.KeyRingMap');
-goog.provide('e2e.openpgp.KeyRingType');
 goog.provide('e2e.openpgp.KeyringBackupInfo');
 goog.provide('e2e.openpgp.Keys');
 goog.provide('e2e.openpgp.SerializedKeyRing');
+goog.provide('e2e.openpgp.TransferableKeyMap');
 goog.provide('e2e.openpgp.VerifiedDecrypt');
 goog.provide('e2e.openpgp.VerifyDecryptResult');
 goog.provide('e2e.openpgp.VerifyResult');
@@ -175,7 +175,7 @@ e2e.openpgp.SerializedKeyRing;
  * @typedef {goog.structs.Map.<string,
  *                            !Array.<!e2e.openpgp.block.TransferableKey>>}
  */
-e2e.openpgp.KeyRingType;
+e2e.openpgp.TransferableKeyMap;
 
 
 /**

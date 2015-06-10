@@ -100,7 +100,7 @@ e2e.openpgp.KeyRing.prototype.localStorage_;
 /**
  * The public key ring. It's a map keyed by email. The values are lists of
  * block.TransferablePublicKey objects associated with this email.
- * @type {!e2e.openpgp.KeyRingType}
+ * @type {!e2e.openpgp.TransferableKeyMap}
  * @private
  */
 e2e.openpgp.KeyRing.prototype.pubKeyRing_;
@@ -109,7 +109,7 @@ e2e.openpgp.KeyRing.prototype.pubKeyRing_;
 /**
  * The private key ring. It's a map keyed by email. The values are lists of
  * block.TransferableSecretKey objects associated with this email.
- * @type {!e2e.openpgp.KeyRingType}
+ * @type {!e2e.openpgp.TransferableKeyMap}
  * @private
  */
 e2e.openpgp.KeyRing.prototype.privKeyRing_;
@@ -618,7 +618,7 @@ e2e.openpgp.KeyRing.prototype.searchKeyLocalAndRemote = function(email,
 /**
  * Gets all of the keys in the keyring.
  * @param {boolean=} opt_priv If true, fetch only private keys.
- * @return {!e2e.openpgp.KeyRingType} A clone of the key ring maps.
+ * @return {!e2e.openpgp.TransferableKeyMap} A clone of the key ring maps.
  */
 e2e.openpgp.KeyRing.prototype.getAllKeys = function(opt_priv) {
   if (opt_priv) {
@@ -675,7 +675,7 @@ e2e.openpgp.KeyRing.prototype.reset = function() {
 
 /**
  * Searches a key in a key ring from an email.
- * @param {!e2e.openpgp.KeyRingType} keyRing The key ring to search.
+ * @param {!e2e.openpgp.TransferableKeyMap} keyRing The key ring to search.
  * @param {string} email The email to search for.
  * @return {Array.<!e2e.openpgp.block.TransferableKey>} An array of keys for
  *     that user id or null.
@@ -720,7 +720,8 @@ e2e.openpgp.KeyRing.prototype.searchPublicKeyRemote_ = function(email) {
  * key if there is already a matching key ID.
  * @param {string} email The email associated with the key.
  * @param {!e2e.openpgp.block.TransferableKey} keyBlock The key to import.
- * @param {!e2e.openpgp.KeyRingType} keyRing The keyring to add the keys to.
+ * @param {!e2e.openpgp.TransferableKeyMap} keyRing The keyring to add the keys
+ *     to.
  * @param {!e2e.ByteArray=} opt_passphrase The passphrase used to
  *     protect the key.
  * @return {boolean} If the key import was successful. False if the key for a
@@ -851,7 +852,8 @@ e2e.openpgp.KeyRing.prototype.getOrCreateSalt_ = function() {
 
 /**
  * Serializes a key ring to an object.
- * @param {!e2e.openpgp.KeyRingType} keyRing The key ring to be serialized.
+ * @param {!e2e.openpgp.TransferableKeyMap} keyRing The key ring to be
+ *     serialized.
  * @return {!Object}
  * @private
  */
@@ -962,7 +964,7 @@ e2e.openpgp.KeyRing.prototype.decrypt_ = function(ciphertext) {
 /**
  * Deserializes a private key ring from an object.
  * @param {!e2e.openpgp.SerializedKeyRing} s The serialized key ring.
- * @return {!e2e.openpgp.KeyRingType}
+ * @return {!e2e.openpgp.TransferableKeyMap}
  * @private
  */
 e2e.openpgp.KeyRing.prototype.objectToPrivKeyRing_ = function(s) {
@@ -985,7 +987,7 @@ e2e.openpgp.KeyRing.prototype.objectToPrivKeyRing_ = function(s) {
 /**
  * Deserializes a public key ring from an object.
  * @param {!e2e.openpgp.SerializedKeyRing} s The serialized key ring.
- * @return {!e2e.openpgp.KeyRingType}
+ * @return {!e2e.openpgp.TransferableKeyMap}
  * @private
  */
 e2e.openpgp.KeyRing.prototype.objectToPubKeyRing_ = function(s) {
