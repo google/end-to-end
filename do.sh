@@ -281,6 +281,19 @@ e2e_lint() {
   fi
 }
 
+e2e_build_docs() {
+  e2e_build_templates
+  # Building JS-Dossier requires Facebook Buck (http://buckbuild.com/)
+  # It's not part of a default install.
+  rm -rf docs/*
+  if [ ! -f lib/js-dossier/buck-out/gen/src/java/com/github/jsdossier/dossier.jar ]; then
+    cd lib/js-dossier
+    ./gendossier.sh -r
+    cd ../..
+  fi
+  java -jar lib/js-dossier/buck-out/gen/src/java/com/github/jsdossier/dossier.jar -c lib/docs-build/dossier-config.json
+}
+
 RETVAL=0
 
 CMD=$1
@@ -317,11 +330,14 @@ case "$CMD" in
   lint)
     e2e_lint $*;
     ;;
+  build_docs)
+    e2e_build_docs;
+    ;;
   deps)
     e2e_generate_deps;
     ;;
   *)
-    echo "Usage: $0 {build_app|build_extension|build_library|build_templates|clean|check_deps|clean_deps|install_deps|testserver|lint} [debug]"
+    echo "Usage: $0 {build_app|build_extension|build_library|build_templates|build_docs|clean|check_deps|clean_deps|install_deps|testserver|lint} [debug]"
     RETVAL=1
 esac
 
