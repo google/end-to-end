@@ -222,7 +222,7 @@ ui.Welcome.prototype.generateKey_ =
         }, this);
       }, this.displayFailure_, this);
 
-  this.keyringMgmt_.refreshOptions(true);
+  this.keyringMgmt_.refreshOptions();
 };
 
 

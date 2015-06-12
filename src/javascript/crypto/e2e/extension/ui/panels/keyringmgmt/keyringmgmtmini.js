@@ -150,18 +150,7 @@ panels.KeyringMgmtMini.prototype.decorateInternal = function(elem) {
   });
 
   // for display on welcome page
-  if (this.exportCallback_ == goog.nullFunction) {
-    goog.dom.classlist.add(
-        this.getElementByClass(constants.CssClass.KEYRING_EXPORT),
-        constants.CssClass.HIDDEN);
-  }
-
-  this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
-    action: constants.Actions.LIST_KEYS,
-    content: 'public'
-  }), this, goog.bind(function(keys) {
-    this.refreshOptions(!goog.object.isEmpty(keys));
-  }, this));
+  this.refreshOptions();
 
   if (!panels.KeyringMgmtMini.ENABLE_BACKUP_CODE) {
     goog.style.setElementShown(
@@ -380,7 +369,7 @@ panels.KeyringMgmtMini.prototype.showBackupWindow_ = function() {
  */
 panels.KeyringMgmtMini.prototype.showRestoreWindow_ = function() {
   new dialogs.RestoreKey(goog.bind(function() {
-    this.refreshOptions.apply(this, arguments);
+    this.refreshOptions();
     this.restoreKeyringCallback_.apply(this, arguments);
   }, this)).setVisible(true);
 };
@@ -411,26 +400,51 @@ panels.KeyringMgmtMini.prototype.reset = function() {
 
 
 /**
- * Refresh options when available keys have been updated
- * @param {boolean} hasKeys Whether there are keys in the keyring
+ * Refresh keyring backup/restore options.
  */
-panels.KeyringMgmtMini.prototype.refreshOptions = function(hasKeys) {
-  this.getElementByClass(constants.CssClass.KEYRING_EXPORT).disabled = !hasKeys;
-  if (hasKeys) {
-    goog.dom.classlist.remove(
-        this.getElementByClass(constants.CssClass.KEYRING_BACKUP),
-        e2e.ext.constants.CssClass.HIDDEN);
-    goog.dom.classlist.add(
-        this.getElementByClass(constants.CssClass.KEYRING_RESTORE),
-        e2e.ext.constants.CssClass.HIDDEN);
-  } else {
-    goog.dom.classlist.add(
-        this.getElementByClass(constants.CssClass.KEYRING_BACKUP),
-        e2e.ext.constants.CssClass.HIDDEN);
-    goog.dom.classlist.remove(
-        this.getElementByClass(constants.CssClass.KEYRING_RESTORE),
-        e2e.ext.constants.CssClass.HIDDEN);
-  }
+panels.KeyringMgmtMini.prototype.refreshOptions = function() {
+  // Query for public keys.
+  this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
+    action: constants.Actions.LIST_KEYS,
+    content: 'public'
+  }), this, goog.bind(function(publicKeys) {
+    // Query for private keys.
+    var hasPublicKeys = !goog.object.isEmpty(publicKeys);
+    this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
+      action: constants.Actions.LIST_KEYS,
+      content: 'private'
+    }), this, goog.bind(function(privateKeys) {
+      var hasPrivateKeys = !goog.object.isEmpty(privateKeys);
+      this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
+        action: constants.Actions.GET_KEYRING_BACKUP_DATA
+      }), this, goog.bind(/** @param {e2e.openpgp.KeyringBackupInfo} data */ (
+          function(data) {
+            var hasBackupData = Boolean(data) && Boolean(data.seed);
+            /**
+             * Hides an element if a condition is met, shows it otherwise.
+             * @param  {Element} element
+             * @param  {boolean} condition
+             */
+            function showElementOnlyIf(element, condition) {
+              goog.dom.classlist.enable(
+                  element,
+                  e2e.ext.constants.CssClass.HIDDEN,
+                  !condition);
+            }
+            // Show keyring backup only if we have a way to backup data.
+            showElementOnlyIf(
+                this.getElementByClass(constants.CssClass.KEYRING_BACKUP),
+                hasBackupData && hasPrivateKeys);
+            // Allow export only if keys are present.
+            showElementOnlyIf(
+                this.getElementByClass(constants.CssClass.KEYRING_EXPORT),
+                (this.exportCallback_ !== goog.nullFunction) &&
+                (hasPrivateKeys || hasPublicKeys)
+            );
+          }), this));
+    }, this), goog.nullFunction); // Disable errorCallback for private keys .
+  }, this));
+
 };
 
 });  // goog.scope
