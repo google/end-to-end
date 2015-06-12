@@ -136,6 +136,7 @@ e2e.ext.constants.CssClass = {
   /* Used in the keyring management section. */
   EXPORT: 'export',
   REMOVE: 'remove',
+  KEY_INFO: 'key-info',
   KEY_FINGERPRINT: 'key-fingerprint',
   KEY_META: 'key-meta',
   KEY_TYPE_DESC: 'key-type-description',

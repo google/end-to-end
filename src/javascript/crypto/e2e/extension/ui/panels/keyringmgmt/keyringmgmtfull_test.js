@@ -41,7 +41,7 @@ var constants = e2e.ext.constants;
 var mockControl = null;
 var panel = null;
 var stubs = new goog.testing.PropertyReplacer();
-var testCase = goog.testing.AsyncTestCase.createAndInstall();
+var testCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 
 
 function setUp() {
@@ -121,9 +121,8 @@ function testGetKeysDescription() {
       fingerprint: []
     }]
   }]);
-  assertEquals(2, keys.length);
+  assertEquals(1, keys.length);
   assertEquals('publicKeyDescription', keys[0].type);
-  assertEquals('publicSubKeyDescription', keys[1].type);
 }
 
 

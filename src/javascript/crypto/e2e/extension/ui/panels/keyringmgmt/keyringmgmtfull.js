@@ -25,7 +25,6 @@ goog.require('e2e.ext.constants.ElementId');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
 goog.require('e2e.ext.ui.templates.panels.keyringmgmt');
 goog.require('goog.array');
-goog.require('goog.crypt');
 goog.require('goog.dom');
 goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
@@ -128,7 +127,8 @@ panels.KeyringMgmtFull.prototype.decorateInternal = function(elem) {
     sectionTitle: chrome.i18n.getMessage('keyMgmtTitle'),
     exportLabel: chrome.i18n.getMessage('keyMgmtExportLabel'),
     removeLabel: chrome.i18n.getMessage('keyMgmtRemoveLabel'),
-    noneLabel: chrome.i18n.getMessage('keyMgmtNoneLabel')
+    noneLabel: chrome.i18n.getMessage('keyMgmtNoneLabel'),
+    keyFingerprintLabel: chrome.i18n.getMessage('keyFingerprintLabel')
   });
 
   var keyringTable = this.getElement().querySelector('table');
@@ -251,17 +251,8 @@ panels.KeyringMgmtFull.prototype.getKeysDescription_ = function(keys) {
     return [{
       type: type,
       algorithm: key.key.algorithm,
-      fingerprint: goog.crypt.byteArrayToHex(key.key.fingerprint)
-    }].concat(goog.array.map(key.subKeys, function(subKey) {
-      var type = (subKey.secret ?
-          chrome.i18n.getMessage('secretSubKeyDescription') :
-          chrome.i18n.getMessage('publicSubKeyDescription'));
-      return {
-        type: type,
-        algorithm: subKey.algorithm,
-        fingerprint: goog.crypt.byteArrayToHex(subKey.fingerprint)
-      };
-    }));
+      fingerprint: key.key.fingerprintHex
+    }];
   }));
 };
 

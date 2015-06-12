@@ -22,6 +22,7 @@
  * @param exportLabel The label to use for the export link.
  * @param removeLabel The label to use for the remove link.
  * @param noneLabel The label to display when there are no keys.
+ * @param keyFingerprintLabel Text to display as a fingerprint label.
  */
 {template .listKeys}
   <h1>{$sectionTitle}</h1>
@@ -32,6 +33,7 @@
           {param keyMeta: $keyMeta /}
           {param exportLabel: $exportLabel /}
           {param removeLabel: $removeLabel /}
+          {param keyFingerprintLabel: $keyFingerprintLabel /}
         {/call}
       </tr>
     {ifempty}
@@ -55,13 +57,17 @@
  * @param keyMeta The metadata of the key that must be displayed.
  * @param exportLabel The label to use for the export link.
  * @param removeLabel The label to use for the remove link.
+ * @param keyFingerprintLabel Text to display as a fingerprint label.
  */
 {template .keyEntry}
-  <td>
+  <td class="{e2e.ext.constants.CssClass.KEY_INFO}">
     <div class="{e2e.ext.constants.CssClass.KEY_UID}">{$keyMeta.userId}</div>
     {foreach $key in $keyMeta.keys}
       <div class="{e2e.ext.constants.CssClass.KEY_META}">
-        {$key.type} {$key.algorithm} {$key.fingerprint}
+        <span class="{e2e.ext.constants.CssClass.KEY_FINGERPRINT}" title="{$keyFingerprintLabel}">
+          {$key.fingerprint}
+        </span>{sp}(
+        {$key.type} {$key.algorithm})
       </div>
     {/foreach}
   </td>
