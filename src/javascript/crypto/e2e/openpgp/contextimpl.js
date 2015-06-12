@@ -276,7 +276,11 @@ e2e.openpgp.ContextImpl.prototype.verifyClearSign_ = function(
       clearSignMessage = e2e.openpgp.asciiArmor.parseClearSign(
           clearSignMessage);
     }
-    return this.processLiteralMessage_(clearSignMessage.toLiteralMessage());
+    return this.processLiteralMessage_(clearSignMessage.toLiteralMessage()).
+        addCallback(function(result) {
+          result.decrypt.wasEncrypted = false;
+          return result;
+        });
   } catch (e) {
     return e2e.async.Result.toError(e);
   }
@@ -320,9 +324,15 @@ e2e.openpgp.ContextImpl.prototype.verifyDecryptInternal = function(
     if (block instanceof e2e.openpgp.block.EncryptedMessage) {
       var keyCallback = goog.bind(this.keyRing_.getSecretKey, this.keyRing_);
       return block.decrypt(keyCallback, passphraseCallback).addCallback(
-          this.processLiteralMessage_, this);
+          this.processLiteralMessage_, this).addCallback(function(result) {
+        result.decrypt.wasEncrypted = true;
+        return result;
+      });
     } else {
-      return this.processLiteralMessage_(block);
+      return this.processLiteralMessage_(block).addCallback(function(result) {
+        result.decrypt.wasEncrypted = false;
+        return result;
+      });
     }
   } catch (e) {
     return e2e.async.Result.toError(e);
@@ -350,7 +360,8 @@ e2e.openpgp.ContextImpl.prototype.processLiteralMessage_ = function(block) {
         'charset': literalBlock.getCharset(),
         'creationTime': literalBlock.getTimestamp(),
         'filename': literalBlock.getFilename()
-      }
+      },
+      'wasEncrypted': false
     },
     'verify': verifyResult
   };
