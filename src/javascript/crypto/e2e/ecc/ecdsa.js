@@ -80,6 +80,16 @@ e2e.ecc.Ecdsa.prototype.getHash = function() {
 
 
 /**
+ * Sets the appropriate hash algorithm. Used e.g. during signature verification
+ * in OpenPGP, where the signer specifies which algorithm was used.
+ * @param {!e2e.hash.Hash} hash The hash algorithm.
+ */
+e2e.ecc.Ecdsa.prototype.setHash = function(hash) {
+  this.hash_ = hash;
+};
+
+
+/**
  * Applies the signing algorithm to the data.
  * @param {!Uint8Array|!e2e.ByteArray|string} message The data to sign.
  * @return {!e2e.signer.signature.Signature}
