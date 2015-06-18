@@ -14,3 +14,6 @@
 	path = lib/closure-stylesheets
 	url = https://github.com/google/closure-stylesheets
 	branch = fd1095b9a5e84a9a6a9c00cf24949cabe33478b6
+[submodule "lib/js-dossier"]
+	path = lib/js-dossier
+	url = https://github.com/jleyba/js-dossier
