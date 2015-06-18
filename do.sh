@@ -299,6 +299,7 @@ e2e_build_docs() {
   e2e_build_templates
   # Building JS-Dossier requires Facebook Buck (http://buckbuild.com/)
   # It's not part of a default install.
+  # TODO(koto) Install Buck or ask the user to install Buck.
   rm -rf docs/*
   if [ ! -f lib/js-dossier/buck-out/gen/src/java/com/github/jsdossier/dossier.jar ]; then
     cd lib/js-dossier
