@@ -284,7 +284,7 @@
     "description": "The label to inform the user that he needs a private key to use signing/decryption functionality"
   },
   "promptEncryptionPassphraseMessage": {
-    "message": "Please enter a passphrase for this message.",
+    "message": "Please enter a passphrase for this message.\nAnyone who knows the passphrase will be able to read the message.",
     "description": "A sentence prompting the user to specify a passphrase for symmetric encryption."
   },
   "promptEncryptionPassphraseConfirmMessage": {
@@ -294,6 +294,10 @@
   "promptEncryptionPassphraseLink": {
     "message": "Protect with a passphrase",
     "description": "A sentence notifying the user where to enter passphrases for symmetric encryption."
+  },
+  "promptEncryptionPassphraseLinkTooltip": {
+    "message": "Protect the message with a passhrase. Anyone who knows the passphrase will be able to read the message.",
+    "description": "A sentence notifying the user what passphrase encryption does."
   },
   "promptPassphraseMask": {
     "message": "(passphrase)",

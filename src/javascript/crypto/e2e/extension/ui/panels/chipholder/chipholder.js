@@ -124,6 +124,8 @@ panels.ChipHolder.prototype.decorateInternal = function(elem) {
     recipientsTitle: chrome.i18n.getMessage('promptRecipientsPlaceholder'),
     passphraseEncryptionLinkTitle: chrome.i18n.getMessage(
         'promptEncryptionPassphraseLink'),
+    passphraseEncryptionLinkTooltip: chrome.i18n.getMessage(
+        'promptEncryptionPassphraseLinkTooltip')
   });
 
   this.shadowInputElem_ = elem.querySelector('input');
