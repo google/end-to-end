@@ -18,53 +18,31 @@
  * Renders the text for key import confirmation dialog.
  * @param promptImportKeyConfirmLabel A sentence asking the user to confirm
  *     the key import.
- * @param selectAllLabel The label for the "select all" link.
  * @param keys Array of keys (e2e.openpgp.Keys).
  * @param secretKeyDescription Text describing a secret key.
  * @param publicKeyDescription Text describing a public key.
- * @param secretSubKeyDescription Text describing a secret subkey.
- * @param publicSubKeyDescription Text describing a public subkey.
+ * @param keyFingerprintLabel Text to display as a fingerprint label.
  */
 {template .importKeyConfirm}
-  <p>{$promptImportKeyConfirmLabel} (
-    <a class="{e2e.ext.constants.CssClass.SELECT_ALL_LINK}">{$selectAllLabel}</a>)
+  <p>{$promptImportKeyConfirmLabel}
   </p>
-  <div>
-    {foreach $key in $keys}
-      <div class="{e2e.ext.constants.CssClass.KEY_META}">
-        <p>
-          <strong>
-            {foreach $uid in $key.uids}
-              {$uid}
-              {if not isLast($uid)}, {/if}
-            {/foreach}
-          </strong>:
-        </p>
-        {let $keyId kind="text"}key-{index($key)}{/let}
-        <br><input id="{$keyId}" type="checkbox" data-mainkey="{index($key)}">
-        <label for="{$keyId}">
-          {call .keyPacketInfo}
-            {param keyPacketInfo: $key.key /}
-            {param secretKeyDescription: $secretKeyDescription /}
-            {param publicKeyDescription: $publicKeyDescription /}
-          {/call}
-        </label>
-        {foreach $subKeyInfo in $key.subKeys}
-          {let $subKeyId kind="text"}{$keyId}-sub-{index($subKeyInfo)}{/let}
-          <br><input id="{$subKeyId}" type="checkbox"
-                     data-mainkey="{index($key)}" data-subkey="yes"
-                     class="{e2e.ext.constants.CssClass.KEY_SUBKEY}">
-          <label for="{$subKeyId}">
-            {call .keyPacketInfo}
-              {param keyPacketInfo: $subKeyInfo /}
-              {param secretKeyDescription: $secretSubKeyDescription /}
-              {param publicKeyDescription: $publicSubKeyDescription /}
-            {/call}
-          </label>
-        {/foreach}
+  {foreach $key in $keys}
+    <div class="{e2e.ext.constants.CssClass.KEY_INFO}">
+      {foreach $uid in $key.uids}
+      <div class="{e2e.ext.constants.CssClass.KEY_UID}">
+        {$uid}
       </div>
-    {/foreach}
-  </div>
+      {/foreach}
+      <div>
+        {call .keyPacketInfo}
+          {param keyPacketInfo: $key.key /}
+          {param secretKeyDescription: $secretKeyDescription /}
+          {param publicKeyDescription: $publicKeyDescription /}
+          {param keyFingerprintLabel: $keyFingerprintLabel /}
+        {/call}
+      </div>
+    </div>
+  {/foreach}
 {/template}
 
 
@@ -73,20 +51,19 @@
  * @param keyPacketInfo Single packet key info (e2e.openpgp.KeyPacketInfo).
  * @param secretKeyDescription Text to display if the key is secret.
  * @param publicKeyDescription Text to display if the key is public.
+ * @param keyFingerprintLabel Text to display as a fingerprint label.
  */
 {template .keyPacketInfo}
-  <div>
-    <span class="{e2e.ext.constants.CssClass.KEY_TYPE_DESC}">
-      {if $keyPacketInfo.secret}
-        {$secretKeyDescription}
-      {else}
-        {$publicKeyDescription}
-      {/if}
-      {sp}{$keyPacketInfo.algorithm}
-    </span>
-    {sp}
-    <span class="{e2e.ext.constants.CssClass.KEY_FINGERPRINT}">
+  <div class="{e2e.ext.constants.CssClass.KEY_META}">
+    <span class="{e2e.ext.constants.CssClass.KEY_FINGERPRINT}" title="{$keyFingerprintLabel}">
       {$keyPacketInfo.fingerprintHex}
-    </span>
+    </span>{sp}
+    ({if $keyPacketInfo.secret}
+      {$secretKeyDescription}
+    {else}
+      {$publicKeyDescription}
+    {/if}
+    {sp}{$keyPacketInfo.algorithm}
+    )
   </div>
 {/template}

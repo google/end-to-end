@@ -80,7 +80,7 @@
     "description": "A verb prompting the user to import an OpenPGP key into End-To-End."
   },
   "promptImportKeyConfirmLabel": {
-    "message": "Do you want to import the following keys?",
+    "message": "Do you want to import the following keys?\n\nYou should verify (e.g. with a phone call) that the key owners displayed below use the same key fingerprints.",
     "description": "A sentence asking the user to confirm the key import."
   },
   "promptImportKeyVerifyLabel": {
@@ -410,5 +410,9 @@
   "interactionEnabled": {
     "message": "Everything you type is now unencrypted. Tap left Ctrl-key to reenable secure mode.",
     "description": "A sentence explaining that the interaction with the web application is enabled."
+  },
+  "keyFingerprintLabel": {
+    "message": "Key fingerprint",
+    "description": "The OpenPGP key fingerprint"
   }
 }

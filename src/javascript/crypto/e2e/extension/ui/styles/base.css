@@ -163,13 +163,17 @@ input:focus {
   visibility: hidden;
 }
 
-.key-meta > * {
-  display: inline-block;
+.key-info {
+  padding: 5px;
+  width: 530px;
 }
 
-.key-meta > input[type="checkbox"] {
-  margin-right: 10px;
-  vertical-align: middle;
+.key-meta {
+  opacity: .6;
+}
+
+.key-meta > * {
+  display: inline-block;
 }
 
 .keyring-signup {
@@ -195,7 +199,6 @@ input:focus {
 }
 
 .key-fingerprint {
-  font-family: monospace;
   white-space: pre;
 }
 

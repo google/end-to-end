@@ -119,9 +119,8 @@ function testGetKeysDescription() {
       fingerprint: []
     }]
   }]);
-  assertEquals(2, keys.length);
+  assertEquals(1, keys.length);
   assertEquals('publicKeyDescription', keys[0].type);
-  assertEquals('publicSubKeyDescription', keys[1].type);
 }
 
 
