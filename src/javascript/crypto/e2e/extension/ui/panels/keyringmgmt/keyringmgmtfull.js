@@ -182,7 +182,7 @@ panels.KeyringMgmtFull.prototype.addNewKey = function(userId, pgpKeys) {
     removeLabel: chrome.i18n.getMessage('keyMgmtRemoveLabel')
   });
   keyringTable.appendChild(tr);
-  this.keyringMgmtControls_.refreshOptions(true);
+  this.keyringMgmtControls_.refreshOptions();
 };
 
 
@@ -212,10 +212,8 @@ panels.KeyringMgmtFull.prototype.removeKey = function(userId) {
         templates.noneEntry, {
           'noneLabel': chrome.i18n.getMessage('keyMgmtNoneLabel')
         });
-    this.keyringMgmtControls_.refreshOptions(false);
-  } else {
-    this.keyringMgmtControls_.refreshOptions(true);
   }
+  this.keyringMgmtControls_.refreshOptions();
 };
 
 
