@@ -552,6 +552,7 @@ function testEncryptSign() {
           assertTrue(goog.isDefAndNotNull(verify));
           assertEquals(0, verify.failure.length);
           assertEquals(1, verify.success.length);
+          assertTrue(result['decrypt']['wasEncrypted']);
           assertArrayEquals(privateKey.key.fingerprint,
             verify.success[0].key.fingerprint);
           assertTrue(goog.array.contains(verify.success[0].uids, USER_ID));
@@ -690,9 +691,8 @@ function testVerifyClearSign() {
           assertEquals(plaintext, e2e.byteArrayToString(result.decrypt.data));
           assertTrue(result.verify.success.length > 0);
           assertTrue(result.verify.failure.length == 0);
-        }).addErrback(function(error) {
-        throw error;
-        });
+          assertFalse(result.decrypt.wasEncrypted);
+        }).addErrback(fail);
       // change the message
       clearSigned = clearSigned.replace('cleartext', 'modified');
       asyncTestCase.waitForAsync('waiting for clear sign verification.');
@@ -701,9 +701,7 @@ function testVerifyClearSign() {
           asyncTestCase.continueTesting();
           assertTrue(result.verify.failure.length > 0);
           assertTrue(result.verify.success.length == 0);
-        }).addErrback(function(error) {
-          throw error;
-        });
+        }).addErrback(fail);
     });
 }
 

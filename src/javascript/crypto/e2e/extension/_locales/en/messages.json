@@ -19,6 +19,10 @@
     "message": "Decryption successful!",
     "description": "Message informing about a successful decryption of a message."
   },
+  "promptMessageNotEncryptedMsg": {
+    "message": "Message was not encrypted.",
+    "description": "Message informing that the message was not encrypted."
+  },
   "promptVerificationSuccessMsg": {
     "message": "Good signature(s) from $1.",
     "description": "Message informing about a successful signature verification."

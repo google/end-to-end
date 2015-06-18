@@ -64,7 +64,7 @@ e2e.openpgp.EncryptOptions;
 /**
  * Result of a decrypt operation.
  * @typedef {?{data: !e2e.ByteArray,
- *     options: !e2e.openpgp.FileOptions}}
+ *     options: !e2e.openpgp.FileOptions, wasEncrypted: boolean}}
  */
 e2e.openpgp.DecryptResult;
 
