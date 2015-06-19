@@ -31,6 +31,7 @@ goog.require('e2e.ecc.constant');
 goog.require('e2e.ecc.constant.ed_25519.G_FAST_MULTIPLY_TABLE');
 goog.require('e2e.ecc.constant.p_256.G_FAST_MULTIPLY_TABLE');
 goog.require('e2e.ecc.constant.p_384.G_FAST_MULTIPLY_TABLE');
+goog.require('e2e.ecc.constant.p_521.G_FAST_MULTIPLY_TABLE');
 goog.require('e2e.ecc.curve.Curve25519');
 goog.require('e2e.ecc.curve.Ed25519');
 goog.require('e2e.ecc.curve.Nist');
@@ -248,18 +249,27 @@ e2e.ecc.DomainParam.NIST.fromCurve = function(curveName) {
     constants = e2e.ecc.constant.P_256;
     fastModulus = e2e.ecc.fastModulus.Nist.P_256;
     fastMultiplyTable = e2e.ecc.constant.p_256.G_FAST_MULTIPLY_TABLE;
-  } else {
+  } else if (curveName == e2e.ecc.PrimeCurve.P_384) {
     constants = e2e.ecc.constant.P_384;
     fastModulus = e2e.ecc.fastModulus.Nist.P_384;
     fastMultiplyTable = e2e.ecc.constant.p_384.G_FAST_MULTIPLY_TABLE;
+  } else if (curveName == e2e.ecc.PrimeCurve.P_521) {
+    constants = e2e.ecc.constant.P_521;
+    fastMultiplyTable = e2e.ecc.constant.p_521.G_FAST_MULTIPLY_TABLE;
+  } else {
+    throw new e2e.error.InvalidArgumentsError('Unknown curve.');
   }
   var q = new e2e.BigPrimeNum(constants.Q);  // prime field
   var b = new e2e.BigPrimeNum(constants.B);  // parameter of curve
-  q.setFastModulusType(fastModulus);
+  if (fastModulus) {
+    q.setFastModulusType(fastModulus);
+  }
   var curve = new e2e.ecc.curve.Nist(q, b);
 
   var g = curve.pointFromByteArray(constants.G);
-  g.setFastMultiplyTable(fastMultiplyTable);
+  if (fastMultiplyTable) {
+    g.setFastMultiplyTable(fastMultiplyTable);
+  }
   var n = new e2e.BigPrimeNum(constants.N);  // order of group
   n.setFastModulusType(e2e.FastModulus.FFFFFF);
   return new e2e.ecc.DomainParam.NIST(curve, g, n);
