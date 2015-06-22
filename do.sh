@@ -296,17 +296,23 @@ e2e_lint() {
 }
 
 e2e_build_docs() {
-  e2e_build_templates
-  # Building JS-Dossier requires Facebook Buck (http://buckbuild.com/)
-  # It's not part of a default install.
-  # TODO(koto) Install Buck or ask the user to install Buck.
   rm -rf docs/*
   if [ ! -f lib/js-dossier/buck-out/gen/src/java/com/github/jsdossier/dossier.jar ]; then
-    cd lib/js-dossier
-    ./gendossier.sh -r
-    cd ../..
+    if [ -z `which buck` ]; then
+      echo "Facebook Buck is not installed. Buck is needed by js-dossier to build the documentation."
+      echo "Follow instructions at http://buckbuild.com/setup/quick_start.html to install."
+      echo "Make sure 'buck' command line tool is available."
+      RETVAL=1
+      exit
+    else
+      cd lib/js-dossier
+      ./gendossier.sh -r
+      cd ../..
+    fi
   fi
+  e2e_build_templates
   java -jar lib/js-dossier/buck-out/gen/src/java/com/github/jsdossier/dossier.jar -c lib/docs-build/dossier-config.json
+  RETVAL=$?
 }
 
 RETVAL=0
