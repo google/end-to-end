@@ -980,6 +980,8 @@ PRgzQGSSzNHL1g080lS+7zg7QsZiab11+H/7PzFDUVUlteFhH0ZA0l70nx8wbuhV
 
 <!--
 OpenKeychain 3.1.0-generated ECC key using P_521 curve.
+Key is invalid as it uses too short SHA-256 hash in the signature.
+See https://github.com/open-keychain/open-keychain/issues/1353
 Old: Public Key Packet(tag 6)(147 bytes)
     Ver 4 - new
     Public key creation time - Wed Jun 17 17:08:33 CEST 2015
@@ -1042,7 +1044,7 @@ Old: Signature Packet(tag 2)(164 bytes)
     Hash left 2 bytes - 25 a5
     Unknown signature(pub 19)
 -->
-<textarea id="InboundKeyOpenKeychain_ECDSA_ECDH_P521">
+<textarea id="InboundKeyOpenKeychain_ECDSA_ECDH_P521_bug1353">
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 
 mJMEVYGNcRMFK4EEACMEIwQBu5yuGF+FhJeOB6HjLUEwF8qgGKDxxhOjCdqoMnQ2
@@ -1064,241 +1066,321 @@ w7E9Y/YqHaZqrBHVbba53gP8Y0HW
 -----END PGP PUBLIC KEY BLOCK-----
 </textarea>
 <!--
-:secret key packet:
-    version 4, algo 19, created 1434553713, expires 0
-    unknown algorithm 19
-:user ID packet: "Ecdsa 521 <ecdsa521@example.com>"
-:signature packet: algo 19, keyid 7257CF4D2BA778AD
-    version 4, created 1434553713, md5len 0, sigclass 0x13
-    digest algo 8, begin of digest 87 c6
-    hashed subpkt 11 len 4 (pref-sym-algos: 9 8 7 10)
-    hashed subpkt 21 len 6 (pref-hash-algos: 8 10 9 11 2 3)
-    hashed subpkt 22 len 3 (pref-zip-algos: 1 2 3)
-    hashed subpkt 25 len 1 (primary user ID)
-    critical hashed subpkt 2 len 4 (sig created 2015-06-17)
-    critical hashed subpkt 30 len 1 (features: 01)
-    critical hashed subpkt 27 len 1 (key flags: 23)
-    subpkt 16 len 8 (issuer key ID 7257CF4D2BA778AD)
-    unknown algorithm 19
-:secret sub key packet:
-    version 4, algo 18, created 1434553713, expires 0
-    unknown algorithm 18
-:signature packet: algo 19, keyid 7257CF4D2BA778AD
-    version 4, created 1434553713, md5len 0, sigclass 0x18
-    digest algo 8, begin of digest 25 a5
-    critical hashed subpkt 2 len 4 (sig created 2015-06-17)
-    critical hashed subpkt 27 len 1 (key flags: 0C)
-    subpkt 16 len 8 (issuer key ID 7257CF4D2BA778AD)
-    unknown algorithm 19
-
--->
-<textarea id="InboundKeyOpenKeychain_ECDSA_ECDH_P521_Private">
------BEGIN PGP PRIVATE KEY BLOCK-----
-
-lQEIBFWBjXETBSuBBAAjBCMEAbucrhhfhYSXjgeh4y1BMBfKoBig8cYTownaqDJ0
-NmIFXvsbI3kmFI1E6aeG8tp8Lkn3A4w31B0Kz08JNY/N5y8JABTk/cvCI/ox2l+U
-amFFwyzFNVC2KcwlpPg65eBnUcQwhQacu9YhBaMf0RVbupTlwRXvwJpiwYfGgBA3
-oIwy/Xsc/gkDCE9j4lDBugiAkMka2zPwQ2TWd1kECUhaCi3rOyghN/4obgjYzveq
-+snxlElikhuSk6RERS2WlbpvoKtQuw5vanXgOs+0WAvJfSpiMIr0WVvvXXroPsup
-VEgKu4kWPGrXDXRdq9ZxmDf8u1wnu/FlVlpDtCBFY2RzYSA1MjEgPGVjZHNhNTIx
-QGV4YW1wbGUuY29tPoi9BBMTCAAiBQsJCAcKBxUICgkLAgMEFgECAwIZAQWCVYGN
-cQKeAQKbIwAKCRByV89NK6d4rYfGAgkB2dKuNuhKPGNqsMTM0fKX32YPoxwTXf1E
-exk2GIdFS0M4CU8SV5VJFslgzmpRLoXhgo9bcR/hOHPRbJHj2siPoiMCCKd3W9t6
-Gekd4vy5dNWsVlZ6xKsOAcRosaXk15wYF5v20KSShY9+yDzNCW5MrbG4fgVbfdan
-bifPBf039Sxf4AgfnQELBFWBjXESBSuBBAAjBCMEAGIXgw5yM16Sk/3yz3RYGJMw
-BcLtKO6jjbuneKjaRgyVbwyHEmeMj/LuTll5QHDOdTP5Y/sN36v1WOM4CrRIHYZb
-AOCpwjM/Czt5Wz5ANT9UOOhUwR2D3ulMGe6bTVe5X5JcMzYC8FznLe0sHqWvXZfj
-gL7Yv3PDDD8kl8YEVVKb9EqyAwEIB/4JAwhPY+JQwboIgJDWPNzkx/L6ZQrbIPYi
-wZgilHvRTpzRMsv//8gHMfV1W/8cQ2AB9svKBLhNrdA3shhyHskADk0Ir0zK1Rex
-evh4rXV0KZCkC4BhO3ZiUmr9/TxubrC9AE0XYMgWlo5U8a9s9m8d854ciKQEGBMI
-AAkFglWBjXECmwwACgkQclfPTSuneK0lpQIJAWL5rveEe/occEE8uzG4eQ4+ATWj
-xxW410vdK2CBhGWGHs7xRTR1SwQw/+6Sz0knGr7m+rxBMjlQHoJm9WBN8HsFAgID
-u9IDIGsF97QEFbe6E5qaEY/nKk7j+IUTcbOLg8/32mgpjxOuLis8L/37bsOxPWP2
-Kh2maqwR1W22ud4D/GNB1g==
-=Q87O
------END PGP PRIVATE KEY BLOCK-----
-</textarea>
-<!--
-Message encrypted with OpenKeychain to the above P521 key.
-Old: Public-Key Encrypted Session Key Packet(tag 1)(194 bytes)
-    New version(3)
-    Key ID - 0xA932A3DD4983ECB5
-    Pub alg - Reserved for Elliptic Curve(pub 18)
-        unknown(pub 18)
-        -> m = sym alg(1 byte) + checksum(2 bytes) + PKCS-1 block type 02
-New: Symmetrically Encrypted and MDC Packet(tag 18)(266 bytes)
-    Ver 1
-    Encrypted data [sym alg is specified in pub-key encrypted session key]
-        (plain text + MDC SHA1(20 bytes))
--->
-<textarea id="Inbound_ECDSA_ECDH_P521_OpenKeychain">
------BEGIN PGP MESSAGE-----
-
-hMIDqTKj3UmD7LUSBCMEAdPLxo0e7ejWt81UdGVCaI5GhOEZ5RwqOI51SYPUiDvi
-6Lo34+vxEDVvDcWW+0dUuPK/v+tnFCOOrwMOtVLOcGroAQsdRbdnUV3fjPjxHSr1
-yTNIfE/WrYXKCNqT4JvaYx2GQLCXFTbCGgMofyr45nNGpz0vvXUqB2/RazuDQeRu
-VtqmMH5I8CBFW0856MvEiwT2W2g0apvy7q3BNOk8GA0xdkMFDPZ3M95rTRhMjjWu
-HHG/XtLASgEGAHvSwKeziqfmZGSjDnBRtkAula61EIuvMnYw4pgm7mAyx6ryJXF6
-cFgOs0WbPwG6t6HuGLgxcfdpGyFX706SCkAWq7J1/jGa9XLJ2txvfMPpaRBH3TWc
-h3+mk5jgN4ODJXk2fd4CjWt83qO8Duikr66qE9DsQt0O37hX01Yi52Bdo40I0vUv
-1AzMuX6lZccauMV5cKS2UgiTm1NPMiqKbB39xHNNyziyn7ZXaX59IMgGXHEWGGyc
-IcUJwfF4+onkyVKHdStKqMC2XeJcj+vkbe3+SL4dH+0U/U092JN49yBKpySs9sRd
-cXG9ZyP2p4f2VG2EKqo9MpkCXSFa2Vztu8nejcFmiq0b
-=XWrI
------END PGP MESSAGE-----
-</textarea>
-<!--
-ECDSA/ECDH key created with GnuPG 2.1.0 using P_256 curve.
+ECDSA/ECDH key created with GnuPG 2.1.5 using P_256 curve.
+# off=0 ctb=98 tag=6 hlen=2 plen=82
 :public key packet:
-    version 4, algo 19, created 1434716424, expires 0
+    version 4, algo 19, created 1434973135, expires 0
     pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
     pkey[1]: [515 bits]
-    keyid: 546E46573C3D67DD
-# off=84 ctb=b4 tag=13 hlen=2 plen=45
-:user ID packet: "gpg21p256@example.com <gpg21p256@example.com>"
-# off=131 ctb=88 tag=2 hlen=2 plen=121
-:signature packet: algo 19, keyid 546E46573C3D67DD
-    version 4, created 1434716424, md5len 0, sigclass 0x13
-    digest algo 10, begin of digest 46 7a
-    hashed subpkt 2 len 4 (sig created 2015-06-19)
+    keyid: 0818CA3A55C666AE
+# off=84 ctb=b4 tag=13 hlen=2 plen=47
+:user ID packet: "gpg21_p256@example.com <gpg21_p256@example.com>"
+# off=133 ctb=88 tag=2 hlen=2 plen=121
+:signature packet: algo 19, keyid 0818CA3A55C666AE
+    version 4, created 1434973135, md5len 0, sigclass 0x13
+    digest algo 10, begin of digest 55 10
+    hashed subpkt 2 len 4 (sig created 2015-06-22)
     hashed subpkt 27 len 1 (key flags: 03)
     hashed subpkt 11 len 4 (pref-sym-algos: 9 8 7 3)
     hashed subpkt 21 len 4 (pref-hash-algos: 10 9 8 11)
     hashed subpkt 22 len 4 (pref-zip-algos: 2 3 1 0)
     hashed subpkt 30 len 1 (features: 01)
     hashed subpkt 23 len 1 (key server preferences: 80)
-    subpkt 16 len 8 (issuer key ID 546E46573C3D67DD)
-    data: [253 bits]
+    subpkt 16 len 8 (issuer key ID 0818CA3A55C666AE)
     data: [256 bits]
-# off=254 ctb=b8 tag=14 hlen=2 plen=86
+    data: [255 bits]
+# off=256 ctb=b8 tag=14 hlen=2 plen=86
 :public sub key packet:
-    version 4, algo 18, created 1434716424, expires 0
+    version 4, algo 18, created 1434973135, expires 0
     pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
     pkey[1]: [515 bits]
     pkey[2]: [32 bits]
-    keyid: F08E767E3F09BC21
-# off=342 ctb=88 tag=2 hlen=2 plen=97
-:signature packet: algo 19, keyid 546E46573C3D67DD
-    version 4, created 1434716424, md5len 0, sigclass 0x18
-    digest algo 10, begin of digest 32 a3
-    hashed subpkt 2 len 4 (sig created 2015-06-19)
+    keyid: F89934E4D8113B1B
+# off=344 ctb=88 tag=2 hlen=2 plen=97
+:signature packet: algo 19, keyid 0818CA3A55C666AE
+    version 4, created 1434973135, md5len 0, sigclass 0x18
+    digest algo 10, begin of digest 82 d1
+    hashed subpkt 2 len 4 (sig created 2015-06-22)
     hashed subpkt 27 len 1 (key flags: 0C)
-    subpkt 16 len 8 (issuer key ID 546E46573C3D67DD)
-    data: [256 bits]
+    subpkt 16 len 8 (issuer key ID 0818CA3A55C666AE)
     data: [255 bits]
+    data: [256 bits]
 -->
-<textarea id="InboundKeyGnupg_2_1_0_ECDSA_ECDH_P256">
+<textarea id="InboundKeyGnupg_2_1_5_ECDSA_ECDH_P256">
 -----BEGIN PGP PUBLIC KEY BLOCK-----
 Comment: GPGTools - https://gpgtools.org
 
-mFIEVYQJCBMIKoZIzj0DAQcCAwSu1blqD4xRxflPPtUracFJO8Hbj3vfnV+M/viF
-9TsJ+ifjFXPilxE7FIkdEmjDOmIgE3Pq8W977BD6PfnoysXrtC1ncGcyMXAyNTZA
-ZXhhbXBsZS5jb20gPGdwZzIxcDI1NkBleGFtcGxlLmNvbT6IeQQTEwoAIQUCVYQJ
-CAIbAwULCQgHAwUVCgkICwUWAgMBAAIeAQIXgAAKCRBUbkZXPD1n3UZ6AP0VWtaN
-n0njChfUKFfklS8qXfxwwRCaShZhXEVHuntFxgEAv2IHBD5yhobJUQC/hbRB4nOt
-PUbho812Sis7m9aBeb+4VgRVhAkIEggqhkjOPQMBBwIDBEPdGXfJnmHFES06KKjN
-uZask5QwvgBv83HPslIn+2NkKXEkzdIfIShSZeyqARSXtbkPjCQWZjxfIAMCLeJQ
-hiwDAQgHiGEEGBMKAAkFAlWECQgCGwwACgkQVG5GVzw9Z90yowEAg6LPttwxBfTp
-P4fTqCNvGMg4BnnAusfOqEr7G9k0/sMA/2phx0XWeUhxwPF9sQ/DwhDjasGC/8d3
-W4fW17VSnUO2
-=wlFr
+mFIEVYfzzxMIKoZIzj0DAQcCAwQEkXu4nElf1Kfa+aP0rb9CJHWYFv9mgqvysuwH
+0Hwni0EAFx83YYTQSRBUkbqCysbzjhORwYBhualBtMr1kHFStC9ncGcyMV9wMjU2
+QGV4YW1wbGUuY29tIDxncGcyMV9wMjU2QGV4YW1wbGUuY29tPoh5BBMTCgAhBQJV
+h/PPAhsDBQsJCAcDBRUKCQgLBRYCAwEAAh4BAheAAAoJEAgYyjpVxmauVRABAMf4
+ZCDDdDp+1scv+NGB7k8r9dtc/9QcRUUnsiNa4yRGAP9LK5ITIA+PV/vtB09QmpCP
+/9aOpSZzKyfjceQle7CWorhWBFWH888SCCqGSM49AwEHAgME7mKFDQJzG531qYVj
+8NV6vhQL6bKpgpPl5FqayFy1BhFv3+2EBZWJr9T24zSB1frLY14iTss5Mt3rY3yS
+VwiPugMBCAeIYQQYEwoACQUCVYfzzwIbDAAKCRAIGMo6VcZmroLRAP9Hp6IOOMn9
+EVpsciIEykv74rLmWN/qFAVplmgx2TtvogEArLOz1qvB+ekNqKjuootKKy1TF3bY
+6q3VAEAzGq5CPtQ=
+=6AIQ
 -----END PGP PUBLIC KEY BLOCK-----
 </textarea>
 <!--
 Private key for the above key.
+# off=0 ctb=94 tag=5 hlen=2 plen=166
 :secret key packet:
-    version 4, algo 19, created 1434716424, expires 0
+    version 4, algo 19, created 1434973135, expires 0
     pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
     pkey[1]: [515 bits]
-    iter+salt S2K, algo: 7, SHA1 protection, hash: 2, salt: EAEAE450BA93F09C
+    iter+salt S2K, algo: 7, SHA1 protection, hash: 2, salt: 848CF649FF3938E7
     protect count: 15728640 (222)
-    protect IV:  62 bf 6e 83 0c 14 ca c3 df 1e 7c ff 66 36 8b 90
+    protect IV:  95 2e e6 3e 96 05 2c d4 3a 28 64 d5 c3 cc 9e a7
     skey[2]: [v4 protected]
-    keyid: 546E46573C3D67DD
-# off=167 ctb=b4 tag=13 hlen=2 plen=45
-:user ID packet: "gpg21p256@example.com <gpg21p256@example.com>"
-# off=214 ctb=88 tag=2 hlen=2 plen=121
-:signature packet: algo 19, keyid 546E46573C3D67DD
-    version 4, created 1434716424, md5len 0, sigclass 0x13
-    digest algo 10, begin of digest 46 7a
-    hashed subpkt 2 len 4 (sig created 2015-06-19)
+    keyid: 0818CA3A55C666AE
+# off=168 ctb=b4 tag=13 hlen=2 plen=47
+:user ID packet: "gpg21_p256@example.com <gpg21_p256@example.com>"
+# off=217 ctb=88 tag=2 hlen=2 plen=121
+:signature packet: algo 19, keyid 0818CA3A55C666AE
+    version 4, created 1434973135, md5len 0, sigclass 0x13
+    digest algo 10, begin of digest 55 10
+    hashed subpkt 2 len 4 (sig created 2015-06-22)
     hashed subpkt 27 len 1 (key flags: 03)
     hashed subpkt 11 len 4 (pref-sym-algos: 9 8 7 3)
     hashed subpkt 21 len 4 (pref-hash-algos: 10 9 8 11)
     hashed subpkt 22 len 4 (pref-zip-algos: 2 3 1 0)
     hashed subpkt 30 len 1 (features: 01)
     hashed subpkt 23 len 1 (key server preferences: 80)
-    subpkt 16 len 8 (issuer key ID 546E46573C3D67DD)
-    data: [253 bits]
+    subpkt 16 len 8 (issuer key ID 0818CA3A55C666AE)
     data: [256 bits]
-# off=337 ctb=9c tag=7 hlen=2 plen=170
+    data: [255 bits]
+# off=340 ctb=9c tag=7 hlen=2 plen=170
 :secret sub key packet:
-    version 4, algo 18, created 1434716424, expires 0
+    version 4, algo 18, created 1434973135, expires 0
     pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
     pkey[1]: [515 bits]
     pkey[2]: [32 bits]
-    iter+salt S2K, algo: 7, SHA1 protection, hash: 2, salt: 168A3C3904F407CF
+    iter+salt S2K, algo: 7, SHA1 protection, hash: 2, salt: 709179C1C3A3E212
     protect count: 15728640 (222)
-    protect IV:  a9 1f b3 9b 39 a2 f8 58 83 1b 43 c5 40 1b 91 d0
+    protect IV:  d2 ca b7 4e 47 ba 18 b3 14 6a 84 3d 58 8b c1 c4
     skey[3]: [v4 protected]
-    keyid: F08E767E3F09BC21
-# off=509 ctb=88 tag=2 hlen=2 plen=97
-:signature packet: algo 19, keyid 546E46573C3D67DD
-    version 4, created 1434716424, md5len 0, sigclass 0x18
-    digest algo 10, begin of digest 32 a3
-    hashed subpkt 2 len 4 (sig created 2015-06-19)
+    keyid: F89934E4D8113B1B
+# off=512 ctb=88 tag=2 hlen=2 plen=97
+:signature packet: algo 19, keyid 0818CA3A55C666AE
+    version 4, created 1434973135, md5len 0, sigclass 0x18
+    digest algo 10, begin of digest 82 d1
+    hashed subpkt 2 len 4 (sig created 2015-06-22)
     hashed subpkt 27 len 1 (key flags: 0C)
-    subpkt 16 len 8 (issuer key ID 546E46573C3D67DD)
-    data: [256 bits]
+    subpkt 16 len 8 (issuer key ID 0818CA3A55C666AE)
     data: [255 bits]
+    data: [256 bits]
 -->
-<textarea id="InboundKeyGnupg_2_1_0_ECDSA_ECDH_P256_Private">
+<textarea id="InboundKeyGnupg_2_1_5_ECDSA_ECDH_P256_Private">
 -----BEGIN PGP PRIVATE KEY BLOCK-----
 Comment: GPGTools - https://gpgtools.org
 
-lKUEVYQJCBMIKoZIzj0DAQcCAwSu1blqD4xRxflPPtUracFJO8Hbj3vfnV+M/viF
-9TsJ+ifjFXPilxE7FIkdEmjDOmIgE3Pq8W977BD6PfnoysXr/gcDAurq5FC6k/Cc
-3mK/boMMFMrD3x58/2Y2i5BqglKIXWxEzq1eFg1nmiHBpoh6Jfxeq3HX9RRKRLXW
-vkA3/dIIBx7pRzpTh8wz0Sri/W925Hm0LWdwZzIxcDI1NkBleGFtcGxlLmNvbSA8
-Z3BnMjFwMjU2QGV4YW1wbGUuY29tPoh5BBMTCgAhBQJVhAkIAhsDBQsJCAcDBRUK
-CQgLBRYCAwEAAh4BAheAAAoJEFRuRlc8PWfdRnoA/RVa1o2fSeMKF9QoV+SVLypd
-/HDBEJpKFmFcRUe6e0XGAQC/YgcEPnKGhslRAL+FtEHic609RuGjzXZKKzub1oF5
-v5yqBFWECQgSCCqGSM49AwEHAgMEQ90Zd8meYcURLTooqM25lqyTlDC+AG/zcc+y
-Uif7Y2QpcSTN0h8hKFJl7KoBFJe1uQ+MJBZmPF8gAwIt4lCGLAMBCAf+BwMCFoo8
-OQT0B8/eqR+zmzmi+FiDG0PFQBuR0O77JfKTsAWDrwSj0u+RdSkLuzcTQef7lO1Y
-Ry1FNvYFv6CQ5hKNHU/fHmcVfr99kwHNL/AtCxCIYQQYEwoACQUCVYQJCAIbDAAK
-CRBUbkZXPD1n3TKjAQCDos+23DEF9Ok/h9OoI28YyDgGecC6x86oSvsb2TT+wwD/
-amHHRdZ5SHHA8X2xD8PCEONqwYL/x3dbh9bXtVKdQ7Y=
-=Pesy
+lKYEVYfzzxMIKoZIzj0DAQcCAwQEkXu4nElf1Kfa+aP0rb9CJHWYFv9mgqvysuwH
+0Hwni0EAFx83YYTQSRBUkbqCysbzjhORwYBhualBtMr1kHFS/gcDAoSM9kn/OTjn
+3pUu5j6WBSzUOihk1cPMnqcaUC3ME1sfxh26xLSvMtBbcWG6jzGdqf2e8OGjb50r
+/xp83kY25gRwz6ZJ71oBFhF4AxbxDusXtC9ncGcyMV9wMjU2QGV4YW1wbGUuY29t
+IDxncGcyMV9wMjU2QGV4YW1wbGUuY29tPoh5BBMTCgAhBQJVh/PPAhsDBQsJCAcD
+BRUKCQgLBRYCAwEAAh4BAheAAAoJEAgYyjpVxmauVRABAMf4ZCDDdDp+1scv+NGB
+7k8r9dtc/9QcRUUnsiNa4yRGAP9LK5ITIA+PV/vtB09QmpCP/9aOpSZzKyfjceQl
+e7CWopyqBFWH888SCCqGSM49AwEHAgME7mKFDQJzG531qYVj8NV6vhQL6bKpgpPl
+5FqayFy1BhFv3+2EBZWJr9T24zSB1frLY14iTss5Mt3rY3ySVwiPugMBCAf+BwMC
+cJF5wcOj4hLe0sq3Tke6GLMUaoQ9WIvBxI8EQTvzpeCC5CDvFdE9br6dqXKd9tgY
+7Brh4jHQjxAP2coq9LEzfCIAeb8GHyuj4koI3LXplcKIYQQYEwoACQUCVYfzzwIb
+DAAKCRAIGMo6VcZmroLRAP9Hp6IOOMn9EVpsciIEykv74rLmWN/qFAVplmgx2Ttv
+ogEArLOz1qvB+ekNqKjuootKKy1TF3bY6q3VAEAzGq5CPtQ=
+=AZJ5
 -----END PGP PRIVATE KEY BLOCK-----
 </textarea>
 <!--
 Message encrypted and signed with the above keypair.
-Old: Public-Key Encrypted Session Key Packet(tag 1)(126 bytes)
-    New version(3)
-    Key ID - 0xF08E767E3F09BC21
-    Pub alg - Reserved for Elliptic Curve(pub 18)
-        unknown(pub 18)
-        -> m = sym alg(1 byte) + checksum(2 bytes) + PKCS-1 block type 02
-New: Symmetrically Encrypted and MDC Packet(tag 18)(186 bytes)
-    Ver 1
-    Encrypted data [sym alg is specified in pub-key encrypted session key]
-        (plain text + MDC SHA1(20 bytes))
+gpg: encrypted with 256-bit ECDH key, ID D8113B1B, created 2015-06-22
+      "gpg21_p256@example.com <gpg21_p256@example.com>"
+# off=0 ctb=84 tag=1 hlen=2 plen=126
+:pubkey enc packet: version 3, algo 18, keyid F89934E4D8113B1B
+    data: [515 bits]
+    data: [392 bits]
+# off=128 ctb=d2 tag=18 hlen=2 plen=174 new-ctb
+:encrypted data packet:
+    length: 174
+    mdc_method: 2
+# off=149 ctb=a3 tag=8 hlen=1 plen=0 partial
+:compressed packet: algo=2
+# off=151 ctb=90 tag=4 hlen=2 plen=13
+:onepass_sig packet: keyid 0818CA3A55C666AE
+    version 3, sigclass 0x00, digest 10, pubkey 19, last=1
+# off=166 ctb=cb tag=11 hlen=2 plen=12 new-ctb
+:literal data packet:
+    mode b (62), created 1434973462, name="",
+    raw data: 6 bytes
+# off=180 ctb=88 tag=2 hlen=2 plen=94
+:signature packet: algo 19, keyid 0818CA3A55C666AE
+    version 4, created 1434973466, md5len 0, sigclass 0x00
+    digest algo 10, begin of digest d5 49
+    hashed subpkt 2 len 4 (sig created 2015-06-22)
+    subpkt 16 len 8 (issuer key ID 0818CA3A55C666AE)
+    data: [255 bits]
+    data: [256 bits]
 -->
-<textarea id="Inbound_ECDSA_ECDH_P256_Gnupg_2_1_0">
+<textarea id="Inbound_ECDSA_ECDH_P256_Gnupg_2_1_5">
 -----BEGIN PGP MESSAGE-----
 Comment: GPGTools - https://gpgtools.org
 
-hH4D8I52fj8JvCESAgMEIW58JDWqhHtnCXZTum0Kqk1asEdAhQ5mN4nwJ51dHl2f
-/Y3l7lAPInkx0c+x+IP/400ZdEDduotypmn1ypTi7zCDkORD15gYzRGCJdwIYX+d
-clyl3yUcd7pvFG3Q9tLVX9trViMQcOlGEu7ScUdCKf/SugFtocYmSIbKvc/YshzN
-5aCSm+x+cyixCLx5IUpBRPKBrU/5ibKAJ99+gTExjGid/XrZw746ZG7+yQ3jNghQ
-1L77VkDb41Qy8eAHXv86Rcgzmduxb8iQENOAeNnaK+/y12fnlDJ1c8ZIntrJeZA5
-zGVV78XakOx2S3t2b1c6CapB4ysgV2f4AkbbPcwgYzYWv9P3bw/DYzsdrzaTR2Aa
-xJC5KfwvzHUZTXFsy4sRg1dhw7yQ5jhP9ydTsQ==
-=FgEp
+hH4D+Jk05NgROxsSAgMEmmA2SWhvLNxtvvgM7UTS3wHKT+9Qv4nohN068VclO99w
+wt8gXklfc4jMuer2N0alB6j9lxz+bF9s0CDJXar2QjAVj6L+7vSnlTUbRgeaA5+/
+tyKbxTeiMjMXN3AVpJbfJVFxIzbZDrb2WC7E68yOAZrSrgFosdNQtnDLR6z7dtlw
+0aBBf71JC7K5OpnHCNxHG6yfuqwJMtdsTSPxxvq2OlQNO2fA4NEdOO5nco+ux4eX
+PlBJOeVq+NiKUwXLl2IH0N+9fgTnUCyXRabmOMvGtck9YyjPSayyFhIiVKa+Am49
+xPX3qHTf9i7qJ2VGK+2B/h7ReJaTx7E4o2vzlGwRWJ/xvb1Qui1ixKRwjn2/+yut
+EVo2ay/cyIJZs8+t7NaE2g==
+=zSfU
 -----END PGP MESSAGE-----
 </textarea>
+<textarea id="InboundKeyGnupg_2_1_5_ECDSA_ECDH_P384">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Comment: GPGTools - https://gpgtools.org
+
+mG8EVYh67BMFK4EEACIDAwT89Q3wJJMbkWpn6K781MjmCCaXsO2Yrni8nRqUO0Jy
+/IRRvyQUQFwkPlOFGls9Jow/wuQ+e+LzpilCAiCsjIabVOn8E6POrk7aX+2hEVvP
+h+fWX5FWFQVHhRHlTE8YwJy0IWdwZzIxcDM4NCA8Z3BnMjFwMzg0QGV4YW1wbGUu
+Y29tPoiZBBMTCgAhBQJViHrsAhsDBQsJCAcDBRUKCQgLBRYCAwEAAh4BAheAAAoJ
+EG73wu4hz8jwLLYBgOAqkyN0pUAhCpBeep/q9bJ8Ngqpjm19Mpt0SPMK/WCObSEy
+GSf/gOs0GFdeRvYtbwGAg03eKfIxh8WuyoCltVxD4DLXfaDcHpJ8Ljnqr11wf+iO
+zeDFbvTnI+xvyFKkGQjyuHMEVYh67BIFK4EEACIDAwTrI7z0pCt93EAbYtV40HD2
+uuyMfVkoUVBrNvOyRQn1cXF6bO55YoLLVg2Q9TcKoR8GE84lSHl35Y+piAgSvn3V
+/tgD6WKT0DGok67WW7GmI7pptGoDUUhSXb5nL1kYEi8DAQkJiIEEGBMKAAkFAlWI
+euwCGwwACgkQbvfC7iHPyPChsQF/bppdagCf6/JLRa5nWJAYxtDospe6kwCpS/+1
+xb26oiI3rSpjpZ8UN/QSb9GECImbAXsHTUFmPPNsvTeXvn7kNxWgRjqd88E0lsY/
+/WgGGLP83B2OLNkLb3emRpDQx0xMITI=
+=Z9h1
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<textarea id="InboundKeyGnupg_2_1_5_ECDSA_ECDH_P384_Private">
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+Comment: GPGTools - https://gpgtools.org
+
+lNIEVYh67BMFK4EEACIDAwT89Q3wJJMbkWpn6K781MjmCCaXsO2Yrni8nRqUO0Jy
+/IRRvyQUQFwkPlOFGls9Jow/wuQ+e+LzpilCAiCsjIabVOn8E6POrk7aX+2hEVvP
+h+fWX5FWFQVHhRHlTE8YwJz+BwMCTbZcGgevVRreMw+wcWl/KTZ5A0bHEMX5eYtT
+5of9t4CNogLFw1clStLqq+veG0fJWxY7T+GYJxVj/MtVNzNK1fZfquzr9OwkSjGh
+Iy0dB6QZb99qt6M22p9IjoEtgoG0IWdwZzIxcDM4NCA8Z3BnMjFwMzg0QGV4YW1w
+bGUuY29tPoiZBBMTCgAhBQJViHrsAhsDBQsJCAcDBRUKCQgLBRYCAwEAAh4BAheA
+AAoJEG73wu4hz8jwLLYBgOAqkyN0pUAhCpBeep/q9bJ8Ngqpjm19Mpt0SPMK/WCO
+bSEyGSf/gOs0GFdeRvYtbwGAg03eKfIxh8WuyoCltVxD4DLXfaDcHpJ8Ljnqr11w
+f+iOzeDFbvTnI+xvyFKkGQjynNYEVYh67BIFK4EEACIDAwTrI7z0pCt93EAbYtV4
+0HD2uuyMfVkoUVBrNvOyRQn1cXF6bO55YoLLVg2Q9TcKoR8GE84lSHl35Y+piAgS
+vn3V/tgD6WKT0DGok67WW7GmI7pptGoDUUhSXb5nL1kYEi8DAQkJ/gcDAk0o9zrJ
+iX5s3lev87Po5GrLI8KyLzdaFe01Vqoq3CG7SWIRSxXZSTXwrCDJ/wqEqx7SeQBC
+ljn8pbgzPDmybFm19K6QC6+7iX4h8AGyF7pIxr1/rJNxHMTbuYuqGtgTiIEEGBMK
+AAkFAlWIeuwCGwwACgkQbvfC7iHPyPChsQF/bppdagCf6/JLRa5nWJAYxtDospe6
+kwCpS/+1xb26oiI3rSpjpZ8UN/QSb9GECImbAXsHTUFmPPNsvTeXvn7kNxWgRjqd
+88E0lsY//WgGGLP83B2OLNkLb3emRpDQx0xMITI=
+=prJM
+-----END PGP PRIVATE KEY BLOCK-----
+</textarea>
+<textarea id="Inbound_ECDSA_ECDH_P384_Gnupg_2_1_5">
+-----BEGIN PGP MESSAGE-----
+Comment: GPGTools - https://gpgtools.org
+
+hJ4DHGTZqboOYrASAwMEtYUeDDJwqxZtXs5yl57p4r09P1dkJmYa5/OLAFlP2OSJ
+84kDtk9YxA76XK0dsuiK8nqPwtMhfJyMAablGHWYXYaOchWOPNGPcRcGfNwDBQ6y
+kWmmlFxW86RWj+Hhp+auMN3hTp0KmxtLWSrqjbsR41EhXdNURgsAAJ1C/w2ERxhw
+M1XpaF3di/XbRWwLpkIRMNLAEAEzoZLHEmyrRUgWGIz3+28XABGgd0wmbrUG0igP
+ZaTrPV7lnW15qHQA35EcCgsuABZK3oKzBgEIXv3qHIxEQyul42OR+MRLicSjN0DP
+5qEMgPPKI9QM4oGSnqiKoZRjI4UWtSQoqUtyk0loU5Zp9fWtxAOfE4lb7pz0BpT2
+7QTibMqODtHQuv8qZFFDrE0h4U42b1Cl+UTZgAgLD4KDwdCDjdZyQWkJLbbLj9Jn
+4meJ3euvbhmJiDvbS+LFBU3wCXAvtYILOxkSuIrTOkBE6xg=
+=Ysdz
+-----END PGP MESSAGE-----
+</textarea>
+<textarea id="InboundKeyGnupg_2_1_5_ECDSA_ECDH_P521">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Comment: GPGTools - https://gpgtools.org
+
+mJMEVYh/7BMFK4EEACMEIwQANhjHlYst9EvUfVlNoZ3s2JD1TtEFUlgewo+fRGNu
+JDAIEBpEc8PCdxPxBZr56qnQjEuaFNJzJiM5EMkPV44RYbYA4K4zEpVe9BlW0l7n
+ledDGpc8H0+2cTtaqYnxVsDJ1SCD+nYbjIpLqaYxGgJuz3R2iyfvOYAZgk9qM8b4
+jM0SE0a0IWdwZzIxcDUyMSA8Z3BnMjFwNTIxQGV4YW1wbGUuY29tPoi8BBMTCgAh
+BQJViH/sAhsDBQsJCAcDBRUKCQgLBRYCAwEAAh4BAheAAAoJEGRcqQKef3Oxc1MC
+B3vQGNAAqlTmIipCLIVQON+PEz4EUsrUbDIVg2HLEumeWh/vCaVvouFFpoBGAnYY
+GLq1gIzIurgR9TLu1MewPMEbAgkBhYqqV43UtdF2Z5UmyMbderDbbCdW+lCEH8m+
+lUIxl/JGcMW7m4AwFPo5uIqf+FqcG6X+smwcWADyC8qXqQYcZ9a4lwRViH/sEgUr
+gQQAIwQjBAHtNhqjtxk3LMMGtDs1KvHz2rEg6aYVewON5fKtjuI6KI+lmakXKB90
+a2elz5yTXEI62h0/TxaJur/eJqMsvJApkAAd17+it6Yw5U2FGg+9CzVMcLtslPaW
+7jbbVpYxueBXh/+TtE1OpoP6ZkDCkO3zCeR/CELDViBhefdKnDhq8Q7xnQMBCgmI
+pAQYEwoACQUCVYh/7AIbDAAKCRBkXKkCnn9zsXJjAgkBH54W+57W01hrRNwtNgkr
+JRpcTAPuQTWK4rDiccHtR5CJgCSi24ig+jHu4szCWWQoKPECz+yAVgK4Xpn49JuX
+w0cCBix5sLuRl0d0kY3JCER2N/9OksKE58votYgrZLpcWlxkRp0JnA16IvLVEwqe
+2mlbxCraQAWqt3hxwo/J+bXvh/X+
+=DB0Q
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<textarea id="InboundKeyGnupg_2_1_5_ECDSA_ECDH_P521_Private">
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+Comment: GPGTools - https://gpgtools.org
+
+lgAAAQgEVYh/7BMFK4EEACMEIwQANhjHlYst9EvUfVlNoZ3s2JD1TtEFUlgewo+f
+RGNuJDAIEBpEc8PCdxPxBZr56qnQjEuaFNJzJiM5EMkPV44RYbYA4K4zEpVe9BlW
+0l7nledDGpc8H0+2cTtaqYnxVsDJ1SCD+nYbjIpLqaYxGgJuz3R2iyfvOYAZgk9q
+M8b4jM0SE0b+BwMCjvx4XzxygpPeXE5j0D4kw3i1LmO/TxlmeqUfBl/yWMoa2lU+
+/3HG7DHveiGY5CwVknshNWMF5tqC9JDfZ7BdXAtUy3c2Axa3A/zMLGgH6XWNEu0c
+0Bjv2tsmiWfsQYE4GUZoU96ZJnggcvI6X4/ppla0IWdwZzIxcDUyMSA8Z3BnMjFw
+NTIxQGV4YW1wbGUuY29tPoi8BBMTCgAhBQJViH/sAhsDBQsJCAcDBRUKCQgLBRYC
+AwEAAh4BAheAAAoJEGRcqQKef3Oxc1MCB3vQGNAAqlTmIipCLIVQON+PEz4EUsrU
+bDIVg2HLEumeWh/vCaVvouFFpoBGAnYYGLq1gIzIurgR9TLu1MewPMEbAgkBhYqq
+V43UtdF2Z5UmyMbderDbbCdW+lCEH8m+lUIxl/JGcMW7m4AwFPo5uIqf+FqcG6X+
+smwcWADyC8qXqQYcZ9aeAAABCwRViH/sEgUrgQQAIwQjBAHtNhqjtxk3LMMGtDs1
+KvHz2rEg6aYVewON5fKtjuI6KI+lmakXKB90a2elz5yTXEI62h0/TxaJur/eJqMs
+vJApkAAd17+it6Yw5U2FGg+9CzVMcLtslPaW7jbbVpYxueBXh/+TtE1OpoP6ZkDC
+kO3zCeR/CELDViBhefdKnDhq8Q7xnQMBCgn+BwMCOeX7njM1bGneCf0WTpZg7+rZ
+8qL/KqUCB0tD6pz1LeYyZNxPEM17CTyMWXmmg0taRrATUjty24msqyiM9IYZNEc8
+VcOHOP1PUdGgU4cMzcLuoaUesMBL4YztppROluX5s+C2NF0dReQp1qnkKhDqlYik
+BBgTCgAJBQJViH/sAhsMAAoJEGRcqQKef3OxcmMCCQEfnhb7ntbTWGtE3C02CSsl
+GlxMA+5BNYrisOJxwe1HkImAJKLbiKD6Me7izMJZZCgo8QLP7IBWArhemfj0m5fD
+RwIGLHmwu5GXR3SRjckIRHY3/06SwoTny+i1iCtkulxaXGRGnQmcDXoi8tUTCp7a
+aVvEKtpABaq3eHHCj8n5te+H9f4=
+=x+3/
+-----END PGP PRIVATE KEY BLOCK-----
+</textarea>
+<textarea id="Inbound_ECDSA_ECDH_P521_Gnupg_2_1_5">
+-----BEGIN PGP MESSAGE-----
+Comment: GPGTools - https://gpgtools.org
+
+hMIDnEbxpPZKkU8SBCMEAa2wbr0mCM0VcEaCvoVLNy/dNwElX2zDUwvK9H7kRNc8
+ISAU9EPRJByLQ5byoiSGCyet3g0p8vPvStnxr433S1cJASj2IUgj9GjRXpHhz/Ga
+/eW/0c8ZPZfeJmF0zVo4w9x8B/8HlYsjUOCLEr3kdseoYAcxBBYiOMFEJ6qogzh5
+fiahMOf8cyoBhx212fm9M4j3vzcMw3jTEvd0aMmLRg94IAfhc2eI0omfAHB3IRXM
+RoDT9dLAMwGA3lPitdCXkMFfeCwnOLLm//0/moxgn4Xd3QRoywYCEJaB2DBiwYns
+A85xG20Wb+IB96N41szsIb6LkD/1GhYvXeXCyGddAYiTu/qX97Rmtc8uR+4z/3+g
+liO2INYf516ukzu79N543AVR4OnAvRJPnsVh1b5tN2eD2o6QIlyma4ZpakAtSI4J
+nnKJkeJX1YbXl0nD6iH/+uO8zbM2KT/G1Xz06m9laWgBG7XMilpVKkj7TNXHQobW
+v1GRUbXuEn8uW5sZcgt+r+zF1gM3hUWWb+7KcQ3E/nDCF+PuZlxCzMAEp1szEtBp
+sVs8rWGlpJwhJQ==
+=pSZl
+-----END PGP MESSAGE-----
+</textarea>
+<!--
+TODO: replace above msg with this one once the kdf bug is fixed.
+ponizej powinien rzucac wyjatek.
+
+-----BEGIN PGP MESSAGE-----
+Charset: UTF-8
+
+wf8AAADCA5xG8aT2SpFPEgQjBABIiX7wA7lCH5IT521yXM3/0KzX8hCFRBCerAGK
+Na5A5DfVl+zQw/JJHWTkesa1ZyoXv/exCK7lN60RBBpjcTdQ/QCXaiIZHGZeoKby
+7f0EgFgdZq9pXqaq9U04AqTlWb+ZvcHbBAmt6zG34tVPod76Jrsv2mFijZUsDYqN
+vXLcGtOEwDBircBONigVSEfrnspgTdroSzGICq47ekQZ4Sy4oBarx0mtNnY0zun2
+lRSWKxh1d33S/wAAATgBfkXpNmpu7U2alZaoaNSktnglt1Jfa+3Costi1DnFlMSd
+dYHNjezMhizbYVRBBszEEG4+xOotEATTX0BwON6LP2ybG4Gl+eIlZfFrdjEob89P
+6uM6klmSud5/Q6cBBxCmx/bCpC4ariC64aKvVpNaH0J+Ku24CcDrTkMxnmx/M8WY
+3ueKQe+3E7ac+wCKJyH5/rBITnCR/9N0EuY2CBIV6RDAOF42uU4piSJQHPJ+sVxW
+yiJmbRyjME/3gFIHnbtBQT5aRw+KD0XmYee9zsWco/lMj4dca5SB/eZ1LT0r6FhS
+YQolOGcCMVGEMNMmN1ZDcLT9jOuTVoxY0vaf404KCp8byr4/d1tHpDQp+ZAkVm69
+2NlgNC+5uOqBcfv8I1M1aMMJsqB9my8AmFsaBDT+ozdUYs+ba10=
+=qUrx
+-----END PGP MESSAGE-----
+
+
 <!--
  Certificate contains a user id with Unicode characters in the Basic
  Multilingual Plane. This certificate should be accepted.
@@ -1769,10 +1851,7 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
    * the external tool.
    */
   function runImportEncryptDecrypt(testName, publicKeyId, privateKeyId,
-        messageId, keyPassphrase, opt_timeout) {
-    if (opt_timeout) {
-        asyncTest.stepTimeout = opt_timeout;
-    }
+        messageId, keyPassphrase) {
     var messageText = testName;
     var uid;
     var publicKey;
@@ -1810,26 +1889,43 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
         asyncTest.waitForAsync('Waiting for inbound message decryption');
         return context.verifyDecrypt(fail, message);
     }).addCallbacks(function(vd) {
+        console.log(goog.crypt.byteArrayToString(vd.decrypt.data));
         assertEquals(1, vd.verify.success.length);
         asyncTest.continueTesting();
     }, fail);
   }
 
-  function DISABLED_testGnupg210_P256() {
-    // Encountered errors:
-    // - binding signature verification failed on first key import.
+  function testGnupg215_P256() {
     runImportEncryptDecrypt(
-        'GnuGP 2.1.0 P256',
-        'InboundKeyGnupg_2_1_0_ECDSA_ECDH_P256',
-        'InboundKeyGnupg_2_1_0_ECDSA_ECDH_P256_Private',
-        'Inbound_ECDSA_ECDH_P256_Gnupg_2_1_0',
+        'GnuGP 2.1.5 P256',
+        'InboundKeyGnupg_2_1_5_ECDSA_ECDH_P256',
+        'InboundKeyGnupg_2_1_5_ECDSA_ECDH_P256_Private',
+        'Inbound_ECDSA_ECDH_P256_Gnupg_2_1_5',
         'test');
+  }
 
+  function testGnupg215_P384() {
+    asyncTest.stepTimeout = 5000;
+    runImportEncryptDecrypt(
+        'GnuGP 2.1.5 P384',
+        'InboundKeyGnupg_2_1_5_ECDSA_ECDH_P384',
+        'InboundKeyGnupg_2_1_5_ECDSA_ECDH_P384_Private',
+        'Inbound_ECDSA_ECDH_P384_Gnupg_2_1_5',
+        'test');
+  }
+
+  function testGnupg215_P521() {
+    // Slower operations due to P521 impl lacking fast modulus.
+    asyncTest.stepTimeout = 7000;
+    runImportEncryptDecrypt(
+        'GnuGP 2.1.5 P521',
+        'InboundKeyGnupg_2_1_5_ECDSA_ECDH_P521',
+        'InboundKeyGnupg_2_1_5_ECDSA_ECDH_P521_Private',
+        'Inbound_ECDSA_ECDH_P521_Gnupg_2_1_5',
+        'test');
   }
 
   function testOpenKeychain_P256() {
-    // Encountered errors:
-    // - produced messages decrypt, but fail to verify in OpenKeychain 3.1.0
     runImportEncryptDecrypt(
         'OpenKeychain P256',
         'InboundKeyOpenKeychain_ECDSA_ECDH_P256',
@@ -1838,17 +1934,17 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
         'q');
   }
 
-  function DISABLED_testOpenKeychain_P521() {
-    // Encountered errors:
-    // - produced messages decrypt, but fail to verify in OpenKeychain 3.1.0
-    // - inbound message decryption fails (invalid IV in AES key wrap).
-    runImportEncryptDecrypt(
-        'OpenKeychain P521',
-        'InboundKeyOpenKeychain_ECDSA_ECDH_P521',
-        'InboundKeyOpenKeychain_ECDSA_ECDH_P521_Private',
-        'Inbound_ECDSA_ECDH_P521_OpenKeychain',
-        'q',
-        5000); // Slower operations due to P521 impl lacking fast modulus.
+  function testOpenKeychain_P521_bug_1353() {
+    // Slower operations due to P521 impl lacking fast modulus.
+    asyncTest.stepTimeout = 7000;
+    var key = document.getElementById(
+        'InboundKeyOpenKeychain_ECDSA_ECDH_P521_bug1353').value;
+    asyncTest.waitForAsync('Waiting for key import');
+    context.importKey(fail, key).addCallbacks(fail, function(e) {
+        assertEquals('Digest algorithm is too short for this curve.',
+            e.message);
+        asyncTest.continueTesting();
+    });
   }
 
   function testInboundDummyS2k() {
