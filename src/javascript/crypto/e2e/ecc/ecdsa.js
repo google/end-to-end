@@ -113,7 +113,7 @@ e2e.ecc.Ecdsa.prototype.setHash = function(hash) {
  */
 e2e.ecc.Ecdsa.prototype.sign = function(message) {
   var sig;
-  var digest = this.hash_.hash(message);
+  var digest = this.hashWithTruncation_(message);
   do {
     var k = this.generatePerMessageNonce_(digest);
     sig = this.signWithNonce_(digest, k);
@@ -203,7 +203,7 @@ e2e.ecc.Ecdsa.prototype.verify = function(message, sig) {
     return false;
   }
   // e = H(m)
-  var e = new e2e.BigNum(this.hash_.hash(message));
+  var e = new e2e.BigNum(this.hashWithTruncation_(message));
   // w = s^{-1} mod n
   var w = N.modInverse(s);
   // u1 = ew mod n
@@ -264,3 +264,26 @@ e2e.ecc.Ecdsa.prototype.generatePerMessageNonce_ = function(digest) {
   } while (nonce.isEqual(e2e.BigNum.ZERO) || nonce.compare(N) >= 0);
   return nonce;
 };
+
+
+/**
+ * Creates a message digest, truncating it to the bit-length of the curve order.
+ * @param {Uint8Array|Array.<number>|string} message The message to hash.
+ * @return {!Array.<number>} The checksum.
+ * @private
+ */
+e2e.ecc.Ecdsa.prototype.hashWithTruncation_ = function(message) {
+  var hash = this.hash_.hash(message);
+
+  var bitLength = this.params.n.getBitLength();
+  // Use 512-bit hashes for P_521 curve.
+  if (bitLength == 521) {
+    bitLength = 512;
+  }
+  if (Math.ceil(bitLength / 8) > hash.length) {
+    throw new e2e.error.InvalidArgumentsError(
+        'Digest algorithm is too short for this curve.');
+  }
+  return goog.array.slice(hash, 0, Math.ceil(bitLength / 8));
+};
+
