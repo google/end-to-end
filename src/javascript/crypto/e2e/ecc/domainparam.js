@@ -322,7 +322,13 @@ e2e.ecc.DomainParam.NIST.prototype.calculateSharedSecret = function(
     throw new e2e.error.InvalidArgumentsError(
         'ECDH: Cannot derive shared secret.');
   }
-  return S.getX().toBigNum().toByteArray();
+  var Xbytes = S.getX().toBigNum().toByteArray();
+  var fieldSize = Math.ceil(this.curve.keySizeInBits() / 8);
+  // Pads X if needed.
+  while (Xbytes.length < fieldSize) {
+    goog.array.insertAt(Xbytes, 0x00, 0);
+  }
+  return Xbytes;
 };
 
 
