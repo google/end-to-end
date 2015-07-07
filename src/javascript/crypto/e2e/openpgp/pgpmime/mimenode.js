@@ -164,12 +164,13 @@ e2e.openpgp.pgpmime.MimeNode.prototype.buildMessage = function() {
       // will be stripped out of any encrypted content during decryption
       lines.push(goog.typeOf(this.content_) === 'string' ?
           e2e.openpgp.pgpmime.Text.prettyTextWrap(
-          goog.crypt.base64.encodeString(goog.asserts.assertString(
-          this.content_)), constants.MimeNum.LINE_WRAP, constants.Mime.CRLF) :
+              goog.crypt.base64.encodeString(goog.asserts.assertString(
+              this.content_)), constants.MimeNum.LINE_WRAP,
+              constants.Mime.CRLF) :
           e2e.openpgp.pgpmime.Text.prettyTextWrap(
-          goog.crypt.base64.encodeByteArray(
+              goog.crypt.base64.encodeByteArray(
               /** @type {e2e.ByteArray}*/ (this.content_)),
-          constants.MimeNum.LINE_WRAP, constants.Mime.CRLF));
+              constants.MimeNum.LINE_WRAP, constants.Mime.CRLF));
     } else {
       lines.push(e2e.openpgp.pgpmime.Text.prettyTextWrap(
           goog.asserts.assertString(this.content_),

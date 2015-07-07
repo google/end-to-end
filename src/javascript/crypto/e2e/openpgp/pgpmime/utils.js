@@ -76,7 +76,6 @@ e2e.openpgp.pgpmime.Utils.serializeHeader = function(header) {
     if (goog.isDefAndNotNull(headerValue.params)) {
       goog.object.forEach(headerValue.params, function(paramValue, paramName) {
         line.push(paramName + '=' + goog.string.quote(paramValue));
-        console.log('cc', paramName + '=' + goog.string.quote(paramValue));
       });
     }
     lines.push(e2e.openpgp.pgpmime.Text.prettyTextWrap(

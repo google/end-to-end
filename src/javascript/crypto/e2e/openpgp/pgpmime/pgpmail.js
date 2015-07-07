@@ -49,19 +49,17 @@ e2e.openpgp.pgpmime.PgpMail = function(content, opt_preamble) {
 
 /**
  * Builds a plaintext serialized MIME tree for the email.
- * @param {!e2e.openpgp.pgpmime.types.MailContent} content The plaintext
- *     content of the email.
  * @return {string}
  */
-e2e.openpgp.pgpmime.PgpMail.prototype.buildMimeTree = function(content) {
+e2e.openpgp.pgpmime.PgpMail.prototype.buildMimeTree = function() {
   var rootNode;
 
-  if (!content.attachments || content.attachments.length === 0) {
+  if (!this.content.attachments || this.content.attachments.length === 0) {
     // Create a single plaintext node.
     rootNode = new pgpmime.MimeNode({multipart: false,
       optionalHeaders: [{name: constants.Mime.CONTENT_TYPE,
         value: constants.Mime.PLAINTEXT}]});
-    rootNode.setContent(content.body);
+    rootNode.setContent(this.content.body);
   } else {
     // Create a multipart node with children for body and attachments.
     rootNode = new pgpmime.MimeNode({multipart: true,
@@ -70,9 +68,9 @@ e2e.openpgp.pgpmime.PgpMail.prototype.buildMimeTree = function(content) {
     var textNode = rootNode.addChild({multipart: false,
       optionalHeaders: [{name: constants.Mime.CONTENT_TYPE,
         value: constants.Mime.PLAINTEXT}]});
-    textNode.setContent(content.body);
+    textNode.setContent(this.content.body);
 
-    goog.array.forEach(content.attachments, function(attachment) {
+    goog.array.forEach(this.content.attachments, function(attachment) {
       var options = {multipart: false,
         contentType: {type: constants.Mime.OCTET_STREAM},
         optionalHeaders: [{name: constants.Mime.CONTENT_TRANSFER_ENCODING,

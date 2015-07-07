@@ -23,7 +23,6 @@ goog.provide('e2e.openpgp.pgpmime.MimeNodeTest');
 
 goog.require('e2e.openpgp.pgpmime.Constants');
 goog.require('e2e.openpgp.pgpmime.MimeNode');
-goog.require('e2e.openpgp.pgpmime.Text');
 goog.require('e2e.openpgp.pgpmime.testingstubs');
 
 goog.require('goog.testing.PropertyReplacer');
@@ -91,21 +90,20 @@ var FINAL_MESSAGE = ['Content-Type: multipart/mixed; boundary="--foo"',
   'Content-Type: application/octet-stream',
   'Content-Transfer-Encoding: base64',
   'Content-Disposition: attachment; filename="example.txt"', '',
-  e2e.openpgp.pgpmime.Text.prettyTextWrap(
-      'mI0EUrDlCQEEANdvRy4NGBqE20LkN4aw71CFL1LsiUPZyNxCMtnFsRMGEsLDIUHGWKD6N' +
-      '7miPidWnFJ0NI+uj6quKlKbr+6vXaMnv9YhiTLSRo/MNfcK9yEp5F5BZE0wsr21f8NfvI' +
-      'N1Ki/LXWH6HtTY6yxiJv0SBtRFPM9b9TD8c82AtZ4FzZITABEBAAG0GnRlc3QgNSA8dGV' +
-      'zdDVAZXhhbXBsZS5jb20+iLgEEwECACIFAlKw5QkCGwMGCwkIBwMCBhUIAgkKCwQWAgMB' +
-      'Ah4BAheAAAoJEDpMhuXjFtfrYm4D/0l0ciAz44fQ86s6Mt0vkkmxRw2wNbpxaH5NUoHej' +
-      'gfdUqze8Pq9W0CB2VkSQmg8bcI4tMfSmuYpsDtYK1jtdwiWGrWApqZIHe588zaT6iDPC8' +
-      '77qG/ST+nUcFN+iGwNc7dxqJFEo8a8xwWgcZFI6VAoyPA39oBdWZPQRa+0t3OSuI0EUrD' +
-      'lCQEEAJ0MRSLSOWD4Tmfu6kAB7a4PpCw/vpGVxkcFfLEi22VxAlrcoCCU33p9RJTQZNVY' +
-      'HFezBZUdE8exHkz+C1wAwlcdI1KaFybXFqb05Q/+FTngWm7X9C4ZZ0Ylf7lEXuhJ5HFuN' +
-      'jB/WYo9EFL0GNZtuCUEhPgy/IrikWw8fjsmhoALABEBAAGInwQYAQIACQUCUrDlCQIbDA' +
-      'AKCRA6TIbl4xbX69ZnA/97iK25jcFFD136qlOWW2i2fn129fFGUg/P1l6EZeHvLcLGaKq' +
-      'FZb2i68tmIza1xl9+yTHlHYifxQnpEMS+/CaPGSUVVP+rdlYn7zkk3z4iAi1+pGb56mYW' +
-      'iVLH2LeQTwVnl+d5V0qi1D2tPxCBbs/g/2EO5l3ZfuEnwjYgLr5D1w==',
-      constants.MimeNum.LINE_WRAP, constants.Mime.CRLF),
+  'mI0EUrDlCQEEANdvRy4NGBqE20LkN4aw71CFL1LsiUPZyNxCMtnFsRMGEsLDIUHG',
+  'WKD6N7miPidWnFJ0NI+uj6quKlKbr+6vXaMnv9YhiTLSRo/MNfcK9yEp5F5BZE0w',
+  'sr21f8NfvIN1Ki/LXWH6HtTY6yxiJv0SBtRFPM9b9TD8c82AtZ4FzZITABEBAAG0',
+  'GnRlc3QgNSA8dGVzdDVAZXhhbXBsZS5jb20+iLgEEwECACIFAlKw5QkCGwMGCwkI',
+  'BwMCBhUIAgkKCwQWAgMBAh4BAheAAAoJEDpMhuXjFtfrYm4D/0l0ciAz44fQ86s6',
+  'Mt0vkkmxRw2wNbpxaH5NUoHejgfdUqze8Pq9W0CB2VkSQmg8bcI4tMfSmuYpsDtY',
+  'K1jtdwiWGrWApqZIHe588zaT6iDPC877qG/ST+nUcFN+iGwNc7dxqJFEo8a8xwWg',
+  'cZFI6VAoyPA39oBdWZPQRa+0t3OSuI0EUrDlCQEEAJ0MRSLSOWD4Tmfu6kAB7a4P',
+  'pCw/vpGVxkcFfLEi22VxAlrcoCCU33p9RJTQZNVYHFezBZUdE8exHkz+C1wAwlcd',
+  'I1KaFybXFqb05Q/+FTngWm7X9C4ZZ0Ylf7lEXuhJ5HFuNjB/WYo9EFL0GNZtuCUE',
+  'hPgy/IrikWw8fjsmhoALABEBAAGInwQYAQIACQUCUrDlCQIbDAAKCRA6TIbl4xbX',
+  '69ZnA/97iK25jcFFD136qlOWW2i2fn129fFGUg/P1l6EZeHvLcLGaKqFZb2i68tm',
+  'Iza1xl9+yTHlHYifxQnpEMS+/CaPGSUVVP+rdlYn7zkk3z4iAi1+pGb56mYWiVLH',
+  '2LeQTwVnl+d5V0qi1D2tPxCBbs/g/2EO5l3ZfuEnwjYgLr5D1w==',
   '----foo--', ''].join('\r\n');
 
 
@@ -184,6 +182,5 @@ function testBuildMessage() {
   childAttachmentNode.setContent(BINARY_CONTENT);
 
   var builtMessage = node.buildMessage();
-  console.log(FINAL_MESSAGE, builtMessage);
   assertEquals(FINAL_MESSAGE, builtMessage);
 }

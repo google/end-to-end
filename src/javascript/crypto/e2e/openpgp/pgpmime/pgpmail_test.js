@@ -62,7 +62,8 @@ function testBuildPGPMimeTree() {
     'protocol="application/pgp-encrypted"; charset="utf-8"; ' +
         'boundary="--foo"', 'Content-Transfer-Encoding: 7bit',
     'Subject: test email', 'From: ystoller@google.com',
-    'To: kbsriram@google.com', 'Mime-Version: 1.0', '',
+    'To: kbsriram@google.com, a@google.com, b@google.com,', 'c@google.com, ' +
+        'd@google.com, e@google.com, f@google.com', 'Mime-Version: 1.0', '',
     'This is an OpenPGP/MIME encrypted message. Please open it from',
     'the Safe Mail app', '', '----foo',
     'Content-Type: application/pgp-encrypted; charset="utf-8"; name="',
@@ -77,7 +78,8 @@ function testBuildPGPMimeTree() {
   var preamble = 'This is an OpenPGP/MIME encrypted message. ' +
       'Please open it from the Safe Mail app';
   var mail = new e2e.openpgp.pgpmime.PgpMail({body: encryptedText,
-    from: 'ystoller@google.com', to: 'kbsriram@google.com',
+    from: 'ystoller@google.com', to: 'kbsriram@google.com, a@google.com, ' +
+        'b@google.com, c@google.com, d@google.com, e@google.com, f@google.com',
     subject: 'test email'}, preamble);
   var encryptedTree = mail.buildPGPMimeTree();
   assertEquals(finalTree, encryptedTree);
