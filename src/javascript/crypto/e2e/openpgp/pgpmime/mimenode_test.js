@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2014 Google Inc. All rights reserved.
+ * Copyright 2015 Google Inc. All rights reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,29 +15,25 @@
  */
 
 /**
- * @fileoverview Tests for the PGP/MIME email builder.
+ * @fileoverview Tests for the MIME node builder/parser.
  */
 
 /** @suppress {extraProvide} */
-goog.provide('e2e.ext.mime.PgpMailTest');
+goog.provide('e2e.openpgp.pgpmime.MimeNodeTest');
 
-goog.require('e2e.ext.actions.Executor');
-goog.require('e2e.ext.constants');
-goog.require('e2e.ext.mime.MimeNode');
-goog.require('e2e.ext.mime.PgpMail');
-goog.require('e2e.ext.testingstubs');
-goog.require('goog.testing.MockControl');
+goog.require('e2e.openpgp.pgpmime.Constants');
+goog.require('e2e.openpgp.pgpmime.MimeNode');
+goog.require('e2e.openpgp.pgpmime.Text');
+goog.require('e2e.openpgp.pgpmime.testingstubs');
+
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
-goog.require('goog.testing.mockmatchers');
 goog.setTestOnly();
 
-var constants = e2e.ext.constants;
-var mockControl = null;
-var mockmatchers = goog.testing.mockmatchers;
+var constants = e2e.openpgp.pgpmime.Constants;
 var node = null;
-var filename = 'example.txt';
+var testFilename = 'example.txt';
 var stubs = new goog.testing.PropertyReplacer();
 
 var BINARY_CONTENT = '\x98\x8d\x04\x52\xb0\xe5\x09\x01\x04\x00' +
@@ -88,15 +84,15 @@ var BINARY_CONTENT = '\x98\x8d\x04\x52\xb0\xe5\x09\x01\x04\x00' +
 
 var TEXT_CONTENT = 'hi this is a\ntext message';
 var BOUNDARY = '--foo';
-
-var PLAINTEXT_MESSAGE = ['Content-Type: multipart/mixed; boundary="--foo"',
+var FINAL_MESSAGE = ['Content-Type: multipart/mixed; boundary="--foo"',
   'Content-Transfer-Encoding: 7bit',
   '', '----foo', 'Content-Type: text/plain; charset="utf-8"',
   'Content-Transfer-Encoding: 7bit', '', TEXT_CONTENT, '----foo',
   'Content-Type: application/octet-stream',
   'Content-Transfer-Encoding: base64',
   'Content-Disposition: attachment; filename="example.txt"', '',
-  'mI0EUrDlCQEEANdvRy4NGBqE20LkN4aw71CFL1LsiUPZyNxCMtnFsRMGEsLDIUHGWKD6N' +
+  e2e.openpgp.pgpmime.Text.prettyTextWrap(
+      'mI0EUrDlCQEEANdvRy4NGBqE20LkN4aw71CFL1LsiUPZyNxCMtnFsRMGEsLDIUHGWKD6N' +
       '7miPidWnFJ0NI+uj6quKlKbr+6vXaMnv9YhiTLSRo/MNfcK9yEp5F5BZE0wsr21f8NfvI' +
       'N1Ki/LXWH6HtTY6yxiJv0SBtRFPM9b9TD8c82AtZ4FzZITABEBAAG0GnRlc3QgNSA8dGV' +
       'zdDVAZXhhbXBsZS5jb20+iLgEEwECACIFAlKw5QkCGwMGCwkIBwMCBhUIAgkKCwQWAgMB' +
@@ -109,71 +105,85 @@ var PLAINTEXT_MESSAGE = ['Content-Type: multipart/mixed; boundary="--foo"',
       'AKCRA6TIbl4xbX69ZnA/97iK25jcFFD136qlOWW2i2fn129fFGUg/P1l6EZeHvLcLGaKq' +
       'FZb2i68tmIza1xl9+yTHlHYifxQnpEMS+/CaPGSUVVP+rdlYn7zkk3z4iAi1+pGb56mYW' +
       'iVLH2LeQTwVnl+d5V0qi1D2tPxCBbs/g/2EO5l3ZfuEnwjYgLr5D1w==',
+      constants.MimeNum.LINE_WRAP, constants.Mime.CRLF),
   '----foo--', ''].join('\r\n');
 
+
 function setUp() {
-  mockControl = new goog.testing.MockControl();
-  e2e.ext.testingstubs.initStubs(stubs);
-  stubs.replace(e2e.ext.mime.MimeNode.prototype, 'setBoundary_', function() {
-    this.boundary_ = BOUNDARY;
+  var boundary = '--foo';
+  e2e.openpgp.pgpmime.testingstubs.initStubs(stubs);
+  stubs.replace(e2e.openpgp.pgpmime.MimeNode.prototype, 'setBoundary_',
+      function() {
+        this.boundary_ = boundary;
+      });
+  node = new e2e.openpgp.pgpmime.MimeNode({
+    multipart: true,
+    optionalHeaders: [
+      {name: constants.Mime.CONTENT_TYPE,
+        value: constants.Mime.MULTIPART_MIXED},
+      {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+        value: constants.Mime.SEVEN_BIT}]
   });
 }
 
 
 function tearDown() {
   stubs.reset();
-  mockControl.$tearDown();
   node = null;
 }
 
 
-function testBuildSignedAndEncrypted() {
-  var encryptedText = 'some encrypted text';
-  var signer = 'yan@mit.edu';
-  var signMessage = true;
-  var finalTree = ['Content-Type: multipart/encrypted; ' +
-        'protocol="application/pgp-encrypted"; boundary="--foo"',
-    'Content-Transfer-Encoding: 7bit', '', '----foo',
-    'Content-Type: application/pgp-encrypted; charset="utf-8"',
-    'Content-Transfer-Encoding: 7bit', '', 'Version: 1', '----foo',
-    'Content-Type: application/octet-stream; charset="utf-8"',
-    'Content-Transfer-Encoding: 7bit', '', encryptedText,
-    '----foo--', ''].join('\r\n');
+function testNodeSetup() {
+  assertEquals(BOUNDARY, node.boundary_);
+  assertTrue(node.multipart_);
+  assertEquals(constants.Mime.MULTIPART_MIXED,
+               node.header_[constants.Mime.CONTENT_TYPE].value);
+}
 
 
-  var actionExecutor = new e2e.ext.actions.Executor();
-  stubs.replace(e2e.ext.actions.Executor.prototype, 'execute',
-                mockControl.createFunctionMock());
+function testAddChild() {
+  var child = node.addChild({multipart: false, optionalHeaders:
+        [{name: constants.Mime.CONTENT_TYPE, value: constants.Mime.ENCRYPTED},
+         {name: constants.Mime.CONTENT_DISPOSITION,
+           value: constants.Mime.ATTACHMENT, params: {filename: testFilename}}]}
+  );
+  assertArrayEquals(node.children_, [child]);
+  assertEquals(node, child.parent);
+  assertEquals(constants.Mime.ENCRYPTED,
+               child.header_[constants.Mime.CONTENT_TYPE].value);
+  assertEquals(constants.Mime.ATTACHMENT,
+      child.header_[constants.Mime.CONTENT_DISPOSITION].value);
+  assertEquals(testFilename,
+      child.header_[constants.Mime.CONTENT_DISPOSITION].params.filename);
 
-  var requestArg = new mockmatchers.ArgumentMatcher(function(arg) {
-    assertEquals(constants.Actions.ENCRYPT_SIGN, arg.action);
-    assertEquals(PLAINTEXT_MESSAGE, arg.content);
-    assertEquals(signer, arg.currentUser);
-    assertTrue(signMessage);
-    return true;
-  });
+}
 
-  var cb = new mockmatchers.SaveArgument(function(arg) {
-    arg(encryptedText);
-    return true;
-  });
 
-  e2e.ext.actions.Executor.prototype.
-      execute(requestArg, mockmatchers.ignoreArgument, cb);
+function testSetContent() {
+  node.setContent(TEXT_CONTENT);
+  assertEquals(TEXT_CONTENT, node.content_);
+}
 
-  mockControl.$replayAll();
 
-  var arr = new Uint8Array(BINARY_CONTENT.length);
-  for (var i = 0; i < arr.length; i++) {
-    arr[i] = BINARY_CONTENT.charCodeAt(i);
-  }
-  var content = {body: TEXT_CONTENT,
-    attachments: [{filename: filename, content: arr}]};
+function testBuildMessage() {
+  var childTextNode = node.addChild(
+      {multipart: false, optionalHeaders: [
+        {name: constants.Mime.CONTENT_TYPE,
+          value: constants.Mime.PLAINTEXT},
+        {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+          value: constants.Mime.SEVEN_BIT}]});
+  childTextNode.setContent(TEXT_CONTENT);
+  var childAttachmentNode = node.addChild(
+      {multipart: false, optionalHeaders: [
+        {name: constants.Mime.CONTENT_TYPE, value: constants.Mime.OCTET_STREAM},
+        {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+          value: constants.Mime.BASE64},
+        {name: constants.Mime.CONTENT_DISPOSITION,
+          value: constants.Mime.ATTACHMENT, params: {filename: testFilename}}]}
+      );
+  childAttachmentNode.setContent(BINARY_CONTENT);
 
-  var mail = new e2e.ext.mime.PgpMail(content, actionExecutor, signer,
-                                      signMessage);
-  mail.buildSignedAndEncrypted(function(encryptedTree) {
-    assertEquals(finalTree, encryptedTree);
-  });
-  mockControl.$verifyAll();
+  var builtMessage = node.buildMessage();
+  console.log(FINAL_MESSAGE, builtMessage);
+  assertEquals(FINAL_MESSAGE, builtMessage);
 }
