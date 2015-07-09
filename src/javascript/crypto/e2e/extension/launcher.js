@@ -233,12 +233,14 @@ ext.ExtensionLauncher.prototype.createWindow = function(url, isForeground,
 ext.AppLauncher = function(pgpContext, preferencesStorage) {
   ext.AppLauncher.base(this, 'constructor', pgpContext, preferencesStorage);
   chrome.app.runtime.onLaunched.addListener(function() {
-    chrome.app.window.create('webview.html', {
-      innerBounds: {
-        width: 960,
-        height: 580
-      }
-    });
+    chrome.app.window.create(
+        'webview.html',
+        /** @type {!chrome.app.window.CreateWindowOptions} */ ({
+          innerBounds: {
+            width: 960,
+            height: 580
+          }
+        }));
   });
 };
 goog.inherits(ext.AppLauncher, ext.Launcher);
@@ -252,13 +254,16 @@ ext.AppLauncher.prototype.updatePassphraseWarning = function() {
 
 /** @override */
 ext.AppLauncher.prototype.createWindow = function(url, isForeground, callback) {
-  chrome.app.window.create(url, {
-    focused: isForeground,
-    innerBounds: {
-      width: 900,
-      height: 700
-    }
-  }, callback);
+  chrome.app.window.create(
+      url,
+      /** @type {!chrome.app.window.CreateWindowOptions} */ ({
+        focused: isForeground,
+        innerBounds: {
+          width: 900,
+          height: 700
+        }
+      }),
+      callback);
 };
 
 
