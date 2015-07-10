@@ -351,7 +351,8 @@ e2e.openpgp.block.TransferableKey.prototype.toKeyObject = function(
     uids: this.getUserIds(),
     serialized: /** @type {!e2e.ByteArray} */(
         (opt_dontSerialize || !this.SERIALIZE_IN_KEY_OBJECT) ?
-        [] : this.serialize())
+        [] : this.serialize()),
+    providerId: /** @type {!e2e.openpgp.KeyProviderId} */ ('UnknownProvider')
   };
 };
 
