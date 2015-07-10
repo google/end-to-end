@@ -23,7 +23,6 @@ goog.provide('e2e.ext.constants.Actions');
 goog.provide('e2e.ext.constants.BackupCode');
 goog.provide('e2e.ext.constants.CssClass');
 goog.provide('e2e.ext.constants.ElementId');
-goog.provide('e2e.ext.constants.Mime');
 goog.provide('e2e.ext.constants.StorageKey');
 
 
@@ -227,43 +226,3 @@ e2e.ext.constants.BackupCode = {
  * @const
  */
 e2e.ext.constants.BACKUP_CODE_LENGTH = 24;
-
-
-/**
- * MIME constants used by the extension.
- * @enum {string}
- */
-e2e.ext.constants.Mime = {
-  // Separators
-  CRLF: '\r\n',
-
-  // Header names
-  CONTENT_TYPE: 'Content-Type',
-  CONTENT_TRANSFER_ENCODING: 'Content-Transfer-Encoding',
-  MIME_VERSION: 'Mime-Version',
-  CONTENT_DISPOSITION: 'Content-Disposition',
-
-  // OpenPGP version content field. Required by RFC 3156.
-  VERSION_CONTENT: 'Version: 1',
-
-  // Content Types. Case-insensitive.
-  PLAINTEXT: 'text/plain',
-  MULTIPART_ENCRYPTED: 'multipart/encrypted',
-  ENCRYPTED: 'application/pgp-encrypted',
-  OCTET_STREAM: 'application/octet-stream',
-  MULTIPART_MIXED: 'multipart/mixed',
-  DEFAULT_ENCRYPTED_CONTENT_TYPE:
-      'multipart/encrypted; protocol=application/pgp-encrypted',
-
-  // Content Transfer Encodings
-  SEVEN_BIT: '7bit',
-  QUOTED_PRINTABLE: 'quoted_printable',
-  BASE64: 'base64',
-
-  // Content dispositions
-  ATTACHMENT: 'attachment',
-
-  // Charset. Case-insensitive.
-  UTF8: 'utf-8',
-  ASCII: 'us-ascii'
-};

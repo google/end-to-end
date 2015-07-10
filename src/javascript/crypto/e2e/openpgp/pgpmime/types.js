@@ -25,6 +25,16 @@ goog.provide('e2e.openpgp.pgpmime.types.Entity');
 goog.provide('e2e.openpgp.pgpmime.types.Header');
 goog.provide('e2e.openpgp.pgpmime.types.HeaderValue');
 goog.provide('e2e.openpgp.pgpmime.types.MailContent');
+goog.provide('e2e.openpgp.pgpmime.types.NodeContent');
+
+
+/**
+ * @typedef {{
+ * multipart: boolean,
+ * optionalHeaders: (Array<!e2e.openpgp.pgpmime.types.Header>|undefined)
+ * }}
+ */
+e2e.openpgp.pgpmime.types.NodeContent;
 
 
 /**
@@ -49,7 +59,7 @@ e2e.openpgp.pgpmime.types.MailContent;
 
 /**
  * @typedef {{filename: string,
- *     content: !Uint8Array}}
+ *     content: (!Uint8Array)}}
  */
 e2e.openpgp.pgpmime.types.Attachment;
 

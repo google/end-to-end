@@ -37,9 +37,12 @@ var utils = e2e.openpgp.pgpmime.Text;
  * @return {string} The formatted text.
  */
 utils.prettyTextWrap = function(str, maxlen, delimiter) {
-  var regexp = new RegExp(goog.string.format('(.{%d})', maxlen), 'g');
+  if (str.length <= maxlen) {
+    return str;
+  }
+  var regexp = new RegExp('(.{' + maxlen.toString() + '}(?!' + delimiter + '))',
+      'g');
   str = str.trim().replace(regexp, '$1' + delimiter);
-
   var carry = '';
   var lines = goog.array.map(str.split(delimiter), function(line) {
     var newline = goog.string.format('%s%s', carry, line).trim();

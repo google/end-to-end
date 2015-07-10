@@ -34,11 +34,13 @@ var constants = pgpmime.Constants;
 
 /**
  * Constructs an object that represents a PGP/MIME email.
- * @param {!e2e.openpgp.pgpmime.types.ContentAndHeaders} content The encrypted
- *     content of the email, including necessary email headers
+ * @param {!e2e.openpgp.pgpmime.types.ContentAndHeaders} content The content of
+ *     the email, including necessary email headers. Whether or not it includes
+ *     encrypted data depends on whether a MIME message or a PGP/MIME message is
+ *     being constructed.
  * @param {string=} opt_preamble Text preceding the body of the message. This
- *     text will be appended to the beginning of the PGP-MIME message, within
- *     the root node
+ *     text will be appended to the beginning of the PGP/MIME message, within
+ *     the root node.
  * @constructor
  */
 e2e.openpgp.pgpmime.PgpMail = function(content, opt_preamble) {
@@ -48,36 +50,82 @@ e2e.openpgp.pgpmime.PgpMail = function(content, opt_preamble) {
 
 
 /**
+ * Processes the addition of certain optional headers, including
+ * (subject, from, to, in-reply-to)
+ * @param {!Array<!Object>} optionalHeaders An array of headers that have
+ *     already been defined
+ * @return {!Array<!Object>}
+ */
+e2e.openpgp.pgpmime.PgpMail.prototype.addOptionalHeaders =
+    function(optionalHeaders) {
+  if (goog.isDefAndNotNull(this.content.subject)) {
+    optionalHeaders.push({name: constants.Mime.SUBJECT,
+      value: this.content.subject});
+  }
+  if (goog.isDefAndNotNull(this.content.from)) {
+    optionalHeaders.push({name: constants.Mime.FROM, value: this.content.from});
+  }
+  if (goog.isDefAndNotNull(this.content.to)) {
+    optionalHeaders.push({name: constants.Mime.TO, value: this.content.to});
+  }
+  if (goog.isDefAndNotNull(this.content.inReplyTo)) {
+    optionalHeaders.push({name: constants.Mime.IN_REPLY_TO,
+      value: this.content.inReplyTo});
+  }
+  return optionalHeaders;
+};
+
+
+/**
  * Builds a plaintext serialized MIME tree for the email.
  * @return {string}
  */
 e2e.openpgp.pgpmime.PgpMail.prototype.buildMimeTree = function() {
   var rootNode;
+  var optionalHeaders;
 
   if (!this.content.attachments || this.content.attachments.length === 0) {
     // Create a single plaintext node.
+    optionalHeaders = [{name: constants.Mime.CONTENT_TYPE,
+      value: constants.Mime.PLAINTEXT},
+    {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+      value: constants.Mime.SEVEN_BIT}];
+    optionalHeaders = this.addOptionalHeaders(optionalHeaders);
+    optionalHeaders.push({name: constants.Mime.MIME_VERSION,
+      value: constants.Mime.MIME_VERSION_NUMBER});
     rootNode = new pgpmime.MimeNode({multipart: false,
-      optionalHeaders: [{name: constants.Mime.CONTENT_TYPE,
-        value: constants.Mime.PLAINTEXT}]});
+      optionalHeaders: optionalHeaders});
     rootNode.setContent(this.content.body);
+
   } else {
     // Create a multipart node with children for body and attachments.
+    optionalHeaders = [{name: constants.Mime.CONTENT_TYPE,
+      value: constants.Mime.MULTIPART_MIXED},
+    {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+      value: constants.Mime.SEVEN_BIT}];
+    optionalHeaders = this.addOptionalHeaders(optionalHeaders);
+    optionalHeaders.push({name: constants.Mime.MIME_VERSION,
+      value: constants.Mime.MIME_VERSION_NUMBER});
     rootNode = new pgpmime.MimeNode({multipart: true,
-      optionalHeaders: [{name: constants.Mime.CONTENT_TYPE,
-        value: constants.Mime.MULTIPART_MIXED}]});
+      optionalHeaders: optionalHeaders});
+    rootNode.setContent(this.preamble);
+
     var textNode = rootNode.addChild({multipart: false,
       optionalHeaders: [{name: constants.Mime.CONTENT_TYPE,
-        value: constants.Mime.PLAINTEXT}]});
+        value: constants.Mime.PLAINTEXT},
+      {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+        value: constants.Mime.SEVEN_BIT}]});
     textNode.setContent(this.content.body);
 
     goog.array.forEach(this.content.attachments, function(attachment) {
       var options = {multipart: false,
-        contentType: {type: constants.Mime.OCTET_STREAM},
-        optionalHeaders: [{name: constants.Mime.CONTENT_TRANSFER_ENCODING,
-          value: constants.Mime.BASE64},
-            {name: constants.Mime.CONTENT_DISPOSITION,
+        optionalHeaders: [{name: constants.Mime.CONTENT_TYPE,
+          value: constants.Mime.OCTET_STREAM},
+        {name: constants.Mime.CONTENT_DISPOSITION,
           value: constants.Mime.ATTACHMENT,
-          params: {filename: attachment.filename}}
+          params: {filename: attachment.filename}},
+            {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+          value: constants.Mime.SEVEN_BIT}
         ]};
       var attachmentNode = rootNode.addChild(options);
       attachmentNode.setContent(attachment.content);
@@ -92,50 +140,47 @@ e2e.openpgp.pgpmime.PgpMail.prototype.buildMimeTree = function() {
  * @return {string}
  */
 e2e.openpgp.pgpmime.PgpMail.prototype.buildPGPMimeTree = function() {
+  var optionalHeaders = [
+    // Default content transfer encoding is 7bit, according to RFC 2045
+    {name: constants.Mime.CONTENT_TYPE,
+      value: constants.Mime.DEFAULT_ENCRYPTED_CONTENT_TYPE},
+    {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+      value: constants.Mime.SEVEN_BIT}];
+  optionalHeaders = this.addOptionalHeaders(optionalHeaders);
+  optionalHeaders.push({name: constants.Mime.MIME_VERSION,
+        value: constants.Mime.MIME_VERSION_NUMBER});
 
   // Build the top-level node
-  var rootNode = new pgpmime.MimeNode({multipart: true,
-    optionalHeaders: [
-      // Default content transfer encoding is 7bit, according to RFC 2045
-      {name: constants.Mime.CONTENT_TYPE,
-        value: constants.Mime.DEFAULT_ENCRYPTED_CONTENT_TYPE},
-      {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
-        value: constants.Mime.SEVEN_BIT},
-      {name: constants.Mime.SUBJECT, value: this.content.subject},
-      {name: constants.Mime.FROM, value: this.content.from},
-      {name: constants.Mime.TO, value: this.content.to},
-      {name: constants.Mime.IN_REPLY_TO, value: this.content.inReplyTo},
-      {name: constants.Mime.MIME_VERSION,
-        value: constants.Mime.MIME_VERSION_NUMBER}]});
+  var rootNode = new pgpmime.MimeNode({
+    multipart: true, optionalHeaders: optionalHeaders});
   rootNode.setContent(this.preamble);
 
-  // Set the required version info
-  // We're currently treating this node as an attachment (by including a
-  // name field), rather than solely containing the version/control information.
+  // Set the required version info.
   var versionNode = rootNode.addChild({multipart: false,
     optionalHeaders: [
-      {name: constants.Mime.CONTENT_TYPE,
-        value: constants.Mime.ENCRYPTED,
-        params: {'charset': 'utf-8', 'name': 'version.asc'}},
+      {name: constants.Mime.CONTENT_TYPE, value: constants.Mime.ENCRYPTED,
+        params:
+            {'charset': constants.Mime.UTF8,
+              'name': constants.Mime.VERSION_ASC}},
       {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
         value: constants.Mime.SEVEN_BIT},
       {name: constants.Mime.CONTENT_DESCRIPTION,
-        value: 'PGP/MIME Versions Identification'}]});
+        value: constants.Mime.PGP_MIME_DESCRIPTION}]});
   versionNode.setContent(constants.Mime.VERSION_CONTENT);
 
-  // Set the ciphertext
-  // Due to Gmail bug, we use constants.Mime.PLAINTEXT instead of
-  // constants.Mime.OCTET_STREAM for contentType
+  // Set the ciphertext. Due to Gmail bug, we use constants.Mime.PLAINTEXT
+  // instead of constants.Mime.OCTET_STREAM for contentType
   var contentNode = rootNode.addChild({multipart: false,
     optionalHeaders: [
       {name: constants.Mime.CONTENT_TYPE,
         value: constants.Mime.PLAINTEXT,
-        params: {'charset': 'utf-8', 'name': 'encrypted.asc'}},
+        params: {'charset': constants.Mime.UTF8,
+          'name': constants.Mime.ENCRYPTED_ASC}},
       {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
         value: constants.Mime.SEVEN_BIT}]});
   contentNode.setContent(this.content.body);
 
-  // buildMessage() returns the string representation of the object
+  // buildMessage() returns the string representation of the object.
   return rootNode.buildMessage();
 };
 

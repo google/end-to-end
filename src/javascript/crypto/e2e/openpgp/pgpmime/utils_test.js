@@ -50,7 +50,6 @@ function testGetInvalidMailContent() {
                });
 }
 
-
 function testParseHeaderValue() {
   var text = 'MULTIPART/mixed;   BOUNDARY=" foo=";  bar=somevalue';
   assertObjectEquals({value: 'multipart/mixed', params: { boundary: ' foo=',

@@ -29,6 +29,7 @@ goog.provide('e2e.openpgp.pgpmime.Constants');
 e2e.openpgp.pgpmime.Constants.Mime = {
   // Separators
   CRLF: '\r\n',
+  WHITESPACE: ' ',
 
   // Header names
   CONTENT_TYPE: 'Content-Type',
@@ -52,7 +53,7 @@ e2e.openpgp.pgpmime.Constants.Mime = {
   OCTET_STREAM: 'application/octet-stream',
   MULTIPART_MIXED: 'multipart/mixed',
   DEFAULT_ENCRYPTED_CONTENT_TYPE:
-      'multipart/encrypted; protocol=application/pgp-encrypted',
+      'multipart/encrypted; protocol="application/pgp-encrypted"',
   NAME: 'name',
 
   // Content Transfer Encodings
@@ -68,7 +69,10 @@ e2e.openpgp.pgpmime.Constants.Mime = {
   ASCII: 'us-ascii',
 
   //Miscellanous values
-  MIME_VERSION_NUMBER: '1.0'
+  MIME_VERSION_NUMBER: '1.0',
+  PGP_MIME_DESCRIPTION: 'PGP/MIME Versions Identification',
+  ENCRYPTED_ASC: 'encrypted.asc',
+  VERSION_ASC: 'version.asc'
 };
 
 

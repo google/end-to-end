@@ -49,17 +49,42 @@ e2e.openpgp.pgpmime.Utils.parseHeaderValue = function(text) {
   var params = {};
   goog.array.forEach(parts, function(part) {
     // Ex: 'protocol=application/pgp-encrypted'
-    var paramParts = part.split('=');
+    var paramParts = goog.string.splitLimit(part, '=', 1);
     if (paramParts.length < 2) {
       return;
     }
+
     // Parameter names are case insensitive acc. to RFC 2045.
     var paramName = paramParts.shift().toLowerCase().trim();
-    params[paramName] = goog.string.stripQuotes(
-        paramParts.join('=').trim(), '"');
+
+    var visibleAscii = new RegExp('^[ -~]+$');
+    var tSpecials = new RegExp('[ ()<>\[@,;:/?\\]=\"]+');
+    var escapeChar = new RegExp('\\\\');
+
+    // Attribute names can only consist of visible ASCII characters (all
+    // characters in the range 32-126). Additionally, they cannot include
+    // whitespace or a number of other prohibited characters (see RFC 2045 5.1).
+    if (!visibleAscii.test(paramName) ||
+        tSpecials.test(paramName) || escapeChar.test(paramName)) {
+      return;
+    }
+
+    var paramVal = paramParts.join('').trim();
+    // Attribute values can only consist of visible ASCII characters.
+    if (!visibleAscii.test(paramVal)) {
+      return;
+    }
+    // Attribute values can only include whitespaces or other prohibited
+    // characters if enclosed within whitespaces (see RFC 2045 5.1).
+    if ((paramVal.charAt(0) !== '"' ||
+        paramVal.charAt(paramVal.length - 1) !== '"') &&
+        (tSpecials.test(paramVal) || escapeChar.test(paramVal))) {
+      return;
+    }
+    params[paramName] = goog.string.stripQuotes(paramVal, '"');
   });
 
-  return /**@type{e2e.openpgp.pgpmime.types.HeaderValue}*/(
+  return /**@type{e2e.openpgp.pgpmime.types.HeaderValue}*/ (
       {value: value, params: params});
 };
 
@@ -78,8 +103,11 @@ e2e.openpgp.pgpmime.Utils.serializeHeader = function(header) {
         line.push(paramName + '=' + goog.string.quote(paramValue));
       });
     }
+    // Content is wrapped at 64 chars, for compliance with the PEM protocol.
+    // Note that CRLF wrapped headers also require a trailing whitespace
     lines.push(e2e.openpgp.pgpmime.Text.prettyTextWrap(
-        line.join('; '), constants.MimeNum.LINE_WRAP, constants.Mime.CRLF));
+        line.join('; '), constants.MimeNum.LINE_WRAP,
+        constants.Mime.CRLF + constants.Mime.WHITESPACE));
   });
   return lines;
 };

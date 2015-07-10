@@ -15,7 +15,7 @@
  */
 
 /**
- * @fileoverview main module for the safemail app.
+ * @fileoverview Main module for the safemail app.
  * @author yzhu@yahoo-inc.com (Yan Zhu)
  */
 
@@ -39,23 +39,24 @@ var constants = pgpmime.Constants;
 
 /**
  * Constructor for a MIME tree node.
- * @param {{
- *   multipart: boolean,
- *   optionalHeaders: (Array<!e2e.openpgp.pgpmime.types.Header>|undefined)
- * }} options Options to initialize for the node.
+ * @param {e2e.openpgp.pgpmime.types.NodeContent} options Options to initialize
+ *     for the node.
  * @param {e2e.openpgp.pgpmime.MimeNode=} opt_parent The parent node.
  * @constructor
  */
 e2e.openpgp.pgpmime.MimeNode = function(options, opt_parent) {
   this.parent = opt_parent || this;
   this.multipart_ = options.multipart;
-
+  /** @private {!Array<e2e.openpgp.pgpmime.MimeNode>} */
   this.children_ = [];
-  this.header_ = /** @type {e2e.openpgp.pgpmime.types.Header} */ ({});
+  /** @private {e2e.openpgp.pgpmime.types.Header} */
+  this.header_ =  /** @private {e2e.openpgp.pgpmime.types.Header} */ ({});
+  /** @private */
   this.content_ = null;
+  /** @private {string} */
   this.boundary_ = '';
 
-  // set headers
+  // Set headers.
   if (goog.isDefAndNotNull(options.optionalHeaders)) {
     goog.array.forEach(options.optionalHeaders, goog.bind(function(header) {
       if (goog.isDefAndNotNull(header.name) &&
@@ -79,7 +80,7 @@ e2e.openpgp.pgpmime.MimeNode = function(options, opt_parent) {
  */
 e2e.openpgp.pgpmime.MimeNode.prototype.setBoundary_ = function() {
   // TODO: Strictly ensure that the boundary value doesn't coincide with
-  //   any string in the email content and headers.
+  // any string in the email content and headers.
   this.boundary_ = '---' + goog.string.getRandomString() +
       Math.floor(Date.now() / 1000).toString();
 };
@@ -87,10 +88,8 @@ e2e.openpgp.pgpmime.MimeNode.prototype.setBoundary_ = function() {
 
 /**
  * Adds a child to a MIME node.
- * @param {{
- *   multipart: boolean,
- *   optionalHeaders: (Array<!e2e.openpgp.pgpmime.types.Header>|undefined)
- * }} options Options to initialize for the node.
+ * @param {e2e.openpgp.pgpmime.types.NodeContent} options Options to initialize
+ *     for the node.
  * @return {e2e.openpgp.pgpmime.MimeNode}
  */
 e2e.openpgp.pgpmime.MimeNode.prototype.addChild = function(options) {
@@ -105,11 +104,11 @@ e2e.openpgp.pgpmime.MimeNode.prototype.addChild = function(options) {
  * @param {string} key Name of the header.
  * @param {string} value Value of the header, possibly including parameters.
  * @param {Object.<string, string>=} opt_params Optional dict of additional
- *   parameters
+ *     parameters
  * @private
  */
-e2e.openpgp.pgpmime.MimeNode.prototype.setHeader_ =
-    function(key, value, opt_params) {
+e2e.openpgp.pgpmime.MimeNode.prototype.setHeader_ = function(key, value,
+    opt_params) {
   var headerValue = e2e.openpgp.pgpmime.Utils.parseHeaderValue(value);
   if (opt_params) {
     headerValue.params = headerValue.params || {};
@@ -136,48 +135,48 @@ e2e.openpgp.pgpmime.MimeNode.prototype.buildMessage = function() {
   var lines = [];
   var transferEncoding = this.header_[constants.Mime.CONTENT_TRANSFER_ENCODING];
   var contentType = this.header_[constants.Mime.CONTENT_TYPE];
+  var contentIsString = goog.typeOf(this.content_) === 'string';
 
-  if (!this.header_[constants.Mime.CONTENT_DISPOSITION] &&
-              this.content_ && goog.typeOf(this.content_) === 'string') {
-    // sets the charset to utf-8 if the charset hasn't already been specified
+  if (this.header_[constants.Mime.CONTENT_TYPE].value ===
+      constants.Mime.PLAINTEXT && this.content_ && contentIsString) {
+    // Sets the charset to utf-8 if the charset hasn't already been specified.
     contentType.params.charset =
         contentType.params.charset || constants.Mime.UTF8;
   }
   if (this.multipart_) {
-    // Multipart messages need to specify a boundary
+    // Multipart messages need to specify a boundary.
     contentType.params.boundary = this.boundary_;
   }
 
-  // adds all the headers after serialization (transforming object to string)
-  // to the lines array, then wraps lines at 64 chars, for compliance with the
-  // PEM protocol
+  // Adds all the headers after serialization (transforming object to string)
+  // to the lines array
   lines = lines.concat(e2e.openpgp.pgpmime.Utils.serializeHeader(this.header_));
 
-  // add a newline after the headers (the empty string cell will eventually be
-  // turned into a newline)
+  // Add a newline after the headers (the empty string cell will eventually be
+  // turned into a newline).
   lines.push('');
 
   if (this.content_) {
-    if (transferEncoding.value === constants.Mime.BASE64 ||
-        goog.typeOf(this.content_) !== 'string') {
-      // lines are wrapped at 64 chars, per the PEM protocol. Newline characters
-      // will be stripped out of any encrypted content during decryption
-      lines.push(goog.typeOf(this.content_) === 'string' ?
-          e2e.openpgp.pgpmime.Text.prettyTextWrap(
-              goog.crypt.base64.encodeString(goog.asserts.assertString(
-              this.content_)), constants.MimeNum.LINE_WRAP,
-              constants.Mime.CRLF) :
-          e2e.openpgp.pgpmime.Text.prettyTextWrap(
-              goog.crypt.base64.encodeByteArray(
-              /** @type {e2e.ByteArray}*/ (this.content_)),
-              constants.MimeNum.LINE_WRAP, constants.Mime.CRLF));
+    if (transferEncoding.value === constants.Mime.BASE64 || !contentIsString) {
+      // Lines are wrapped at 64 chars, per the PEM protocol. Newline characters
+      // will be stripped out of any encrypted content during decryption.
+      if (contentIsString) {
+        lines.push(e2e.openpgp.pgpmime.Text.prettyTextWrap(
+            goog.crypt.base64.encodeString(goog.asserts.assertString(
+            this.content_)), constants.MimeNum.LINE_WRAP, constants.Mime.CRLF));
+      } else {
+        lines.push(e2e.openpgp.pgpmime.Text.prettyTextWrap(
+            goog.crypt.base64.encodeByteArray(/** @type {e2e.ByteArray}*/
+            (this.content_)), constants.MimeNum.LINE_WRAP,
+            constants.Mime.CRLF));
+      }
     } else {
       lines.push(e2e.openpgp.pgpmime.Text.prettyTextWrap(
           goog.asserts.assertString(this.content_),
           constants.MimeNum.LINE_WRAP, constants.Mime.CRLF));
     }
     if (this.multipart_) {
-      // add a trailing newline that will precede the children nodes
+      // Add a trailing newline that will precede the children nodes.
       lines.push('');
     }
   }
@@ -188,7 +187,7 @@ e2e.openpgp.pgpmime.MimeNode.prototype.buildMessage = function() {
       lines.push(node.buildMessage());
     }, this));
     lines.push('--' + this.boundary_ + '--');
-    // newline to finish the message
+    // Newline to finish the message.
     lines.push('');
   }
 
