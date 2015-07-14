@@ -125,7 +125,7 @@ e2e.openpgp.pgpmime.PgpMail.prototype.buildMimeTree = function() {
         {name: constants.Mime.CONTENT_DISPOSITION,
           value: constants.Mime.ATTACHMENT,
           params: {filename: attachment.filename}},
-            {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+        {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
           value: constants.Mime.SEVEN_BIT}
         ]};
       var attachmentNode = rootNode.addChild(options);
@@ -149,7 +149,7 @@ e2e.openpgp.pgpmime.PgpMail.prototype.buildPGPMimeTree = function() {
       value: constants.Mime.SEVEN_BIT}];
   optionalHeaders = this.addOptionalHeaders(optionalHeaders);
   optionalHeaders.push({name: constants.Mime.MIME_VERSION,
-        value: constants.Mime.MIME_VERSION_NUMBER});
+    value: constants.Mime.MIME_VERSION_NUMBER});
 
   // Build the top-level node
   var rootNode = new pgpmime.MimeNode({

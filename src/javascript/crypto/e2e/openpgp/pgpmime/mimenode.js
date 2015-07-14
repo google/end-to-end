@@ -24,6 +24,8 @@ goog.provide('e2e.openpgp.pgpmime.MimeNode');
 goog.require('e2e.openpgp.pgpmime.Constants');
 goog.require('e2e.openpgp.pgpmime.Text');
 goog.require('e2e.openpgp.pgpmime.Utils');
+/** @suppress {extraRequire} import typedef */
+goog.require('e2e.openpgp.pgpmime.types.NodeContent');
 
 goog.require('goog.array');
 goog.require('goog.asserts');
@@ -88,7 +90,7 @@ e2e.openpgp.pgpmime.MimeNode.prototype.setBoundary_ = function() {
 
 /**
  * Adds a child to a MIME node.
- * @param {e2e.openpgp.pgpmime.types.NodeContent} options Options to initialize
+ * @param {!e2e.openpgp.pgpmime.types.NodeContent} options Options to initialize
  *     for the node.
  * @return {e2e.openpgp.pgpmime.MimeNode}
  */
