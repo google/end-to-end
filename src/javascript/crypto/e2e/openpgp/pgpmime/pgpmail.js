@@ -35,9 +35,10 @@ var constants = pgpmime.Constants;
 /**
  * Constructs an object that represents a PGP/MIME email.
  * @param {!e2e.openpgp.pgpmime.types.ContentAndHeaders} content The content of
- *     the email, including necessary email headers. Whether or not it includes
- *     encrypted data depends on whether a MIME message or a PGP/MIME message is
- *     being constructed.
+ *     the email, including necessary email headers.
+ *     If an ordinary MIME message is being constructed, the content will be
+ *     unencrytped. However, if a PGP/MIME message is being constructed, the
+ *     the content will include encrypted data.
  * @param {string=} opt_preamble Text preceding the body of the message. This
  *     text will be appended to the beginning of the PGP/MIME message, within
  *     the root node.
@@ -52,9 +53,9 @@ e2e.openpgp.pgpmime.PgpMail = function(content, opt_preamble) {
 /**
  * Processes the addition of certain optional headers, including
  * (subject, from, to, in-reply-to)
- * @param {!Array<!Object>} optionalHeaders An array of headers that have
- *     already been defined
- * @return {!Array<!Object>}
+ * @param {!Array<!Object<string, string>>} optionalHeaders An array of headers
+ *     that have already been defined
+ * @return {!Array<!Object<string, string>>}
  */
 e2e.openpgp.pgpmime.PgpMail.prototype.addOptionalHeaders =
     function(optionalHeaders) {

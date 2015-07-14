@@ -65,7 +65,7 @@ e2e.openpgp.pgpmime.types.Attachment;
 
 
 /**
- * @typedef {{name: string, e2e.openpgp.pgpmime.types.HeaderValue}}
+ * @typedef {Object.<string, !e2e.openpgp.pgpmime.types.HeaderValue>}
  */
 e2e.openpgp.pgpmime.types.Header;
 

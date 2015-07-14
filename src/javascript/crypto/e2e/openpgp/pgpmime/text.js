@@ -40,8 +40,12 @@ utils.prettyTextWrap = function(str, maxlen, delimiter) {
   if (str.length <= maxlen) {
     return str;
   }
+  // The following regexp searches for character sequences whose length is equal
+  // to maxlen, that aren't immediately followed by a delimiter (we use the
+  // lookahead to prevent a repetition of the delimiter).
   var regexp = new RegExp('(.{' + maxlen.toString() + '}(?!' + delimiter + '))',
       'g');
+  // Append a delimiter to all sequences that match the regexp.
   str = str.trim().replace(regexp, '$1' + delimiter);
   var carry = '';
   var lines = goog.array.map(str.split(delimiter), function(line) {

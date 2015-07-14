@@ -35,6 +35,30 @@ var utils = pgpmime.Utils;
 
 
 /**
+ * Serialize a header into an array of strings.
+ * @param {e2e.openpgp.pgpmime.types.Header} header The header to serialize
+ * @return {Array.<string>}
+ */
+e2e.openpgp.pgpmime.Utils.serializeHeader = function(header) {
+  var lines = [];
+  goog.object.forEach(header, function(headerValue, headerName) {
+    var line = [headerName + ': ' + headerValue.value];
+    if (goog.isDefAndNotNull(headerValue.params)) {
+      goog.object.forEach(headerValue.params, function(paramValue, paramName) {
+        line.push(paramName + '=' + goog.string.quote(paramValue));
+      });
+    }
+    // Content is wrapped at 64 chars, for compliance with the PEM protocol.
+    // Note that CRLF wrapped headers also require a trailing whitespace
+    lines.push(e2e.openpgp.pgpmime.Text.prettyTextWrap(
+        line.join('; '), constants.MimeNum.LINE_WRAP,
+        constants.Mime.CRLF + constants.Mime.WHITESPACE));
+  });
+  return lines;
+};
+
+
+/**
  * Parses a header value string. Ex: 'multipart/mixed; boundary="foo"'
  * @param {string} text The string to parse
  * @return {e2e.openpgp.pgpmime.types.HeaderValue}
@@ -57,15 +81,13 @@ e2e.openpgp.pgpmime.Utils.parseHeaderValue = function(text) {
     // Parameter names are case insensitive acc. to RFC 2045.
     var paramName = paramParts.shift().toLowerCase().trim();
 
-    var visibleAscii = new RegExp('^[ -~]+$');
-    var tSpecials = new RegExp('[ ()<>\[@,;:/?\\]=\"]+');
-    var escapeChar = new RegExp('\\\\');
+    var visibleAscii = new RegExp('^[\x20-\x7e]+$');
+    var tSpecials = new RegExp('[\\\\ ()<>\[@,;:/?\\]=\"]+');
 
     // Attribute names can only consist of visible ASCII characters (all
     // characters in the range 32-126). Additionally, they cannot include
     // whitespace or a number of other prohibited characters (see RFC 2045 5.1).
-    if (!visibleAscii.test(paramName) ||
-        tSpecials.test(paramName) || escapeChar.test(paramName)) {
+    if (!visibleAscii.test(paramName) || tSpecials.test(paramName)) {
       return;
     }
 
@@ -76,9 +98,8 @@ e2e.openpgp.pgpmime.Utils.parseHeaderValue = function(text) {
     }
     // Attribute values can only include whitespaces or other prohibited
     // characters if enclosed within whitespaces (see RFC 2045 5.1).
-    if ((paramVal.charAt(0) !== '"' ||
-        paramVal.charAt(paramVal.length - 1) !== '"') &&
-        (tSpecials.test(paramVal) || escapeChar.test(paramVal))) {
+    if ((!goog.string.startsWith(paramVal, '"') ||
+        !goog.string.endsWith(paramVal, '"')) && (tSpecials.test(paramVal))) {
       return;
     }
     params[paramName] = goog.string.stripQuotes(paramVal, '"');
@@ -86,30 +107,6 @@ e2e.openpgp.pgpmime.Utils.parseHeaderValue = function(text) {
 
   return /**@type{e2e.openpgp.pgpmime.types.HeaderValue}*/ (
       {value: value, params: params});
-};
-
-
-/**
- * Serialize a header into an array of strings.
- * @param {e2e.openpgp.pgpmime.types.Header} header The header to serialize
- * @return {Array.<string>}
- */
-e2e.openpgp.pgpmime.Utils.serializeHeader = function(header) {
-  var lines = [];
-  goog.object.forEach(header, function(headerValue, headerName) {
-    var line = [headerName + ': ' + headerValue.value];
-    if (goog.isDefAndNotNull(headerValue.params)) {
-      goog.object.forEach(headerValue.params, function(paramValue, paramName) {
-        line.push(paramName + '=' + goog.string.quote(paramValue));
-      });
-    }
-    // Content is wrapped at 64 chars, for compliance with the PEM protocol.
-    // Note that CRLF wrapped headers also require a trailing whitespace
-    lines.push(e2e.openpgp.pgpmime.Text.prettyTextWrap(
-        line.join('; '), constants.MimeNum.LINE_WRAP,
-        constants.Mime.CRLF + constants.Mime.WHITESPACE));
-  });
-  return lines;
 };
 
 

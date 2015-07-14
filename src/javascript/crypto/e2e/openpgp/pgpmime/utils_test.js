@@ -50,9 +50,36 @@ function testGetInvalidMailContent() {
                });
 }
 
+
 function testParseHeaderValue() {
-  var text = 'MULTIPART/mixed;   BOUNDARY=" foo=";  bar=somevalue';
-  assertObjectEquals({value: 'multipart/mixed', params: { boundary: ' foo=',
+  // Attribute names that include characters that aren't visible ASCII
+  // should not be returned (whitespace is also invalid).
+  // In this case, there is a tab metacharacter in an attribute name
+  var attributeNonVisibleAsciiFails =
+      'MULTIPART/mixed;   BO\tUNDARY= "foo="; bar=somevalue';
+  assertObjectEquals({value: 'multipart/mixed', params: {bar: 'somevalue'}},
+      utils.parseHeaderValue(attributeNonVisibleAsciiFails));
+
+  // Attribute values that include characters that aren't visible ASCII
+  // should not be returned (whitespace is also invalid).
+  // In this case, there is a whitespace in an attribute value
+  var attributeNonVisibleAsciiFails =
+      'MULTIPART/mixed;   BOUNDARY= fo o; bar=somevalue';
+  assertObjectEquals({value: 'multipart/mixed', params: {bar: 'somevalue'}},
+      utils.parseHeaderValue(attributeNonVisibleAsciiFails));
+
+  // Attribute values that contain a special character (here, an equals sign)
+  // that isn't enclosed in quotes should not be returned
+  // In this case, an attribute value has an equals sign that isn't enclosed
+  // in quotes.
+  var equalSignWithoutQuotes =
+      'MULTIPART/mixed;   BOUNDARY= foo=; bar=somevalue';
+  assertObjectEquals({value: 'multipart/mixed', params: {bar: 'somevalue'}},
+      utils.parseHeaderValue(equalSignWithoutQuotes));
+
+  // This is a valid header value - it should be parsed and returned in full.
+  var text = 'MULTIPART/mixed;   BOUNDARY=" f oo=";  bar=somevalue';
+  assertObjectEquals({value: 'multipart/mixed', params: { boundary: ' f oo=',
     bar: 'somevalue'
   }}, utils.parseHeaderValue(text));
 }

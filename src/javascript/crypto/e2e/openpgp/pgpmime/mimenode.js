@@ -39,7 +39,7 @@ var constants = pgpmime.Constants;
 
 /**
  * Constructor for a MIME tree node.
- * @param {e2e.openpgp.pgpmime.types.NodeContent} options Options to initialize
+ * @param {!e2e.openpgp.pgpmime.types.NodeContent} options Options to initialize
  *     for the node.
  * @param {e2e.openpgp.pgpmime.MimeNode=} opt_parent The parent node.
  * @constructor
@@ -47,7 +47,7 @@ var constants = pgpmime.Constants;
 e2e.openpgp.pgpmime.MimeNode = function(options, opt_parent) {
   this.parent = opt_parent || this;
   this.multipart_ = options.multipart;
-  /** @private {!Array<e2e.openpgp.pgpmime.MimeNode>} */
+  /** @private {!Array<!e2e.openpgp.pgpmime.MimeNode>} */
   this.children_ = [];
   /** @private {e2e.openpgp.pgpmime.types.Header} */
   this.header_ =  /** @private {e2e.openpgp.pgpmime.types.Header} */ ({});
