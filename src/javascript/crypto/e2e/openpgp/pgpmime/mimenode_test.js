@@ -132,7 +132,6 @@ function tearDown() {
 
 
 function testNodeSetup() {
-  assertEquals(BOUNDARY, node.boundary_);
   assertTrue(node.multipart_);
   assertEquals(constants.Mime.MULTIPART_MIXED,
                node.header_[constants.Mime.CONTENT_TYPE].value);
@@ -183,4 +182,52 @@ function testBuildMessage() {
 
   var builtMessage = node.buildMessage();
   assertEquals(FINAL_MESSAGE, builtMessage);
+}
+
+function testisBoundaryValid() {
+  var grandparentNode = new e2e.openpgp.pgpmime.MimeNode({
+    multipart: true,
+    optionalHeaders: [
+      {name: constants.Mime.CONTENT_TYPE,
+        value: constants.Mime.MULTIPART_MIXED},
+      {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+        value: constants.Mime.SEVEN_BIT}]
+  });
+  var firstChildNode = grandparentNode.addChild(
+      {multipart: false, optionalHeaders: [
+        {name: constants.Mime.CONTENT_TYPE,
+          value: constants.Mime.PLAINTEXT},
+        {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+          value: constants.Mime.SEVEN_BIT}]});
+  var secondChildNode = grandparentNode.addChild(
+      {multipart: true, optionalHeaders: [
+        {name: constants.Mime.CONTENT_TYPE,
+          value: constants.Mime.MULTIPART_MIXED},
+        {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+          value: constants.Mime.SEVEN_BIT}]});
+  var grandChildNode = secondChildNode.addChild(
+      {multipart: false, optionalHeaders: [
+        {name: constants.Mime.CONTENT_TYPE,
+          value: constants.Mime.PLAINTEXT},
+        {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+          value: constants.Mime.SEVEN_BIT}]});
+
+  // The following four assertions verify that isBoundaryValid_ is able to
+  // detect an invalid boundary at various nested levels.
+
+  firstChildNode.setContent('blah blah 123');
+  grandChildNode.setContent('blah blah test_boundary123');
+  assertEquals(false, grandparentNode.isBoundaryValid_('test_boundary'));
+  assertEquals(true, grandparentNode.isBoundaryValid_('unique_boundary'));
+  firstChildNode.setContent('blah blah test_boundary123');
+  grandChildNode.setContent('blah blah 123');
+  assertEquals(false, grandparentNode.isBoundaryValid_('test_boundary'));
+  assertEquals(true, grandparentNode.isBoundaryValid_('unique_boundary'));
+
+  // The following assertion verifies that isBoundaryValid_ only disqualifies a
+  // boundary for a given node if it matches a string within the node or its
+  // descendants (i.e., it shouldn't fail if the string appears outside of the
+  // node / its descendants).
+  firstChildNode.setContent('blah blah test_boundary123');
+  assertEquals(true, secondChildNode.isBoundaryValid_('test_boundary'));
 }

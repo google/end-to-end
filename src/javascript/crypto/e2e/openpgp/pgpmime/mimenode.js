@@ -21,6 +21,7 @@
 
 goog.provide('e2e.openpgp.pgpmime.MimeNode');
 
+goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.openpgp.pgpmime.Constants');
 goog.require('e2e.openpgp.pgpmime.Text');
 goog.require('e2e.openpgp.pgpmime.Utils');
@@ -36,6 +37,14 @@ goog.require('goog.string');
 goog.scope(function() {
 var pgpmime = e2e.openpgp.pgpmime;
 var constants = pgpmime.Constants;
+
+
+/**
+ * The maximum amount of recursions permitted for setBoundary_
+ * @const
+ * @private
+ */
+var MAX_RECURSION_DEPTH_ = 30;
 
 
 
@@ -71,20 +80,6 @@ e2e.openpgp.pgpmime.MimeNode = function(options, opt_parent) {
       }
     }, this));
   }
-
-  this.setBoundary_();
-};
-
-
-/**
- * Sets the MIME message boundary for a node.
- * @private
- */
-e2e.openpgp.pgpmime.MimeNode.prototype.setBoundary_ = function() {
-  // TODO: Strictly ensure that the boundary value doesn't coincide with
-  // any string in the email content and headers.
-  this.boundary_ = '---' + goog.string.getRandomString() +
-      Math.floor(Date.now() / 1000).toString();
 };
 
 
@@ -130,10 +125,66 @@ e2e.openpgp.pgpmime.MimeNode.prototype.setContent = function(content) {
 
 
 /**
+ * Checks if the proposed boundary is contained within the message.
+ * @param {string} boundary The proposed boundary.
+ * @return {boolean} Returns true if the proposed boundary does not appear
+ *     within the message. Otherwise returns false.
+ * @private
+ */
+e2e.openpgp.pgpmime.MimeNode.prototype.isBoundaryValid_ = function(boundary) {
+  // Assign a temporary boundary that will be used in buildMessage().
+  this.boundary_ = 'temporary_boundary';
+  var tempMessage = this.mimeToString_();
+  return !goog.string.contains(tempMessage, boundary);
+};
+
+
+/**
+ * Generates a string that can be used as a MIME message boundary for a node.
+ * @return {string}
+ * @private
+ */
+e2e.openpgp.pgpmime.MimeNode.prototype.generateBoundary_ = function() {
+  return '---' + goog.string.getRandomString() +
+      Math.floor(Date.now() / 1000).toString();
+};
+
+
+/**
+ * Sets the MIME message boundary for a node.
+ * Until it succeeds, this function recursively reattempts to generate a unique
+ * boundary for the message (i.e., it attempts to generate a string that doesn't
+ * appear within the original message).
+ * @param {number} bound A bound on the amount of permitted recursions.
+ * @private
+ */
+e2e.openpgp.pgpmime.MimeNode.prototype.setBoundary_ = function(bound) {
+  var boundary = this.generateBoundary_();
+  if (this.isBoundaryValid_(boundary)) {
+    // String was unique, save it as the official boundary for this message.
+    this.boundary_ = boundary;
+  } else {
+    // String was not unique.
+    if (bound > 0) {
+      // Recurse and try again.
+      this.setBoundary_(bound - 1);
+    } else {
+      // We've reached the limit on the amount of permitted recursions.
+      // Realistically, bugs aside, this branch shouldn't be reached.
+      throw new e2e.openpgp.error.UnsupportedError('Maximum recursion limit' +
+          'of ' + MAX_RECURSION_DEPTH_ +
+          'reached in e2e.openpgp.pgpmime.MimeNode.setBoundary_');
+    }
+  }
+};
+
+
+/**
  * Builds an RFC 2822 message from the node and its children.
  * @return {string}
+ * @private
  */
-e2e.openpgp.pgpmime.MimeNode.prototype.buildMessage = function() {
+e2e.openpgp.pgpmime.MimeNode.prototype.mimeToString_ = function() {
   var lines = [];
   var transferEncoding = this.header_[constants.Mime.CONTENT_TRANSFER_ENCODING];
   var contentType = this.header_[constants.Mime.CONTENT_TYPE];
@@ -194,6 +245,19 @@ e2e.openpgp.pgpmime.MimeNode.prototype.buildMessage = function() {
   }
 
   return lines.join(constants.Mime.CRLF);
+};
+
+
+/**
+ * Assigns a unique boundary to a MIME node and then builds an RFC 2822 message
+ * from the node and its children.
+ * @return {string}
+ */
+e2e.openpgp.pgpmime.MimeNode.prototype.buildMessage = function() {
+  // Set a unique boundary for the MIME message.
+  this.setBoundary_(MAX_RECURSION_DEPTH_);
+  // Return the string representation of the MIME message.
+  return this.mimeToString_();
 };
 
 });  // goog.scope

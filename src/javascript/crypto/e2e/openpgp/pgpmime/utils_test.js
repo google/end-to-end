@@ -20,16 +20,57 @@
 
 /** @suppress {extraProvide} */
 goog.provide('e2e.openpgp.pgpmime.utilsTest');
-
 goog.require('e2e.openpgp.pgpmime.Utils');
 goog.require('e2e.openpgp.pgpmime.testingstubs');
+
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
+
 goog.setTestOnly();
 
 var utils = e2e.openpgp.pgpmime.Utils;
 var stubs = new goog.testing.PropertyReplacer();
+
+
+var PLAINTEXT_MESSAGE = ['From: Nathaniel Borenstein <nsb@bellcore.com>',
+  'To:  Ned Freed <ned@innosoft.com>',
+  'Subject: Sample message',
+  'MIME-Version: 1.0',
+  'Content-type: multipart/mixed; boundary="simple boundary"',
+  '',
+  'This is the preamble.  It is to be ignored, though it',
+  'is a handy place for mail composers to include an',
+  '',
+  'explanatory note to non-MIME compliant readers.',
+  '--simple boundary',
+  '',
+  'This is implicitly typed plain ASCII text.',
+  '',
+  'It does NOT end with a linebreak.',
+  '--simple boundary',
+  'Content-type: text/plain; charset=us-ascii',
+  '',
+  'This is explicitly typed plain ASCII text.',
+  'It DOES end with a linebreak.',
+  '',
+  '--simple boundary',
+  'Content-type: application/octet-stream',
+  'Content-Transfer-Encoding: base64',
+  'Content-Disposition: attachment; filename="foo.txt"',
+  '',
+  'aGVsbG8gd29ybGQK',
+  '--simple boundary--',
+  'This is the epilogue.  It is also to be ignored.'].join('\r\n');
+
+var PLAINTEXT_BODY = ['This is implicitly typed plain ASCII text.',
+  '',
+  'It does NOT end with a linebreak.',
+  '',
+  'This is explicitly typed plain ASCII text.',
+  'It DOES end with a linebreak.',
+  '',
+  ''].join('\r\n');
 
 
 function setUp() {
@@ -42,12 +83,42 @@ function tearDown() {
 }
 
 
+function testGetMultipartMailContent() {
+  assertEquals('multipart/mixed',
+      utils.parseNode(PLAINTEXT_MESSAGE).header['Content-Type'].value);
+  assertEquals(3, utils.parseNode(PLAINTEXT_MESSAGE).body.length);
+}
+
+
+function testParseAttachmentEntity() {
+  var rawAttachment = {'body': 'hello world\n', 'header':
+        {'Content-Disposition': {'params': {'filename': 'foo.txt'}, 'value':
+                'attachment'}, 'Content-Transfer-Encoding': {'params': {},
+            'value': 'base64'}, 'Content-Type': {'params': {}, 'value':
+                'application/octet-stream'}}};
+  var parsedAttachment = {filename: 'foo.txt', content: 'hello world\n',
+    'encoding': 'base64'};
+  assertObjectEquals(parsedAttachment, utils.parseAttachmentEntity(
+      rawAttachment));
+}
+
 function testGetInvalidMailContent() {
-  var message = ['Content-Type: multipart/mixed', '', 'some text'].join('\r\n');
+  var message = ['Content-Type: multipart/mixed', 'some text'].join('\r\n');
   assertThrows('Invalid MIME message should throw unsupported error',
                function() {
-                 utils.getMailContent(message);
+                 utils.parseNode(message);
                });
+}
+
+
+function testGetSinglePartMailContent() {
+  var content = 'some\r\n\r\ntext';
+  var message = ['Content-Type: text/plain; charset=us-ascii',
+    '', content].join('\r\n');
+  var expectedObj = {'header': {'Content-Transfer-Encoding': {'value': '7bit'},
+          'Content-Type': {'params': {'charset': 'us-ascii'}, 'value':
+                'text/plain'}}, 'body': 'some\r\n\r\ntext'};
+  assertObjectEquals(expectedObj, utils.parseNode(message));
 }
 
 
@@ -91,4 +162,28 @@ function testSerializeHeader() {
   }}, 'Content-Transfer-Encoding': {value: '7bit'}};
   assertArrayEquals(['Content-Type: multipart; charset="us-ascii"; foo="bar="',
     'Content-Transfer-Encoding: 7bit'], utils.serializeHeader(header));
+}
+
+function testSplitHeaders() {
+  var originalMessage = 'Content-Type: text/plain; boundary: --abc\r\n\t  \td' +
+      '\r\nContent-Description: test\r\nContent-Transfer-Encoding: base\r\n 64';
+  var distinctHeaders = ['Content-Type: text/plain; boundary: --abcd',
+    'Content-Description: test', 'Content-Transfer-Encoding: base64'];
+  assertArrayEquals(distinctHeaders, utils.splitHeaders_(originalMessage));
+}
+
+function testDecodeContent() {
+  var quotedPrintableEncoded = 'Lorem=20ipsum=0D=0A=20=20dolor=3F';
+  var quotedPrintableDecoded = 'Lorem ipsum\r\n  dolor?';
+  assertEquals(utils.decodeContent(quotedPrintableEncoded, 'quoted_printable'),
+      quotedPrintableDecoded);
+
+  var base64Encoded = 'YW4gYXBwbGUgYSBkYXkga2VlcHMgdGhlIGRvY3RvciBhd2F5';
+  var base64Decoded = 'an apple a day keeps the doctor away';
+  assertEquals(utils.decodeContent(base64Encoded, 'base64'),
+      base64Decoded);
+
+  var sevenOrEightBit = 'This should stay the same!';
+  assertEquals(utils.decodeContent(sevenOrEightBit, '7bit'), sevenOrEightBit);
+  assertEquals(utils.decodeContent(sevenOrEightBit, '8bit'), sevenOrEightBit);
 }

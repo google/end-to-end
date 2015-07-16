@@ -45,7 +45,7 @@ e2e.openpgp.pgpmime.Constants.Mime = {
   // OpenPGP version content field. Required by RFC 3156.
   VERSION_CONTENT: 'Version: 1',
 
-  // Content Types. Case-insensitive.
+  // General Content Types. Case-insensitive.
   PLAINTEXT: 'text/plain',
   MULTIPART_ENCRYPTED: 'multipart/encrypted',
   ENCRYPTED: 'application/pgp-encrypted',
@@ -56,10 +56,24 @@ e2e.openpgp.pgpmime.Constants.Mime = {
       'multipart/encrypted; protocol="application/pgp-encrypted"',
   NAME: 'name',
 
+  // Image specific Content Types. Case-insensitive.
+  IMAGE_GIF: 'image/gif',
+  IMAGE_JPEG: 'image/jpeg',
+  IMAGE_JPG: 'image/jpg',
+  IMAGE_PNG: 'image/png',
+  IMAGE_BMP: 'image/bmp',
+  IMAGE_WEBP: 'image/webp',
+  IMAGE_PJPEG: 'image/pjpeg',
+  IMAGE_TIFF: 'image/tiff',
+  IMAGE_SVG_XML: 'image/svg+xml',
+  IMAGE_VND_DJVU: 'image/vnd.djvu',
+
   // Content Transfer Encodings
   SEVEN_BIT: '7bit',
   QUOTED_PRINTABLE: 'quoted_printable',
   BASE64: 'base64',
+  EIGHT_BIT: '8bit',
+  BINARY: 'binary',
 
   // Content dispositions
   ATTACHMENT: 'attachment',
@@ -82,4 +96,22 @@ e2e.openpgp.pgpmime.Constants.Mime = {
  */
 e2e.openpgp.pgpmime.Constants.MimeNum = {
   LINE_WRAP: 64
+};
+
+
+/**
+ * MIME array constants
+ * @enum {Array}
+ */
+e2e.openpgp.pgpmime.Constants.MimeArray = {
+  IMAGE_TYPES: [e2e.openpgp.pgpmime.Constants.Mime.IMAGE_GIF,
+                e2e.openpgp.pgpmime.Constants.Mime.IMAGE_JPEG,
+                e2e.openpgp.pgpmime.Constants.Mime.IMAGE_JPG,
+                e2e.openpgp.pgpmime.Constants.Mime.IMAGE_PNG,
+                e2e.openpgp.pgpmime.Constants.Mime.IMAGE_BMP,
+                e2e.openpgp.pgpmime.Constants.Mime.IMAGE_WEBP,
+                e2e.openpgp.pgpmime.Constants.Mime.IMAGE_PJPEG,
+                e2e.openpgp.pgpmime.Constants.Mime.IMAGE_TIFF,
+                e2e.openpgp.pgpmime.Constants.Mime.IMAGE_SVG_XML,
+                e2e.openpgp.pgpmime.Constants.Mime.IMAGE_VND_DJVU]
 };
