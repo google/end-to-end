@@ -21,9 +21,8 @@ goog.provide('e2e.openpgp.Context2Impl');
 
 goog.require('e2e');
 goog.require('e2e.openpgp.Context2');
-goog.require('e2e.openpgp.KeyPurposeType');
+goog.require('e2e.openpgp.KeyRingType');
 goog.require('goog.Promise');
-goog.require('goog.crypt.Sha1');
 
 
 
@@ -32,133 +31,97 @@ goog.require('goog.crypt.Sha1');
  * encryption and signing. This context is used by external code, such as the
  * extension's user interface, to call the base OpenPGP library.
  * @constructor
+ * @param {!e2e.openpgp.KeyManager} keyManager The Key Manager object.
  * @implements {e2e.openpgp.Context2}
  */
-e2e.openpgp.Context2Impl = function() {
+e2e.openpgp.Context2Impl = function(keyManager) {
+  /**
+   * Key Manager object.
+   * @private {!e2e.openpgp.KeyManager}
+   */
+  this.keyManager_ = keyManager;
 };
 
 
 /**
  * Deferred constructor.
- * @return {!goog.Thenable<!e2e.openpgp.Context2Impl>} The Context2Impl promise,
- * fulfilled when the object has initialized.
+ * @param {!goog.Thenable.<!e2e.openpgp.KeyManager>} keyManagerPromise The
+ *     promise of the Key Manager instance.
+ * @return {!goog.Thenable.<!e2e.openpgp.Context2Impl>} The Context2Impl
+ *     promise, fulfilled when the object will initialize.
  */
-e2e.openpgp.Context2Impl.launch = function() {
-  return goog.Promise.resolve(new e2e.openpgp.Context2Impl());
+e2e.openpgp.Context2Impl.launch = function(keyManagerPromise) {
+  return keyManagerPromise.then(function(keyManager) {
+    return new e2e.openpgp.Context2Impl(keyManager);
+  });
 };
 
 
 /** @override */
 e2e.openpgp.Context2Impl.prototype.getTrustedKeys = function(purpose, email) {
-  return goog.Promise.resolve(undefined).then(
-      goog.bind(this.getTrustedKeysInternal_, this, purpose, email),
-      undefined, this);
-};
-
-
-/**
- * Internal implementation of {@link #getTrustedKeys}.
- * @param {!e2e.openpgp.KeyPurposeType} purpose The purpose of the key.
- * @param {!e2e.openpgp.UserEmail} email The email address.
- * @return {!e2e.openpgp.Keys} The resulting keys.
- * @private
- */
-e2e.openpgp.Context2Impl.prototype.getTrustedKeysInternal_ = function(purpose,
-    email) {
-  var keys = [];
-  if (email == 'notfound@example.com') {
-    return [];
-  }
-  if (email == 'error@example.com') {
-    throw new Error('Error when getting keys.');
-  }
-  switch (purpose) {
-    case e2e.openpgp.KeyPurposeType.ENCRYPTION:
-    case e2e.openpgp.KeyPurposeType.VERIFICATION:
-      // Public keys.
-      keys.push(this.getDummyPublicKey_(email));
-      break;
-    case e2e.openpgp.KeyPurposeType.SIGNING:
-    case e2e.openpgp.KeyPurposeType.DECRYPTION:
-      // Secret keys.
-      keys.push(this.getDummySecretKey_(email));
-      break;
-    default:
-      throw new Error('Unknown purpose.');
-  }
-  return keys;
+  return this.keyManager_.getTrustedKeys(purpose, email);
 };
 
 
 /** @override */
 e2e.openpgp.Context2Impl.prototype.getAllSecretKeys = function(opt_providerId) {
-  return goog.Promise.resolve([
-    this.getTrustedKeysInternal_(e2e.openpgp.KeyPurposeType.SIGNING,
-        'one@example.com'),
-    this.getTrustedKeysInternal_(e2e.openpgp.KeyPurposeType.SIGNING,
-        'two@example.com'),
-  ]);
+  return this.keyManager_.getAllKeys(e2e.openpgp.KeyRingType.SECRET,
+      opt_providerId);
 };
 
 
 /** @override */
 e2e.openpgp.Context2Impl.prototype.getAllPublicKeys = function(opt_providerId) {
-  return goog.Promise.resolve([
-    this.getTrustedKeysInternal_(e2e.openpgp.KeyPurposeType.ENCRYPTION,
-        'three@example.com'),
-    this.getTrustedKeysInternal_(e2e.openpgp.KeyPurposeType.ENCRYPTION,
-        'four@example.com'),
-  ]);
+  return this.keyManager_.getAllKeys(e2e.openpgp.KeyRingType.PUBLIC,
+      opt_providerId);
 };
 
 
 /** @override */
 e2e.openpgp.Context2Impl.prototype.getKeyByFingerprint = function(fingerprint,
     opt_providerId) {
-  return goog.Promise.reject(new Error('Not implemented.'));
+  return this.keyManager_.getKeyByFingerprint(fingerprint, opt_providerId);
 };
 
 
 /** @override */
 e2e.openpgp.Context2Impl.prototype.setProviderCredentials = function(providerId,
     credentials) {
-  return goog.Promise.reject(new Error('Not implemented.'));
+  return this.keyManager_.setProviderCredentials(providerId, credentials);
 };
 
 
 /** @override */
 e2e.openpgp.Context2Impl.prototype.getAllKeyGenerateOptions = function() {
-  return goog.Promise.resolve([]);
+  return this.keyManager_.getAllKeyGenerateOptions();
 };
 
 
 /** @override */
-e2e.openpgp.Context2Impl.prototype.generateKeypair = function(userId,
+e2e.openpgp.Context2Impl.prototype.generateKeyPair = function(userId,
     generateOptions) {
-  return goog.Promise.reject(new Error('Not implemented.'));
+  return this.keyManager_.generateKeyPair(userId, generateOptions);
 };
 
 
 /** @override */
 e2e.openpgp.Context2Impl.prototype.getKeyringExportOptions = function(
     keyringType) {
-  return goog.Promise.resolve(/** @type {!e2e.openpgp.KeyringExportOptions} */ (
-      {}));
+  return this.keyManager_.getKeyringExportOptions(keyringType);
 };
 
 
 /** @override */
 e2e.openpgp.Context2Impl.prototype.exportKeyring = function(keyringType,
     exportOptions) {
-  return goog.Promise.reject(new Error('Not implemented.'));
+  return this.keyManager_.exportKeyring(keyringType, exportOptions);
 };
 
 
 /** @override */
 e2e.openpgp.Context2Impl.prototype.trustKeys = function(keys, email, purpose,
     opt_trustData) {
-  // TODO(koto): implement.
-  return goog.Promise.resolve(keys);
+  return this.keyManager_.trustKeys(keys, email, purpose, opt_trustData);
 };
 
 
@@ -172,8 +135,7 @@ e2e.openpgp.Context2Impl.prototype.isKeyTrusted = function(key, email,
 
 /** @override */
 e2e.openpgp.Context2Impl.prototype.unlockKey = function(key, unlockData) {
-  // TODO(koto): implement.
-  return goog.Promise.resolve(key);
+  return this.keyManager_.unlockKey(key, unlockData);
 };
 
 
@@ -221,15 +183,16 @@ e2e.openpgp.Context2Impl.prototype.isKeyRingEncrypted = function() {
 
 
 /** @override */
-e2e.openpgp.Context2Impl.prototype.getKeyDescription = function(
+e2e.openpgp.Context2Impl.prototype.getKeysDescription = function(
     keySerialization) {
-  return goog.Promise.reject(new Error('Not implemented.'));
+  return this.keyManager_.getKeysDescription(keySerialization);
 };
 
 
 /** @override */
-e2e.openpgp.Context2Impl.prototype.importKey = function(keySerialization) {
-  return goog.Promise.reject(new Error('Not implemented.'));
+e2e.openpgp.Context2Impl.prototype.importKeys = function(keySerialization,
+    passphraseCallback) {
+  return this.keyManager_.importKeys(keySerialization, passphraseCallback);
 };
 
 
@@ -259,61 +222,11 @@ e2e.openpgp.Context2Impl.prototype.verifyDecrypt = function(encryptedMessage,
 
 /** @override */
 e2e.openpgp.Context2Impl.prototype.getAllKeysByEmail = function(email) {
-  return goog.Promise.reject(new Error('Not implemented.'));
+  return this.keyManager_.getAllKeysByEmail(email);
 };
 
 
 /** @override */
 e2e.openpgp.Context2Impl.prototype.removeKeys = function(keys) {
-  return goog.Promise.reject(new Error('Not implemented.'));
-};
-
-
-/**
- * Returns a dummy public key handle. USE FOR INTEGRATION TESTING ONLY.
- * @param {!e2e.openpgp.UserEmail} email
- * @return {!e2e.openpgp.Key}
- * @private
- */
-e2e.openpgp.Context2Impl.prototype.getDummyPublicKey_ = function(email) {
-  var sha1 = new goog.crypt.Sha1();
-  sha1.update(email);
-  // TODO(koto): Remove this function.
-  return /** @type {!e2e.openpgp.Key} */ ({
-    subKeys: [],
-    uids: ['dummy public <' + email + '>'],
-    key: {
-      fingerprint: sha1.digest(),
-      secret: false,
-      algorithm: 'DUMMY',
-      fingerprintHex: '0X-DUMMY-PUBLIC-KEY-' + email,
-    },
-    serialized: [],
-    providerId: 'DummyProvider'
-  });
-};
-
-
-/**
- * Returns a dummy secret key handle. USE FOR INTEGRATION TESTING ONLY.
- * @param {!e2e.openpgp.UserEmail} email
- * @return {!e2e.openpgp.Key}
- * @private
- */
-e2e.openpgp.Context2Impl.prototype.getDummySecretKey_ = function(email) {
-  // TODO(koto): Remove this function.
-  var sha1 = new goog.crypt.Sha1();
-  sha1.update(email);
-  return /** @type {!e2e.openpgp.Key} */ ({
-    subKeys: [],
-    uids: ['dummy secret <' + email + '>'],
-    key: {
-      fingerprint: sha1.digest(),
-      secret: true,
-      algorithm: 'DUMMY',
-      fingerprintHex: '0X-DUMMY-SECRET-KEY-' + email,
-    },
-    serialized: [],
-    providerId: 'DummyProvider'
-  });
+  return this.keyManager_.removeKeys(keys);
 };

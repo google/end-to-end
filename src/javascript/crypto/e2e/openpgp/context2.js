@@ -44,7 +44,7 @@ e2e.openpgp.Context2 = function() {};
  * @return {!e2e.openpgp.KeysPromise} The resulting trusted keys.
  * @export
  */
-e2e.openpgp.Context2.prototype.getTrustedKeys;
+e2e.openpgp.Context2.prototype.getTrustedKeys = goog.abstractMethod;
 
 
 /**
@@ -55,7 +55,7 @@ e2e.openpgp.Context2.prototype.getTrustedKeys;
  * @return {!e2e.openpgp.KeysPromise} The resulting keys, potentially untrusted.
  * @export
  */
-e2e.openpgp.Context2.prototype.getAllSecretKeys;
+e2e.openpgp.Context2.prototype.getAllSecretKeys = goog.abstractMethod;
 
 
 /**
@@ -66,7 +66,7 @@ e2e.openpgp.Context2.prototype.getAllSecretKeys;
  * @return {!e2e.openpgp.KeysPromise} The resulting keys, potentially untrusted.
  * @export
  */
-e2e.openpgp.Context2.prototype.getAllPublicKeys;
+e2e.openpgp.Context2.prototype.getAllPublicKeys = goog.abstractMethod;
 
 
 /**
@@ -78,19 +78,19 @@ e2e.openpgp.Context2.prototype.getAllPublicKeys;
  * @return {!e2e.openpgp.KeysPromise} The resulting keys, potentially untrusted.
  * @export
  */
-e2e.openpgp.Context2.prototype.getAllKeysByEmail;
+e2e.openpgp.Context2.prototype.getAllKeysByEmail = goog.abstractMethod;
 
 
 /**
  * Returns a single key that has a matching OpenPGP fingerprint.
  * @param {!e2e.openpgp.KeyFingerprint} fingerprint The key fingerprint
- * @param {e2e.openpgp.KeyProviderId=} opt_providerId If passed, only return the
- *     keys from this KeyProvider.
+ * @param {!e2e.openpgp.KeyProviderId=} opt_providerId If passed, only return
+ *     the keys from this KeyProvider.
  * @return {!e2e.openpgp.KeyPromise} The resulting key, potentially
  *     untrusted.
  * @export
  */
-e2e.openpgp.Context2.prototype.getKeyByFingerprint;
+e2e.openpgp.Context2.prototype.getKeyByFingerprint = goog.abstractMethod;
 
 
 /**
@@ -100,7 +100,7 @@ e2e.openpgp.Context2.prototype.getKeyByFingerprint;
  * @return {!goog.Thenable}
  * @export
  */
-e2e.openpgp.Context2.prototype.setProviderCredentials;
+e2e.openpgp.Context2.prototype.setProviderCredentials = goog.abstractMethod;
 
 
 /**
@@ -109,7 +109,7 @@ e2e.openpgp.Context2.prototype.setProviderCredentials;
  *     key generation options.
  * @export
  */
-e2e.openpgp.Context2.prototype.getAllKeyGenerateOptions;
+e2e.openpgp.Context2.prototype.getAllKeyGenerateOptions = goog.abstractMethod;
 
 
 /**
@@ -121,7 +121,7 @@ e2e.openpgp.Context2.prototype.getAllKeyGenerateOptions;
  * @return {!goog.Thenable<!e2e.openpgp.KeyPair>} The generated keypair.
  * @export
  */
-e2e.openpgp.Context2.prototype.generateKeypair;
+e2e.openpgp.Context2.prototype.generateKeyPair = goog.abstractMethod;
 
 
 /**
@@ -131,7 +131,7 @@ e2e.openpgp.Context2.prototype.generateKeypair;
  *     export options.
  * @export
  */
-e2e.openpgp.Context2.prototype.getKeyringExportOptions;
+e2e.openpgp.Context2.prototype.getKeyringExportOptions = goog.abstractMethod;
 
 
 /**
@@ -143,7 +143,7 @@ e2e.openpgp.Context2.prototype.getKeyringExportOptions;
  * @template T
  * @export
  */
-e2e.openpgp.Context2.prototype.exportKeyring;
+e2e.openpgp.Context2.prototype.exportKeyring = goog.abstractMethod;
 
 
 /**
@@ -166,7 +166,7 @@ e2e.openpgp.Context2.prototype.exportKeyring;
  * @return {!e2e.openpgp.KeysPromise} The keys.
  * @export
  */
-e2e.openpgp.Context2.prototype.trustKeys;
+e2e.openpgp.Context2.prototype.trustKeys = goog.abstractMethod;
 
 
 /**
@@ -178,7 +178,7 @@ e2e.openpgp.Context2.prototype.trustKeys;
  * @return {!goog.Thenable<boolean>} True iff the key is trusted.
  * @export
  */
-e2e.openpgp.Context2.prototype.isKeyTrusted;
+e2e.openpgp.Context2.prototype.isKeyTrusted = goog.abstractMethod;
 
 
 /**
@@ -188,10 +188,10 @@ e2e.openpgp.Context2.prototype.isKeyTrusted;
  * callback functions) should be passed in unlockData.
  * @param {!e2e.openpgp.Key} key The key to unlock
  * @param {!e2e.openpgp.KeyUnlockData} unlockData The key unlock data.
- * @return {!goog.Thenable<!e2e.openpgp.Key>} The unlocked Key.
+ * @return {!e2e.openpgp.KeyPromise} The unlocked Key.
  * @export
  */
-e2e.openpgp.Context2.prototype.unlockKey;
+e2e.openpgp.Context2.prototype.unlockKey = goog.abstractMethod;
 
 
 /**
@@ -201,7 +201,7 @@ e2e.openpgp.Context2.prototype.unlockKey;
  * @return {!goog.Thenable}
  * @export
  */
-e2e.openpgp.Context2.prototype.setArmorOutput;
+e2e.openpgp.Context2.prototype.setArmorOutput = goog.abstractMethod;
 
 
 /**
@@ -211,19 +211,20 @@ e2e.openpgp.Context2.prototype.setArmorOutput;
  * @return {!goog.Thenable}
  * @export
  */
-e2e.openpgp.Context2.prototype.setArmorHeader;
+e2e.openpgp.Context2.prototype.setArmorHeader = goog.abstractMethod;
 
 
 /**
  * Parses key blocks in binary or ASCII armor encoding, and returns a structured
  * description of the keys.
- * All ASCII armors from the string will be processed.
+ * All ASCII armors from the string will be processed. Keys are only parsed,
+ * and are not imported. Use {@link #importKeys} to import them.
  * @param {!e2e.ByteArray|string} keySerialization Key(s) to get the description
  *     of.
  * @return {!e2e.openpgp.KeysPromise} Description of the keys.
  * @export
  */
-e2e.openpgp.Context2.prototype.getKeyDescription;
+e2e.openpgp.Context2.prototype.getKeysDescription = goog.abstractMethod;
 
 
 /**
@@ -237,7 +238,7 @@ e2e.openpgp.Context2.prototype.getKeyDescription;
  *     successfully imported.
  * @export
  */
-e2e.openpgp.Context2.prototype.importKey;
+e2e.openpgp.Context2.prototype.importKeys = goog.abstractMethod;
 
 
 /**
@@ -254,7 +255,7 @@ e2e.openpgp.Context2.prototype.importKey;
  *     operation.
  * @export
  */
-e2e.openpgp.Context2.prototype.encryptSign;
+e2e.openpgp.Context2.prototype.encryptSign = goog.abstractMethod;
 
 
 /**
@@ -274,7 +275,7 @@ e2e.openpgp.Context2.prototype.encryptSign;
  *     verify/decrypt operation.
  * @export
  */
-e2e.openpgp.Context2.prototype.verifyDecrypt;
+e2e.openpgp.Context2.prototype.verifyDecrypt = goog.abstractMethod;
 
 
 /**
@@ -283,7 +284,7 @@ e2e.openpgp.Context2.prototype.verifyDecrypt;
  * @return {!goog.Thenable}
  * @export
  */
-e2e.openpgp.Context2.prototype.removeKeys;
+e2e.openpgp.Context2.prototype.removeKeys = goog.abstractMethod;
 
 
 /**
@@ -293,7 +294,7 @@ e2e.openpgp.Context2.prototype.removeKeys;
  * @return {!goog.Thenable}
  * @export
  */
-e2e.openpgp.Context2.prototype.initializeKeyRing;
+e2e.openpgp.Context2.prototype.initializeKeyRing = goog.abstractMethod;
 
 
 /**
@@ -304,7 +305,7 @@ e2e.openpgp.Context2.prototype.initializeKeyRing;
  * @return {!goog.Thenable}
  * @export
  */
-e2e.openpgp.Context2.prototype.changeKeyRingPassphrase;
+e2e.openpgp.Context2.prototype.changeKeyRingPassphrase = goog.abstractMethod;
 
 
 /**
@@ -313,7 +314,7 @@ e2e.openpgp.Context2.prototype.changeKeyRingPassphrase;
  *     passphrase set.
  * @export
  */
-e2e.openpgp.Context2.prototype.isKeyRingUnlocked;
+e2e.openpgp.Context2.prototype.isKeyRingUnlocked = goog.abstractMethod;
 
 
 /**
@@ -322,4 +323,4 @@ e2e.openpgp.Context2.prototype.isKeyRingUnlocked;
  *     in persistent storage.
  * @export
  */
-e2e.openpgp.Context2.prototype.isKeyRingEncrypted;
+e2e.openpgp.Context2.prototype.isKeyRingEncrypted = goog.abstractMethod;
