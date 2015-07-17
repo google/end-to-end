@@ -94,7 +94,7 @@ ext.Launcher.prototype.start = function(opt_passphrase) {
  * @private
  */
 ext.Launcher.prototype.start_ = function(passphrase) {
-  return this.pgpContext_.setKeyRingPassphrase(passphrase).addCallback(
+  return this.pgpContext_.initializeKeyRing(passphrase).addCallback(
       function() {
         if (goog.global.chrome &&
         goog.global.chrome.runtime &&

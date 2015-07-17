@@ -122,7 +122,7 @@ function testExecute() {
   var pgpContext = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
   // No passphrase.
-  e2e.async.Result.getValue(pgpContext.setKeyRingPassphrase(''));
+  e2e.async.Result.getValue(pgpContext.initializeKeyRing(''));
 
   var pwdCallback = function(uid) {
     return e2e.async.Result.toResult('test');
@@ -182,7 +182,7 @@ function testExecuteClearsign() {
   var pgpContext = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
   // No passphrase.
-  e2e.async.Result.getValue(pgpContext.setKeyRingPassphrase(''));
+  e2e.async.Result.getValue(pgpContext.initializeKeyRing(''));
 
   var pwdCallback = function(uid) {
     return e2e.async.Result.toResult('test');

@@ -111,6 +111,7 @@ e2e.openpgp.ContextService.allowedMethods_ = [
   'getKeyringBackupData',
   'hasPassphrase',
   'isKeyRingEncrypted',
+  'initializeKeyRing',
   'restoreKeyring',
   'searchKey',
   'searchPrivateKey',

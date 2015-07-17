@@ -78,7 +78,7 @@ e2e.openpgp.ContextImpl = function(opt_keyRingStorageMechanism) {
   /**
    * Mechanism for storing keyring data.
    * LockableStorage is created without an unlocking callback, as static
-   * passphrases are used instead - see {@link #setKeyRingPassphrase}.
+   * passphrases are used instead - see {@link #initializeKeyRing}.
    * @type {!e2e.openpgp.LockableStorage}
    * @private
    */
@@ -136,19 +136,24 @@ e2e.openpgp.ContextImpl.prototype.keyRing_ = null;
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.setKeyRingPassphrase = function(
     passphrase) {
-  var asyncResult = this.keyRingStorageMechanism_.unlockWithPassphrase(
-      passphrase).
-      addCallback(/** @this e2e.openpgp.ContextImpl */ (function() {
+  return this.initializeKeyRing(passphrase).addCallback(
+      /** @this e2e.openpgp.ContextImpl */ (function() {
         // Persist the data with the passphrase.
         // This is to preserve legacy behavior where setKeyRingPassphrase was
         // used to both unlock a storage and set a new passphrase.
         return this.keyRingStorageMechanism_.setPassphrase(passphrase);
-      }), this).
+      }), this);
+};
+
+
+/** @override */
+e2e.openpgp.ContextImpl.prototype.initializeKeyRing = function(passphrase) {
+  var asyncResult = this.keyRingStorageMechanism_.unlockWithPassphrase(
+      passphrase).
       addCallbacks(/** @this e2e.openpgp.ContextImpl */ (function() {
         // Correct passphrase, initialize keyring.
         return e2e.openpgp.KeyRing.launch(this.keyRingStorageMechanism_,
             this.keyServerUrl);
-
       }), function() {
         throw new e2e.openpgp.error.WrongPassphraseError();
       }, this).

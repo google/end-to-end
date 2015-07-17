@@ -70,7 +70,10 @@ function testBadPassphrase() {
   var keyringStorage = new goog.testing.storage.FakeMechanism();
   var context1 = new e2e.openpgp.ContextImpl(keyringStorage);
   var l1 = new e2e.ext.ExtensionLauncher(context1, prefStorage);
-  l1.start('somesecret').addCallbacks(function() {
+  l1.start().addCallbacks(function() {
+    asyncTestCase.waitForAsync('Waiting for passphrase change.');
+    return context1.changeKeyRingPassphrase('some');
+  }, fail).addCallbacks(function() {
     asyncTestCase.waitForAsync('Waiting for key generation.');
     // generate a key to ensure the keyring isn't empty.
     return l1.getContext().generateKey(
@@ -91,7 +94,7 @@ function testBadPassphrase() {
 
 function testStart() {
   var passphrase = 'test';
-  stubs.set(launcher.pgpContext_, 'setKeyRingPassphrase', function(p) {
+  stubs.set(launcher.pgpContext_, 'initializeKeyRing', function(p) {
     assertEquals(passphrase, p);
     return e2e.async.Result.toResult(undefined);
   });

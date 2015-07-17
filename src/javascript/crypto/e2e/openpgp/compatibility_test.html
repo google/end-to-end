@@ -1748,7 +1748,7 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
     context = new e2e.openpgp.ContextImpl(
         new goog.testing.storage.FakeMechanism());
     // No passphrase.
-    e2e.async.Result.getValue(context.setKeyRingPassphrase(''));
+    e2e.async.Result.getValue(context.initializeKeyRing(''));
   }
 
   function runTestFor(version, assertionsCb, regexp) {

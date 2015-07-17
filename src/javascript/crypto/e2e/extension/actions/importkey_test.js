@@ -88,7 +88,7 @@ function testExecute() {
 
   var pgpContext = new e2e.openpgp.ContextImpl(storage);
   // No passphrase.
-  e2e.async.Result.getValue(pgpContext.setKeyRingPassphrase(''));
+  e2e.async.Result.getValue(pgpContext.initializeKeyRing(''));
   var request = {
     content: PUBLIC_KEY_ASCII,
     passphraseCallback: goog.nullFunction

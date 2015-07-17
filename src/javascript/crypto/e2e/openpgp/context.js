@@ -73,17 +73,30 @@ e2e.openpgp.Context.KeyType = {
  *     when stored locally.
  * @return {!e2e.async.Result.<undefined>}
  * @export
+ * @deprecated Use initializeKeyRing.
  */
 e2e.openpgp.Context.prototype.setKeyRingPassphrase;
 
 
 /**
+ * Changes the passphrase for the keyring.
  * @param {string} passphrase Change the passphrase for encrypting the KeyRing
  *     when stored locally. Empty string for unencrypted.
  * @return {!e2e.async.Result.<undefined>}
  * @export
  */
 e2e.openpgp.Context.prototype.changeKeyRingPassphrase;
+
+
+/**
+ * Initializes the keyring, trying to unlock it with a given passphrase.
+ * Passphrase is ignored if the keyring is not encrypted.
+ * @param {string} passphrase Passphrase used for encrypting the KeyRing
+ *     when stored locally. Empty string for unencrypted.
+ * @return {!e2e.async.Result.<undefined>}
+ * @export
+ */
+e2e.openpgp.Context.prototype.initializeKeyRing;
 
 
 /**

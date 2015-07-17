@@ -1279,7 +1279,7 @@ e2e.openpgp.ContextImplTester.LINUS_KEY = atob('LS0tLS1CRUdJTiBQR1AgUFVCTElDI' +
 e2e.openpgp.ContextImplTester.runBenchmark = function() {
   var context = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  e2e.async.Result.getValue(context.setKeyRingPassphrase('test'));
+  e2e.async.Result.getValue(context.initializeKeyRing('test'));
 
   var tests = [];
 

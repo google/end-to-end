@@ -139,7 +139,7 @@ function tearDown() {
 function testEncrypt() {
   var pgpContext = new e2e.openpgp.ContextImpl(storage);
   // No passphrase.
-  e2e.async.Result.getValue(pgpContext.setKeyRingPassphrase(''));
+  e2e.async.Result.getValue(pgpContext.initializeKeyRing(''));
 
   var plaintext = 'some secret message.';
   var errorCallback = mockControl.createFunctionMock('errorCallback');
@@ -170,7 +170,7 @@ function testEncrypt() {
 function testEncryptForSigner() {
   var pgpContext = new e2e.openpgp.ContextImpl(storage);
   // No passphrase.
-  e2e.async.Result.getValue(pgpContext.setKeyRingPassphrase(''));
+  e2e.async.Result.getValue(pgpContext.initializeKeyRing(''));
 
   var plaintext = 'some secret message.';
   var errorCallback = mockControl.createFunctionMock('errorCallback');
@@ -218,7 +218,7 @@ function testEncryptForSigner() {
 function testEncryptToPassphrase() {
   var pgpContext = new e2e.openpgp.ContextImpl(storage);
   // No passphrase.
-  e2e.async.Result.getValue(pgpContext.setKeyRingPassphrase(''));
+  e2e.async.Result.getValue(pgpContext.initializeKeyRing(''));
 
   var passphrase = 'a passphrase';
 
@@ -255,7 +255,7 @@ function testEncryptToPassphrase() {
 function testSignOnly() {
   var pgpContext = new e2e.openpgp.ContextImpl(storage);
   // No passphrase.
-  e2e.async.Result.getValue(pgpContext.setKeyRingPassphrase(''));
+  e2e.async.Result.getValue(pgpContext.initializeKeyRing(''));
 
   var plaintext = 'some secret message.';
   var errorCallback = mockControl.createFunctionMock('errorCallback');

@@ -103,6 +103,14 @@ e2e.openpgp.WorkerContextImpl.prototype.setKeyRingPassphrase = function(
 
 
 /** @inheritDoc */
+e2e.openpgp.WorkerContextImpl.prototype.initializeKeyRing = function(
+    passphrase) {
+  return /** @type {!e2e.async.Result.<undefined>} */ (
+      this.deferredCall('initializeKeyRing', [passphrase]));
+};
+
+
+/** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.changeKeyRingPassphrase = function(
     passphrase) {
   return /** @type {!e2e.async.Result.<undefined>} */ (
