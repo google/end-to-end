@@ -1771,30 +1771,37 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
     asyncTest.stepTimeout = encryptedMsgs.length * 2e3;
     asyncTest.waitForAsync('Waiting for decryptions.');
     var deferred = goog.async.DeferredList.gatherResults(results);
-    deferred.addCallback(goog.bind(assertionsCb, this, encryptedMsgs));
+    return deferred.addCallback(goog.bind(assertionsCb, this, encryptedMsgs));
   }
 
   function testInboundRsa() {
+    var assertDecrypts = function(encryptedMsgs, all, opt_plaintext) {
+      var plaintext = e2e.stringToByteArray(opt_plaintext || 'susheep\n');
+      goog.array.forEach(all, function(r) {
+        assertArrayEquals(plaintext, r.decrypt.data);
+      });
+      assertEquals(encryptedMsgs.length, all.length);
+      assert(all.length > 0);
+    };
+    var assertDecryptsCr = function(encryptedMsgs, all) {
+      assertDecrypts(encryptedMsgs, all, 'susheep\r\n');  // \r added by openpgpjs.
+    };
+    var msgRegex = /-----BEGIN[\s\S]*?END PGP MESSAGE-----/g;
+
+    asyncTest.waitForAsync('Waiting for key import.');
     context.importKey(buildPassphraseCallback('test'), RSA_PRIVATE_KEY)
       .addCallback(function() {
-        var assertDecrypts = function(encryptedMsgs, all, opt_plaintext) {
-          var plaintext = e2e.stringToByteArray(opt_plaintext || 'susheep\n');
-          goog.array.forEach(all, function(r) {
-            assertArrayEquals(plaintext, r.decrypt.data);
-          });
-          assertEquals(encryptedMsgs.length, all.length);
-          assert(all.length > 0);
-          asyncTest.continueTesting();
-        };
-        var assertDecryptsCr = function(encryptedMsgs, all) {
-          assertDecrypts(encryptedMsgs, all, 'susheep\r\n');  // \r added by openpgpjs.
-        };
-        var msgRegex = /-----BEGIN[\s\S]*?END PGP MESSAGE-----/g;
-        runTestFor('InboundRsaEncryptGnupg1_4_11', assertDecrypts, msgRegex);
-        runTestFor('InboundRsaEncryptGnupg2_0_17', assertDecrypts, msgRegex);
-        runTestFor('InboundRsaEncryptGnupg2_1_0beta3', assertDecrypts, msgRegex);
-        runTestFor('InboundRsaEncryptPgp10_0_0_674', assertDecrypts, msgRegex);
-        runTestFor('InboundRsaEncryptOpenpgpjs0_7_2', assertDecryptsCr, msgRegex);
+        return runTestFor('InboundRsaEncryptGnupg1_4_11', assertDecrypts, msgRegex)
+    }).addCallback(function() {
+        return runTestFor('InboundRsaEncryptGnupg2_0_17', assertDecrypts, msgRegex);
+    }).addCallback(function() {
+        return runTestFor('InboundRsaEncryptGnupg2_1_0beta3', assertDecrypts, msgRegex);
+    }).addCallback(function() {
+        return runTestFor('InboundRsaEncryptPgp10_0_0_674', assertDecrypts, msgRegex);
+    }).addCallback(function() {
+        return runTestFor('InboundRsaEncryptOpenpgpjs0_7_2', assertDecryptsCr, msgRegex);
+    }).addCallback(function() {
+        asyncTest.continueTesting();
     }).addErrback(fail);
   }
 
@@ -1825,13 +1832,14 @@ zbHR0aWTnV3UspMr7xkuXGRrf6bbRcRsYageinoyItK9Of6W/iFI/sKk/yAXsg==
         assertArrayEquals(plaintext, r.decrypt.data);
         assertEquals(1, r.verify.success.length);
         assertEquals(0, r.verify.failure.length);
-        asyncTest.continueTesting();
       });
     }
     var msgRegex = /-----BEGIN[\s\S]*?END PGP MESSAGE-----/g;
     deferred.addCallback(function() {
-        runTestFor('InboundRsaSignGnupg1_4_11', assertCorrectlySigned, msgRegex);
-    });
+        return runTestFor('InboundRsaSignGnupg1_4_11', assertCorrectlySigned, msgRegex);
+    }).addCallback(function() {
+        asyncTest.continueTesting();
+    }).addErrback(fail);
   }
 
   function testInboundIntertwinedUserAttributeAndUserId() {

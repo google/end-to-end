@@ -448,12 +448,29 @@ e2e.openpgp.LockableStorage.prototype.getPassphrase = function() {
 /**
  * Retrieves a data stored under a given key. Will trigger unlock() and ask for
  * a passphrase if needed.
- * @param  {string} key
+ * @param  {string} key Data key
  * @return {!e2e.async.Result<*>} Data stored under a given key.
  */
 e2e.openpgp.LockableStorage.prototype.get = function(key) {
   return this.unlock().addCallback(function() {
     return e2e.async.Result.toResult(this.decryptedData_[key]);
+  }, this);
+};
+
+
+/**
+ * Retrieves a data stored under multiple keys. Will trigger unlock() and ask
+ * for a passphrase if needed.
+ * @param  {Array<string>} keys Data keys
+ * @return {!e2e.async.Result<Object.<string,*>>} Data stored under given keys.
+ */
+e2e.openpgp.LockableStorage.prototype.getMultiple = function(keys) {
+  return this.unlock().addCallback(function() {
+    var obj = {};
+    goog.array.forEach(keys, function(key) {
+      obj[key] = this.decryptedData_[key];
+    }, this);
+    return e2e.async.Result.toResult(obj);
   }, this);
 };
 
@@ -482,7 +499,7 @@ e2e.openpgp.LockableStorage.prototype.remove = function(key) {
  * @return {!e2e.async.Result<undefined>} Result ready when the data is
  *     persisted.
  */
-e2e.openpgp.LockableStorage.prototype.removeMulti = function(keys) {
+e2e.openpgp.LockableStorage.prototype.removeMultiple = function(keys) {
   return this.unlock().addCallback(function() {
     goog.array.forEach(keys, function(key) {
       delete this.decryptedData_[key];
@@ -515,7 +532,7 @@ e2e.openpgp.LockableStorage.prototype.set = function(key, value) {
  * @return {!e2e.async.Result<undefined>} Result ready when the data is
  *     persisted.
  */
-e2e.openpgp.LockableStorage.prototype.setMulti = function(values) {
+e2e.openpgp.LockableStorage.prototype.setMultiple = function(values) {
   return this.unlock().addCallback(function() {
     goog.object.forEach(values, function(value, key) {
       this.decryptedData_[key] = value;

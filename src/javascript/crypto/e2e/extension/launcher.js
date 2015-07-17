@@ -76,35 +76,35 @@ ext.Launcher = function(pgpContext, preferencesStorage) {
 
 
 /**
- * Asks for the keyring passphrase and start the launcher. Will throw an
- * exception if the password is wrong.
+ * Asks for the keyring passphrase and start the launcher.
  * @param {string=} opt_passphrase The passphrase of the keyring.
+ * @return {!goog.async.Deferred} Async result. If the passphrase is wrong, an
+ * errback of that result will be executed.
  * @export
  */
 ext.Launcher.prototype.start = function(opt_passphrase) {
-  this.start_(opt_passphrase || '');
+  return this.start_(opt_passphrase || '');
 };
 
 
 /**
  * Starts the launcher.
  * @param {string} passphrase The passphrase of the keyring.
+ * @return {!goog.async.Deferred} Async result.
  * @private
  */
 ext.Launcher.prototype.start_ = function(passphrase) {
-  this.pgpContext_.setKeyRingPassphrase(passphrase).addCallback(function() {
-    if (goog.global.chrome &&
+  return this.pgpContext_.setKeyRingPassphrase(passphrase).addCallback(
+      function() {
+        if (goog.global.chrome &&
         goog.global.chrome.runtime &&
         goog.global.chrome.runtime.getManifest) {
-      var manifest = chrome.runtime.getManifest();
-      this.pgpContext_.setArmorHeader(
+          var manifest = chrome.runtime.getManifest();
+          return this.pgpContext_.setArmorHeader(
           'Version',
-          manifest.name + ' v' + manifest.version).addCallback(
-              this.completeStart_, this);
-    } else {
-      this.completeStart_();
-    }
-  }, this);
+          manifest.name + ' v' + manifest.version);
+        }
+      }, this).addCallback(this.completeStart_, this);
 };
 
 

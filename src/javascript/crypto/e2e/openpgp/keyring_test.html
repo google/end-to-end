@@ -29,6 +29,7 @@
   goog.require('e2e.cipher.all');
   goog.require('e2e.hash.all');
   goog.require('e2e.openpgp.KeyRing');
+  goog.require('e2e.openpgp.LockableStorage');
   goog.require('e2e.openpgp.block.factory');
   goog.require('e2e.openpgp.constants');
   goog.require('e2e.openpgp.packet.PublicKey');
@@ -213,14 +214,17 @@ n3Q52FUw+2+r+AL2dFL3Z5nK5ff9RS8=
 </textarea>
 <script>
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
-var keyRing = null;
+var keyRingPromise = null;
 var mockControl;
 var storage;
+var lockableStorage;
 var stubs = new goog.testing.PropertyReplacer();
 
 function setUp() {
   storage = new goog.testing.storage.FakeMechanism();
-  keyRing = new e2e.openpgp.KeyRing('test', storage);
+  lockableStorage = new e2e.openpgp.LockableStorage(storage);
+  lockableStorage.setPassphrase('test');
+  keyRingPromise = e2e.openpgp.KeyRing.launch(lockableStorage);
   mockControl = new goog.testing.MockControl();
 }
 
@@ -240,417 +244,471 @@ function getUidCertifications(uid) {
 }
 
 function testGeneration() {
-  keyRing.generateKey(
-      '<ecc@example.com>',
-      e2e.signer.Algorithm.ECDSA, 256,
-      e2e.cipher.Algorithm.ECDH, 256);
-  keyRing.generateECKey('evn@google.com');
+  asyncTestCase.waitForAsync('Waiting for keyring initialization.');
+  keyRingPromise.then(function(keyRing) {
+    keyRing.generateKey(
+        '<ecc@example.com>',
+        e2e.signer.Algorithm.ECDSA, 256,
+        e2e.cipher.Algorithm.ECDH, 256);
+    keyRing.generateECKey('evn@google.com');
 
-  var pubKeyRing = keyRing.getAllKeys();
-  assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
-  assertTrue(pubKeyRing.containsKey('evn@google.com'));
-  assertEquals(2, pubKeyRing.getCount());
-  var pubKeys = pubKeyRing.get('<ecc@example.com>');
-  assertEquals(2, pubKeys.length);
-  pubKeys[1].processSignatures();
-  var ecdsaPubKey = pubKeys[1].keyPacket;
-  var ecdhPubKey = pubKeys[1].subKeys[0];
-  assertEquals(1, pubKeys[1].userIds.length);
-  var userIdPacket = pubKeys[1].userIds[0];
-  assertEquals('<ecc@example.com>', userIdPacket.userId);
-  var certs = getUidCertifications(userIdPacket);
-  assertEquals(1, certs.length);
-  var certification = certs[0];
-  assertTrue(
-      certification.attributes.PREFERRED_COMPRESSION_ALGORITHMS.length > 0);
-  assertContains(
-      e2e.openpgp.constants.getId(e2e.hash.Algorithm.SHA256),
-      certification.attributes.PREFERRED_HASH_ALGORITHMS);
-  assertArrayEquals([e2e.openpgp.constants.getId(
-      e2e.openpgp.constants.DEFAULT_SYMMETRIC_CIPHER)],
-      certification.attributes.PREFERRED_SYMMETRIC_ALGORITHMS);
-  assertEquals(0x01, certification.attributes.FEATURES); // MDC
-  assertTrue(Boolean(certification.attributes.KEY_FLAG_CERTIFY));
-  assertTrue(Boolean(certification.attributes.KEY_FLAG_SIGN));
-  var bindingSig = ecdhPubKey.bindingSignatures_.get(0);
-  assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_COMMUNICATION));
-  assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_STORAGE));
-  assertArrayEquals(bindingSig.attributes.ISSUER, ecdsaPubKey.keyId);
+    var pubKeyRing = keyRing.getAllKeys();
+    assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+    assertTrue(pubKeyRing.containsKey('evn@google.com'));
+    assertEquals(2, pubKeyRing.getCount());
+    var pubKeys = pubKeyRing.get('<ecc@example.com>');
+    assertEquals(2, pubKeys.length);
+    pubKeys[1].processSignatures();
+    var ecdsaPubKey = pubKeys[1].keyPacket;
+    var ecdhPubKey = pubKeys[1].subKeys[0];
+    assertEquals(1, pubKeys[1].userIds.length);
+    var userIdPacket = pubKeys[1].userIds[0];
+    assertEquals('<ecc@example.com>', userIdPacket.userId);
+    var certs = getUidCertifications(userIdPacket);
+    assertEquals(1, certs.length);
+    var certification = certs[0];
+    assertTrue(
+        certification.attributes.PREFERRED_COMPRESSION_ALGORITHMS.length > 0);
+    assertContains(
+        e2e.openpgp.constants.getId(e2e.hash.Algorithm.SHA256),
+        certification.attributes.PREFERRED_HASH_ALGORITHMS);
+    assertArrayEquals([e2e.openpgp.constants.getId(
+        e2e.openpgp.constants.DEFAULT_SYMMETRIC_CIPHER)],
+        certification.attributes.PREFERRED_SYMMETRIC_ALGORITHMS);
+    assertEquals(0x01, certification.attributes.FEATURES); // MDC
+    assertTrue(Boolean(certification.attributes.KEY_FLAG_CERTIFY));
+    assertTrue(Boolean(certification.attributes.KEY_FLAG_SIGN));
+    var bindingSig = ecdhPubKey.bindingSignatures_.get(0);
+    assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_COMMUNICATION));
+    assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_STORAGE));
+    assertArrayEquals(bindingSig.attributes.ISSUER, ecdsaPubKey.keyId);
 
-  assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPubKey.cipher.algorithm);
-  assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPubKey.cipher.algorithm);
+    assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPubKey.cipher.algorithm);
+    assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPubKey.cipher.algorithm);
 
-  var privKeyRing = keyRing.getAllKeys(e2e.openpgp.KeyRing.Type.PRIVATE);
-  assertTrue(privKeyRing.containsKey('<ecc@example.com>'));
-  assertTrue(privKeyRing.containsKey('evn@google.com'));
-  assertEquals(2, privKeyRing.getCount());
-  var privKeys = privKeyRing.get('<ecc@example.com>');
-  assertEquals(1, privKeys.length);
-  privKeys[0].processSignatures();
+    var privKeyRing = keyRing.getAllKeys(e2e.openpgp.KeyRing.Type.PRIVATE);
+    assertTrue(privKeyRing.containsKey('<ecc@example.com>'));
+    assertTrue(privKeyRing.containsKey('evn@google.com'));
+    assertEquals(2, privKeyRing.getCount());
+    var privKeys = privKeyRing.get('<ecc@example.com>');
+    assertEquals(1, privKeys.length);
+    privKeys[0].processSignatures();
 
-  var ecdsaPrivKey = privKeys[0].keyPacket;
-  var ecdhPrivKey = privKeys[0].subKeys[0];
-  certification = getUidCertifications(privKeys[0].userIds[0])[0];
-  assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPrivKey.cipher.algorithm);
-  assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPrivKey.cipher.algorithm);
-  assertEquals(0x01, certification.attributes.FEATURES); // MDC
-  assertTrue(Boolean(certification.attributes.KEY_FLAG_CERTIFY));
-  assertTrue(Boolean(certification.attributes.KEY_FLAG_SIGN));
-  bindingSig = ecdhPrivKey.bindingSignatures_.get(0);
-  assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_COMMUNICATION));
-  assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_STORAGE));
-  assertArrayEquals(bindingSig.attributes.ISSUER, ecdsaPubKey.keyId);
+    var ecdsaPrivKey = privKeys[0].keyPacket;
+    var ecdhPrivKey = privKeys[0].subKeys[0];
+    certification = getUidCertifications(privKeys[0].userIds[0])[0];
+    assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPrivKey.cipher.algorithm);
+    assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPrivKey.cipher.algorithm);
+    assertEquals(0x01, certification.attributes.FEATURES); // MDC
+    assertTrue(Boolean(certification.attributes.KEY_FLAG_CERTIFY));
+    assertTrue(Boolean(certification.attributes.KEY_FLAG_SIGN));
+    bindingSig = ecdhPrivKey.bindingSignatures_.get(0);
+    assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_COMMUNICATION));
+    assertTrue(Boolean(bindingSig.attributes.KEY_FLAG_ENCRYPT_STORAGE));
+    assertArrayEquals(bindingSig.attributes.ISSUER, ecdsaPubKey.keyId);
 
-  // Test basic signing and encryption with the new keys.
-  var m = goog.array.repeat(0x01, 16);
-  asyncTestCase.waitForAsync('waiting for encryption.');
-  ecdhPubKey.cipher.encrypt(m).addCallback(function(c) {
-    asyncTestCase.waitForAsync('waiting for decryption.');
-    ecdhPrivKey.cipher.decrypt(c).addCallback(function(p) {
-      assertArrayEquals(m, p);
-      asyncTestCase.continueTesting();
+    // Test basic signing and encryption with the new keys.
+    var m = goog.array.repeat(0x01, 16);
+    asyncTestCase.waitForAsync('waiting for encryption.');
+    ecdhPubKey.cipher.encrypt(m).addCallback(function(c) {
+      asyncTestCase.waitForAsync('waiting for decryption.');
+      ecdhPrivKey.cipher.decrypt(c).addCallback(function(p) {
+        assertArrayEquals(m, p);
+        asyncTestCase.continueTesting();
+      });
     });
+
+    var sig = e2e.async.Result.getValue(ecdsaPrivKey.cipher.sign(m));
+    assertTrue(e2e.async.Result.getValue(ecdsaPubKey.cipher.verify(m, sig)));
+    assertFalse(e2e.async.Result.getValue(ecdsaPubKey.cipher.verify(
+        e2e.random.getRandomBytes(16), sig)));
+
+    // Test importing the generated keys to the remote server.
+    return e2e.openpgp.KeyRing.launch(lockableStorage, 'http://127.0.0.1');
+  }).then(function(myKeyRing) {
+    var methodMock = mockControl.createMethodMock(myKeyRing.keyClient_,
+      'importPublicKey');
+    var pubKeyMatcher = new goog.testing.mockmatchers.ArgumentMatcher(
+      function(arg) {
+        return (arg instanceof e2e.openpgp.block.TransferablePublicKey);
+      });
+    methodMock(pubKeyMatcher).$returns(e2e.async.Result.toResult(true));
+    methodMock.$replay();
+    myKeyRing.generateECKey('ecctest@example.com');
+    methodMock.$verify();
+    asyncTestCase.continueTesting();
   });
-
-  var sig = e2e.async.Result.getValue(ecdsaPrivKey.cipher.sign(m));
-  assertTrue(e2e.async.Result.getValue(ecdsaPubKey.cipher.verify(m, sig)));
-  assertFalse(e2e.async.Result.getValue(ecdsaPubKey.cipher.verify(
-      e2e.random.getRandomBytes(16), sig)));
-
-  // Test importing the generated keys to the remote server.
-  var myKeyRing = new e2e.openpgp.KeyRing('test', storage, 'http://127.0.0.1');
-  var methodMock = mockControl.createMethodMock(myKeyRing.keyClient_,
-    'importPublicKey');
-  var pubKeyMatcher = new goog.testing.mockmatchers.ArgumentMatcher(
-    function(arg) {
-      return (arg instanceof e2e.openpgp.block.TransferablePublicKey);
-    });
-  methodMock(pubKeyMatcher).$returns(e2e.async.Result.toResult(true));
-  methodMock.$replay();
-  myKeyRing.generateECKey('ecctest@example.com');
-  methodMock.$verify();
 }
 
 function testSearch() {
-  keyRing.generateECKey('adhintz@google.com');
-  keyRing.generateECKey('evn@google.com');
-  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
-    document.getElementById('pubKeyAscii').value);
-  keyRing.importKey(publicKeyBlock);
+  asyncTestCase.waitForAsync('Waiting for keyring initialization.');
+  keyRingPromise.then(function(keyRing) {
+    keyRing.generateECKey('adhintz@google.com');
+    keyRing.generateECKey('evn@google.com');
+    var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
+      document.getElementById('pubKeyAscii').value);
+    keyRing.importKey(publicKeyBlock);
 
-  var evnPubKeys = keyRing.searchKey('evn@google.com');
-  assertEquals(1, evnPubKeys.length);
-  var adhintzPubKeys = keyRing.searchKey('adhintz@google.com');
-  assertEquals(1, adhintzPubKeys.length);
-  var thaidnPubKeys = keyRing.searchKey('thaidn@google.com');
-  assertNull(thaidnPubKeys);
-  var allPubKeys = keyRing.getAllKeys();
-  assertEquals(5, goog.array.flatten(allPubKeys.getValues()).length);
-  allPubKeys = keyRing.getAllKeys();
-  assertEquals(5, goog.array.flatten(allPubKeys.getValues()).length);
+    var evnPubKeys = keyRing.searchKey('evn@google.com');
+    assertEquals(1, evnPubKeys.length);
+    var adhintzPubKeys = keyRing.searchKey('adhintz@google.com');
+    assertEquals(1, adhintzPubKeys.length);
+    var thaidnPubKeys = keyRing.searchKey('thaidn@google.com');
+    assertNull(thaidnPubKeys);
+    var allPubKeys = keyRing.getAllKeys();
+    assertEquals(5, goog.array.flatten(allPubKeys.getValues()).length);
+    allPubKeys = keyRing.getAllKeys();
+    assertEquals(5, goog.array.flatten(allPubKeys.getValues()).length);
 
-  var evnPrivKeys = keyRing.searchKey('evn@google.com',
-      e2e.openpgp.KeyRing.Type.PRIVATE);
-  assertEquals(1, evnPrivKeys.length);
-  var adhintzPrivKeys = keyRing.searchKey(
-    'adhintz@google.com', e2e.openpgp.KeyRing.Type.PRIVATE);
-  assertEquals(1, adhintzPrivKeys.length);
-  var thaidnPrivKeys = keyRing.searchKey(
-    '<ecc@example.com>', e2e.openpgp.KeyRing.Type.PRIVATE);
-  assertNull(thaidnPrivKeys);
-  var allPrivKeys = keyRing.getAllKeys(e2e.openpgp.KeyRing.Type.PRIVATE);
-  assertEquals(2, goog.array.flatten(allPrivKeys.getValues()).length);
+    var evnPrivKeys = keyRing.searchKey('evn@google.com',
+        e2e.openpgp.KeyRing.Type.PRIVATE);
+    assertEquals(1, evnPrivKeys.length);
+    var adhintzPrivKeys = keyRing.searchKey(
+      'adhintz@google.com', e2e.openpgp.KeyRing.Type.PRIVATE);
+    assertEquals(1, adhintzPrivKeys.length);
+    var thaidnPrivKeys = keyRing.searchKey(
+      '<ecc@example.com>', e2e.openpgp.KeyRing.Type.PRIVATE);
+    assertNull(thaidnPrivKeys);
+    var allPrivKeys = keyRing.getAllKeys(e2e.openpgp.KeyRing.Type.PRIVATE);
+    assertEquals(2, goog.array.flatten(allPrivKeys.getValues()).length);
 
-  var allKeys = keyRing.getAllKeys();
-  assertEquals(5, goog.array.flatten(allKeys.getValues()).length);
+    var allKeys = keyRing.getAllKeys();
+    assertEquals(5, goog.array.flatten(allKeys.getValues()).length);
+    asyncTestCase.continueTesting();
+  });
 }
 
 function testSearchKeyLocalAndRemote() {
   var email = '<ecc@example.com>';
-  var currentKeyRing = new e2e.openpgp.KeyRing('test', storage,
-    'http://127.0.0.1');
   var pubKeyBlocks = e2e.openpgp.block.factory.parseAsciiMulti(
     document.getElementById('pubKeyAscii').value);
+  var currentKeyRing;
+  asyncTestCase.waitForAsync('Waiting for keyring initialization.');
+  e2e.openpgp.KeyRing.launch(lockableStorage, 'http://127.0.0.1').then(function(
+      keyRing) {
+    currentKeyRing = keyRing;
+    // Tests when not found locally but found remotely.
+    var methodMock = mockControl.createMethodMock(currentKeyRing.keyClient_,
+      'searchPublicKey');
+    methodMock(email).$returns(e2e.async.Result.toResult(pubKeyBlocks));
+    methodMock.$replay();
+    assertArrayEquals(pubKeyBlocks, e2e.async.Result.getValue(currentKeyRing
+      .searchKeyLocalAndRemote(email, e2e.openpgp.KeyRing.Type.PUBLIC)));
+    assertNotNull(currentKeyRing.searchKey(email,
+      e2e.openpgp.KeyRing.Type.PUBLIC));
+    methodMock.$verify();
 
-  // Tests when not found locally but found remotely.
-  var methodMock = mockControl.createMethodMock(currentKeyRing.keyClient_,
-    'searchPublicKey');
-  methodMock(email).$returns(e2e.async.Result.toResult(pubKeyBlocks));
-  methodMock.$replay();
-  assertArrayEquals(pubKeyBlocks, e2e.async.Result.getValue(currentKeyRing
-    .searchKeyLocalAndRemote(email, e2e.openpgp.KeyRing.Type.PUBLIC)));
-  assertNotNull(currentKeyRing.searchKey(email,
-    e2e.openpgp.KeyRing.Type.PUBLIC));
-  methodMock.$verify();
+    // Tests when found locally. In this case, searchPublicKeyRemote_ should not be
+    // called, so reset the mock.
+    methodMock.$reset();
+    return currentKeyRing.importKey(pubKeyBlocks[0]);
+  }).then(function() {
+    assertArrayEquals(pubKeyBlocks, e2e.async.Result
+      .getValue(currentKeyRing.searchKeyLocalAndRemote(email,
+        e2e.openpgp.KeyRing.Type.PUBLIC)));
 
-  // Tests when found locally. In this case, searchPublicKeyRemote_ should not be
-  // called, so reset the mock.
-  methodMock.$reset();
-  currentKeyRing.importKey(pubKeyBlocks[0]);
-  assertArrayEquals(pubKeyBlocks, e2e.async.Result
-    .getValue(currentKeyRing.searchKeyLocalAndRemote(email,
-      e2e.openpgp.KeyRing.Type.PUBLIC)));
-
-  // Tests when not found locally but searching for private key, so there is
-  // no remote search.
-  assertArrayEquals([], e2e.async.Result.getValue(
-    currentKeyRing.searchKeyLocalAndRemote('test@example.com',
-      e2e.openpgp.KeyRing.Type.PRIVATE)));
+    // Tests when not found locally but searching for private key, so there is
+    // no remote search.
+    assertArrayEquals([], e2e.async.Result.getValue(
+      currentKeyRing.searchKeyLocalAndRemote('test@example.com',
+        e2e.openpgp.KeyRing.Type.PRIVATE)));
+    asyncTestCase.continueTesting();
+  });
 }
 
 
 function testImport() {
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
     document.getElementById('pubKeyAscii').value);
-  keyRing.importKey(publicKeyBlock);
-  keyRing.importKey(publicKeyBlock);  // double-import for bug regression.
+  asyncTestCase.waitForAsync('Waiting for keyring to initialize.');
+  keyRingPromise.then(function(kr) {
+    keyRing = kr;
+    return keyRing.importKey(publicKeyBlock);
+  }).then(function() {
+    return keyRing.importKey(publicKeyBlock);  // double-import for bug regression.
+  }).then(function() {
+    var pubKeyRing = keyRing.getAllKeys();
+    assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+    var pubKeys = keyRing.searchKey('<ecc@example.com>');
+    assertEquals(1, pubKeys.length);
+    pubKeys = keyRing.searchKey('<ecc@example.com>');
+    assertEquals(1, pubKeys.length);
+    var privKeys = keyRing.searchKey(
+      '<ecc@example.com>', e2e.openpgp.KeyRing.Type.PRIVATE);
+    assertNull(privKeys);
 
-  var pubKeyRing = keyRing.getAllKeys();
-  assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
-  var pubKeys = keyRing.searchKey('<ecc@example.com>');
-  assertEquals(1, pubKeys.length);
-  pubKeys = keyRing.searchKey('<ecc@example.com>');
-  assertEquals(1, pubKeys.length);
-  var privKeys = keyRing.searchKey(
-    '<ecc@example.com>', e2e.openpgp.KeyRing.Type.PRIVATE);
-  assertNull(privKeys);
+    var ecdsaPubKey = pubKeys[0].keyPacket;
+    var ecdhPubKey = pubKeys[0].subKeys[0];
+    assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPubKey.cipher.algorithm);
+    assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPubKey.cipher.algorithm);
 
-  var ecdsaPubKey = pubKeys[0].keyPacket;
-  var ecdhPubKey = pubKeys[0].subKeys[0];
-  assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPubKey.cipher.algorithm);
-  assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPubKey.cipher.algorithm);
+    assertArrayEquals(publicKeyBlock.keyPacket.fingerprint, ecdsaPubKey.fingerprint);
+    assertArrayEquals(publicKeyBlock.subKeys[0].fingerprint, ecdhPubKey.fingerprint);
 
-  assertArrayEquals(publicKeyBlock.keyPacket.fingerprint, ecdsaPubKey.fingerprint);
-  assertArrayEquals(publicKeyBlock.subKeys[0].fingerprint, ecdhPubKey.fingerprint);
-
-  assertObjectEquals(
-    publicKeyBlock.keyPacket.cipher.getKey()['pubKey'],
-    ecdsaPubKey.cipher.getKey()['pubKey']);
-  assertObjectEquals(
-    publicKeyBlock.subKeys[0].cipher.getKey()['pubKey'],
-    ecdhPubKey.cipher.getKey()['pubKey']);
+    assertObjectEquals(
+      publicKeyBlock.keyPacket.cipher.getKey()['pubKey'],
+      ecdsaPubKey.cipher.getKey()['pubKey']);
+    assertObjectEquals(
+      publicKeyBlock.subKeys[0].cipher.getKey()['pubKey'],
+      ecdhPubKey.cipher.getKey()['pubKey']);
+    asyncTestCase.continueTesting();
+  });
 }
 
 
 function testExistingKeys() {
-  keyRing.generateECKey('<ecc@example.com>');
-  keyRing.generateECKey('<ecc@example.com>');
+  var keyRing;
+  asyncTestCase.waitForAsync('Waiting for keyring to initialize.');
+  keyRingPromise.then(function(kr) {
+    keyRing = kr;
+    keyRing.generateECKey('<ecc@example.com>');
+    keyRing.generateECKey('<ecc@example.com>');
 
-  var pubKeyRing = keyRing.getAllKeys();
-  assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
-  assertEquals(1, pubKeyRing.getCount());
-  var pubKeys = pubKeyRing.get('<ecc@example.com>');
-  assertEquals(4, pubKeys.length);
+    var pubKeyRing = keyRing.getAllKeys();
+    assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+    assertEquals(1, pubKeyRing.getCount());
+    var pubKeys = pubKeyRing.get('<ecc@example.com>');
+    assertEquals(4, pubKeys.length);
 
-  var privKeyRing = keyRing.getAllKeys(e2e.openpgp.KeyRing.Type.PRIVATE);
-  assertTrue(privKeyRing.containsKey('<ecc@example.com>'));
-  assertEquals(1, privKeyRing.getCount());
-  var privKeys = privKeyRing.get('<ecc@example.com>');
-  assertEquals(2, privKeys.length);
+    var privKeyRing = keyRing.getAllKeys(e2e.openpgp.KeyRing.Type.PRIVATE);
+    assertTrue(privKeyRing.containsKey('<ecc@example.com>'));
+    assertEquals(1, privKeyRing.getCount());
+    var privKeys = privKeyRing.get('<ecc@example.com>');
+    assertEquals(2, privKeys.length);
 
-  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
-    document.getElementById('pubKeyAscii').value);
-  keyRing.importKey(publicKeyBlock);
+    var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
+      document.getElementById('pubKeyAscii').value);
 
-  pubKeyRing = keyRing.getAllKeys();
-  assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
-  assertEquals(1, pubKeyRing.getCount());
-  pubKeys = pubKeyRing.get('<ecc@example.com>');
-  assertEquals(5, pubKeys.length);
-
-  keyRing.reset();
+    return keyRing.importKey(publicKeyBlock);
+  }).then(function() {
+    pubKeyRing = keyRing.getAllKeys();
+    assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+    assertEquals(1, pubKeyRing.getCount());
+    pubKeys = pubKeyRing.get('<ecc@example.com>');
+    assertEquals(5, pubKeys.length);
+    asyncTestCase.continueTesting();
+  });
 }
 
 
 function testGeneratePersist() {
-  var keyRing1 = new e2e.openpgp.KeyRing('test', storage);
-  keyRing1.generateECKey('<ecc@example.com>');
-
-  var keyRing2 = new e2e.openpgp.KeyRing('test', storage);
-  var pubKeyRing = keyRing2.getAllKeys();
-  assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
-  assertEquals(1, pubKeyRing.getCount());
-  var pubKeys = pubKeyRing.get('<ecc@example.com>');
-  assertEquals(2, pubKeys.length);
-
-  var privKeyRing = keyRing2.getAllKeys(e2e.openpgp.KeyRing.Type.PRIVATE);
-  assertTrue(privKeyRing.containsKey('<ecc@example.com>'));
-  assertEquals(1, privKeyRing.getCount());
-  var privKeys = privKeyRing.get('<ecc@example.com>');
-  assertEquals(1, privKeys.length);
-
-  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
-    document.getElementById('pubKeyAscii').value);
-  keyRing2.importKey(publicKeyBlock);
-
-  pubKeyRing = keyRing2.getAllKeys();
-  assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
-  assertEquals(1, pubKeyRing.getCount());
-  pubKeys = pubKeyRing.get('<ecc@example.com>');
-  assertEquals(3, pubKeys.length);
+  var keyRing2;
+  asyncTestCase.waitForAsync('Waiting for keyRing1');
+  e2e.openpgp.KeyRing.launch(lockableStorage).then(function(keyRing1) {
+    return keyRing1.generateECKey('<ecc@example.com>');
+  }).then(function() {
+    return e2e.openpgp.KeyRing.launch(lockableStorage);
+  }).then(function(kr2) {
+    keyRing2 = kr2;
+    var pubKeyRing = keyRing2.getAllKeys();
+    assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+    assertEquals(1, pubKeyRing.getCount());
+    var pubKeys = pubKeyRing.get('<ecc@example.com>');
+    assertEquals(2, pubKeys.length);
+    var privKeyRing = keyRing2.getAllKeys(e2e.openpgp.KeyRing.Type.PRIVATE);
+    assertTrue(privKeyRing.containsKey('<ecc@example.com>'));
+    assertEquals(1, privKeyRing.getCount());
+    var privKeys = privKeyRing.get('<ecc@example.com>');
+    assertEquals(1, privKeys.length);
+    var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
+      document.getElementById('pubKeyAscii').value);
+    return keyRing2.importKey(publicKeyBlock);
+  }).then(function() {
+    pubKeyRing = keyRing2.getAllKeys();
+    assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+    assertEquals(1, pubKeyRing.getCount());
+    pubKeys = pubKeyRing.get('<ecc@example.com>');
+    assertEquals(3, pubKeys.length);
+    asyncTestCase.continueTesting();
+  });
 }
 
 
 function testFailsWhenLocked() {
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
     document.getElementById('pubKeyAscii').value);
-  var keyRing1 = new e2e.openpgp.KeyRing('test', storage);
-  keyRing1.reset();
-  assertThrows('operations on locked keyring should fail', function() {
-    keyRing1.importKey(publicKeyBlock);
+  asyncTestCase.waitForAsync('Waiting for keyring initialization.');
+  lockableStorage.lock();
+  keyRingPromise.then(function(keyRing) {
+    keyRing.importKey(publicKeyBlock).addCallbacks(fail, function(e) {
+      asyncTestCase.continueTesting();
+    });
   });
 }
 
 
 function testImportPersistUnencrypted() {
-  var storage = new goog.testing.storage.FakeMechanism();
-  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
-    document.getElementById('pubKeyAscii').value);
-  var keyRing1 = new e2e.openpgp.KeyRing('', storage);
-  keyRing1.reset();
-  keyRing1.changePassphrase('');
-  keyRing1.importKey(publicKeyBlock);
-
-  var keyRing2 = new e2e.openpgp.KeyRing('', storage);
-  var pubKeyRing = keyRing2.getAllKeys();
-  assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+  var backendStorage = new goog.testing.storage.FakeMechanism();
+  var lockableStorage;
+  e2e.openpgp.LockableStorage.launch(backendStorage).then(function(storage) {
+    lockableStorage = storage;
+    return e2e.openpgp.KeyRing.launch(lockableStorage);
+  }).then(function(keyRing1) {
+    var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
+      document.getElementById('pubKeyAscii').value);
+    return keyRing1.importKey(publicKeyBlock);
+  }).then(function() {
+    return e2e.openpgp.KeyRing.launch(lockableStorage);
+  }).then(function(keyRing2) {
+    var pubKeyRing = keyRing2.getAllKeys();
+    assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+  });
 }
 
 
 function testChangePassphrase() {
+  var keyRing;
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
     document.getElementById('pubKeyAscii').value);
-  keyRing.importKey(publicKeyBlock);
-  keyRing.changePassphrase('test2');
-
-  var keyRing1 = new e2e.openpgp.KeyRing('test2', storage);
-  var pubKeyRing = keyRing1.getAllKeys();
-  assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
-  keyRing.changePassphrase('');
-
-  var keyRing2 = new e2e.openpgp.KeyRing('', storage);
-  pubKeyRing = keyRing2.getAllKeys();
-  assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+  asyncTestCase.waitForAsync('Waiting for importKey (1)');
+  keyRingPromise.then(function(kr) {
+    keyRing = kr;
+    return keyRing.importKey(publicKeyBlock);
+  }).then(function() {
+    var pubKeyRing = keyRing.getAllKeys();
+    assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+    asyncTestCase.waitForAsync('Waiting for change passphrase (1)');
+    return keyRing.changePassphrase('test2');
+  }).then(function() {
+    return e2e.openpgp.KeyRing.launch(lockableStorage);
+  }).then(function(keyRing1) {
+    var pubKeyRing = keyRing1.getAllKeys();
+    assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+    asyncTestCase.waitForAsync('Waiting for change passphrase (2)');
+    return keyRing.changePassphrase('');
+  }).then(function() {
+    return e2e.openpgp.KeyRing.launch(lockableStorage);
+  }).then(function(keyRing2) {
+    pubKeyRing = keyRing2.getAllKeys();
+    assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+    asyncTestCase.continueTesting();
+  });
 }
 
 
 function testPersistPrivKeys() {  // b/12100334
   var privKeyBlocks = e2e.openpgp.block.factory.parseAsciiMulti(
     document.getElementById('privKeyAscii').value);
-  for (var i = 0; i < privKeyBlocks.length; i++) {
-    keyRing.importKey(privKeyBlocks[i]);
-  }
+  var keyRing, keyRing2;
+  asyncTestCase.waitForAsync('Waiting for keyring initialization.');
+  keyRingPromise.then(function(kr) {
+    keyRing = kr;
+    assertEquals(2, privKeyBlocks.length);
+    return keyRing.importKey(privKeyBlocks[0]);
+  }).then(function() {
+    return keyRing.importKey(privKeyBlocks[1]);
+  }).then(function() {
+    return e2e.openpgp.KeyRing.launch(lockableStorage);
+  }).then(function(kr) {
+    keyRing2 = kr;
+    var pubKeys = keyRing2.searchKey('<ecctest@example.com>');
+    assertEquals(1, pubKeys.length);
+    var privKeys = keyRing2.searchKey(
+      '<ecctest@example.com>', e2e.openpgp.KeyRing.Type.PRIVATE);
+    assertEquals(1, privKeys.length);
 
-  var keyRing2 = new e2e.openpgp.KeyRing('test', storage);
+    var ecdsaPrivKey = privKeys[0].keyPacket;
+    var ecdhPrivKey = privKeys[0].subKeys[0];
 
-  var pubKeys = keyRing2.searchKey('<ecctest@example.com>');
-  assertEquals(1, pubKeys.length);
-  var privKeys = keyRing2.searchKey(
-    '<ecctest@example.com>', e2e.openpgp.KeyRing.Type.PRIVATE);
-  assertEquals(1, privKeys.length);
+    assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPrivKey.cipher.algorithm);
+    assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPrivKey.cipher.algorithm);
 
-  var ecdsaPrivKey = privKeys[0].keyPacket;
-  var ecdhPrivKey = privKeys[0].subKeys[0];
+    var ecdsaPubKey = pubKeys[0].keyPacket;
+    var ecdhPubKey = pubKeys[0].subKeys[0];
 
-  assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPrivKey.cipher.algorithm);
-  assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPrivKey.cipher.algorithm);
-
-  var ecdsaPubKey = pubKeys[0].keyPacket;
-  var ecdhPubKey = pubKeys[0].subKeys[0];
-
-  // Test basic signing and encryption with the imported key.
-  var m = goog.array.repeat(0x01, 16);
-  var sig = e2e.async.Result.getValue(ecdsaPrivKey.cipher.sign(m));
-  assertTrue(e2e.async.Result.getValue(ecdsaPubKey.cipher.verify(m, sig)));
-  asyncTestCase.waitForAsync('waiting for encryption loop.');
-  ecdhPubKey.cipher.encrypt(m).addCallback(function(c) {
-    ecdhPrivKey.cipher.decrypt(c).addCallback(function(p) {
-      assertArrayEquals(m, p);
-      asyncTestCase.continueTesting();
+    // Test basic signing and encryption with the imported key.
+    var m = goog.array.repeat(0x01, 16);
+    var sig = e2e.async.Result.getValue(ecdsaPrivKey.cipher.sign(m));
+    assertTrue(e2e.async.Result.getValue(ecdsaPubKey.cipher.verify(m, sig)));
+    asyncTestCase.waitForAsync('waiting for encryption loop.');
+    ecdhPubKey.cipher.encrypt(m).addCallback(function(c) {
+      ecdhPrivKey.cipher.decrypt(c).addCallback(function(p) {
+        assertArrayEquals(m, p);
+        asyncTestCase.continueTesting();
+      });
     });
   });
 }
 
 
 function testImportPersistEncrypted() {
+  var otherKeyRing;
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
     document.getElementById('pubKeyAscii').value);
-  // Test encryption with no keys in the keyring.
-  var keyRing0 = new e2e.openpgp.KeyRing('test', storage);
-  keyRing0.changePassphrase('test');
-  assertThrows(function() {
-    var keyRingBad = new e2e.openpgp.KeyRing('BAD', storage);
+  asyncTestCase.waitForAsync('Waiting for keyring initialization.');
+  keyRingPromise.then(function(keyRing) {
+    return keyRing.importKey(publicKeyBlock);
+  }).then(function() {
+    // Test encryption with no keys in the keyring.
+    return e2e.openpgp.KeyRing.launch(lockableStorage);
+  }).then(function(keyRing1) {
+    otherKeyRing = keyRing1;
+  }).then(function() {
+    var pubKeyRing = otherKeyRing.getAllKeys();
+    assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+    var pubKeys = otherKeyRing.searchKey('<ecc@example.com>');
+    assertEquals(1, pubKeys.length);
+    var privKeys = otherKeyRing.searchKey(
+      '<ecc@example.com>', e2e.openpgp.KeyRing.Type.PRIVATE);
+    assertNull(privKeys);
+
+    var ecdsaPubKey = pubKeys[0].keyPacket;
+    var ecdhPubKey = pubKeys[0].subKeys[0];
+    assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPubKey.cipher.algorithm);
+    assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPubKey.cipher.algorithm);
+
+    assertArrayEquals(publicKeyBlock.keyPacket.fingerprint, ecdsaPubKey.fingerprint);
+    assertArrayEquals(publicKeyBlock.subKeys[0].fingerprint, ecdhPubKey.fingerprint);
+
+    assertObjectEquals(
+      publicKeyBlock.keyPacket.cipher.getKey()['pubKey'],
+      ecdsaPubKey.cipher.getKey()['pubKey']);
+    assertObjectEquals(
+      publicKeyBlock.subKeys[0].cipher.getKey()['pubKey'],
+      ecdhPubKey.cipher.getKey()['pubKey']);
+    asyncTestCase.continueTesting();
   });
-
-  // Test encryption with keys in the keyring.
-  var keyRing1 = new e2e.openpgp.KeyRing('test', storage);
-  keyRing1.importKey(publicKeyBlock);
-  assertThrows(function() {
-    var keyRingBad = new e2e.openpgp.KeyRing('BAD', storage);
-  });
-
-  // Test that keys are properly decrypted.
-  var keyRing2 = new e2e.openpgp.KeyRing('test', storage);
-  var pubKeyRing = keyRing2.getAllKeys();
-  assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
-  var pubKeys = keyRing2.searchKey('<ecc@example.com>');
-  assertEquals(1, pubKeys.length);
-  var privKeys = keyRing2.searchKey(
-    '<ecc@example.com>', e2e.openpgp.KeyRing.Type.PRIVATE);
-  assertNull(privKeys);
-
-  var ecdsaPubKey = pubKeys[0].keyPacket;
-  var ecdhPubKey = pubKeys[0].subKeys[0];
-  assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPubKey.cipher.algorithm);
-  assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPubKey.cipher.algorithm);
-
-  assertArrayEquals(publicKeyBlock.keyPacket.fingerprint, ecdsaPubKey.fingerprint);
-  assertArrayEquals(publicKeyBlock.subKeys[0].fingerprint, ecdhPubKey.fingerprint);
-
-  assertObjectEquals(
-    publicKeyBlock.keyPacket.cipher.getKey()['pubKey'],
-    ecdsaPubKey.cipher.getKey()['pubKey']);
-  assertObjectEquals(
-    publicKeyBlock.subKeys[0].cipher.getKey()['pubKey'],
-    ecdhPubKey.cipher.getKey()['pubKey']);
 }
 
 
 
 function importPrivKey(asciiKey, uid) {
-  var privKeyBlocks = e2e.openpgp.block.factory.parseAsciiMulti(asciiKey);
-  for (var i = 0; i < privKeyBlocks.length; i++) {
-    keyRing.importKey(privKeyBlocks[i]);
-  }
+  asyncTestCase.waitForAsync('Waiting for keyring initialization.');
+  keyRingPromise.then(function(keyRing) {
 
-  var pubKeys = keyRing.searchKey(uid);
-  assertEquals(1, pubKeys.length);
-  var privKeys = keyRing.searchKey(uid, e2e.openpgp.KeyRing.Type.PRIVATE);
-  assertEquals(1, privKeys.length);
+    var privKeyBlocks = e2e.openpgp.block.factory.parseAsciiMulti(asciiKey);
+    for (var i = 0; i < privKeyBlocks.length; i++) {
+      keyRing.importKey(privKeyBlocks[i]);
+    }
 
-  var ecdsaPrivKey = privKeys[0].keyPacket;
-  var ecdhPrivKey = privKeys[0].subKeys[0];
+    var pubKeys = keyRing.searchKey(uid);
+    assertEquals(1, pubKeys.length);
+    var privKeys = keyRing.searchKey(uid, e2e.openpgp.KeyRing.Type.PRIVATE);
+    assertEquals(1, privKeys.length);
 
-  assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPrivKey.cipher.algorithm);
-  assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPrivKey.cipher.algorithm);
+    var ecdsaPrivKey = privKeys[0].keyPacket;
+    var ecdhPrivKey = privKeys[0].subKeys[0];
 
-  var ecdsaPubKey = pubKeys[0].keyPacket;
-  var ecdhPubKey = pubKeys[0].subKeys[0];
+    assertEquals(e2e.signer.Algorithm.ECDSA, ecdsaPrivKey.cipher.algorithm);
+    assertEquals(e2e.cipher.Algorithm.ECDH, ecdhPrivKey.cipher.algorithm);
 
-  // Test basic signing and encryption with the imported key.
-  var m = goog.array.repeat(0x01, 16);
-  var sig = e2e.async.Result.getValue(ecdsaPrivKey.cipher.sign(m));
-  assertTrue(e2e.async.Result.getValue(ecdsaPubKey.cipher.verify(m, sig)));
+    var ecdsaPubKey = pubKeys[0].keyPacket;
+    var ecdhPubKey = pubKeys[0].subKeys[0];
 
-  asyncTestCase.waitForAsync('waiting for encryption.');
-  ecdhPubKey.cipher.encrypt(m).addCallback(function(c) {
-    asyncTestCase.waitForAsync('waiting for decryption.');
-    ecdhPrivKey.cipher.decrypt(c).addCallback(function(p) {
-      assertArrayEquals(m, p);
-      asyncTestCase.continueTesting();
+    // Test basic signing and encryption with the imported key.
+    var m = goog.array.repeat(0x01, 16);
+    var sig = e2e.async.Result.getValue(ecdsaPrivKey.cipher.sign(m));
+    assertTrue(e2e.async.Result.getValue(ecdsaPubKey.cipher.verify(m, sig)));
+
+    asyncTestCase.waitForAsync('waiting for encryption.');
+    ecdhPubKey.cipher.encrypt(m).addCallback(function(c) {
+      asyncTestCase.waitForAsync('waiting for decryption.');
+      ecdhPrivKey.cipher.decrypt(c).addCallback(function(p) {
+        assertArrayEquals(m, p);
+        asyncTestCase.continueTesting();
+      });
     });
   });
-
 }
 
 
@@ -661,21 +719,25 @@ function testImportPrivKey() {
 
 
 function testGetNextKey() {
-  stubs.setPath('e2e.random.getRandomBytes', function(bytes) {
-    return goog.array.range(bytes).map(function(i){ return i % 256; });
-  });
-  var key = keyRing.getNextKey_(256);
-  assertArrayEquals(keyRing.eccSeed_,
-      goog.array.range(e2e.openpgp.KeyRing.ECC_SEED_SIZE));
-  assertEquals(keyRing.eccCount_, 1);
-  assertEquals(key.length, 32);
+  asyncTestCase.waitForAsync('Waiting for keyring initialization.');
+  keyRingPromise.then(function(keyRing) {
+    stubs.setPath('e2e.random.getRandomBytes', function(bytes) {
+      return goog.array.range(bytes).map(function(i){ return i % 256; });
+    });
+    var key = keyRing.getNextKey_(256);
+    assertArrayEquals(keyRing.eccSeed_,
+        goog.array.range(e2e.openpgp.KeyRing.ECC_SEED_SIZE));
+    assertEquals(keyRing.eccCount_, 1);
+    assertEquals(key.length, 32);
 
-  var key2 = keyRing.getNextKey_(256);
-  assertNotEquals(key, key2);
-  assertArrayEquals(keyRing.eccSeed_,
-      goog.array.range(e2e.openpgp.KeyRing.ECC_SEED_SIZE));
-  assertEquals(keyRing.eccCount_, 2);
-  assertEquals(key2.length, 32);
+    var key2 = keyRing.getNextKey_(256);
+    assertNotEquals(key, key2);
+    assertArrayEquals(keyRing.eccSeed_,
+        goog.array.range(e2e.openpgp.KeyRing.ECC_SEED_SIZE));
+    assertEquals(keyRing.eccCount_, 2);
+    assertEquals(key2.length, 32);
+    asyncTestCase.continueTesting();
+  });
 }
 
 /**
@@ -684,40 +746,47 @@ This is an assumption that we currently make when backing up / restoring
 using backup key codes
 */
 function testGenerateKeyProducesTwoKeyPairs() {
+  asyncTestCase.waitForAsync('Waiting for keyring initialization.');
+  keyRingPromise.then(function(keyRing) {
+    var fn = goog.bind(keyRing.generateKey, keyRing, 'test <test@example.com>',
+        e2e.signer.Algorithm['ECDSA'], 256, e2e.cipher.Algorithm['ECDH'], 256);
 
-  var fn = goog.bind(keyRing.generateKey, keyRing, 'test <test@example.com>',
-      e2e.signer.Algorithm['ECDSA'], 256, e2e.cipher.Algorithm['ECDH'], 256);
-
-  assertUndefined(keyRing.eccCount_);
-  fn();
-  assertEquals(keyRing.eccCount_, 2);
-  fn();
-  assertEquals(keyRing.eccCount_, 4);
+    assertUndefined(keyRing.eccCount_);
+    fn();
+    assertEquals(keyRing.eccCount_, 2);
+    fn();
+    assertEquals(keyRing.eccCount_, 4);
+    asyncTestCase.continueTesting();
+  });
 }
 
 function testMultipleUidsInAKey() {
-  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
-    document.getElementById('MultipleUidPublic').value);
-  keyRing.importKey(publicKeyBlock);
-  keyRing.importKey(e2e.openpgp.block.factory.parseAscii(
-    document.getElementById('pubKeyAscii').value));
-  var uids = keyRing.getAllKeys().getKeys().sort();
-  assertArrayEquals([
-      '<ecc@example.com>',
-      'firstuid <firstuid@example.com>',
-      'seconduid <seconduid@example.com>'
-      ], uids);
-  // Get by key ID
-  assertArrayEquals(publicKeyBlock.subKeys[0].keyId,
-      keyRing.getPublicKey(publicKeyBlock.subKeys[0].keyId).keyId);
-  assertArrayEquals(publicKeyBlock.keyPacket.keyId,
-      keyRing.getPublicKey(publicKeyBlock.keyPacket.keyId).keyId);
-  // Get keys by UID
-  assertObjectEquals(
-      keyRing.searchKey('firstuid <firstuid@example.com>',
-          e2e.openpgp.KeyRing.Type.PUBLIC),
-      keyRing.searchKey('seconduid <seconduid@example.com>',
-          e2e.openpgp.KeyRing.Type.PUBLIC));
+  asyncTestCase.waitForAsync('Waiting for keyring initialization.');
+  keyRingPromise.then(function(keyRing) {
+    var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
+      document.getElementById('MultipleUidPublic').value);
+    keyRing.importKey(publicKeyBlock);
+    keyRing.importKey(e2e.openpgp.block.factory.parseAscii(
+      document.getElementById('pubKeyAscii').value));
+    var uids = keyRing.getAllKeys().getKeys().sort();
+    assertArrayEquals([
+        '<ecc@example.com>',
+        'firstuid <firstuid@example.com>',
+        'seconduid <seconduid@example.com>'
+        ], uids);
+    // Get by key ID
+    assertArrayEquals(publicKeyBlock.subKeys[0].keyId,
+        keyRing.getPublicKey(publicKeyBlock.subKeys[0].keyId).keyId);
+    assertArrayEquals(publicKeyBlock.keyPacket.keyId,
+        keyRing.getPublicKey(publicKeyBlock.keyPacket.keyId).keyId);
+    // Get keys by UID
+    assertObjectEquals(
+        keyRing.searchKey('firstuid <firstuid@example.com>',
+            e2e.openpgp.KeyRing.Type.PUBLIC),
+        keyRing.searchKey('seconduid <seconduid@example.com>',
+            e2e.openpgp.KeyRing.Type.PUBLIC));
+    asyncTestCase.continueTesting();
+  });
 }
 
 </script>
