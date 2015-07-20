@@ -213,27 +213,31 @@ e2e.openpgp.KeyRing.prototype.changePassphrase = function(passphrase) {
  */
 e2e.openpgp.KeyRing.prototype.importKey = function(
     keyBlock, opt_passphrase) {
-  var keys = [keyBlock.keyPacket].concat(keyBlock.subKeys);
-  var keyRing;
-  if (keyBlock instanceof e2e.openpgp.block.TransferablePublicKey) {
-    keyRing = this.pubKeyRing_;
-  } else if (keyBlock instanceof e2e.openpgp.block.TransferableSecretKey) {
-    keyRing = this.privKeyRing_;
-  } else {
-    return e2e.async.Result.toResult(false);
-  }
-  // This will throw on signature verification failures.
-  keyBlock.processSignatures();
-  var uids = keyBlock.getUserIds();
-  goog.array.removeDuplicates(uids);
-  var importedKeysResults = goog.async.DeferredList.gatherResults(
-      goog.array.map(uids, function(uid) {
-        return this.importKey_(uid, keyBlock, keyRing, opt_passphrase);
-      }, this));
-  return importedKeysResults.addCallback(function(importedKeys) {
-    // Return false if any key failed to import (e.g. when it already existed).
-    return (importedKeys.indexOf(false) > -1);
-  });
+  var result = e2e.async.Result.toResult(undefined);
+  return result.addCallback(function() {
+    var keys = [keyBlock.keyPacket].concat(keyBlock.subKeys);
+    var keyRing;
+    if (keyBlock instanceof e2e.openpgp.block.TransferablePublicKey) {
+      keyRing = this.pubKeyRing_;
+    } else if (keyBlock instanceof e2e.openpgp.block.TransferableSecretKey) {
+      keyRing = this.privKeyRing_;
+    } else {
+      return false;
+    }
+    // This will throw on signature verification failures.
+    keyBlock.processSignatures();
+    var uids = keyBlock.getUserIds();
+    goog.array.removeDuplicates(uids);
+    var importedKeysResults = goog.async.DeferredList.gatherResults(
+        goog.array.map(uids, function(uid) {
+          return this.importKey_(uid, keyBlock, keyRing, opt_passphrase);
+        }, this));
+    return importedKeysResults.addCallback(function(importedKeys) {
+      // Return false if any key failed to import
+      // (e.g. when it already existed).
+      return (importedKeys.indexOf(false) > -1);
+    });
+  }, this);
 };
 
 

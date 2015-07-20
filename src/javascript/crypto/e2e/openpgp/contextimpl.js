@@ -251,41 +251,43 @@ e2e.openpgp.ContextImpl.prototype.importKey = function(
 
 /**
  * Attempts to decrypt and import the key with the given passphrase.
- * @param {function(string):!e2e.async.Result<string>} callback Callback used
- *     to provide a passphrase.
+ * @param {function(string):!e2e.async.Result<string>} passphraseCallback
+ *     Callback used to provide a passphrase.
  * @param {!e2e.openpgp.block.TransferableKey} block
  * @param {e2e.async.Result.<e2e.openpgp.block.TransferableKey>=}
  *     opt_result Result from the previous call.
  * @param {string=} opt_passphrase
- * @return {!e2e.async.Result.<
- *     e2e.openpgp.block.TransferableKey>} Result with all imported uids.
+ * @return {!e2e.async.Result.<e2e.openpgp.block.TransferableKey>}
+ *     Result with all imported uids.
  * @private
  */
 e2e.openpgp.ContextImpl.prototype.tryToImportKey_ = function(
-    callback, block, opt_result, opt_passphrase) {
+    passphraseCallback, block, opt_result, opt_passphrase) {
+  // Result is the outer-most async result that's passed around in recursive
+  // calls.
   var result = opt_result || new e2e.async.Result();
-  try {
-    var passphrase = goog.isDef(opt_passphrase) ?
-        e2e.stringToByteArray(opt_passphrase) : undefined;
-    // Ignore the return value. If the key is invalid (e.g. because of wrong
-    // certification), importKey throws. False as a return value only indicates
-    // duplicate keys already exist the keyring.
-    this.keyRing_.importKey(block, passphrase).addCallback(function() {
-      result.callback(block);
-    });
-  } catch (e) {
-    if (e instanceof e2e.openpgp.error.PassphraseError) {
-      if (opt_passphrase == '') {
-        // Allow the user to bail out.
-        result.callback(null);
-      } else {
-        callback(block.getUserIds().join('\n')).addCallback(
-            goog.bind(this.tryToImportKey_, this, callback, block, result));
-      }
-    } else {
-      result.errback(e);
-    }
-  }
+  var passphrase = goog.isDef(opt_passphrase) ?
+      e2e.stringToByteArray(opt_passphrase) : undefined;
+  this.keyRing_.importKey(block, passphrase)
+      .addCallback(
+      // False as a return value only indicates duplicate keys already exist
+      // in the keyring. Return original block anyway.
+      goog.bind(result.callback, result, block))
+      .addErrback(function(error) {
+        if (error instanceof e2e.openpgp.error.PassphraseError) {
+          if (opt_passphrase == '') {
+            // Allow the user to bail out.
+            result.callback(null);
+          } else {
+            // Ask for a new passphrase and retry.
+            passphraseCallback(block.getUserIds().join('\n')).addCallback(
+                goog.bind(this.tryToImportKey_, this, passphraseCallback, block,
+                    result));
+          }
+        } else {
+          result.errback(error);
+        }
+      }, this);
   return /** @type {!e2e.async.Result.<e2e.openpgp.block.TransferableKey>} */ (
       result.branch());
 };
