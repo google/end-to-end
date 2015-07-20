@@ -116,17 +116,19 @@ ui.Settings.prototype.decorateInternal = function(elem) {
     this.preferences_ = preferences;
     utils.action.getContext(function(pgpCtx) {
       this.pgpContext_ = pgpCtx;
-      this.pgpContext_.hasPassphrase().addCallback(function(hasPassphrase) {
-        if (!hasPassphrase) {
-          window.alert(chrome.i18n.getMessage('settingsKeyringLockedError'));
-          window.close();
-        } else {
-          // TODO(radi): Move to an E2E action.
-          this.pgpContext_.getAllKeys().
+      this.pgpContext_.hasPassphrase().addCallback(/** @this {ui.Settings} */ (
+          function(hasPassphrase) {
+            if (!hasPassphrase) {
+              window.alert(
+                  chrome.i18n.getMessage('settingsKeyringLockedError'));
+              window.close();
+            } else {
+              // TODO(radi): Move to an E2E action.
+              this.pgpContext_.getAllKeys().
               addCallback(this.renderTemplate_, this).
               addErrback(this.displayFailure_, this);
-        }
-      }, this);
+            }
+          }), this);
     }, this.displayFailure_, this);
   }, this.displayFailure_, this);
 };
@@ -245,7 +247,7 @@ ui.Settings.prototype.generateKey_ =
 ui.Settings.prototype.removeKey_ = function(keyUid) {
   this.pgpContext_
       .searchPrivateKey(keyUid)
-      .addCallback(function(privateKeys) {
+      .addCallback(/** @this {ui.Settings} */ (function(privateKeys) {
         // TODO(evn): This message should be localized.
         var prompt = 'Deleting all keys for ' + keyUid;
         if (privateKeys && privateKeys.length > 0) {
@@ -257,7 +259,7 @@ ui.Settings.prototype.removeKey_ = function(keyUid) {
             this.renderPanels_();
           }, this);
         }
-      }, this)
+      }), this)
       .addErrback(this.displayFailure_, this);
 };
 

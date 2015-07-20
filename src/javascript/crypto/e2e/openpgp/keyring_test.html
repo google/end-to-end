@@ -718,48 +718,6 @@ function testImportPrivKey() {
 }
 
 
-function testGetNextKey() {
-  asyncTestCase.waitForAsync('Waiting for keyring initialization.');
-  keyRingPromise.then(function(keyRing) {
-    stubs.setPath('e2e.random.getRandomBytes', function(bytes) {
-      return goog.array.range(bytes).map(function(i){ return i % 256; });
-    });
-    var key = keyRing.getNextKey_(256);
-    assertArrayEquals(keyRing.eccSeed_,
-        goog.array.range(e2e.openpgp.KeyRing.ECC_SEED_SIZE));
-    assertEquals(keyRing.eccCount_, 1);
-    assertEquals(key.length, 32);
-
-    var key2 = keyRing.getNextKey_(256);
-    assertNotEquals(key, key2);
-    assertArrayEquals(keyRing.eccSeed_,
-        goog.array.range(e2e.openpgp.KeyRing.ECC_SEED_SIZE));
-    assertEquals(keyRing.eccCount_, 2);
-    assertEquals(key2.length, 32);
-    asyncTestCase.continueTesting();
-  });
-}
-
-/**
-Ensure that generateKey always produces 2 key pairs
-This is an assumption that we currently make when backing up / restoring
-using backup key codes
-*/
-function testGenerateKeyProducesTwoKeyPairs() {
-  asyncTestCase.waitForAsync('Waiting for keyring initialization.');
-  keyRingPromise.then(function(keyRing) {
-    var fn = goog.bind(keyRing.generateKey, keyRing, 'test <test@example.com>',
-        e2e.signer.Algorithm['ECDSA'], 256, e2e.cipher.Algorithm['ECDH'], 256);
-
-    assertUndefined(keyRing.eccCount_);
-    fn();
-    assertEquals(keyRing.eccCount_, 2);
-    fn();
-    assertEquals(keyRing.eccCount_, 4);
-    asyncTestCase.continueTesting();
-  });
-}
-
 function testMultipleUidsInAKey() {
   asyncTestCase.waitForAsync('Waiting for keyring initialization.');
   keyRingPromise.then(function(keyRing) {

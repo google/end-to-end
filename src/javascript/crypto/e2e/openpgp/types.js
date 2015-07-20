@@ -199,7 +199,7 @@ e2e.openpgp.ArmoredMessage;
 
 /**
  * Key backup information.
- * @typedef {{seed: e2e.ByteArray, count: number}}
+ * @typedef {{seed: ?e2e.ByteArray, count: ?number}}
  */
 e2e.openpgp.KeyringBackupInfo;
 
