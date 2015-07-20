@@ -67,7 +67,7 @@
       {param content kind="html"}
         {foreach $i in $key}
           {call .gridCell}
-            {param length: $key.length /}
+            {param length: length($key) /}
             {param i: index($i) /}
             {param content: $i /}
           {/call}
