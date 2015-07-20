@@ -21,15 +21,16 @@
 
 goog.provide('e2e.openpgp.pgpmime.MimeNode');
 
-goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.openpgp.pgpmime.Constants');
 goog.require('e2e.openpgp.pgpmime.Text');
 goog.require('e2e.openpgp.pgpmime.Utils');
 /** @suppress {extraRequire} import typedef */
 goog.require('e2e.openpgp.pgpmime.types.NodeContent');
+goog.require('e2e.random');
 
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.crypt');
 goog.require('goog.crypt.base64');
 goog.require('goog.object');
 goog.require('goog.string');
@@ -40,11 +41,11 @@ var constants = pgpmime.Constants;
 
 
 /**
- * The maximum amount of recursions permitted for setBoundary_
+ * Number of random bytes to use when generating the boundary string.
  * @const
  * @private
  */
-var MAX_RECURSION_DEPTH_ = 30;
+var NUMBER_OF_RANDOM_BYTES_ = 25;
 
 
 
@@ -125,7 +126,8 @@ e2e.openpgp.pgpmime.MimeNode.prototype.setContent = function(content) {
 
 
 /**
- * Checks if the proposed boundary is contained within the message.
+ * Checks if the proposed boundary is contained within the message and if
+ * its length is valid.
  * @param {string} boundary The proposed boundary.
  * @return {boolean} Returns true if the proposed boundary does not appear
  *     within the message. Otherwise returns false.
@@ -135,7 +137,10 @@ e2e.openpgp.pgpmime.MimeNode.prototype.isBoundaryValid_ = function(boundary) {
   // Assign a temporary boundary that will be used in buildMessage().
   this.boundary_ = 'temporary_boundary';
   var tempMessage = this.mimeToString_();
-  return !goog.string.contains(tempMessage, boundary);
+  // Per RFC 2046, the boundary cannot include more than 70 characters, not
+  // including the two leading hyphens.
+  var validLength = (boundary.length <= 70);
+  return validLength && !goog.string.contains(tempMessage, boundary);
 };
 
 
@@ -145,37 +150,29 @@ e2e.openpgp.pgpmime.MimeNode.prototype.isBoundaryValid_ = function(boundary) {
  * @private
  */
 e2e.openpgp.pgpmime.MimeNode.prototype.generateBoundary_ = function() {
-  return '---' + goog.string.getRandomString() +
-      Math.floor(Date.now() / 1000).toString();
+  // Per RFC 2046, the length of the boundary should be no greater than 70
+  // characters, not including the leading hyphens. Converting 25 bytes
+  // (the value of NUMBER_OF_RANDOM_BYTES_) to hex using byteArrayToHex
+  // should consist of exactly 50 characters.
+  var randomArrOfBytes = e2e.random.getRandomBytes(NUMBER_OF_RANDOM_BYTES_);
+  return goog.crypt.byteArrayToHex(randomArrOfBytes);
 };
 
 
 /**
  * Sets the MIME message boundary for a node.
- * Until it succeeds, this function recursively reattempts to generate a unique
+ * Until succeeding, this function keeps attempting to generate a unique
  * boundary for the message (i.e., it attempts to generate a string that doesn't
- * appear within the original message).
- * @param {number} bound A bound on the amount of permitted recursions.
+ * appear within the original message and is of valid length).
  * @private
  */
-e2e.openpgp.pgpmime.MimeNode.prototype.setBoundary_ = function(bound) {
-  var boundary = this.generateBoundary_();
-  if (this.isBoundaryValid_(boundary)) {
-    // String was unique, save it as the official boundary for this message.
-    this.boundary_ = boundary;
-  } else {
-    // String was not unique.
-    if (bound > 0) {
-      // Recurse and try again.
-      this.setBoundary_(bound - 1);
-    } else {
-      // We've reached the limit on the amount of permitted recursions.
-      // Realistically, bugs aside, this branch shouldn't be reached.
-      throw new e2e.openpgp.error.UnsupportedError('Maximum recursion limit' +
-          'of ' + MAX_RECURSION_DEPTH_ +
-          'reached in e2e.openpgp.pgpmime.MimeNode.setBoundary_');
-    }
-  }
+e2e.openpgp.pgpmime.MimeNode.prototype.setBoundary_ = function() {
+  var boundary = null;
+  do {
+    boundary = this.generateBoundary_();
+  } while (!this.isBoundaryValid_(boundary));
+  // String is valid, save it as the official boundary for this message.
+  this.boundary_ = boundary;
 };
 
 
@@ -255,7 +252,7 @@ e2e.openpgp.pgpmime.MimeNode.prototype.mimeToString_ = function() {
  */
 e2e.openpgp.pgpmime.MimeNode.prototype.buildMessage = function() {
   // Set a unique boundary for the MIME message.
-  this.setBoundary_(MAX_RECURSION_DEPTH_);
+  this.setBoundary_();
   // Return the string representation of the MIME message.
   return this.mimeToString_();
 };

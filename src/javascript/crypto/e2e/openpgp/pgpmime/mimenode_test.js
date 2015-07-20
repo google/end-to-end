@@ -184,7 +184,7 @@ function testBuildMessage() {
   assertEquals(FINAL_MESSAGE, builtMessage);
 }
 
-function testisBoundaryValid() {
+function testIsBoundaryValid() {
   var grandparentNode = new e2e.openpgp.pgpmime.MimeNode({
     multipart: true,
     optionalHeaders: [

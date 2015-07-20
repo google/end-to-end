@@ -25,12 +25,15 @@ goog.require('e2e.openpgp.error.UnsupportedError');
 
 goog.require('e2e.openpgp.pgpmime.Constants');
 goog.require('e2e.openpgp.pgpmime.Text');
+/** @suppress {extraRequire} import typedef */
+goog.require('e2e.openpgp.pgpmime.types.Entity');
 
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.crypt.base64');
 goog.require('goog.object');
 goog.require('goog.string');
+
 
 goog.scope(function() {
 var constants = e2e.openpgp.pgpmime.Constants;
@@ -54,16 +57,17 @@ e2e.openpgp.pgpmime.Utils.parseAttachmentEntity = function(node) {
 
   try {
     filename = node.header[constants.Mime.CONTENT_DISPOSITION].params.filename;
-    encoding = node.header[constants.Mime.CONTENT_TRANSFER_ENCODING].value;
   } catch (e) {
-    throw new e2e.openpgp.error.UnsupportedError('');
+    throw new e2e.openpgp.error.UnsupportedError('Missing filename in ' +
+        'attachment');
   }
 
   if (!filename || !goog.isString(node.body)) {
-    throw new e2e.openpgp.error.UnsupportedError('');
+    throw new e2e.openpgp.error.UnsupportedError('Attachment invalid');
   }
-  return {filename: goog.asserts.assertString(filename), content: node.body,
-        encoding: encoding};
+  return /** @type {e2e.openpgp.pgpmime.types.Attachment} */ ({filename:
+        goog.asserts.assertString(filename), content: node.body,
+        encoding: encoding});
 };
 
 
@@ -168,14 +172,15 @@ e2e.openpgp.pgpmime.Utils.parseHeader_ = function(text, opt_separator) {
   var headerLines = utils.splitHeaders_(text, opt_separator);
   goog.array.forEach(headerLines, function(line) {
     // Ex: 'Content-Type: multipart/encrypted'
-    var parts = line.split(':');
+    var parts = goog.string.splitLimit(line, ':', 1);
     if (parts.length < 2) {
       return;
     }
 
     // Header names are not case sensitive. Normalize to TitleCase.
     var name = goog.string.toTitleCase(parts.shift(), '-');
-    var value = utils.parseHeaderValue(parts.join(':'));
+    var value = /** @type {e2e.openpgp.pgpmime.types.HeaderValue} */
+        (utils.parseHeaderValue(parts.join(':')));
     parsed[name] = value;
   });
   return parsed;
@@ -200,9 +205,9 @@ e2e.openpgp.pgpmime.Utils.splitHeaders_ = function(text, opt_separator) {
   // Per RFC 2047 part 2., a multiline header should be wrapped by CRLF SPACE.
   // Distinct header lines should be separated from each other by a sole CRLF.
   // In practice, many email systems use an arbitrary amount of tabs and
-  // whitespaces instead of a single SPACE. To accomodate this, we separate
+  // spaces instead of a single SPACE. To accomodate this, we separate
   // headers by looking for CRLFs that are not followed by any variable amount
-  // of tabs or whitespaces.
+  // of tabs or spaces.
   var lines = text.split(splitter);
 
   var remove = new RegExp(separator + '[\x20\x09]+');
@@ -267,20 +272,22 @@ e2e.openpgp.pgpmime.Utils.parseNode = function(text, opt_separator) {
   // Normalize text by prepending with newline
   text = separator + text;
   // Header must be separated from body by an empty line
-  var parts = text.split(separator + separator);
+  var parts = goog.string.splitLimit(text, separator + separator, 1);
   if (parts.length < 2) {
     throw new e2e.openpgp.error.UnsupportedError(text);
   }
 
   var header = utils.parseHeader_(parts.shift(), opt_separator);
   var body = parts.join(separator + separator);
-  var ctHeader = header[constants.Mime.CONTENT_TYPE];
+  var ctHeader = /** @type {e2e.openpgp.pgpmime.types.HeaderValue} */
+      (header[constants.Mime.CONTENT_TYPE]);
   var parsed = {};
   parsed.header = header;
 
-  if (ctHeader.params && ctHeader.params.boundary) {
+  if (goog.isDefAndNotNull(ctHeader.params) &&
+      goog.isDefAndNotNull(ctHeader.params['boundary'])) {
     // This appears to be a multipart message. Split text by boundary.
-    var nodes = utils.splitNodes_(body, ctHeader.params.boundary,
+    var nodes = utils.splitNodes_(body, ctHeader.params['boundary'],
         opt_separator);
     // Recursively parse nodes.
     parsed.body = [];
