@@ -18,7 +18,7 @@
  * @fileoverview Key generator. End-To-End supports generating only ECC keys.
  */
 
-goog.provide('e2e.openpgp.keygenerator');
+goog.provide('e2e.asymmetric.keygenerator');
 
 goog.require('e2e.algorithm.KeyLocations');
 goog.require('e2e.async.Result');
@@ -27,7 +27,7 @@ goog.require('e2e.cipher.Ecdh');
 goog.require('e2e.cipher.Rsa');
 goog.require('e2e.ecc.PrimeCurve');
 goog.require('e2e.ecc.Protocol');
-goog.require('e2e.openpgp.error.UnsupportedError');
+goog.require('e2e.error.UnsupportedError');
 goog.require('e2e.signer.Algorithm');
 goog.require('e2e.signer.Ecdsa');
 goog.require('goog.crypt.base64');
@@ -40,7 +40,7 @@ goog.require('goog.crypt.base64');
  *     private key. If not given, a random key will be created.
  * @return {!e2e.signer.Ecdsa}
  */
-e2e.openpgp.keygenerator.newEcdsaWithP256 = function(
+e2e.asymmetric.keygenerator.newEcdsaWithP256 = function(
     opt_privateKey) {
   var key = e2e.ecc.Protocol.generateKeyPair(
       e2e.ecc.PrimeCurve.P_256, opt_privateKey);
@@ -55,7 +55,7 @@ e2e.openpgp.keygenerator.newEcdsaWithP256 = function(
  *     private key. If not given, a random key will be created.
  * @return {!e2e.cipher.Ecdh}
  */
-e2e.openpgp.keygenerator.newEcdhWithP256 = function(
+e2e.asymmetric.keygenerator.newEcdhWithP256 = function(
     opt_privateKey) {
   var key = e2e.ecc.Protocol.generateKeyPair(
       e2e.ecc.PrimeCurve.P_256, opt_privateKey);
@@ -69,9 +69,9 @@ e2e.openpgp.keygenerator.newEcdhWithP256 = function(
  * @param {number} keyLength  Length of the key. Should be 4096 or 8192.
  * @return {!e2e.async.Result.<Array.<e2e.Algorithm>>}
  */
-e2e.openpgp.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
+e2e.asymmetric.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
   if (!('crypto' in goog.global && 'subtle' in goog.global.crypto)) {
-    throw new e2e.openpgp.error.UnsupportedError('No WebCrypto support!');
+    throw new e2e.error.UnsupportedError('No WebCrypto support!');
   }
   // Disable typechecking until crypto.subtle is available in stable chrome.
   var crypto = /** @type {{generateKey: function(...): *,
@@ -93,7 +93,7 @@ e2e.openpgp.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
         function(sigPubStr) {
           var sigPubKey = JSON.parse(String.fromCharCode.apply(null,
               new Uint8Array(sigPubStr)));
-          var sigRSAKey = e2e.openpgp.keygenerator.jwkToNative_(sigPubKey);
+          var sigRSAKey = e2e.asymmetric.keygenerator.jwkToNative_(sigPubKey);
           rsaSigner = new e2e.cipher.Rsa(e2e.signer.Algorithm.RSA, sigRSAKey);
           rsaSigner.setWebCryptoKey(sigKeyPair);
 
@@ -106,7 +106,7 @@ e2e.openpgp.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
                 function(encPubStr) {
                   var encPubKey = JSON.parse(String.fromCharCode.apply(
                       null, new Uint8Array(encPubStr)));
-                  var encRSAKey = e2e.openpgp.keygenerator.jwkToNative_(
+                  var encRSAKey = e2e.asymmetric.keygenerator.jwkToNative_(
                       encPubKey);
                   rsaCipher = new e2e.cipher.Rsa(e2e.cipher.Algorithm.RSA,
                       encRSAKey);
@@ -127,7 +127,7 @@ e2e.openpgp.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
  * @return {e2e.cipher.key.Rsa}
  * @private
  */
-e2e.openpgp.keygenerator.jwkToNative_ = function(jwkKey) {
+e2e.asymmetric.keygenerator.jwkToNative_ = function(jwkKey) {
   return {
     'n': goog.crypt.base64.decodeStringToByteArray(jwkKey.n),
     'e': goog.crypt.base64.decodeStringToByteArray(jwkKey.e),

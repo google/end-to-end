@@ -26,6 +26,7 @@ goog.provide('e2e.openpgp.KeyRing');
 goog.require('e2e');
 goog.require('e2e.Hkdf');
 goog.require('e2e.algorithm.KeyLocations');
+goog.require('e2e.asymmetric.keygenerator');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.error.InvalidArgumentsError');
@@ -39,7 +40,6 @@ goog.require('e2e.openpgp.block.TransferablePublicKey');
 goog.require('e2e.openpgp.block.TransferableSecretKey');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.UnsupportedError');
-goog.require('e2e.openpgp.keygenerator');
 goog.require('e2e.openpgp.packet.PublicKey');
 goog.require('e2e.openpgp.packet.PublicSubkey');
 goog.require('e2e.openpgp.packet.SecretKey');
@@ -315,14 +315,14 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(email,
     var fingerprint;
     if (keyAlgo == e2e.signer.Algorithm.ECDSA &&
         keyLength == 256) {
-      var ecdsa = e2e.openpgp.keygenerator.newEcdsaWithP256(
+      var ecdsa = e2e.asymmetric.keygenerator.newEcdsaWithP256(
           this.getNextKey_(keyLength));
       this.extractKeyData_(keyData, ecdsa);
       fingerprint = keyData.pubKey[0].fingerprint;
     }
     if (subkeyAlgo == e2e.cipher.Algorithm.ECDH &&
         subkeyLength == 256) {
-      var ecdh = e2e.openpgp.keygenerator.newEcdhWithP256(
+      var ecdh = e2e.asymmetric.keygenerator.newEcdhWithP256(
           this.getNextKey_(subkeyLength));
       this.extractKeyData_(keyData, ecdh, true);
     }
@@ -334,7 +334,7 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(email,
         throw new e2e.openpgp.error.UnsupportedError(
             'WebCrypto RSA keyLength must be 4096 or 8192');
       }
-      return e2e.openpgp.keygenerator.newWebCryptoRsaKeys(
+      return e2e.asymmetric.keygenerator.newWebCryptoRsaKeys(
           keyLength).addCallback(
           function(ciphers) {
             this.extractKeyData_(keyData, ciphers[0]);
