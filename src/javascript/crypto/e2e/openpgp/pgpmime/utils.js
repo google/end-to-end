@@ -34,6 +34,8 @@ goog.require('goog.crypt.base64');
 goog.require('goog.object');
 goog.require('goog.string');
 
+var invalidMsg = 'Invalid MIME format';
+
 
 goog.scope(function() {
 var constants = e2e.openpgp.pgpmime.Constants;
@@ -58,12 +60,13 @@ e2e.openpgp.pgpmime.Utils.parseAttachmentEntity = function(node) {
   try {
     filename = node.header[constants.Mime.CONTENT_DISPOSITION].params.filename;
   } catch (e) {
-    throw new e2e.openpgp.error.UnsupportedError('Missing filename in ' +
-        'attachment');
+    var errMsg = invalidMsg + ' - Missing filename in attachment';
+    throw new e2e.openpgp.error.UnsupportedError(errMsg);
   }
 
   if (!filename || !goog.isString(node.body)) {
-    throw new e2e.openpgp.error.UnsupportedError('Attachment invalid');
+    var errMsg = invalidMsg + ' - Attachment invalid';
+    throw new e2e.openpgp.error.UnsupportedError(errMsg);
   }
   return /** @type {e2e.openpgp.pgpmime.types.Attachment} */ ({filename:
         goog.asserts.assertString(filename), content: node.body,
@@ -150,14 +153,36 @@ e2e.openpgp.pgpmime.Utils.serializeHeader = function(header) {
 /**
  * Parses MIME headers into a dict, optionally extending existing headers.
  * @param {string} text The MIME-formatted header.
- * @param {?string=} opt_separator True if the node should be separated by
- *     a different separator than crlf ('\r\n'). Some email systems only use
- *     linefeeds or carriage returns.
  * @return {e2e.openpgp.pgpmime.types.Header}
  * @private
  */
-e2e.openpgp.pgpmime.Utils.parseHeader_ = function(text, opt_separator) {
+e2e.openpgp.pgpmime.Utils.parseHeader_ = function(text) {
   var parsed = /** @type {e2e.openpgp.pgpmime.types.Header} */ ({});
+  var headerLines = utils.splitHeaders_(text);
+
+  goog.array.forEach(headerLines, function(line) {
+    // Ex: 'Content-Type: multipart/encrypted'
+    var parts = goog.string.splitLimit(line, ':', 1);
+    if (parts.length < 2) {
+      return;
+    }
+
+    // Header names are not case sensitive. Normalize to TitleCase.
+    var name = goog.string.toTitleCase(parts.shift(), '-').trim();
+    var value = /** @type {e2e.openpgp.pgpmime.types.HeaderValue} */
+        (utils.parseHeaderValue(parts.join(':')));
+
+    if (goog.isDefAndNotNull(parsed[name]) && (name ===
+        constants.Mime.CONTENT_TYPE || name ===
+        constants.Mime.CONTENT_TRANSFER_ENCODING)) {
+      // The Content-Type and Content-Transfer-Encoding headers should only be
+      // set once per node. If they appears twice, this most likely indicates an
+      // invalidly formatted email.
+      var errMsg = invalidMsg + ' - duplicate headers';
+      throw new e2e.openpgp.error.UnsupportedError(errMsg);
+    }
+    parsed[name] = value;
+  });
 
   // Implicit content-type is ASCII plaintext (RFC 2045).
   goog.object.setIfUndefined(parsed, constants.Mime.CONTENT_TYPE, {
@@ -169,20 +194,6 @@ e2e.openpgp.pgpmime.Utils.parseHeader_ = function(text, opt_separator) {
     value: constants.Mime.SEVEN_BIT
   });
 
-  var headerLines = utils.splitHeaders_(text, opt_separator);
-  goog.array.forEach(headerLines, function(line) {
-    // Ex: 'Content-Type: multipart/encrypted'
-    var parts = goog.string.splitLimit(line, ':', 1);
-    if (parts.length < 2) {
-      return;
-    }
-
-    // Header names are not case sensitive. Normalize to TitleCase.
-    var name = goog.string.toTitleCase(parts.shift(), '-');
-    var value = /** @type {e2e.openpgp.pgpmime.types.HeaderValue} */
-        (utils.parseHeaderValue(parts.join(':')));
-    parsed[name] = value;
-  });
   return parsed;
 };
 
@@ -190,18 +201,11 @@ e2e.openpgp.pgpmime.Utils.parseHeader_ = function(text, opt_separator) {
 /**
  * Separates MIME headers.
  * @param {string} text A string containing a variable number of MIME headers
- * @param {?string=} opt_separator True if the node should be separated by
- *     a different separator than crlf ('\r\n'). Some email systems only use
- *     linefeeds or carriage returns.
  * @return {Array.<string>} An array in which each element is a header
  * @private
  */
-e2e.openpgp.pgpmime.Utils.splitHeaders_ = function(text, opt_separator) {
-  var separator = constants.Mime.CRLF;
-  if (goog.isDefAndNotNull(opt_separator)) {
-    separator = opt_separator;
-  }
-  var splitter = new RegExp(separator + '(?![\x20\x09]+)');
+e2e.openpgp.pgpmime.Utils.splitHeaders_ = function(text) {
+  var splitter = new RegExp('\r?\n(?![\x20\x09]+)');
   // Per RFC 2047 part 2., a multiline header should be wrapped by CRLF SPACE.
   // Distinct header lines should be separated from each other by a sole CRLF.
   // In practice, many email systems use an arbitrary amount of tabs and
@@ -210,7 +214,7 @@ e2e.openpgp.pgpmime.Utils.splitHeaders_ = function(text, opt_separator) {
   // of tabs or spaces.
   var lines = text.split(splitter);
 
-  var remove = new RegExp(separator + '[\x20\x09]+');
+  var remove = new RegExp('\r?\n[\x20\x09]+');
   var headers = [];
   goog.array.forEach(lines, function(line) {
     // Rebuild the original header by removing the CRLF and tabs/whitespaces
@@ -227,31 +231,28 @@ e2e.openpgp.pgpmime.Utils.splitHeaders_ = function(text, opt_separator) {
  * @param {string} text The message to split.
  * @param {string} boundary The boundary parameter, as specified in the MIME
  *     header
- * @param {?string=} opt_separator True if the node should be separated by
- *     a different separator than crlf ('\r\n'). Some email systems only use
- *     linefeeds or carriage returns.
  * @return {Array.<string>}
  * @private
  */
-e2e.openpgp.pgpmime.Utils.splitNodes_ = function(text, boundary,
-    opt_separator) {
-  var separator = constants.Mime.CRLF;
-  if (goog.isDefAndNotNull(opt_separator)) {
-    separator = opt_separator;
-  }
+e2e.openpgp.pgpmime.Utils.splitNodes_ = function(text, boundary) {
+  var separator = new RegExp('\r?\n');
   var lines = text.split(separator);
   var startLocation = goog.array.indexOf(lines, '--' + boundary);
   var endLocation = goog.array.indexOf(lines, '--' + boundary + '--');
   if (endLocation === -1 || startLocation === -1) {
-    throw new e2e.openpgp.error.UnsupportedError(text);
+    var errMsg = invalidMsg + ' - cannot find boundary in multipart message';
+    throw new e2e.openpgp.error.UnsupportedError(errMsg);
   }
   // Ignore the epilogue after the end boundary inclusive.
   lines = goog.array.slice(lines, 0, endLocation);
   // Ignore the preamble before the first boundary occurrence inclusive.
   lines = goog.array.slice(lines, startLocation + 1);
 
-  text = lines.join(separator);
-  return text.split('--' + boundary + separator);
+  text = lines.join(constants.Mime.CRLF);
+  // The boundary may contain characters that are invalid within a regex,
+  // so they need to be escaped first.
+  var escapedBoundary = goog.string.regExpEscape(boundary);
+  return text.split(new RegExp('--' + escapedBoundary + '\r?\n'));
 };
 
 
@@ -259,26 +260,22 @@ e2e.openpgp.pgpmime.Utils.splitNodes_ = function(text, boundary,
  * Parses a MIME node into a header and body. For multipart messages,
  * the body is an array of child nodes. Otherwise body is a string.
  * @param {string} text The text to parse.
- * @param {?string=} opt_separator True if the node should be separated by
- *     a different separator than crlf ('\r\n'). Some email systems only use
- *     linefeeds or carriage returns.
  * @return {!e2e.openpgp.pgpmime.types.Entity}
  */
-e2e.openpgp.pgpmime.Utils.parseNode = function(text, opt_separator) {
-  var separator = constants.Mime.CRLF;
-  if (goog.isDefAndNotNull(opt_separator)) {
-    separator = opt_separator;
-  }
+e2e.openpgp.pgpmime.Utils.parseNode = function(text) {
+  var separator = new RegExp('\r?\n\r?\n');
   // Normalize text by prepending with newline
-  text = separator + text;
+  text = constants.Mime.CRLF + text;
   // Header must be separated from body by an empty line
-  var parts = goog.string.splitLimit(text, separator + separator, 1);
+  var parts = text.split(separator);
   if (parts.length < 2) {
-    throw new e2e.openpgp.error.UnsupportedError(text);
+    var errMsg = invalidMsg + ' - no CRLF between headers and body';
+    throw new e2e.openpgp.error.UnsupportedError(errMsg);
   }
 
-  var header = utils.parseHeader_(parts.shift(), opt_separator);
-  var body = parts.join(separator + separator);
+  var header = utils.parseHeader_(parts.shift());
+  var body = parts.join(constants.Mime.CRLF + constants.Mime.CRLF);
+
   var ctHeader = /** @type {e2e.openpgp.pgpmime.types.HeaderValue} */
       (header[constants.Mime.CONTENT_TYPE]);
   var parsed = {};
@@ -287,12 +284,11 @@ e2e.openpgp.pgpmime.Utils.parseNode = function(text, opt_separator) {
   if (goog.isDefAndNotNull(ctHeader.params) &&
       goog.isDefAndNotNull(ctHeader.params['boundary'])) {
     // This appears to be a multipart message. Split text by boundary.
-    var nodes = utils.splitNodes_(body, ctHeader.params['boundary'],
-        opt_separator);
+    var nodes = utils.splitNodes_(body, ctHeader.params['boundary']);
     // Recursively parse nodes.
     parsed.body = [];
     goog.array.forEach(nodes, function(node) {
-      parsed.body.push(utils.parseNode(node, opt_separator));
+      parsed.body.push(utils.parseNode(node));
     });
   } else {
     // Body is a string.
@@ -301,30 +297,5 @@ e2e.openpgp.pgpmime.Utils.parseNode = function(text, opt_separator) {
   return parsed;
 };
 
-
-/**
- * Parses a MIME node into a header and body. For multipart messages,
- * the body is an array of child nodes. Otherwise body is a string.
- * @param {string} content The content to decode
- * @param {string} encoding The current encoding of the content
- * @return {string}
- */
-e2e.openpgp.pgpmime.Utils.decodeContent = function(content, encoding) {
-  if (encoding === constants.Mime.BASE64) {
-    return goog.crypt.base64.decodeString(content);
-  } else if (encoding === constants.Mime.SEVEN_BIT ||
-             encoding === constants.Mime.EIGHT_BIT) {
-    return content;
-  } else if (encoding === constants.Mime.QUOTED_PRINTABLE) {
-    return content.replace(/=([A-Fa-f0-9]{2})/g, function(m, g1) {
-      return String.fromCharCode(parseInt(g1, 16));
-    });
-  } else if (encoding === constants.Mime.BINARY) {
-    // TODO add support for binary encoding
-    return content;
-  }
-  // Unidentified encoding. Simply return content.
-  return content;
-};
 
 });  // goog.scope
