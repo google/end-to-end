@@ -47,7 +47,7 @@ var launcher = null;
 var mockControl = null;
 var page = null;
 var stubs = new goog.testing.PropertyReplacer();
-var testCase = goog.testing.AsyncTestCase.createAndInstall();
+var testCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 
 
 var PUBLIC_KEY_ASCII =
@@ -138,8 +138,9 @@ function testRemoveKey() {
   page.decorate(document.documentElement);
   testCase.waitForAsync('waiting for key to be generated');
   fakeGenerateKey().addCallback(function() {
+    testCase.waitForAsync('waiting for key removal');
     page.removeKey_('test@example.com');
-    window.setTimeout(function() {
+    testCase.timeout(function() {
       assertTrue(called);
       mockControl.$verifyAll();
       testCase.continueTesting();
@@ -220,7 +221,7 @@ function importKeyring(keyringContents, userName) {
       child.dialogCallback_('');
     }
   }
-  window.setTimeout(function() {
+  testCase.timeout(function() {
     notificationArg.arg();
 
     mockControl.$verifyAll();
@@ -241,7 +242,7 @@ function testExportKeyring() {
   page.exportKeyring_();
 
   testCase.waitForAsync('waiting for keyring to be exported');
-  window.setTimeout(function() {
+  testCase.timeout(function() {
     testCase.continueTesting();
     // TODO(adhintz) Fix this test and enable this assert.
     // assertTrue('Failed to export keyring', downloadedFile);
