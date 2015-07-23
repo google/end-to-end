@@ -119,14 +119,25 @@ e2e.openpgp.pgpmime.PgpMail.prototype.buildMimeTree = function() {
     textNode.setContent(this.content.body);
 
     goog.array.forEach(this.content.attachments, function(attachment) {
+      var contentType = constants.Mime.OCTET_STREAM;
+      // Implicit content-transfer-encoding is 7bit (RFC 2045).
+      var contentTransferEncoding = constants.Mime.SEVEN_BIT;
+
+      if (goog.isDefAndNotNull(attachment.type)) {
+        contentType = attachment.type;
+      }
+      if (goog.isDefAndNotNull(attachment.encoding)) {
+        contentTransferEncoding = attachment.encoding;
+      }
+
       var options = {multipart: false,
         optionalHeaders: [{name: constants.Mime.CONTENT_TYPE,
-          value: constants.Mime.OCTET_STREAM},
+          value: contentType},
         {name: constants.Mime.CONTENT_DISPOSITION,
           value: constants.Mime.ATTACHMENT,
           params: {filename: attachment.filename}},
         {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
-          value: constants.Mime.SEVEN_BIT}
+          value: contentTransferEncoding}
         ]};
       var attachmentNode = rootNode.addChild(options);
       attachmentNode.setContent(attachment.content);

@@ -150,7 +150,6 @@ function testBuildMimeTree() {
         'b@google.com, c@google.com, d@google.com, e@google.com, f@google.com',
     subject: 'test email'}, preamble);
   var mimeTree = mail.buildMimeTree();
-  console.log(finalTree, mimeTree);
   assertEquals(finalTree, mimeTree);
 }
 

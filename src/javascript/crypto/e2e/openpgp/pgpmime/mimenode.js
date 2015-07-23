@@ -26,9 +26,11 @@ goog.require('e2e.openpgp.pgpmime.Text');
 goog.require('e2e.openpgp.pgpmime.Utils');
 /** @suppress {extraRequire} import typedef */
 goog.require('e2e.openpgp.pgpmime.types.NodeContent');
+goog.require('e2e.random');
 
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.crypt');
 goog.require('goog.crypt.base64');
 goog.require('goog.object');
 goog.require('goog.string');
@@ -36,6 +38,14 @@ goog.require('goog.string');
 goog.scope(function() {
 var pgpmime = e2e.openpgp.pgpmime;
 var constants = pgpmime.Constants;
+
+
+/**
+ * Number of random bytes to use when generating the boundary string.
+ * @const
+ * @private
+ */
+var NUMBER_OF_RANDOM_BYTES_ = 25;
 
 
 
@@ -71,20 +81,6 @@ e2e.openpgp.pgpmime.MimeNode = function(options, opt_parent) {
       }
     }, this));
   }
-
-  this.setBoundary_();
-};
-
-
-/**
- * Sets the MIME message boundary for a node.
- * @private
- */
-e2e.openpgp.pgpmime.MimeNode.prototype.setBoundary_ = function() {
-  // TODO: Strictly ensure that the boundary value doesn't coincide with
-  // any string in the email content and headers.
-  this.boundary_ = '---' + goog.string.getRandomString() +
-      Math.floor(Date.now() / 1000).toString();
 };
 
 
@@ -130,10 +126,62 @@ e2e.openpgp.pgpmime.MimeNode.prototype.setContent = function(content) {
 
 
 /**
+ * Checks if the proposed boundary is contained within the message and if
+ * its length is valid.
+ * @param {string} boundary The proposed boundary.
+ * @return {boolean} Returns true if the proposed boundary does not appear
+ *     within the message. Otherwise returns false.
+ * @private
+ */
+e2e.openpgp.pgpmime.MimeNode.prototype.isBoundaryValid_ = function(boundary) {
+  // Assign a temporary boundary that will be used in buildMessage().
+  this.boundary_ = 'temporary_boundary';
+  var tempMessage = this.mimeToString_();
+  // Per RFC 2046, the boundary cannot include more than 70 characters, not
+  // including the two leading hyphens.
+  var validLength = (boundary.length <= 70);
+  return validLength && !goog.string.contains(tempMessage, boundary);
+};
+
+
+/**
+ * Generates a string that can be used as a MIME message boundary for a node.
+ * @return {string}
+ * @private
+ */
+e2e.openpgp.pgpmime.MimeNode.prototype.generateBoundary_ = function() {
+  // Per RFC 2046, the length of the boundary should be no greater than 70
+  // characters, not including the leading hyphens. Converting 25 bytes
+  // (the value of NUMBER_OF_RANDOM_BYTES_) to hex using byteArrayToHex
+  // should consist of exactly 50 characters.
+  var randomArrOfBytes = e2e.random.getRandomBytes(NUMBER_OF_RANDOM_BYTES_);
+  return goog.crypt.byteArrayToHex(randomArrOfBytes);
+};
+
+
+/**
+ * Sets the MIME message boundary for a node.
+ * Until succeeding, this function keeps attempting to generate a unique
+ * boundary for the message (i.e., it attempts to generate a string that doesn't
+ * appear within the original message and is of valid length).
+ * @private
+ */
+e2e.openpgp.pgpmime.MimeNode.prototype.setBoundary_ = function() {
+  var boundary = null;
+  do {
+    boundary = this.generateBoundary_();
+  } while (!this.isBoundaryValid_(boundary));
+  // String is valid, save it as the official boundary for this message.
+  this.boundary_ = boundary;
+};
+
+
+/**
  * Builds an RFC 2822 message from the node and its children.
  * @return {string}
+ * @private
  */
-e2e.openpgp.pgpmime.MimeNode.prototype.buildMessage = function() {
+e2e.openpgp.pgpmime.MimeNode.prototype.mimeToString_ = function() {
   var lines = [];
   var transferEncoding = this.header_[constants.Mime.CONTENT_TRANSFER_ENCODING];
   var contentType = this.header_[constants.Mime.CONTENT_TYPE];
@@ -194,6 +242,19 @@ e2e.openpgp.pgpmime.MimeNode.prototype.buildMessage = function() {
   }
 
   return lines.join(constants.Mime.CRLF);
+};
+
+
+/**
+ * Assigns a unique boundary to a MIME node and then builds an RFC 2822 message
+ * from the node and its children.
+ * @return {string}
+ */
+e2e.openpgp.pgpmime.MimeNode.prototype.buildMessage = function() {
+  // Set a unique boundary for the MIME message.
+  this.setBoundary_();
+  // Return the string representation of the MIME message.
+  return this.mimeToString_();
 };
 
 });  // goog.scope
