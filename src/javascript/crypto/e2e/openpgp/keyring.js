@@ -196,9 +196,8 @@ e2e.openpgp.KeyRing.prototype.importKey = function(
           return this.importKey_(uid, keyBlock, keyRing, opt_passphrase);
         }, this));
     return importedKeysResults.addCallback(function(importedKeys) {
-      // Return false if any key failed to import
-      // (e.g. when it already existed).
-      return (importedKeys.indexOf(false) > -1);
+      // Return true only if the key was imported for all the uids.
+      return (importedKeys.indexOf(false) == -1);
     });
   }, this);
 };
@@ -312,16 +311,33 @@ e2e.openpgp.KeyRing.prototype.getKey_ = function(keyId, opt_secret) {
  * @return {?e2e.openpgp.block.TransferableKey}
  */
 e2e.openpgp.KeyRing.prototype.getKeyBlock = function(keyObject) {
-  var fingerprint = keyObject.key.fingerprint;
-  var secret = keyObject.key.secret;
-  var keyRing = secret ? this.privKeyRing_ : this.pubKeyRing_;
+  if (!keyObject.key.secret) {
+    return this.getPublicKeyBlockByFingerprint(keyObject.key.fingerprint);
+  }
   var ret = goog.array.find(
-      goog.array.flatten(keyRing.getValues()),
+      goog.array.flatten(this.privKeyRing_.getValues()),
+      function(keyBlock) {
+        return e2e.compareByteArray(keyBlock.keyPacket.fingerprint,
+            keyObject.key.fingerprint);
+      });
+  return this.lockSecretKey_(ret);
+};
+
+
+/**
+ * Obtains a public key block corresponding to the given fingerprint or null.
+ * @param {!e2e.openpgp.KeyFingerprint} fingerprint The fingerprint
+ * @return {?e2e.openpgp.block.TransferablePublicKey}
+ */
+e2e.openpgp.KeyRing.prototype.getPublicKeyBlockByFingerprint = function(
+    fingerprint) {
+  var ret = goog.array.find(
+      goog.array.flatten(this.pubKeyRing_.getValues()),
       function(keyBlock) {
         return e2e.compareByteArray(keyBlock.keyPacket.fingerprint,
             fingerprint);
       });
-  return this.lockSecretKey_(ret);
+  return ret;
 };
 
 
@@ -469,6 +485,30 @@ e2e.openpgp.KeyRing.prototype.deleteKey = function(email) {
   this.privKeyRing_.remove(email);
   this.pubKeyRing_.remove(email);
   this.persist_();
+};
+
+
+/**
+ * Deletes all private/public keys that have a given key fingerprint.
+ * @param  {!e2e.openpgp.KeyFingerprint} fingerprint The fingerprint.
+ */
+e2e.openpgp.KeyRing.prototype.deleteKeysByFingerprint = function(fingerprint) {
+  goog.array.forEach([this.pubKeyRing_, this.privKeyRing_], function(keyring) {
+    var emailsToRemove = [];
+    keyring.forEach(function(keys, email) {
+      var hadMatchingKeys = goog.array.removeIf(keys, function(key) {
+        return e2e.compareByteArray(key.keyPacket.fingerprint,
+            fingerprint);
+      });
+      if (hadMatchingKeys && keys.length == 0) {
+        emailsToRemove.push(email);
+      }
+    }, this);
+    // Remove email entries with no keys left.
+    goog.array.forEach(emailsToRemove, function(email) {
+      keyring.remove(email);
+    });
+  }, this);
 };
 
 
