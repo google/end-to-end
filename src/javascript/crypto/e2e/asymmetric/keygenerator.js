@@ -90,22 +90,21 @@ e2e.asymmetric.keygenerator.newWebCryptoRsaKeys = function(keyLength) {
         result.errback(e);
       }).then(function(sigKeyPair) {
     crypto.exportKey('jwk', sigKeyPair.publicKey).then(
-        function(sigPubStr) {
-          var sigPubKey = JSON.parse(String.fromCharCode.apply(null,
-              new Uint8Array(sigPubStr)));
+        function(sigPubKey) {
           var sigRSAKey = e2e.asymmetric.keygenerator.jwkToNative_(sigPubKey);
           rsaSigner = new e2e.cipher.Rsa(e2e.signer.Algorithm.RSA, sigRSAKey);
           rsaSigner.setWebCryptoKey(sigKeyPair);
-
           aid.name = 'RSAES-PKCS1-v1_5';
+          // The following will fail - WebCrypto RSA is no longer possible in
+          // Chrome:
+          // https://www.chromium.org/blink/webcrypto
+          // https://www.w3.org/Bugs/Public/show_bug.cgi?id=25431
           crypto.generateKey(aid, false, ['encrypt', 'decrypt']).catch(
               function(e) {
                 result.errback(e);
               }).then(function(encKeyPair) {
             crypto.exportKey('jwk', encKeyPair.publicKey).then(
-                function(encPubStr) {
-                  var encPubKey = JSON.parse(String.fromCharCode.apply(
-                      null, new Uint8Array(encPubStr)));
+                function(encPubKey) {
                   var encRSAKey = e2e.asymmetric.keygenerator.jwkToNative_(
                       encPubKey);
                   rsaCipher = new e2e.cipher.Rsa(e2e.cipher.Algorithm.RSA,
