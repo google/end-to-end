@@ -15,7 +15,7 @@
  */
 
 /**
- * @fileoverview Tests for the preferences handler.
+ * @fileoverview Tests for Context2 implementation.
  */
 
 /** @suppress {extraProvide} */
@@ -26,7 +26,9 @@ goog.require('e2e.openpgp.Context2Impl');
 goog.require('e2e.openpgp.KeyPurposeType');
 goog.require('e2e.openpgp.KeyRingType');
 goog.require('e2e.openpgp.SimpleKeyManager');
+goog.require('e2e.openpgp.error.Error');
 goog.require('goog.Promise');
+goog.require('goog.crypt');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockClassFactory');
 goog.require('goog.testing.jsunit');
@@ -93,9 +95,9 @@ function testKeyManagerProxyMethods() {
       $returns(goog.Promise.resolve(returnValueCount++));
   keyManagerMock.unlockKey(key, options).
       $returns(goog.Promise.resolve(returnValueCount++));
-  keyManagerMock.getKeysDescription(key).
+  keyManagerMock.importKeys([], options).
       $returns(goog.Promise.resolve(returnValueCount++));
-  keyManagerMock.importKeys(key, options).
+  keyManagerMock.importKeys([0], options).
       $returns(goog.Promise.resolve(returnValueCount++));
   keyManagerMock.getAllKeysByEmail(email).
       $returns(goog.Promise.resolve(returnValueCount++));
@@ -144,10 +146,10 @@ function testKeyManagerProxyMethods() {
         return context.unlockKey(key, options);
       }).then(function(res) {
         assertEquals(expectedReturnValueCount++, res);
-        return context.getKeysDescription(key);
+        return context.importKeys(key, options);
       }).then(function(res) {
         assertEquals(expectedReturnValueCount++, res);
-        return context.importKeys(key, options);
+        return context.importKeys([0], options);
       }).then(function(res) {
         assertEquals(expectedReturnValueCount++, res);
         return context.getAllKeysByEmail(email);
@@ -162,4 +164,34 @@ function testKeyManagerProxyMethods() {
         keyManagerMock.$verify();
         asyncTestCase.continueTesting();
       });
+}
+
+
+function testGetKeysDescription() {
+  var context;
+  var twoKeyBlocks = document.getElementById('twoKeyBlocks').value;
+  asyncTestCase.waitForAsync('Waiting for first import of key.');
+  contextPromise.then(function(c) {
+    context = c;
+    return context.getKeysDescription(twoKeyBlocks);
+  }, fail).then(function(description) {
+    assertEquals(2, description.length);
+    assertEquals('13ea2f602577fba20f428af1b2f39422e42c5ea7',
+        goog.crypt.byteArrayToHex(description[0].key.fingerprint));
+    assertEquals('13EA 2F60 2577 FBA2 0F42  8AF1 B2F3 9422 E42C 5EA7',
+        description[0].key.fingerprintHex);
+    assertEquals('ECDSA', description[0].key.algorithm);
+    assertContains('<key1>', description[0].uids);
+    assertEquals(false, description[0].key.secret);
+    assertEquals('ECDH', description[0].subKeys[0].algorithm);
+    assertContains('<key2>', description[1].uids);
+    assertEquals('14B7 EF7A 0A02 074E 5C7F  50C7 537B 85C1 72B7 F7E2',
+        description[1].key.fingerprintHex);
+    assertEquals(false, description[1].key.secret);
+    asyncTestCase.waitForAsync('waiting for getKeyDescription');
+    return context.getKeysDescription('invalid value');
+  }, fail).then(fail, function(e) {
+    assertTrue(e instanceof e2e.openpgp.error.Error);
+    asyncTestCase.continueTesting();
+  });
 }

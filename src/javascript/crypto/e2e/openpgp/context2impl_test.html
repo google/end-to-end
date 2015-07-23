@@ -22,5 +22,85 @@
   goog.require('e2e.openpgp.Context2ImplTest');
 </script>
 </head>
-</html>
+<body>
+<!--
+Two keyblocks in one ASCII armor
+:public key packet:
+  version 4, algo 19, created 1408720454, expires 0
+  pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
+  pkey[1]: [515 bits]
+  keyid: B2F39422E42C5EA7
+:user ID packet: "<key1>"
+:signature packet: algo 19, keyid B2F39422E42C5EA7
+  version 4, created 1408720454, md5len 0, sigclass 0x10
+  digest algo 8, begin of digest 70 7c
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID B2F39422E42C5EA7)
+  data: [256 bits]
+  data: [254 bits]
+:public sub key packet:
+  version 4, algo 18, created 1408720454, expires 0
+  pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
+  pkey[1]: [515 bits]
+  pkey[2]: [32 bits]
+  keyid: 1E2FB2A7764596A9
+:signature packet: algo 19, keyid B2F39422E42C5EA7
+  version 4, created 1408720454, md5len 0, sigclass 0x18
+  digest algo 8, begin of digest c9 aa
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID B2F39422E42C5EA7)
+  data: [255 bits]
+  data: [256 bits]
+:public key packet:
+  version 4, algo 19, created 1408720457, expires 0
+  pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
+  pkey[1]: [515 bits]
+  keyid: 537B85C172B7F7E2
+:user ID packet: "<key2>"
+:signature packet: algo 19, keyid 537B85C172B7F7E2
+  version 4, created 1408720457, md5len 0, sigclass 0x10
+  digest algo 8, begin of digest 72 b0
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID 537B85C172B7F7E2)
+  data: [255 bits]
+  data: [256 bits]
+:public sub key packet:
+  version 4, algo 18, created 1408720457, expires 0
+  pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
+  pkey[1]: [515 bits]
+  pkey[2]: [32 bits]
+  keyid: 739BC5340804414E
+:signature packet: algo 19, keyid 537B85C172B7F7E2
+  version 4, created 1408720457, md5len 0, sigclass 0x18
+  digest algo 8, begin of digest ad de
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID 537B85C172B7F7E2)
+  data: [256 bits]
+  data: [253 bits]
+-->
+<textarea id="twoKeyBlocks">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2
 
+mgAAAFIEU/deRhMIKoZIzj0DAQcCAwR5v5o25a5yQ7KCM5BYD7HTETMkNo046gIk
+3WlqzKkmd6JruWIpk3TpuIthczhebqj3B2dFZMUHdPzJi2bP78mBtAY8a2V5MT6I
+ZgQQEwgAGP8AAAAFglP3Xkb/AAAACZCy85Qi5CxepwAAcHwBANMTS2vteSXEaZc3
+t0QGmBg4LLoxOJD0HEKrXwXKoUE7AP4ongJhDPLiasvl4t7RWKr8nQTnfkPtiPDD
+eoacrmc8hLoAAABWBFP3XkYSCCqGSM49AwEHAgMEsGUid8gCTVUP+1Dswn6JFZ4P
+UtbBbMYr5ez1kOhsnDf+8eg++pI8G6yToM2EVH2VwUhr4QL1dkkKTf78uEaAfQMB
+CAeIZgQYEwgAGP8AAAAFglP3Xkb/AAAACZCy85Qi5CxepwAAyaoA/0gcF7Ev+t4j
+vQhEQAJZES14kVyoctIs0SyQfDk8/tUMAQDOAEt1aDalOvYHnIKVBirJxNtPmga9
+4jRFuyCzt1u5zpoAAABSBFP3XkkTCCqGSM49AwEHAgMEHPrNMdvJCViouD49LarG
+mQvy7aHygnqX0/v/0Tnzn+CwvSUG/bedyQCKu1dLQaCu1uMj+Hf+zNPfAPbWToMt
+9bQGPGtleTI+iGYEEBMIABj/AAAABYJT915J/wAAAAmQU3uFwXK39+IAAHKwAP9d
+9ZRvsX3SNh6dy/35pcSVwtFkazHtj4Vmzg36Bq9jVAEAlB0TjALGW30gIPwO9+SP
+IEjTqXTLYuShXAogMFDTY7e6AAAAVgRT915JEggqhkjOPQMBBwIDBMHOmw0FeP+w
+GoJ5qR9ev7JW2Dn1oVwAxpKyVXodLZ83MLss3ZmCWF0c2QD8tf9WAYAE8d335iQt
+F/8ixELMQ6oDAQgHiGYEGBMIABj/AAAABYJT915J/wAAAAmQU3uFwXK39+IAAK3e
+AQCRn3zu2t/VZBIenq3blEtDgOtA2zAWbg2HmZ9naHWo3gD9HSK58DYJRkXIWYtt
+Lz6REnkw4cB5lruzwwiTO7ZqHZg=
+=WAJG
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+</body>
+</html>

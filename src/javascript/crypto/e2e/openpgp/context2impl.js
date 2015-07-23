@@ -22,7 +22,11 @@ goog.provide('e2e.openpgp.Context2Impl');
 goog.require('e2e');
 goog.require('e2e.openpgp.Context2');
 goog.require('e2e.openpgp.KeyRingType');
+goog.require('e2e.openpgp.asciiArmor');
+goog.require('e2e.openpgp.block.factory');
+goog.require('e2e.openpgp.error.ParseError');
 goog.require('goog.Promise');
+goog.require('goog.array');
 
 
 
@@ -185,13 +189,27 @@ e2e.openpgp.Context2Impl.prototype.isKeyRingEncrypted = function() {
 /** @override */
 e2e.openpgp.Context2Impl.prototype.getKeysDescription = function(
     keySerialization) {
-  return this.keyManager_.getKeysDescription(keySerialization);
+  return goog.Promise.resolve(undefined).then(function() {
+    if (typeof keySerialization == 'string') {
+      keySerialization = this.extractByteArrayFromArmorText_(keySerialization);
+    }
+    var blocks = e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(
+        keySerialization, true /* skip keys with errors */);
+    if (blocks.length == 0) {
+      throw new e2e.openpgp.error.ParseError('No valid key blocks found.');
+    }
+    return e2e.openpgp.block.factory.extractKeys(
+        blocks, true /* skip keys with errors */);
+  }, null, this);
 };
 
 
 /** @override */
 e2e.openpgp.Context2Impl.prototype.importKeys = function(keySerialization,
     passphraseCallback) {
+  if (typeof keySerialization == 'string') {
+    keySerialization = this.extractByteArrayFromArmorText_(keySerialization);
+  }
   return this.keyManager_.importKeys(keySerialization, passphraseCallback);
 };
 
@@ -230,3 +248,21 @@ e2e.openpgp.Context2Impl.prototype.getAllKeysByEmail = function(email) {
 e2e.openpgp.Context2Impl.prototype.removeKeys = function(keys) {
   return this.keyManager_.removeKeys(keys);
 };
+
+
+/**
+ * @private
+ * @param {string} text String with one or more armor messages.
+ * @return {!e2e.ByteArray} Serialized keys
+ */
+e2e.openpgp.Context2Impl.prototype.extractByteArrayFromArmorText_ = function(
+    text) {
+  var messages = e2e.openpgp.asciiArmor.parseAll(text);
+  var bytes = [];
+  goog.array.forEach(messages, function(armor) {
+    goog.array.extend(bytes, armor.data);
+  });
+  return bytes;
+};
+
+
