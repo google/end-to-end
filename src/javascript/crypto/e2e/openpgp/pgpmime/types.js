@@ -50,7 +50,8 @@ e2e.openpgp.pgpmime.types.ContentAndHeaders;
 
 
 /**
- * @typedef {{filename: string, content: string, encoding: (string|undefined)}}
+ * @typedef {{filename: string, content: string, encoding: (string|undefined),
+ *            type: string}}
  */
 e2e.openpgp.pgpmime.types.Attachment;
 
