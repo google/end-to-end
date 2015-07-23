@@ -851,20 +851,22 @@ function testDeleteKeysByFingerprint() {
     assertEquals(1, privateMap[EMAIL].length);
     assertEquals(2, publicMap[EMAIL].length);
     fingerprint = publicMap[EMAIL][0].keyPacket.fingerprint;
-    return keyRing.deleteKeysByFingerprint(fingerprint);
+    return keyRing.deleteKeyByFingerprint(fingerprint,
+        e2e.openpgp.KeyRing.Type.PRIVATE);
+  }).then(function() {
+    var publicMap = keyRing.pubKeyRing_.toObject();
+    var privateMap = keyRing.privKeyRing_.toObject();
+    assertEquals(2, publicMap[EMAIL].length);
+    assertEquals(1, privateMap[EMAIL].length);
+    assertArrayEquals(publicMap[EMAIL][1].keyPacket.fingerprint,
+      privateMap[EMAIL][0].keyPacket.fingerprint);
+    return keyRing.deleteKeyByFingerprint(
+        publicMap[EMAIL][1].keyPacket.fingerprint,
+        e2e.openpgp.KeyRing.Type.ALL);
   }).then(function() {
     var publicMap = keyRing.pubKeyRing_.toObject();
     var privateMap = keyRing.privKeyRing_.toObject();
     assertEquals(1, publicMap[EMAIL].length);
-    assertEquals(1, privateMap[EMAIL].length);
-    assertArrayEquals(publicMap[EMAIL][0].keyPacket.fingerprint,
-      privateMap[EMAIL][0].keyPacket.fingerprint);
-    return keyRing.deleteKeysByFingerprint(
-        publicMap[EMAIL][0].keyPacket.fingerprint);
-  }).then(function() {
-    var publicMap = keyRing.pubKeyRing_.toObject();
-    var privateMap = keyRing.privKeyRing_.toObject();
-    assertUndefined(publicMap[EMAIL]);
     assertUndefined(privateMap[EMAIL]);
     asyncTestCase.continueTesting();
   });

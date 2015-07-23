@@ -489,11 +489,27 @@ e2e.openpgp.KeyRing.prototype.deleteKey = function(email) {
 
 
 /**
- * Deletes all private/public keys that have a given key fingerprint.
+ * Deletes a private or public key that has a given key fingerprint from chosen
+ * keyring. Use e2e.openpgp.KeyRing.Type.ALL to delete the whole keypair.
  * @param  {!e2e.openpgp.KeyFingerprint} fingerprint The fingerprint.
+ * @param  {!e2e.openpgp.KeyRing.Type} keyRingType The keyring to delete the key
+ *     from.
  */
-e2e.openpgp.KeyRing.prototype.deleteKeysByFingerprint = function(fingerprint) {
-  goog.array.forEach([this.pubKeyRing_, this.privKeyRing_], function(keyring) {
+e2e.openpgp.KeyRing.prototype.deleteKeyByFingerprint = function(fingerprint,
+    keyRingType) {
+  var keyRings = [];
+  switch (keyRingType) {
+    case e2e.openpgp.KeyRing.Type.PUBLIC:
+      keyRings = [this.pubKeyRing_];
+      break;
+    case e2e.openpgp.KeyRing.Type.PRIVATE:
+      keyRings = [this.privKeyRing_];
+      break;
+    case e2e.openpgp.KeyRing.Type.ALL:
+      keyRings = [this.pubKeyRing_, this.privKeyRing_];
+      break;
+  }
+  goog.array.forEach(keyRings, function(keyring) {
     var emailsToRemove = [];
     keyring.forEach(function(keys, email) {
       var hadMatchingKeys = goog.array.removeIf(keys, function(key) {
