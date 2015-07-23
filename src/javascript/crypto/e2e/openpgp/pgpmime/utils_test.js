@@ -164,22 +164,6 @@ function testSplitHeaders() {
   assertArrayEquals(distinctHeaders, utils.splitHeaders_(originalMessage));
 }
 
-function testDecodeContent() {
-  var quotedPrintableEncoded = 'Lorem=20ipsum=0D=0A=20=20dolor=3F';
-  var quotedPrintableDecoded = 'Lorem ipsum\r\n  dolor?';
-  assertEquals(utils.decodeContent(quotedPrintableEncoded, 'quoted_printable'),
-      quotedPrintableDecoded);
-
-  var base64Encoded = 'YW4gYXBwbGUgYSBkYXkga2VlcHMgdGhlIGRvY3RvciBhd2F5';
-  var base64Decoded = 'an apple a day keeps the doctor away';
-  assertEquals(utils.decodeContent(base64Encoded, 'base64'),
-      base64Decoded);
-
-  var sevenOrEightBit = 'This should stay the same!';
-  assertEquals(utils.decodeContent(sevenOrEightBit, '7bit'), sevenOrEightBit);
-  assertEquals(utils.decodeContent(sevenOrEightBit, '8bit'), sevenOrEightBit);
-}
-
 function testInvalidMessagesThrowError() {
   // Messages that contain no MIME headers whatsoever should fail.
   var message1 = ['I lack any MIME formatting whatsoever'].join('\r\n');

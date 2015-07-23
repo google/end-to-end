@@ -30,7 +30,6 @@ goog.require('e2e.openpgp.pgpmime.types.Entity');
 
 goog.require('goog.array');
 goog.require('goog.asserts');
-goog.require('goog.crypt.base64');
 goog.require('goog.object');
 goog.require('goog.string');
 
@@ -80,7 +79,7 @@ e2e.openpgp.pgpmime.Utils.parseAttachmentEntity = function(node) {
  * @return {e2e.openpgp.pgpmime.types.HeaderValue}
  */
 e2e.openpgp.pgpmime.Utils.parseHeaderValue = function(text) {
-  var parts = text.split('; ');
+  var parts = text.split(';');
   var firstPart = parts.shift();
 
   // Normalize value to lowercase since it's case insensitive
