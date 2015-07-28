@@ -35,6 +35,7 @@ goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.signer.Algorithm');
 goog.require('goog.Promise');
 goog.require('goog.array');
+goog.require('goog.format.EmailAddress');
 
 
 
@@ -55,6 +56,16 @@ e2e.openpgp.KeyringKeyProvider = function(keyring) {
  * @private {!e2e.openpgp.KeyProviderId}
  */
 e2e.openpgp.KeyringKeyProvider.PROVIDER_ID_ = 'legacy-keyring';
+
+
+/**
+ * Regular expression matching a valid email address. This needs to be very
+ * strict and reject uncommon formats to prevent vulnerability when
+ * keyserver would choose a different key than intended.
+ * @private @const
+ */
+e2e.openpgp.KeyringKeyProvider.EMAIL_ADDRESS_REGEXP_ =
+    /^[+a-zA-Z0-9_.!-]+@([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,63}$/;
 
 
 /**
@@ -105,13 +116,44 @@ e2e.openpgp.KeyringKeyProvider.getKeyringType_ = function(purpose) {
 };
 
 
+/**
+ * Extracts an e-mail address from a RFC-2822 formatted mailbox string.
+ * For security, the e-mail address additionally needs to match a restrictive
+ * regular expression.
+ *
+ * See {@link https://tools.ietf.org/html/rfc2822#section-3.4}
+ *
+ * @param  {string} uid Mailbox address specification
+ * @return {?e2e.openpgp.UserEmail} Extracted e-mail address, or null.
+ * @private
+ */
+e2e.openpgp.KeyringKeyProvider.extractValidEmail_ = function(uid) {
+  var emailAddress = goog.format.EmailAddress.parse(uid);
+  if (!emailAddress.isValid()) {
+    return null;
+  }
+  var email = emailAddress.getAddress();
+  if (!e2e.openpgp.KeyringKeyProvider.EMAIL_ADDRESS_REGEXP_.exec(
+      emailAddress.getAddress())) {
+    return null;
+  }
+  return email;
+};
+
+
 /** @override */
 e2e.openpgp.KeyringKeyProvider.prototype.getTrustedKeysByEmail = function(
     purpose, email) {
-  // Will also look for remote public keys if there are no local keys.
-  return this.keyring_.searchKeyLocalAndRemote(email,
-      e2e.openpgp.KeyringKeyProvider.getKeyringType_(purpose)).
-      then(e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_);
+  return goog.Promise.resolve(undefined)
+      .then(function() {
+        return this.keyring_.searchKeysByUidMatcher(function(uid) {
+          return e2e.openpgp.KeyringKeyProvider.extractValidEmail_(uid) ==
+              email;
+        },
+        e2e.openpgp.KeyringKeyProvider.getKeyringType_(purpose));
+      },
+      null, this)
+      .then(e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_);
 };
 
 
@@ -156,10 +198,13 @@ e2e.openpgp.KeyringKeyProvider.prototype.getAllKeys = function(type) {
 
 /** @override */
 e2e.openpgp.KeyringKeyProvider.prototype.getAllKeysByEmail = function(email) {
-  var keys = this.keyring_.searchKey(email, e2e.openpgp.KeyRing.Type.ALL);
-  var keyObjects = [];
-  return goog.Promise.resolve(keys || []).then(
-      e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_);
+  return goog.Promise.resolve(undefined).then(function() {
+    return this.keyring_.searchKeysByUidMatcher(function(uid) {
+      return e2e.openpgp.KeyringKeyProvider.extractValidEmail_(uid) == email;
+    }, e2e.openpgp.KeyRing.Type.ALL);
+  },
+  null, this).
+      then(e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_);
 };
 
 
