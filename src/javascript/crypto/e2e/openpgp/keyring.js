@@ -93,8 +93,11 @@ e2e.openpgp.KeyRing.prototype.localStorage_;
 
 
 /**
- * The public key ring. It's a map keyed by email. The values are lists of
- * block.TransferablePublicKey objects associated with this email.
+ * The public key ring. It's a map keyed by OpenPGP User ID. The values are
+ * lists of block.TransferablePublicKey objects associated with this User ID.
+ *
+ * See {@link https://tools.ietf.org/html/rfc4880#section-5.11}.
+ *
  * @type {!e2e.openpgp.TransferableKeyMap}
  * @private
  */
@@ -102,8 +105,11 @@ e2e.openpgp.KeyRing.prototype.pubKeyRing_;
 
 
 /**
- * The private key ring. It's a map keyed by email. The values are lists of
- * block.TransferableSecretKey objects associated with this email.
+ * The private key ring. It's a map keyed by OpenPGP User ID. The values are
+ * lists of block.TransferableSecretKey objects associated with this User ID.
+ *
+ * See {@link https://tools.ietf.org/html/rfc4880#section-5.11}.
+ *
  * @type {!e2e.openpgp.TransferableKeyMap}
  * @private
  */
@@ -112,7 +118,7 @@ e2e.openpgp.KeyRing.prototype.privKeyRing_;
 
 /**
  * The key client instance that searches for and adds public keys to/from
- *    the http key server.
+ * the http key server.
  * @type {e2e.openpgp.KeyClient}
  * @private
  */
@@ -156,6 +162,8 @@ e2e.openpgp.KeyRing.ECC_COUNT_KEY_ = 'eccCount';
 
 
 /**
+ * Encrypts the keyring with a new passphrase (or removes the encryption if the
+ * passphrase is empty).
  * @param {string} passphrase Change the passphrase for encrypting the KeyRing
  *     when stored locally. Empty string for unencrypted.
  * @return {!e2e.async.Result} Async result resolved when the data has
@@ -206,12 +214,12 @@ e2e.openpgp.KeyRing.prototype.importKey = function(
 /**
  * Generates and imports to the key ring a master ECDSA key pair and a
  * subordinate ECDH key pair.
- * @param {string} email The email to associate the key to.
+ * @param {string} uid User ID to associate the key to.
  * @return {e2e.async.Result.<!Array.<!e2e.openpgp.block.TransferableKey>>}
  * The generated public key and secret key in an array.
  */
-e2e.openpgp.KeyRing.prototype.generateECKey = function(email) {
-  return this.generateKey(email, e2e.signer.Algorithm.ECDSA, 256,
+e2e.openpgp.KeyRing.prototype.generateECKey = function(uid) {
+  return this.generateKey(uid, e2e.signer.Algorithm.ECDSA, 256,
       e2e.cipher.Algorithm.ECDH, 256);
 };
 
@@ -219,7 +227,7 @@ e2e.openpgp.KeyRing.prototype.generateECKey = function(email) {
 /**
  * Generates and imports to the key ring a master signing key and a subordinate
  * encryption key.
- * @param {string} email The email to associate the key with.
+ * @param {string} uid User ID to associate the key with.
  * @param {!e2e.signer.Algorithm} keyAlgo Algorithm of the master key.
  *     It must be one of the digital signature algorithms.
  * @param {number} keyLength Length in bits of the master key.
@@ -231,19 +239,19 @@ e2e.openpgp.KeyRing.prototype.generateECKey = function(email) {
  * @return {e2e.async.Result.<!Array.<!e2e.openpgp.block.TransferableKey>>}
  * The generated public key and secret key in an array.
  */
-e2e.openpgp.KeyRing.prototype.generateKey = function(email,
+e2e.openpgp.KeyRing.prototype.generateKey = function(uid,
                                                      keyAlgo,
                                                      keyLength,
                                                      subkeyAlgo,
                                                      subkeyLength,
                                                      opt_keyLocation) {
-  return this.keyGenerator_.generateKey(email, keyAlgo, keyLength, subkeyAlgo,
+  return this.keyGenerator_.generateKey(uid, keyAlgo, keyLength, subkeyAlgo,
       subkeyLength, opt_keyLocation).addCallback(function(keys) {
     goog.array.forEach(keys, function(key) {
       if (key instanceof e2e.openpgp.block.TransferableSecretKey) {
-        this.importKey_(email, key, this.privKeyRing_);
+        this.importKey_(uid, key, this.privKeyRing_);
       } else if (key instanceof e2e.openpgp.block.TransferablePublicKey) {
-        this.importKey_(email, key, this.pubKeyRing_);
+        this.importKey_(uid, key, this.pubKeyRing_);
         if (this.keyClient_ !== null) {
           this.keyClient_.importPublicKey(key);
         }
@@ -402,26 +410,26 @@ e2e.openpgp.KeyRing.Type = {
 
 
 /**
- * Searches a public or private key from an email.
- * @param {string} email The email to search for, or empty to search all.
+ * Searches a public or private key associated with a User ID.
+ * @param {string} uid User ID to search for, or empty to search all.
  * @param {e2e.openpgp.KeyRing.Type=} opt_type Key type to search for.
  * @return {?Array.<!e2e.openpgp.block.TransferableKey>} An array of keys for
- *     the given email or null if not found.
+ *     the given User ID or null if not found.
  */
-e2e.openpgp.KeyRing.prototype.searchKey = function(email, opt_type) {
+e2e.openpgp.KeyRing.prototype.searchKey = function(uid, opt_type) {
   if (!opt_type || opt_type == e2e.openpgp.KeyRing.Type.PUBLIC) {
-    return this.searchKey_(this.pubKeyRing_, email);
+    return this.searchKey_(this.pubKeyRing_, uid);
   }
   if (opt_type == e2e.openpgp.KeyRing.Type.PRIVATE) {
-    return this.searchKey_(this.privKeyRing_, email);
+    return this.searchKey_(this.privKeyRing_, uid);
   }
   if (opt_type == e2e.openpgp.KeyRing.Type.ALL) {
     var keys = [];
-    var priv = this.searchKey_(this.privKeyRing_, email);
+    var priv = this.searchKey_(this.privKeyRing_, uid);
     if (priv) {  // Do this to avoid having a null element.
       goog.array.extend(keys, priv);
     }
-    var pub = this.searchKey_(this.pubKeyRing_, email);
+    var pub = this.searchKey_(this.pubKeyRing_, uid);
     if (pub) {
       goog.array.extend(keys, pub);
     }
@@ -432,23 +440,23 @@ e2e.openpgp.KeyRing.prototype.searchKey = function(email, opt_type) {
 
 
 /**
- * Searches a public or private key from email asynchronously. The search is
- *    first performed locally. If the key is not found locally and we're
- *    searching for public key, then searches the public key in the http key
- *    server and imports the the found key to keyring.
- * @param {string} email The email to search for, or empty to search all.
+ * Searches a public or private key for a User ID asynchronously. The search is
+ * first performed locally. If the key is not found locally and we're searching
+ * for public key, then searches the public key in the http key server and
+ * imports the the found key to keyring.
+ * @param {string} uid User ID to search for, or empty to search all.
  * @param {e2e.openpgp.KeyRing.Type=} opt_type Key type to search for.
  * @return {!e2e.async.Result.<!Array.<!e2e.openpgp.block.TransferableKey>>}
- *    An array of keys for the given email or [] if not found.
+ *    An array of keys for the given User ID or [] if not found.
  */
-e2e.openpgp.KeyRing.prototype.searchKeyLocalAndRemote = function(email,
+e2e.openpgp.KeyRing.prototype.searchKeyLocalAndRemote = function(uid,
     opt_type) {
   var resultKeys = new e2e.async.Result();
-  var localKeys = this.searchKey(email, opt_type);
+  var localKeys = this.searchKey(uid, opt_type);
   if (localKeys != null) {
     resultKeys.callback(localKeys);
   } else if (opt_type == e2e.openpgp.KeyRing.Type.PUBLIC) {
-    this.searchPublicKeyRemote_(email).addCallback(function(pubKeys) {
+    this.searchPublicKeyRemote_(uid).addCallback(function(pubKeys) {
       resultKeys.callback(pubKeys);
     });
   } else {
@@ -478,12 +486,12 @@ e2e.openpgp.KeyRing.prototype.getAllKeys = function(opt_priv) {
 
 
 /**
- * Deletes all keys for an email address.
- * @param {string} email The email to delete keys for.
+ * Deletes all keys for a User ID.
+ * @param {string} uid User ID to delete keys for.
  */
-e2e.openpgp.KeyRing.prototype.deleteKey = function(email) {
-  this.privKeyRing_.remove(email);
-  this.pubKeyRing_.remove(email);
+e2e.openpgp.KeyRing.prototype.deleteKey = function(uid) {
+  this.privKeyRing_.remove(uid);
+  this.pubKeyRing_.remove(uid);
   this.persist_();
 };
 
@@ -510,19 +518,19 @@ e2e.openpgp.KeyRing.prototype.deleteKeyByFingerprint = function(fingerprint,
       break;
   }
   goog.array.forEach(keyRings, function(keyring) {
-    var emailsToRemove = [];
-    keyring.forEach(function(keys, email) {
+    var uidsToRemove = [];
+    keyring.forEach(function(keys, uid) {
       var hadMatchingKeys = goog.array.removeIf(keys, function(key) {
         return e2e.compareByteArray(key.keyPacket.fingerprint,
             fingerprint);
       });
       if (hadMatchingKeys && keys.length == 0) {
-        emailsToRemove.push(email);
+        uidsToRemove.push(uid);
       }
     }, this);
-    // Remove email entries with no keys left.
-    goog.array.forEach(emailsToRemove, function(email) {
-      keyring.remove(email);
+    // Remove User ID entries with no keys left.
+    goog.array.forEach(uidsToRemove, function(uid) {
+      keyring.remove(uid);
     });
   }, this);
 };
@@ -564,32 +572,32 @@ e2e.openpgp.KeyRing.prototype.reset = function() {
 
 
 /**
- * Searches a key in a key ring from an email.
+ * Searches a key in a key ring associated with a given User ID.
  * @param {!e2e.openpgp.TransferableKeyMap} keyRing The key ring to search.
- * @param {string} email The email to search for.
+ * @param {string} uid User ID to search for.
  * @return {Array.<!e2e.openpgp.block.TransferableKey>} An array of keys for
- *     that user id or null.
+ *     that User ID or null if no key is found.
  * @private
  */
-e2e.openpgp.KeyRing.prototype.searchKey_ = function(keyRing, email) {
-  return keyRing.get(email) ?
-      goog.array.clone(keyRing.get(email)) : null;
+e2e.openpgp.KeyRing.prototype.searchKey_ = function(keyRing, uid) {
+  return keyRing.get(uid) ?
+      goog.array.clone(keyRing.get(uid)) : null;
 };
 
 
 /**
-  * Searches a public key remotely by email.
-  * @param {string} email The email to search for.
+  * Searches a public key remotely by User ID.
+  * @param {string} uid User ID to search for.
   * @return {!e2e.async.Result.<!Array.<!e2e.openpgp.block.TransferableKey>>}
-  *     An array of public keys for that email or [] if not found.
+  *     An array of public keys for that User ID or [] if not found.
   * @private
   */
-e2e.openpgp.KeyRing.prototype.searchPublicKeyRemote_ = function(email) {
+e2e.openpgp.KeyRing.prototype.searchPublicKeyRemote_ = function(uid) {
   var resultPubKeys = new e2e.async.Result();
   if (this.keyClient_ == null) {
     resultPubKeys.callback([]);
   } else {
-    this.keyClient_.searchPublicKey(email).addCallback(function(pubKeys) {
+    this.keyClient_.searchPublicKey(uid).addCallback(function(pubKeys) {
       resultPubKeys.callback(pubKeys);
 
       // Imports the public keys into local keyring. The key client should have
@@ -606,22 +614,22 @@ e2e.openpgp.KeyRing.prototype.searchPublicKeyRemote_ = function(email) {
 
 
 /**
- * Imports a new key associated with an email to the key ring. Does not add the
- * key if there is already a matching key ID.
- * @param {string} email The email associated with the key.
+ * Imports a new key associated with a User ID to the key ring. Does not add the
+ * key if there is already a matching Key ID.
+ * @param {string} uid User ID associated with the key.
  * @param {!e2e.openpgp.block.TransferableKey} keyBlock The key to import.
  * @param {!e2e.openpgp.TransferableKeyMap} keyRing The keyring to add the keys
  *     to.
  * @param {!e2e.ByteArray=} opt_passphrase The passphrase used to
  *     protect the key.
  * @return {e2e.async.Result<boolean>} If the key import was successful.
- *     False if the key for a given email address with the same ID already
+ *     False if the key for a given User ID with the same Key ID already
  *     exists in a keyring.
  * @private
  */
 e2e.openpgp.KeyRing.prototype.importKey_ = function(
-    email, keyBlock, keyRing, opt_passphrase) {
-  var emailKeyBlocks = [], addKey = false;
+    uid, keyBlock, keyRing, opt_passphrase) {
+  var uidKeyBlocks = [], addKey = false;
   var keys = [keyBlock.keyPacket].concat(keyBlock.subKeys);
   goog.array.forEach(keys, function(key) {
     if (key instanceof e2e.openpgp.packet.SecretKey) {
@@ -630,18 +638,18 @@ e2e.openpgp.KeyRing.prototype.importKey_ = function(
       key.cipher.lockKey();
     }
   });
-  if (keyRing.containsKey(email)) {
-    emailKeyBlocks = keyRing.get(email);
-    addKey = !goog.array.some(emailKeyBlocks, function(emailKeyBlock) {
+  if (keyRing.containsKey(uid)) {
+    uidKeyBlocks = keyRing.get(uid);
+    addKey = !goog.array.some(uidKeyBlocks, function(uidKeyBlock) {
       return goog.isDef(keyBlock.keyPacket.keyId) && e2e.compareByteArray(
-          emailKeyBlock.keyPacket.keyId, keyBlock.keyPacket.keyId);
+          uidKeyBlock.keyPacket.keyId, keyBlock.keyPacket.keyId);
     });
     // TODO(evn): Merge information when the key block is already in keyring.
   } else {
     addKey = true;
   }
   if (addKey) {
-    keyRing.set(email, emailKeyBlocks.concat([keyBlock]));
+    keyRing.set(uid, uidKeyBlocks.concat([keyBlock]));
     return this.persist_().addCallback(function() {
       return true;
     });
@@ -776,9 +784,9 @@ e2e.openpgp.KeyRing.prototype.getKeyringBackupData = function() {
  * Restores serialized data from ECC key backup
  * @param {e2e.openpgp.KeyringBackupInfo} data
  *     serialized data to restore
- * @param {string} email The email to associate with restored keys.
+ * @param {string} uid User ID to associate with restored keys.
  */
-e2e.openpgp.KeyRing.prototype.restoreKeyring = function(data, email) {
+e2e.openpgp.KeyRing.prototype.restoreKeyring = function(data, uid) {
   if (data.count % 2) {
     throw new e2e.error.InvalidArgumentsError('Keys must be restored in pairs');
   }
@@ -787,6 +795,6 @@ e2e.openpgp.KeyRing.prototype.restoreKeyring = function(data, email) {
     count: 0
   });
   for (var i = 0; i < data.count / 2; i++) {
-    this.generateECKey(email);
+    this.generateECKey(uid);
   }
 };
