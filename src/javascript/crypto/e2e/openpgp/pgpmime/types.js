@@ -23,7 +23,8 @@ goog.provide('e2e.openpgp.pgpmime.types.Attachment');
 goog.provide('e2e.openpgp.pgpmime.types.ContentAndHeaders');
 goog.provide('e2e.openpgp.pgpmime.types.Entity');
 goog.provide('e2e.openpgp.pgpmime.types.Header');
-goog.provide('e2e.openpgp.pgpmime.types.HeaderValue');
+goog.provide('e2e.openpgp.pgpmime.types.HeaderValueBasic');
+goog.provide('e2e.openpgp.pgpmime.types.HeaderValueWithParams');
 goog.provide('e2e.openpgp.pgpmime.types.NodeContent');
 
 
@@ -57,15 +58,22 @@ e2e.openpgp.pgpmime.types.Attachment;
 
 
 /**
- * @typedef {Object.<string, !e2e.openpgp.pgpmime.types.HeaderValue>}
+ * @typedef {Object.<string, (!e2e.openpgp.pgpmime.types.HeaderValueBasic|
+ *   !e2e.openpgp.pgpmime.types.HeaderValueWithParams)>}
  */
 e2e.openpgp.pgpmime.types.Header;
 
 
 /**
+ * @typedef {{value: string}}
+ */
+e2e.openpgp.pgpmime.types.HeaderValueBasic;
+
+
+/**
  * @typedef {{value: string, params: (!Object.<string, string>|undefined)}}
  */
-e2e.openpgp.pgpmime.types.HeaderValue;
+e2e.openpgp.pgpmime.types.HeaderValueWithParams;
 
 
 /**

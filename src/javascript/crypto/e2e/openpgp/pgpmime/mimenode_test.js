@@ -184,6 +184,22 @@ function testBuildMessage() {
   assertEquals(FINAL_MESSAGE, builtMessage);
 }
 
+
+function testSetHeader() {
+  var setHeaderNode = new e2e.openpgp.pgpmime.MimeNode({
+    multipart: false,
+    optionalHeaders: [
+      {name: constants.Mime.CONTENT_TYPE,
+        value: constants.Mime.MULTIPART_MIXED},
+      {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
+        value: constants.Mime.SEVEN_BIT}]
+  });
+  var expectedHeader = {value: 'text/plain', params: {boundary: '123'}};
+  setHeaderNode.setHeader_('Content-Type', 'text/plain; boundary = 123');
+  assertObjectEquals(expectedHeader, setHeaderNode.header_['Content-Type']);
+}
+
+
 function testIsBoundaryValid() {
   var grandparentNode = new e2e.openpgp.pgpmime.MimeNode({
     multipart: true,
