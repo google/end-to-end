@@ -455,6 +455,14 @@ function testSearch() {
 
     var allKeys = keyRing.getAllKeys();
     assertEquals(5, goog.array.flatten(allKeys.getValues()).length);
+    function uidmatcher(uid) {
+      return uid.indexOf('@google.com') !== -1;
+    }
+    var keys = keyRing.searchKeysByUidMatcher(uidmatcher,
+        e2e.openpgp.KeyRing.Type.PRIVATE);
+    assertEquals(2, keys.length);
+    assertEquals('adhintz@google.com', keys[0].userIds[0].userId);
+    assertEquals('evn@google.com', keys[1].userIds[0].userId);
     asyncTestCase.continueTesting();
   });
 }
@@ -826,6 +834,14 @@ function testMultipleUidsInAKey() {
             e2e.openpgp.KeyRing.Type.PUBLIC),
         keyRing.searchKey('seconduid <seconduid@example.com>',
             e2e.openpgp.KeyRing.Type.PUBLIC));
+
+    function uidmatcher(uid) {
+      return uid.indexOf('uid@example.com') !== -1;
+    }
+    var keys = keyRing.searchKeysByUidMatcher(uidmatcher,
+        e2e.openpgp.KeyRing.Type.PUBLIC);
+    // Make sure no duplicate keys are returned.
+    assertEquals(1, keys.length);
     asyncTestCase.continueTesting();
   });
 }

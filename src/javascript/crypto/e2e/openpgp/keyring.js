@@ -417,25 +417,59 @@ e2e.openpgp.KeyRing.Type = {
  *     the given User ID or null if not found.
  */
 e2e.openpgp.KeyRing.prototype.searchKey = function(uid, opt_type) {
+  return this.searchKeyInternal_(uid, opt_type);
+};
+
+
+/**
+ * Internal implementation of {@link #searchKey}.
+ * @param {(string|function(string): boolean)} uidOrMatcher User ID or a User ID
+ *     matching function - see {@link #searchKeyByUidMatcher}.
+ * @param {e2e.openpgp.KeyRing.Type=} opt_type Key type to search for.
+ * @return {?Array.<!e2e.openpgp.block.TransferableKey>} An array of keys
+ *     matching the criteria.
+ * @private
+ */
+e2e.openpgp.KeyRing.prototype.searchKeyInternal_ = function(uidOrMatcher,
+    opt_type) {
   if (!opt_type || opt_type == e2e.openpgp.KeyRing.Type.PUBLIC) {
-    return this.searchKey_(this.pubKeyRing_, uid);
+    return this.searchKey_(this.pubKeyRing_, uidOrMatcher);
   }
   if (opt_type == e2e.openpgp.KeyRing.Type.PRIVATE) {
-    return this.searchKey_(this.privKeyRing_, uid);
+    return this.searchKey_(this.privKeyRing_, uidOrMatcher);
   }
   if (opt_type == e2e.openpgp.KeyRing.Type.ALL) {
     var keys = [];
-    var priv = this.searchKey_(this.privKeyRing_, uid);
+    var priv = this.searchKey_(this.privKeyRing_, uidOrMatcher);
     if (priv) {  // Do this to avoid having a null element.
       goog.array.extend(keys, priv);
     }
-    var pub = this.searchKey_(this.pubKeyRing_, uid);
+    var pub = this.searchKey_(this.pubKeyRing_, uidOrMatcher);
     if (pub) {
       goog.array.extend(keys, pub);
     }
     return keys;
   }
   return null;
+};
+
+
+/**
+ * Searches for public or private keys that are associated with User IDs that
+ * satisfy a matcher function.
+ * Use when the search criteria is a function of User ID. For example,
+ * a matching function could accept all User IDs that contain a given email
+ * address.
+ * @param {function(string): boolean} uidMatcher The matching function. It will
+ *     be called with each User ID in the keyring and should return true iff
+ *     the User ID meets the search criteria.
+ * @param {e2e.openpgp.KeyRing.Type=} opt_type Key type to search for.
+ * @return {?Array.<!e2e.openpgp.block.TransferableKey>} An array of keys
+ *     matching the User IDs for which uidMatcher returned true.
+ */
+e2e.openpgp.KeyRing.prototype.searchKeysByUidMatcher = function(uidMatcher,
+    opt_type) {
+  return this.searchKeyInternal_(uidMatcher, opt_type);
 };
 
 
@@ -574,14 +608,34 @@ e2e.openpgp.KeyRing.prototype.reset = function() {
 /**
  * Searches a key in a key ring associated with a given User ID.
  * @param {!e2e.openpgp.TransferableKeyMap} keyRing The key ring to search.
- * @param {string} uid User ID to search for.
+ * @param {(string|function(string): boolean)} uidOrMatcher User ID or a User ID
+ *     matching function - see {@link #searchKeyByUidMatcher}.
  * @return {Array.<!e2e.openpgp.block.TransferableKey>} An array of keys for
  *     that User ID or null if no key is found.
  * @private
  */
-e2e.openpgp.KeyRing.prototype.searchKey_ = function(keyRing, uid) {
-  return keyRing.get(uid) ?
-      goog.array.clone(keyRing.get(uid)) : null;
+e2e.openpgp.KeyRing.prototype.searchKey_ = function(keyRing, uidOrMatcher) {
+  if (goog.isString(uidOrMatcher)) {
+    var uid = uidOrMatcher;
+    return keyRing.get(uid) ?
+        goog.array.clone(keyRing.get(uid)) : null;
+  } else if (goog.isFunction(uidOrMatcher)) {
+    var matcher = uidOrMatcher;
+    var keys = goog.array.flatten(goog.array.filter(
+        goog.array.map(keyRing.getKeys(), function(uid) {
+          return matcher(uid) ? goog.array.clone(keyRing.get(uid)) : null;
+        }),
+        function(possibleKeys) {
+          return goog.isArray(possibleKeys);
+        }
+        ));
+    goog.array.removeDuplicates(keys, undefined, function(key) {
+      return key.keyPacket.fingerprint.join(',');
+    });
+    return keys;
+  } else {
+    throw new e2e.error.InvalidArgumentsError('Unknown UID matcher type.');
+  }
 };
 
 
