@@ -788,15 +788,22 @@ e2e.openpgp.KeyRing.prototype.init_ = function() {
  */
 e2e.openpgp.KeyRing.prototype.objectToPrivKeyRing_ = function(s) {
   var obj = goog.object.map(s, function(keys, uid) {
-    return goog.array.map(keys, function(key) {
-      var block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
-          goog.crypt.base64.decodeStringToByteArray(key));
-      if (!(block instanceof e2e.openpgp.block.TransferableSecretKey)) {
-        throw new Error('Unexpected block in keyring.');
+    return goog.array.filter(goog.array.map(keys, function(key) {
+      try {
+        var block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
+            goog.crypt.base64.decodeStringToByteArray(key));
+        if (!(block instanceof e2e.openpgp.block.TransferableSecretKey)) {
+          throw new Error('Unexpected block in keyring.');
+        }
+        block.processSignatures();
+        block.unlock();
+        return block;
+      } catch (e) {
+        // Ignore the block (e.g. because the signatures were invalid).
+        return null;
       }
-      block.processSignatures();
-      block.unlock();
-      return block;
+    }), function(element) {
+      return goog.isDefAndNotNull(element);
     });
   });
   return new goog.structs.Map(obj);
@@ -811,15 +818,23 @@ e2e.openpgp.KeyRing.prototype.objectToPrivKeyRing_ = function(s) {
  */
 e2e.openpgp.KeyRing.prototype.objectToPubKeyRing_ = function(s) {
   var obj = goog.object.map(s, function(keys, uid) {
-    return goog.array.map(keys, function(key) {
-      var block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
-          goog.crypt.base64.decodeStringToByteArray(key));
-      if (!(block instanceof e2e.openpgp.block.TransferablePublicKey)) {
-        throw new Error('Unexpected block in keyring.');
+    return goog.array.filter(goog.array.map(keys, function(key) {
+      try {
+        var block = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
+            goog.crypt.base64.decodeStringToByteArray(key));
+        if (!(block instanceof e2e.openpgp.block.TransferablePublicKey)) {
+          throw new Error('Unexpected block in keyring.');
+        }
+        block.processSignatures();
+        return block;
+      } catch (e) {
+        // Ignore the block (e.g. because the signatures were invalid).
+        return null;
       }
-      block.processSignatures();
-      return block;
+    }), function(element) {
+      return goog.isDefAndNotNull(element);
     });
+
   });
   return new goog.structs.Map(obj);
 };

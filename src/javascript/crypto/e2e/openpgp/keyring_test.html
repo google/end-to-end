@@ -631,6 +631,7 @@ function testFailsWhenLocked() {
 function testImportPersistUnencrypted() {
   var backendStorage = new goog.testing.storage.FakeMechanism();
   var lockableStorage;
+  asyncTestCase.waitForAsync('Waiting for async action.');
   e2e.openpgp.LockableStorage.launch(backendStorage).then(function(storage) {
     lockableStorage = storage;
     return e2e.openpgp.KeyRing.launch(lockableStorage);
@@ -643,6 +644,7 @@ function testImportPersistUnencrypted() {
   }).then(function(keyRing2) {
     var pubKeyRing = keyRing2.getAllKeys();
     assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+    asyncTestCase.continueTesting();
   });
 }
 
@@ -913,6 +915,38 @@ function testGetPublicKeyBlockByFingerprint() {
     assertNull(key);
     asyncTestCase.continueTesting();
   });
+}
+
+function testInvalidKeysInStorage() {
+  var backendStorage = new goog.testing.storage.FakeMechanism();
+  var lockableStorage;
+  var EMAIL = '<ecc@example.com>';
+
+  asyncTestCase.waitForAsync('Waiting for async test.');
+  e2e.openpgp.LockableStorage.launch(backendStorage).then(function(storage) {
+    lockableStorage = storage;
+    return e2e.openpgp.KeyRing.launch(lockableStorage);
+  }, fail).then(function(keyRing1) {
+    var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
+      document.getElementById('pubKeyAscii').value);
+    return keyRing1.importKey(publicKeyBlock);
+  }, fail).then(function() {
+    return lockableStorage.get(e2e.openpgp.KeyRing.PUB_KEYRING_KEY_)
+  }, fail).then(function(pubKeyRing) {
+    pubKeyRing[EMAIL].push('invalid-key');
+    assertEquals(2, pubKeyRing[EMAIL].length);
+    return lockableStorage.set(e2e.openpgp.KeyRing.PUB_KEYRING_KEY_,
+        pubKeyRing);
+  }, fail).then(function() {
+    return e2e.openpgp.KeyRing.launch(lockableStorage);
+  }, fail).then(function(keyring) {
+    var pubKeyRing = keyring.getAllKeys();
+    assertTrue(pubKeyRing.containsKey(EMAIL));
+    assertEquals(1, pubKeyRing.get(EMAIL).length);
+    assertTrue(pubKeyRing.get(EMAIL)[0] instanceof
+        e2e.openpgp.block.TransferablePublicKey);
+    asyncTestCase.continueTesting();
+  }, fail);
 }
 
 </script>
