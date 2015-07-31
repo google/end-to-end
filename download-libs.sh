@@ -64,7 +64,7 @@ if [ ! -d closure-templates-compiler ]; then
 fi
 
 # build css compiler
-if [ ! -f lib/closure-stylesheets/build/closure-stylesheets.jar ]; then
+if [ ! -f closure-stylesheets/build/closure-stylesheets.jar ]; then
   cd closure-stylesheets
   ant
   cd ..
