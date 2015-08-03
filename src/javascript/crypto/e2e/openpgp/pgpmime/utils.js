@@ -38,7 +38,7 @@ goog.require('goog.string');
  * @const
  * @private
  */
-var INVALID_MESSAGE_ = 'Invalid MIME format';
+e2e.openpgp.pgpmime.Utils.INVALID_MESSAGE_ = 'Invalid MIME format';
 
 
 /**
@@ -46,7 +46,7 @@ var INVALID_MESSAGE_ = 'Invalid MIME format';
  * @const
  * @private
  */
-var MULTIPART_ = 'multipart/';
+e2e.openpgp.pgpmime.Utils.MULTIPART_ = 'multipart/';
 
 goog.scope(function() {
 var constants = e2e.openpgp.pgpmime.Constants;
@@ -67,15 +67,16 @@ e2e.openpgp.pgpmime.Utils.parseAttachmentEntity = function(node) {
     encoding = encHeader.value;
   }
 
-  // TODO The parseHeaderValueWithParams method is currently not being called
-  // when the Content-Disposition header is parsed. In order to extract the
-  // filename (that is a parameter defined in the header), the method must be
-  // called and possibly altered to support the parsing required by the
-  // Content-Disposition syntax, as defined in RFC 2183.
+  // TODO(ystoller): The parseHeaderValueWithParams method is currently not
+  // being called when the Content-Disposition header is parsed. In order to
+  // extract the filename (that is a parameter defined in the header), the
+  // method must be called and possibly altered to support the parsing required
+  // by the Content-Disposition syntax, as defined in RFC 2183.
   var filename = 'unknown';
 
   if (!goog.isString(node.body)) {
-    var errMsg = INVALID_MESSAGE_ + ' - Attachment invalid';
+    var errMsg = e2e.openpgp.pgpmime.Utils.INVALID_MESSAGE_ +
+        ' - Attachment invalid';
     throw new e2e.openpgp.error.UnsupportedError(errMsg);
   }
   return /** @type {e2e.openpgp.pgpmime.types.Attachment} */ ({filename:
@@ -89,7 +90,7 @@ e2e.openpgp.pgpmime.Utils.parseAttachmentEntity = function(node) {
  * @return {e2e.openpgp.pgpmime.types.HeaderValueBasic}
  */
 e2e.openpgp.pgpmime.Utils.parseHeaderValueBasic = function(text) {
-  return /**@type{e2e.openpgp.pgpmime.types.HeaderValueBasic}*/ (
+  return /** @type {e2e.openpgp.pgpmime.types.HeaderValueBasic} */ (
       {value: text.trim()});
 };
 
@@ -141,7 +142,7 @@ e2e.openpgp.pgpmime.Utils.parseHeaderValueWithParams = function(text) {
     params[paramName] = goog.string.stripQuotes(paramVal, '"');
   });
 
-  return /**@type{e2e.openpgp.pgpmime.types.HeaderValueWithParams}*/ (
+  return /** @type {e2e.openpgp.pgpmime.types.HeaderValueWithParams} */ (
       {value: value, params: params});
 };
 
@@ -202,11 +203,13 @@ e2e.openpgp.pgpmime.Utils.parseHeader_ = function(text) {
       // The Content-Type and Content-Transfer-Encoding headers should only be
       // set once per node. If they appears twice, this most likely indicates an
       // invalidly formatted email.
-      var errMsg = INVALID_MESSAGE_ + ' - duplicate headers';
+      var errMsg = e2e.openpgp.pgpmime.Utils.INVALID_MESSAGE_ +
+          ' - duplicate headers';
       throw new e2e.openpgp.error.UnsupportedError(errMsg);
     }
-    // TODO Allow the code to retain multiple headers (when applicable, e.g.,
-    // for the "Received" header, which often appears multiple times)
+    // TODO(ystoller): Allow the code to retain multiple headers (when
+    // applicable, e.g., for the "Received" header, which often appears multiple
+    // times)
     parsed[name] = value;
   });
 
@@ -265,7 +268,7 @@ e2e.openpgp.pgpmime.Utils.splitNodes_ = function(text, boundary) {
   var startLocation = goog.array.indexOf(lines, '--' + boundary);
   var endLocation = goog.array.indexOf(lines, '--' + boundary + '--');
   if (endLocation === -1 || startLocation === -1) {
-    var errMsg = INVALID_MESSAGE_ +
+    var errMsg = e2e.openpgp.pgpmime.Utils.INVALID_MESSAGE_ +
         ' - cannot find boundary in multipart message';
     throw new e2e.openpgp.error.UnsupportedError(errMsg);
   }
@@ -295,7 +298,8 @@ e2e.openpgp.pgpmime.Utils.parseNode = function(text) {
   // Header must be separated from body by an empty line
   var parts = text.split(separator);
   if (parts.length < 2) {
-    var errMsg = INVALID_MESSAGE_ + ' - no CRLF between headers and body';
+    var errMsg = e2e.openpgp.pgpmime.Utils.INVALID_MESSAGE_ +
+        ' - no CRLF between headers and body';
     throw new e2e.openpgp.error.UnsupportedError(errMsg);
   }
 
@@ -308,7 +312,7 @@ e2e.openpgp.pgpmime.Utils.parseNode = function(text) {
   parsed.header = header;
 
   if (goog.string.caseInsensitiveStartsWith(ctHeader.value.trim(),
-      MULTIPART_) &&
+      e2e.openpgp.pgpmime.Utils.MULTIPART_) &&
       goog.isDefAndNotNull(ctHeader.params) &&
       goog.isDefAndNotNull(ctHeader.params['boundary'])) {
     // This appears to be a multipart message. Split text by boundary.
