@@ -29,6 +29,7 @@ goog.require('e2e.otr.Mpi');
 goog.require('e2e.otr.Sig');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.constants.MessageType');
+goog.require('e2e.otr.error.ParseError');
 goog.require('e2e.otr.message.Encoded');
 goog.require('e2e.otr.message.handler');
 goog.require('e2e.otr.pubkey.Dsa');
