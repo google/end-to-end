@@ -61,7 +61,7 @@ var PLAINTEXT_MESSAGE = ['From: Nathaniel Borenstein <nsb@bellcore.com>',
   '',
   'aGVsbG8gd29ybGQK',
   '--simple boundary--',
-  'This is the epilogue.  It is also to be ignored.'].join('\n');
+  'This is the epilogue.  It is also to be ignored.'].join('\r\n');
 
 var PLAINTEXT_BODY = ['This is implicitly typed plain ASCII text.',
   '',
@@ -71,6 +71,60 @@ var PLAINTEXT_BODY = ['This is implicitly typed plain ASCII text.',
   'It DOES end with a linebreak.',
   '',
   ''].join('\r\n');
+
+var TEST_EMAIL = ['Delivered-To: ystoller@google.com',
+  'Received: by 10.31.190.6 with SMTP id o6csp207937vkf;',
+  '        Wed, 29 Jul 2015 17:23:28 -0700 (PDT)',
+  'X-Received: by 10.107.10.96 with SMTP id u93mr6392667ioi.172.1438215808478;',
+  '        Wed, 29 Jul 2015 17:23:28 -0700 (PDT)',
+  'Return-Path: <dang.hvu@gmail.com>',
+  'Received: from mail-io0-x22c.google.com (mail-io0-x22c.google.com. ' +
+      '[2607:f8b0:4001:c06::22c])',
+  '        by mx.google.com with ESMTPS id e5si18657igz.54.2015.07.29.17.23.28',
+  '        for <ystoller@google.com>',
+  '        (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);',
+  '        Wed, 29 Jul 2015 17:23:28 -0700 (PDT)',
+  'Received-SPF: pass (google.com: domain of dang.hvu@gmail.com designates ' +
+      '2607:f8b0:4001:c06::22c as permitted sender) ' +
+      'client-ip=2607:f8b0:4001:c06::22c;',
+  'Authentication-Results: mx.google.com;',
+  '       spf=pass (google.com: domain of dang.hvu@gmail.com designates ' +
+      '2607:f8b0:4001:c06::22c as permitted sender) ' +
+      'smtp.mail=dang.hvu@gmail.com;',
+  '       dkim=pass header.i=@gmail.com;',
+  '       dmarc=pass (p=NONE dis=NONE) header.from=gmail.com',
+  'Received: by mail-io0-x22c.google.com with SMTP id g141so38367292ioe.3',
+  '        for <ystoller@google.com>; Wed, 29 Jul 2015 17:23:28 -0700 (PDT)',
+  'DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;',
+  '        d=gmail.com; s=20120113;',
+  '        h=mime-version:date:message-id:subject:from:to:content-type;',
+  '        bh=qudyov98wfFdQ2xQUP+0LzZKrz32kEkMCxiQBXyGjaQ=;',
+  '        b=aEKwmc7f22TrGJ3jldEZ/y3uSZYdRGm1ZKB2fw0y9JlcUivXxv+6DdMwABK' +
+      'blpSR4D',
+  '         7Ol97uGcDc7lyGvMO6Kr3twp4N9nqcP1auk1KsDsRyW55L1ZCntlW05x+wUd' +
+      'AtwjOUCF',
+  '         x6slpIlvPHfe+9ldAxqyPjMaOx0s2IvxCUDPfe7h/C/Jixc+eNq8S3YO+0xL' +
+      '9F2mbHnO',
+  '         gHUc01nlIesDEcs3xyzwRaPk9NMpFqwVXdrPzHoAg9CmUNw3fmEVGAj1p96R' +
+      'IyG/V39H',
+  '         7xQaM69nGMKIH5xVoucbNj/zGL0G7Phn3DYInIBfBZu2iN86TyacJluB9jU2' +
+      'E40PNImq',
+  '         j2Rg==', 'MIME-Version: 1.0',
+  'X-Received: by 10.107.135.200 with SMTP id ' +
+      'r69mr6031368ioi.54.1438215808067;',
+  ' Wed, 29 Jul 2015 17:23:28 -0700 (PDT)',
+  'Received: by 10.79.93.2 with HTTP; Wed, 29 Jul 2015 17:23:27 -0700 (PDT)',
+  'Received: by 10.79.93.2 with HTTP; Wed, 29 Jul 2015 17:23:27 -0700 (PDT)',
+  'Date: Wed, 29 Jul 2015 17:23:27 -0700', 'Message-ID: ' +
+      '<CAGrabN7TM2dr1+qF2pCanga6w583QoNPBz1TS27irr5b25D5Kg@mail.gmail.com>',
+  'Subject: Hello yoni', 'From: Hoang-Vu Dang <dang.hvu@gmail.com>',
+  'To: Jonathan Stoller <ystoller@google.com>',
+  'Content-Type: multipart/alternative; boundary=001a113eb0c259b018051c0cb660',
+  '', '--001a113eb0c259b018051c0cb660',
+  'Content-Type: text/plain; charset=UTF-8', '', 'Wohoo', '',
+  '--001a113eb0c259b018051c0cb660', 'Content-Type: text/html; charset=UTF-8',
+  '', '<p dir="ltr">Wohoo</p>', '',
+  '--001a113eb0c259b018051c0cb660--'].join('\r\n');
 
 
 function setUp() {
@@ -91,12 +145,12 @@ function testGetMultipartMailContent() {
 
 
 function testParseAttachmentEntity() {
-  var rawAttachment = {'body': 'hello world\n', 'header':
+  var rawAttachment = {'body': 'hello world\r\n', 'header':
         {'Content-Disposition': {'params': {'filename': 'foo.txt'}, 'value':
                 'attachment'}, 'Content-Transfer-Encoding': {'params': {},
             'value': 'base64'}, 'Content-Type': {'params': {}, 'value':
                 'application/octet-stream'}}};
-  var parsedAttachment = {filename: 'foo.txt', content: 'hello world\n',
+  var parsedAttachment = {filename: 'unknown', content: 'hello world\r\n',
     'encoding': 'base64'};
   assertObjectEquals(parsedAttachment, utils.parseAttachmentEntity(
       rawAttachment));
@@ -114,37 +168,95 @@ function testGetSinglePartMailContent() {
 }
 
 
-function testParseHeaderValue() {
+function testHeaderValueCasesArePreserved() {
+  // The cases of header values should not be altered.
+  var header = 'Message-ID: aBcDe';
+  assertEquals('aBcDe', utils.parseHeader_(header)['Message-ID'].value);
+}
+
+function testHeaderParameterNamesAreLowerCased() {
+  // Parameter names are case-insensitive and should be normalized to lower-case
+  var header = 'Content-Type: multipart/mixed; BOUNDARY= 123';
+  assertEquals(true, utils.parseHeader_(
+      header)['Content-Type'].params.hasOwnProperty('boundary'));
+}
+
+function testMessageWithMultipleHeaders() {
+  // Messages with multiple content-type or content-transfer-encoding headers
+  // should fail.
+  var multipleContentType = ['Content-Type: text/plain',
+    'Content-Type: text/plain', 'Content-Transfer-Encoding: 7bit', '',
+    'Hello'].join('\r\n');
+  assertThrows('Message with multiple content types headers' +
+      'should raise exception', function() {
+        utils.parseNode(multipleContentType);
+      });
+  var multipleContentTransferEncoding = ['Content-Type: text/plain',
+    'Content-Transfer-Encoding: 7bit', 'Content-Transfer-Encoding: 7bit', '',
+    'Hello'].join('\r\n');
+  assertThrows('Message with multiple content transfer encoding headers' +
+      'should raise exception', function() {
+        utils.parseNode(multipleContentTransferEncoding);
+      });
+
+  // Other headers that appear multiple times should parse successfully.
+  var multipleRandomHeader = ['Content-Type: text/plain',
+    'Content-Transfer-Encoding: 7bit', 'Received: yesterday',
+    'Received: yesterday', '', 'Hello'].join('\r\n');
+  assertEquals('Hello', utils.parseNode(multipleRandomHeader).body);
+}
+
+function testParseHeaderValueWithParams() {
   // Attribute names that include characters that aren't visible ASCII
   // should not be returned (whitespace is also invalid).
   // In this case, there is a tab metacharacter in an attribute name
   var attributeNonVisibleAsciiFails =
-      'MULTIPART/mixed;   BO\tUNDARY= "foo="; bar=somevalue';
+      'multipart/mixed;   bo\tundary= "foo="; bar=somevalue';
   assertObjectEquals({value: 'multipart/mixed', params: {bar: 'somevalue'}},
-      utils.parseHeaderValue(attributeNonVisibleAsciiFails));
+      utils.parseHeaderValueWithParams(attributeNonVisibleAsciiFails));
 
   // Attribute values that include characters that aren't visible ASCII
   // should not be returned (whitespace is also invalid).
   // In this case, there is a whitespace in an attribute value
   var attributeNonVisibleAsciiFails =
-      'MULTIPART/mixed;   BOUNDARY= fo o; bar=somevalue';
+      'multipart/mixed;   boundary= fo o; bar=somevalue';
   assertObjectEquals({value: 'multipart/mixed', params: {bar: 'somevalue'}},
-      utils.parseHeaderValue(attributeNonVisibleAsciiFails));
+      utils.parseHeaderValueWithParams(attributeNonVisibleAsciiFails));
 
   // Attribute values that contain a special character (here, an equals sign)
   // that isn't enclosed in quotes should not be returned
   // In this case, an attribute value has an equals sign that isn't enclosed
   // in quotes.
   var equalSignWithoutQuotes =
-      'MULTIPART/mixed;   BOUNDARY= foo=; bar=somevalue';
+      'multipart/mixed;   boundary= foo=; bar=somevalue';
   assertObjectEquals({value: 'multipart/mixed', params: {bar: 'somevalue'}},
-      utils.parseHeaderValue(equalSignWithoutQuotes));
+      utils.parseHeaderValueWithParams(equalSignWithoutQuotes));
 
   // This is a valid header value - it should be parsed and returned in full.
-  var text = 'MULTIPART/mixed;   BOUNDARY=" f oo=";  bar=somevalue';
-  assertObjectEquals({value: 'multipart/mixed', params: { boundary: ' f oo=',
+  var text = 'multipart/mixed;   boundary=" f oo=";  bar=somevalue';
+  assertObjectEquals({value: 'multipart/mixed', params: {boundary: ' f oo=',
     bar: 'somevalue'
-  }}, utils.parseHeaderValue(text));
+  }}, utils.parseHeaderValueWithParams(text));
+}
+
+
+function testParseHeaderValueBasic() {
+  // parseHeaderValueBasic should return an object of type
+  // e2e.openpgp.pgpmime.types.HeaderValueBasic, without lowering the case.
+  var text = 'abcDE';
+  var expectedObj = {value: text};
+  assertObjectEquals(expectedObj, utils.parseHeaderValueBasic(text));
+
+  // Verifies that quotes are not removed
+  text = '"Laser"';
+  expectedObj = {value: text};
+  assertObjectEquals(expectedObj, utils.parseHeaderValueBasic(text));
+
+  // Verifies that semi-colons in the middle of a non-parameter header parse
+  // successfully
+  text = '"Things to purchase for hike: Water; trail mix; miscellaneous..."';
+  expectedObj = {value: text};
+  assertObjectEquals(expectedObj, utils.parseHeaderValueBasic(text));
 }
 
 
@@ -200,3 +312,45 @@ function testLineSeparator() {
   assertEquals('content of message', utils.parseNode(message).body);
 }
 
+function testVerifyMultipart() {
+  // Verifies that messages will only be treated as multipart if they have both
+  // a valid content-type (i.e., type 'multipart'), and a boundary.
+  var message = ['Content-Type: multiPArt/mixed; boundary=123', '', '--123',
+    'Content-Type: plain/text', '', 'part1', '--123',
+    'Content-Type: plain/text', '', 'part2', '--123--'].join('\r\n');
+  var expectedResult = ['part1\r\n', 'part2'];
+  var result = utils.parseNode(message);
+  assertEquals(2, result.body.length);
+  assertObjectEquals(expectedResult[0], result.body[0].body);
+  assertObjectEquals(expectedResult[1], result.body[1].body);
+
+  // The following message does not have a valid content type, so the entire
+  // content of the message following the initial headers should be parsed as
+  // a single node.
+  message = ['Content-Type: multipa/mixed; boundary=123', '', '--123',
+    'Content-Type: plain/text', '', 'part1', '--123',
+    'Content-Type: plain/text', '', 'part2', '--123--'].join('\r\n');
+  var expectedResult = ['--123', 'Content-Type: plain/text', '', 'part1',
+    '--123', 'Content-Type: plain/text', '', 'part2', '--123--'].join('\r\n');
+  result = utils.parseNode(message);
+  assertEquals(expectedResult, result.body);
+
+  // The following message does not have a boundary.
+  var message = ['Content-Type: multiPArt/mixed', '', '--123',
+    'Content-Type: plain/text', '', 'part1', '--123',
+    'Content-Type: plain/text', '', 'part2', '--123--'].join('\r\n');
+  result = utils.parseNode(message);
+  assertEquals(expectedResult, result.body);
+}
+
+function testTypicalEmail() {
+  // Verifies that an typical email that comes with many (potentially) unused
+  // and unrecognized headers parses correctly.
+  var expectedObj = [{body: 'Wohoo\r\n\r\n'},
+        {body: '<p dir="ltr">Wohoo</p>\r\n'}];
+  var parsedEmail = utils.parseNode(TEST_EMAIL);
+  assertObjectEquals(expectedObj[0].body,
+      utils.parseNode(TEST_EMAIL).body[0].body);
+  assertObjectEquals(expectedObj[1].body,
+      utils.parseNode(TEST_EMAIL).body[1].body);
+}

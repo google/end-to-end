@@ -74,6 +74,9 @@ e2e.openpgp.pgpmime.MimeNode = function(options, opt_parent) {
       if (goog.isDefAndNotNull(header.name) &&
           goog.isDefAndNotNull(header.value)) {
         if (goog.isDefAndNotNull(header.params)) {
+          // header.params should only be set if the header value is of type
+          // e2e.openpgp.pgpmime.types.HeaderValueWithParams (i.e., Content-Type
+          // or Content-Disposition headers).
           this.setHeader_(header.name, header.value, header.params);
         } else {
           this.setHeader_(header.name, header.value);
@@ -107,10 +110,17 @@ e2e.openpgp.pgpmime.MimeNode.prototype.addChild = function(options) {
  */
 e2e.openpgp.pgpmime.MimeNode.prototype.setHeader_ = function(key, value,
     opt_params) {
-  var headerValue = e2e.openpgp.pgpmime.Utils.parseHeaderValue(value);
-  if (opt_params) {
-    headerValue.params = headerValue.params || {};
-    goog.object.extend(headerValue.params, opt_params);
+  var titleCaseKey = goog.string.toTitleCase(key, '-').trim();
+  if (titleCaseKey === constants.Mime.CONTENT_TYPE ||
+      titleCaseKey === constants.Mime.CONTENT_DISPOSITION) {
+    var headerValue =
+        e2e.openpgp.pgpmime.Utils.parseHeaderValueWithParams(value);
+    if (opt_params) {
+      headerValue.params = headerValue.params || {};
+      goog.object.extend(headerValue.params, opt_params);
+    }
+  } else {
+    var headerValue = e2e.openpgp.pgpmime.Utils.parseHeaderValueBasic(value);
   }
   goog.object.set(this.header_, key, headerValue);
 };

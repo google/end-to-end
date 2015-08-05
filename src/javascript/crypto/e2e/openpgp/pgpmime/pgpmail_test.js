@@ -161,19 +161,17 @@ function testBuildPGPMimeTree() {
     'Subject: test email', 'From: ystoller@google.com',
     'To: kbsriram@google.com, a@google.com, b@google.com,', ' c@google.com, ' +
         'd@google.com, e@google.com, f@google.com', 'Mime-Version: 1.0', '',
-    'This is an OpenPGP/MIME encrypted message. Please open it from',
-    'the Safe Mail app', '', '----foo',
+    'This is an OpenPGP/MIME encrypted message.', '', '----foo',
     'Content-Type: application/pgp-encrypted; charset="utf-8"; name="',
     ' version.asc"', 'Content-Transfer-Encoding: 7bit',
-    'Content-Description: pgp/mime versions identification', '',
+    'Content-Description: PGP/MIME Versions Identification', '',
     'Version: 1', '----foo',
     'Content-Type: text/plain; charset="utf-8"; ' +
         'name="encrypted.asc"',
     'Content-Transfer-Encoding: 7bit', '', 'some encrypted text',
     '----foo--', ''].join('\r\n');
   var encryptedText = 'some encrypted text';
-  var preamble = 'This is an OpenPGP/MIME encrypted message. ' +
-      'Please open it from the Safe Mail app';
+  var preamble = 'This is an OpenPGP/MIME encrypted message.';
   var mail = new e2e.openpgp.pgpmime.PgpMail({body: encryptedText,
     from: 'ystoller@google.com', to: 'kbsriram@google.com, a@google.com, ' +
         'b@google.com, c@google.com, d@google.com, e@google.com, f@google.com',
