@@ -108,6 +108,12 @@ e2e.cipher.Rsa.prototype.getHash = function() {
 
 
 /** @override */
+e2e.cipher.Rsa.prototype.getHashAlgorithm = function() {
+  return this.hash_.algorithm;
+};
+
+
+/** @override */
 e2e.cipher.Rsa.prototype.setHash = function(hash) {
   this.hash_ = hash;
 };

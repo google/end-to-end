@@ -20,6 +20,7 @@
 <script src="test_js_deps-runfiles.js"></script>
 <script>
   goog.require('e2e.cipher.Rsa');
+  goog.require('e2e.hash.Algorithm');
   goog.require('goog.array');
   goog.require('goog.testing.jsunit');
 </script>
@@ -66,6 +67,7 @@ function testBasic() {
   var rsa = new e2e.cipher.Rsa(
     e2e.cipher.Algorithm.RSA,
     {n: n, e: e, d: d});
+  assertEquals(e2e.hash.Algorithm.SHA1, rsa.getHashAlgorithm());
   var ciphertext = e2e.async.Result.getValue(rsa.encrypt(plaintext))['c'];
   assertArrayEquals(
     [0x90, 0x91, 0x9b, 0xc6, 0xa2, 0xce, 0x09, 0x75,

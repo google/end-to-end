@@ -24,6 +24,7 @@
   goog.require('e2e.cipher.Algorithm');
   goog.require('e2e.cipher.Aes');
   goog.require('e2e.cipher.Rsa');
+  goog.require('e2e.hash.Algorithm');
   goog.require('e2e.hash.Sha1');
 </script>
 <script>
@@ -87,6 +88,7 @@
         fakeCipher);
     var plaintext = goog.array.repeat(0xBB, 40);
     var passphrase = [1, 2, 3, 4];
+    assertEquals(e2e.hash.Algorithm.SHA1, ec.getHashAlgorithm());
     ec.unlockKey();
     var ciphertext = e2e.async.Result.getValue(ec.encrypt(plaintext));
     assertArrayEquals(plaintext, e2e.async.Result.getValue(ec.decrypt(ciphertext)));

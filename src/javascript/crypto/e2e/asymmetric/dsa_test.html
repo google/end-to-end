@@ -40,6 +40,7 @@ function testWithNISTVectors() {
             'y': vector['Y']};
         var dsa = new e2e.signer.Dsa(
             e2e.signer.Algorithm.DSA, key);
+        assertEquals(vector['hash'], dsa.getHashAlgorithm());
 
         // Test consistency
         for (var i = 0; i < 10; i++) {

@@ -106,6 +106,12 @@ e2e.signer.Dsa.prototype.getHash = function() {
 
 
 /** @override */
+e2e.signer.Dsa.prototype.getHashAlgorithm = function() {
+  return this.hash_.algorithm;
+};
+
+
+/** @override */
 e2e.signer.Dsa.prototype.setHash = function(hash) {
   this.hash_ = hash;
 };

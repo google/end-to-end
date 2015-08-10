@@ -20,6 +20,7 @@
   goog.require('e2e.BigNum');
   goog.require('e2e.ecc.PrimeCurve');
   goog.require('e2e.ecc.Protocol')
+  goog.require('e2e.hash.Algorithm');
   goog.require('e2e.random');
   goog.require('e2e.signer.Algorithm');
   goog.require('e2e.signer.Ecdsa');
@@ -29,11 +30,12 @@
 /**
  * Tests that ECDSA is consistent.
  */
-function testConsistency() {
+function testConsistencyP256() {
   for (var i = 0; i < 5; i++) {
     var ecdsa = new e2e.signer.Ecdsa(
         e2e.signer.Algorithm.ECDSA,
         e2e.ecc.Protocol.generateKeyPair(e2e.ecc.PrimeCurve.P_256));
+    assertEquals(e2e.hash.Algorithm.SHA256, ecdsa.getHashAlgorithm());
     var m = e2e.random.getRandomBytes(20);
     var sig = e2e.async.Result.getValue(ecdsa.sign(m));
 
@@ -41,5 +43,32 @@ function testConsistency() {
     assertFalse(e2e.async.Result.getValue(ecdsa.verify(
       e2e.random.getRandomBytes(20), sig)));
   }
+}
+
+function testP384() {
+    var ecdsa = new e2e.signer.Ecdsa(
+        e2e.signer.Algorithm.ECDSA,
+        e2e.ecc.Protocol.generateKeyPair(e2e.ecc.PrimeCurve.P_384));
+    assertEquals(e2e.hash.Algorithm.SHA384, ecdsa.getHashAlgorithm());
+    var m = e2e.random.getRandomBytes(20);
+    var sig = e2e.async.Result.getValue(ecdsa.sign(m));
+
+    assertTrue(e2e.async.Result.getValue(ecdsa.verify(m,sig)));
+    assertFalse(e2e.async.Result.getValue(ecdsa.verify(
+      e2e.random.getRandomBytes(20), sig)));
+}
+
+
+function testP521() {
+    var ecdsa = new e2e.signer.Ecdsa(
+        e2e.signer.Algorithm.ECDSA,
+        e2e.ecc.Protocol.generateKeyPair(e2e.ecc.PrimeCurve.P_521));
+    assertEquals(e2e.hash.Algorithm.SHA512, ecdsa.getHashAlgorithm());
+    var m = e2e.random.getRandomBytes(20);
+    var sig = e2e.async.Result.getValue(ecdsa.sign(m));
+
+    assertTrue(e2e.async.Result.getValue(ecdsa.verify(m,sig)));
+    assertFalse(e2e.async.Result.getValue(ecdsa.verify(
+      e2e.random.getRandomBytes(20), sig)));
 }
 </script>

@@ -412,17 +412,16 @@ e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
   // Hash algorithm declared in signature may differ from the one used
   // when instantiating the signer. Use the one declared in signature
   // (if it's allowed).
-  var allowedAlgo = e2e.openpgp.SignatureDigestAlgorithm[
-      this.getHashAlgorithm()];
+  var allowedAlgo = e2e.openpgp.SignatureDigestAlgorithm[this.hashAlgorithm];
   if (!allowedAlgo) {
     throw new e2e.openpgp.error.UnsupportedError(
         'Specified hash algorithm is not allowed for signatures.');
   }
-  if (allowedAlgo !== signer.getHash().algorithm) {
+  if (allowedAlgo !== signer.getHashAlgorithm()) {
     signer.setHash(e2e.hash.factory.require(allowedAlgo));
   }
 
-  if (goog.isDef(opt_hashAlgo) && opt_hashAlgo !== signer.getHash().algorithm) {
+  if (goog.isDef(opt_hashAlgo) && opt_hashAlgo !== signer.getHashAlgorithm()) {
     // Hash algorithm mismatch.
     return false;
   }
@@ -497,7 +496,7 @@ e2e.openpgp.packet.Signature.construct = function(
       data,
       signatureType,
       algorithm,
-      signer.getHash().algorithm,
+      signer.getHashAlgorithm(),
       hashedSubpackets);
   var resultSig;
   if (signer instanceof e2e.cipher.Rsa) {
@@ -513,7 +512,7 @@ e2e.openpgp.packet.Signature.construct = function(
         4, // version
         signatureType,
         algorithm,
-        signer.getHash().algorithm,
+        signer.getHashAlgorithm(),
         signature,
         signature['hashValue'].slice(0, 2),
         hashedSubpackets,

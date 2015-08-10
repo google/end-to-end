@@ -97,6 +97,13 @@ e2e.signer.Signer.prototype.getHash;
 
 
 /**
+ * Returns the algorithm used by the signature hash function.
+ * @return {e2e.hash.Algorithm}
+ */
+e2e.signer.Signer.prototype.getHashAlgorithm;
+
+
+/**
  * Sets the hash function used for the signature.
  * @param {!e2e.hash.Hash} Hash function
  */

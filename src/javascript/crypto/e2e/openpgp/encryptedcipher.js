@@ -486,6 +486,15 @@ e2e.openpgp.EncryptedCipher.prototype.isLocked = function() {
 
 
 /**
+ * Returns the algorithm used by the signature hash function.
+ * @return {e2e.hash.Algorithm}
+ */
+e2e.openpgp.EncryptedCipher.prototype.getHashAlgorithm = function() {
+  return this.cipher_.getHash().algorithm;
+};
+
+
+/**
  * Defines the different types of key derivation to decrypt the key material.
  * It is defined in RFC 4880 Section 5.5.3. as string-to-key usage conventions.
  * @enum {number}
