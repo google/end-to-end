@@ -61,7 +61,7 @@ e2e.ecc.PrimeCurve = {
 /**
  * Prime curve OIDs (including the one-byte length prefix), as defined in
  *     section 11 in RFC 6637.
- * Curve25519 and Ed25519 OIDs sourced from GnuPG.
+ *     Curve25519 and Ed25519 OIDs sourced from GnuPG.
  * @enum {!e2e.ByteArray}.
  */
 e2e.ecc.PrimeCurveOid = {
@@ -108,7 +108,12 @@ e2e.ecc.DomainParam.curveNameFromCurveOid = function(curveOid) {
     return e2e.ecc.PrimeCurve.P_384;
   } else if (goog.array.equals(curveOid, e2e.ecc.PrimeCurveOid.P_521)) {
     return e2e.ecc.PrimeCurve.P_521;
+  } else if (goog.array.equals(curveOid, e2e.ecc.PrimeCurveOid.CURVE_25519)) {
+    return e2e.ecc.PrimeCurve.CURVE_25519;
+  } else if (goog.array.equals(curveOid, e2e.ecc.PrimeCurveOid.ED_25519)) {
+    return e2e.ecc.PrimeCurve.ED_25519;
   }
+
   throw new e2e.error.UnsupportedError('Invalid curve OID');
 };
 
@@ -125,8 +130,11 @@ e2e.ecc.DomainParam.curveOidFromCurveName = function(curveName) {
     return e2e.ecc.PrimeCurveOid.P_384;
   } else if (curveName == e2e.ecc.PrimeCurve.P_521) {
     return e2e.ecc.PrimeCurveOid.P_521;
+  } else if (curveName == e2e.ecc.PrimeCurve.CURVE_25519) {
+    return e2e.ecc.PrimeCurveOid.CURVE_25519;
+  } else if (curveName == e2e.ecc.PrimeCurve.ED_25519) {
+    return e2e.ecc.PrimeCurveOid.ED_25519;
   }
-  // TODO(thaidn): figure out the curve OID for Curve25519 and Ed25519.
   return null;
 };
 
