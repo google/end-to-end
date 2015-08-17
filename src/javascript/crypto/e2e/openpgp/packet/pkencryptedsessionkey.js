@@ -21,6 +21,7 @@
 
 goog.provide('e2e.openpgp.packet.PKEncryptedSessionKey');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.Ecdh');
 goog.require('e2e.cipher.Rsa');
@@ -59,22 +60,31 @@ goog.inherits(e2e.openpgp.packet.PKEncryptedSessionKey,
     e2e.openpgp.packet.EncryptedSessionKey);
 
 
-/** @inheritDoc */
-e2e.openpgp.packet.PKEncryptedSessionKey.prototype.decryptSessionKey =
+/** @override */
+e2e.openpgp.packet.PKEncryptedSessionKey.prototype.createCipher =
     function(key) {
-  var cipher = e2e.cipher.factory.require(this.algorithm, key);
-  var res;
-  if (cipher instanceof e2e.cipher.Rsa) {
-    // Use WebCrypto for RSA.
-    res = new e2e.scheme.Rsaes(cipher).decrypt(this.encryptedKey);
-  } else if (cipher instanceof e2e.cipher.Ecdh) {
-    res = new e2e.scheme.Ecdh(cipher).decrypt(this.encryptedKey).addCallback(
-        this.removeEccPadding_, this);
-  } else {
-    // Use JS for anything else (ElGamal).
-    res = new e2e.scheme.Eme(cipher).decrypt(this.encryptedKey);
-  }
-  return res.addCallback(this.extractKey_, this);
+  return e2e.cipher.factory.require(this.algorithm, key);
+};
+
+
+/** @override */
+e2e.openpgp.packet.PKEncryptedSessionKey.prototype.decryptSessionKeyWithCipher =
+    function(cipher) {
+  return e2e.async.Result.toResult(cipher)
+      .addCallback(this.validateCipher, this)
+      .addCallback(function(cipher) {
+        if (cipher instanceof e2e.cipher.Rsa) {
+          // Use WebCrypto for RSA.
+          return new e2e.scheme.Rsaes(cipher).decrypt(this.encryptedKey);
+        } else if (cipher instanceof e2e.cipher.Ecdh) {
+          return new e2e.scheme.Ecdh(cipher).decrypt(this.encryptedKey)
+             .addCallback(this.removeEccPadding_, this);
+        } else {
+          // Use JS for anything else (ElGamal).
+          return new e2e.scheme.Eme(cipher).decrypt(this.encryptedKey);
+        }
+      }, this)
+      .addCallback(this.extractKey_, this);
 };
 
 
@@ -132,11 +142,11 @@ e2e.openpgp.packet.PKEncryptedSessionKey.prototype.extractKey_ =
 };
 
 
-/** @inheritDoc */
+/** @override */
 e2e.openpgp.packet.PKEncryptedSessionKey.prototype.tag = 1;
 
 
-/** @inheritDoc */
+/** @override */
 e2e.openpgp.packet.PKEncryptedSessionKey.prototype.
     serializePacketBody = function() {
   var body = goog.array.concat(
@@ -253,7 +263,7 @@ e2e.openpgp.packet.PKEncryptedSessionKey.createPacketForKey_ =
 };
 
 
-/** @inheritDoc */
+/** @override */
 e2e.openpgp.packet.PKEncryptedSessionKey.parse = function(body) {
   var version = body.shift();
   if (version != 3) {

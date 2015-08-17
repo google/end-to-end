@@ -170,7 +170,8 @@ e2e.openpgp.block.EncryptedMessage.prototype.decryptWithSecretKey_ =
  */
 e2e.openpgp.block.EncryptedMessage.prototype.decryptKeyAndMessage_ = function(
     key, eskPacket) {
-  var decryptSuccess = eskPacket.decryptSessionKey(key);
+  var cipher = eskPacket.createCipher(key);
+  var decryptSuccess = eskPacket.decryptSessionKeyWithCipher(cipher);
   return decryptSuccess.addCallback(function(success) {
     if (!success) {
       throw new e2e.openpgp.error.DecryptError(
