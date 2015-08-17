@@ -112,6 +112,9 @@
       ec2.decrypt(ciphertext);
     });
     assertThrows(function() {
+      ec2.getWrappedCipher();
+    });
+    assertThrows(function() {
       ec2.unlockKey(passphrase.concat([0]));
     });
     assertThrows(function() {
@@ -121,5 +124,6 @@
     });
     ec2.unlockKey(passphrase);
     assertArrayEquals(plaintext, e2e.async.Result.getValue(ec2.decrypt(ciphertext)));
+    assertEquals(fakeCipher2, ec2.getWrappedCipher());
   }
 </script>

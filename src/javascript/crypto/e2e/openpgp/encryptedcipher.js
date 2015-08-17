@@ -486,6 +486,18 @@ e2e.openpgp.EncryptedCipher.prototype.isLocked = function() {
 
 
 /**
+ * Returns the wrapped cipher, throwing error if the cipher is locked.
+ * @return {e2e.cipher.Cipher|e2e.signer.Signer} The cipher.
+ */
+e2e.openpgp.EncryptedCipher.prototype.getWrappedCipher = function() {
+  if (this.locked_) {
+    throw new e2e.openpgp.EncryptedCipher.LockedKeyError(this);
+  }
+  return this.cipher_;
+};
+
+
+/**
  * Returns the algorithm used by the signature hash function.
  * @return {e2e.hash.Algorithm}
  */

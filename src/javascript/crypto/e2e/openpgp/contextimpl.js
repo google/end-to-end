@@ -374,8 +374,22 @@ e2e.openpgp.ContextImpl.prototype.verifyDecryptInternal = function(
     var block = e2e.openpgp.block.factory.parseByteArrayMessage(
         encryptedMessage, opt_charset);
     if (block instanceof e2e.openpgp.block.EncryptedMessage) {
-      var keyCallback = goog.bind(this.keyRing_.getSecretKey, this.keyRing_);
-      return block.decrypt(keyCallback, passphraseCallback).addCallback(
+      var keyCipherCallback = goog.bind(function(keyId) {
+        var secretKeyPacket = this.keyRing_.getSecretKey(keyId);
+        if (!secretKeyPacket) {
+          return null;
+        }
+        var cipher = goog.asserts.assertObject(
+            secretKeyPacket.cipher.getWrappedCipher());
+        // Cipher might also be a signer here. Check if cipher can decrypt
+        // (at runtime, as we can't check for e2e.cipher.Cipher implementation
+        // statically).
+        if (!goog.isFunction(cipher.decrypt)) {
+          return null;
+        }
+        return cipher;
+      }, this);
+      return block.decrypt(keyCipherCallback, passphraseCallback).addCallback(
           this.processLiteralMessage_, this).addCallback(function(result) {
         result.decrypt.wasEncrypted = true;
         return result;
