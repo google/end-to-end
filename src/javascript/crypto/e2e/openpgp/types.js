@@ -220,7 +220,7 @@ e2e.openpgp.TransferableKeyMap;
 
 /**
  * The key ring map structure as used by the context.
- * @typedef {goog.structs.Map.<string, !Array.<!e2e.openpgp.Key>>}
+ * @typedef {Object.<string, !Array.<!e2e.openpgp.Key>>}
  */
 e2e.openpgp.KeyRingMap;
 
