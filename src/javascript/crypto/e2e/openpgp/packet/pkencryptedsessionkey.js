@@ -23,8 +23,6 @@ goog.provide('e2e.openpgp.packet.PKEncryptedSessionKey');
 
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
-goog.require('e2e.cipher.Ecdh');
-goog.require('e2e.cipher.Rsa');
 goog.require('e2e.cipher.factory');
 goog.require('e2e.openpgp');
 goog.require('e2e.openpgp.Mpi');
@@ -33,7 +31,7 @@ goog.require('e2e.openpgp.constants.Type');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.EncryptedSessionKey');
 goog.require('e2e.openpgp.packet.factory');
-goog.require('e2e.scheme.Ecdh');
+goog.require('e2e.openpgp.scheme.Ecdh');
 goog.require('e2e.scheme.Eme');
 goog.require('e2e.scheme.Rsaes');
 goog.require('goog.array');
@@ -73,46 +71,10 @@ e2e.openpgp.packet.PKEncryptedSessionKey.prototype.decryptSessionKeyWithCipher =
   return e2e.async.Result.toResult(cipher)
       .addCallback(this.validateCipher, this)
       .addCallback(function(cipher) {
-        if (cipher instanceof e2e.cipher.Rsa) {
-          // Use WebCrypto for RSA.
-          return new e2e.scheme.Rsaes(cipher).decrypt(this.encryptedKey);
-        } else if (cipher instanceof e2e.cipher.Ecdh) {
-          return new e2e.scheme.Ecdh(cipher).decrypt(this.encryptedKey)
-             .addCallback(this.removeEccPadding_, this);
-        } else {
-          // Use JS for anything else (ElGamal).
-          return new e2e.scheme.Eme(cipher).decrypt(this.encryptedKey);
-        }
+        return e2e.openpgp.packet.PKEncryptedSessionKey.getEncryptionScheme_(
+            cipher).decrypt(this.encryptedKey);
       }, this)
       .addCallback(this.extractKey_, this);
-};
-
-
-/**
- * Removes the padding for ECC OpenPGP keys.
- * @param {!e2e.ByteArray} decrypted The data with the padding.
- * @return {!e2e.ByteArray} The data without the padding.
- * @private
- */
-e2e.openpgp.packet.PKEncryptedSessionKey.prototype.removeEccPadding_ =
-    function(decrypted) {
-  // Format: 1 byte algo id, key, 2 byte checksum, padding.
-  // Specified in http://tools.ietf.org/html/rfc6637#section-8
-  // Code is repeated below in extractKey_ because we don't know the size.
-  var keySize = e2e.openpgp.constants.getInstance(
-      e2e.openpgp.constants.Type.SYMMETRIC_KEY,
-      decrypted[0]).keySize;
-  var paddingSize = decrypted.length - 1 - 2 - keySize;
-  var padding = decrypted.splice(-paddingSize, paddingSize);
-  // Padding bytes defined in PKCS #5 v2.0, section 6.1.1, row 4.
-  // This style is taken from RFC 1423.
-  goog.array.forEach(padding, function(b) {
-    if (b != paddingSize) {
-      throw new e2e.openpgp.error.ParseError(
-          'Bad session key padding');
-    }
-  });
-  return decrypted;
 };
 
 
@@ -185,31 +147,42 @@ e2e.openpgp.packet.PKEncryptedSessionKey.prototype.
  */
 e2e.openpgp.packet.PKEncryptedSessionKey.construct = function(publicKey,
     sessionKey) {
-  var m = [];
-  m.push(e2e.openpgp.constants.getId(e2e.cipher.Algorithm.AES256));
-  m = m.concat(sessionKey);
-  m = m.concat(
-      e2e.openpgp.calculateNumericChecksum(sessionKey));
-  var encryptedResult;
-  if ((publicKey.cipher.algorithm == e2e.cipher.Algorithm.RSA) ||
-      (publicKey.cipher.algorithm == e2e.cipher.Algorithm.RSA_ENCRYPT)) {
-    var cipher = /** @type {e2e.cipher.Rsa} */(publicKey.cipher);
-    var rsaes = new e2e.scheme.Rsaes(cipher);
-    encryptedResult = rsaes.encrypt(m);
-  } else if (publicKey.cipher.algorithm == e2e.cipher.Algorithm.ECDH) {
-    // 40 bytes in RFC 6637, section 8.
-    var paddingSize = 40 - m.length;
-    goog.array.extend(m, goog.array.repeat(paddingSize, paddingSize));
-    encryptedResult = publicKey.cipher.encrypt(m);
-  } else {
-    var eme = new e2e.scheme.Eme(
-        /** @type {e2e.cipher.Cipher}*/ (publicKey.cipher));
-    encryptedResult = eme.encrypt(m);
+  return e2e.async.Result.toResult(undefined).addCallback(function() {
+    var m = [];
+    m.push(e2e.openpgp.constants.getId(e2e.cipher.Algorithm.AES256));
+    m = m.concat(sessionKey);
+    m = m.concat(e2e.openpgp.calculateNumericChecksum(sessionKey));
+    var scheme = e2e.openpgp.packet.PKEncryptedSessionKey.getEncryptionScheme_(
+        /** @type {!e2e.cipher.Cipher} */ (publicKey.cipher));
+    return /** @type {!e2e.cipher.ciphertext.AsymmetricAsync} */ (
+        scheme.encrypt(m));
+  }).addCallback(goog.partial(
+      e2e.openpgp.packet.PKEncryptedSessionKey.createPacketForKey_,
+      publicKey));
+};
+
+
+/**
+ * Creates an {@link e2e.scheme.EncryptionScheme} for a given cipher.
+ * @param {!e2e.cipher.Cipher} cipher
+ * @return {!e2e.scheme.EncryptionScheme}
+ * @private
+ */
+e2e.openpgp.packet.PKEncryptedSessionKey.getEncryptionScheme_ =
+    function(cipher) {
+  switch (cipher.algorithm) {
+    case e2e.cipher.Algorithm.RSA:
+    case e2e.cipher.Algorithm.RSA_ENCRYPT:
+      return new e2e.scheme.Rsaes(cipher);
+      break;
+    case e2e.cipher.Algorithm.ECDH:
+      return new e2e.openpgp.scheme.Ecdh(cipher);
+      break;
+    case e2e.cipher.Algorithm.ELGAMAL:
+      return new e2e.scheme.Eme(cipher);
+      break;
   }
-  return encryptedResult.addCallback(
-      goog.bind(
-          e2e.openpgp.packet.PKEncryptedSessionKey.createPacketForKey_,
-          null, publicKey));
+  throw new e2e.openpgp.error.ParseError('Invalid cipher.');
 };
 
 
@@ -218,7 +191,7 @@ e2e.openpgp.packet.PKEncryptedSessionKey.construct = function(publicKey,
  * key data and public key.
  * @param {e2e.openpgp.packet.Key} publicKey The public key used to
  *     encrypt the session key.
- * @param {e2e.cipher.ciphertext.Asymmetric} encrypted The encrypted
+ * @param {!e2e.cipher.ciphertext.Asymmetric} encrypted The encrypted
  *     session key.
  * @return {e2e.openpgp.packet.PKEncryptedSessionKey} The key packet.
  * @private

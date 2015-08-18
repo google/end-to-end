@@ -20,11 +20,19 @@
 goog.provide('e2e.openpgp.Context2Impl');
 
 goog.require('e2e');
+/** @suppress {extraRequire} force loading of all ciphers */
+goog.require('e2e.cipher.all');
+/** @suppress {extraRequire} force loading of all compression methods */
+goog.require('e2e.compression.all');
+/** @suppress {extraRequire} force loading of all hash functions */
+goog.require('e2e.hash.all');
 goog.require('e2e.openpgp.Context2');
 goog.require('e2e.openpgp.KeyRingType');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.ParseError');
+/** @suppress {extraRequire} force loading of all signers */
+goog.require('e2e.signer.all');
 goog.require('goog.Promise');
 goog.require('goog.array');
 

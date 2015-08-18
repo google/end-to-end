@@ -74,4 +74,3 @@ e2e.scheme.Ecdh.prototype.decryptHardware = function(ciphertext) {
   throw new e2e.openpgp.error.UnsupportedError(
       "Hardware API doesn't exist yet");
 };
-
