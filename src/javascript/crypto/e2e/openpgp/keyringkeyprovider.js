@@ -35,6 +35,7 @@ goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.signer.Algorithm');
 goog.require('goog.Promise');
 goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.format.EmailAddress');
 
 
@@ -97,8 +98,20 @@ e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_ = function(transferableKeys) {
  * @private
  */
 e2e.openpgp.KeyringKeyProvider.keyToKeyObject_ = function(transferableKey) {
-  return transferableKey.toKeyObject(false,
+  var keyObject = transferableKey.toKeyObject(false,
       e2e.openpgp.KeyringKeyProvider.PROVIDER_ID_);
+  // Populate metadata to enable surrogate keys.
+  if (keyObject.key.secret) {
+    var keyPacket = transferableKey.getKeyToSign();
+    if (keyPacket) {
+      keyObject.signingKeyId = goog.asserts.assertArray(keyPacket.keyId);
+      keyObject.signAlgorithm = /** @type {!e2e.signer.Algorithm} */
+          (goog.asserts.assertString(keyPacket.cipher.algorithm));
+      keyObject.signHashAlgorithm = goog.asserts.assertString(
+          keyPacket.cipher.getHashAlgorithm());
+    }
+  }
+  return keyObject;
 };
 
 
@@ -301,14 +314,16 @@ e2e.openpgp.KeyringKeyProvider.prototype.importKeys = function(keySerialization,
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.decrypt = function(ciphertext, key) {
+e2e.openpgp.KeyringKeyProvider.prototype.decrypt = function(key, keyId,
+    algorithm, ciphertext) {
   return goog.Promise.reject(
       new e2e.openpgp.error.UnsupportedError('Not implemented'));
 };
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.sign = function(data, key) {
+e2e.openpgp.KeyringKeyProvider.prototype.sign = function(key, keyId,
+    algorithm, hashAlgorithm, data) {
   return goog.Promise.reject(
       new e2e.openpgp.error.UnsupportedError('Not implemented'));
 };

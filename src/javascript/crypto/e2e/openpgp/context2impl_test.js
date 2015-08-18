@@ -22,16 +22,25 @@
 goog.provide('e2e.openpgp.Context2ImplTest');
 
 goog.require('e2e');
+goog.require('e2e.openpgp.ClearSignMessage');
 goog.require('e2e.openpgp.Context2Impl');
 goog.require('e2e.openpgp.KeyPurposeType');
 goog.require('e2e.openpgp.KeyRingType');
 goog.require('e2e.openpgp.SimpleKeyManager');
+goog.require('e2e.openpgp.asciiArmor');
+goog.require('e2e.openpgp.block.EncryptedMessage');
+goog.require('e2e.openpgp.block.LiteralMessage');
+goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.Error');
+goog.require('e2e.openpgp.packet.PKEncryptedSessionKey');
+goog.require('e2e.openpgp.packet.SymmetricKey');
 goog.require('goog.Promise');
 goog.require('goog.crypt');
+goog.require('goog.string');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockClassFactory');
 goog.require('goog.testing.jsunit');
+goog.require('goog.testing.mockmatchers');
 goog.setTestOnly();
 
 
@@ -39,6 +48,7 @@ var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 var contextPromise;
 var keyManagerMock;
 var mockClassFactory;
+var PLAINTEXT = 'hello. test.';
 
 function setUp() {
   mockClassFactory = new goog.testing.MockClassFactory();
@@ -194,4 +204,267 @@ function testGetKeysDescription() {
     assertTrue(e instanceof e2e.openpgp.error.Error);
     asyncTestCase.continueTesting();
   });
+}
+
+
+function testEncryptToKeyNoSign() {
+  // TODO(koto): Add decryption test when secret keys support arrives.
+  var context;
+  var EMAIL = 'test@example.com';
+  var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
+  var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
+      publicKeyAscii)[0];
+
+  keyManagerMock.getTrustedKeys(e2e.openpgp.KeyPurposeType.ENCRYPTION, EMAIL).
+      $returns(goog.Promise.resolve([{
+        uids: [EMAIL],
+        key: {
+          secret: false,
+          algorithm: 'DUMMY',
+          fingerprintHex: '',
+          fingerprint: []
+        },
+        subKeys: [],
+        serialized: publicKey.serialize(),
+        providerId: 'Test'
+      }]));
+
+  keyManagerMock.$replay();
+
+  asyncTestCase.waitForAsync('Waiting for encryption.');
+  contextPromise.then(function(c) {
+    context = c;
+    return context.getTrustedKeys(e2e.openpgp.KeyPurposeType.ENCRYPTION, EMAIL);
+  }, fail).then(function(encryptionKeys) {
+    return context.encryptSign(PLAINTEXT, {}, encryptionKeys, [], []);
+  }, fail).then(function(ciphertext) {
+    assertTrue(goog.string.startsWith(ciphertext,
+        '-----BEGIN PGP MESSAGE-----\r\n'));
+    assertTrue(goog.string.endsWith(ciphertext,
+        '-----END PGP MESSAGE-----\r\n'));
+    var message = e2e.openpgp.block.factory.parseAsciiMessage(ciphertext);
+    assertTrue(message instanceof e2e.openpgp.block.EncryptedMessage);
+    assertEquals(1, message.eskPackets.length);
+    assertTrue(message.eskPackets[0] instanceof
+        e2e.openpgp.packet.PKEncryptedSessionKey);
+    assertArrayEquals(message.eskPackets[0].keyId, publicKey.subKeys[0].keyId);
+    keyManagerMock.$verify();
+    asyncTestCase.continueTesting();
+  }, fail);
+}
+
+
+function testEncryptToPassphraseNoSign() {
+  // TODO(koto): Add decryption test.
+  var context;
+
+  asyncTestCase.waitForAsync('Waiting for first import of key.');
+  contextPromise.then(function(c) {
+    context = c;
+    return context.encryptSign(PLAINTEXT, {}, [], ['passphrase'], []);
+  }, fail).then(function(ciphertext) {
+    assertTrue(goog.string.startsWith(ciphertext,
+        '-----BEGIN PGP MESSAGE-----\r\n'));
+    assertTrue(goog.string.endsWith(ciphertext,
+        '-----END PGP MESSAGE-----\r\n'));
+    var message = e2e.openpgp.block.factory.parseAsciiMessage(ciphertext);
+    assertTrue(message instanceof e2e.openpgp.block.EncryptedMessage);
+    assertEquals(1, message.eskPackets.length);
+    assertTrue(message.eskPackets[0] instanceof
+        e2e.openpgp.packet.SymmetricKey);
+    asyncTestCase.continueTesting();
+  }, fail);
+}
+
+
+function testEncryptToPassphraseSign() {
+  // TODO(koto): Add decryption test.
+  var context;
+  var EMAIL = 'test@example.com';
+
+  var privKeyAscii = document.getElementById('e2ePrivKeyAscii').value;
+
+  var privateKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
+      privKeyAscii)[0];
+  privateKey.processSignatures();
+  privateKey.getKeyToSign().cipher.unlockKey();
+  var cipher = privateKey.getKeyToSign().cipher.getWrappedCipher();
+
+  var keyObject = {
+    uids: [EMAIL],
+    key: {
+      secret: true,
+      algorithm: 'DUMMY',
+      fingerprintHex: '',
+      fingerprint: []
+    },
+    subKeys: [],
+    serialized: null,
+    providerId: 'Test',
+    signingKeyId: privateKey.getKeyToSign().keyId,
+    signAlgorithm: cipher.algorithm,
+    signHashAlgorithm: cipher.getHashAlgorithm()
+  };
+
+  keyManagerMock.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL).
+      $returns(goog.Promise.resolve([keyObject]));
+
+  keyManagerMock.sign(keyObject, keyObject.signingKeyId, cipher.algorithm,
+      cipher.getHashAlgorithm(),
+      goog.testing.mockmatchers.ignoreArgument).
+      $does(function(key, keyId, signAlgo, hashAlgo, data) {
+        return cipher.sign(data);
+      });
+
+  keyManagerMock.$replay();
+
+  asyncTestCase.waitForAsync('Waiting for first import of key.');
+  contextPromise.then(function(c) {
+    context = c;
+    return context.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL);
+  }, fail).then(function(signingKeys) {
+    return context.encryptSign(PLAINTEXT, {}, [], ['passphrase'], signingKeys);
+  }, fail).then(function(ciphertext) {
+    assertTrue(goog.string.startsWith(ciphertext,
+        '-----BEGIN PGP MESSAGE-----\r\n'));
+    assertTrue(goog.string.endsWith(ciphertext,
+        '-----END PGP MESSAGE-----\r\n'));
+    var message = e2e.openpgp.block.factory.parseAsciiMessage(ciphertext);
+    assertTrue(message instanceof e2e.openpgp.block.EncryptedMessage);
+    assertEquals(1, message.eskPackets.length);
+    assertTrue(message.eskPackets[0] instanceof
+        e2e.openpgp.packet.SymmetricKey);
+    keyManagerMock.$verify();
+    asyncTestCase.continueTesting();
+  }, fail);
+}
+
+
+function testClearSign() {
+  // TODO(koto): Add decryption test.
+  var context;
+  var EMAIL = 'test@example.com';
+
+  var privKeyAscii = document.getElementById('e2ePrivKeyAscii').value;
+
+  var privateKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
+      privKeyAscii)[0];
+  privateKey.processSignatures();
+  privateKey.getKeyToSign().cipher.unlockKey();
+  var cipher = privateKey.getKeyToSign().cipher.getWrappedCipher();
+  var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
+  var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
+      publicKeyAscii)[0];
+
+  var keyObject = {
+    uids: [EMAIL],
+    key: {
+      secret: true,
+      algorithm: 'DUMMY',
+      fingerprintHex: '',
+      fingerprint: []
+    },
+    subKeys: [],
+    serialized: null,
+    providerId: 'Test',
+    signingKeyId: privateKey.getKeyToSign().keyId,
+    signAlgorithm: cipher.algorithm,
+    signHashAlgorithm: cipher.getHashAlgorithm()
+  };
+
+  keyManagerMock.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL).
+      $returns(goog.Promise.resolve([keyObject]));
+
+  keyManagerMock.sign(keyObject, keyObject.signingKeyId, cipher.algorithm,
+      cipher.getHashAlgorithm(),
+      goog.testing.mockmatchers.ignoreArgument).
+      $does(function(key, keyId, algo, hashAlgo, data) {
+        return cipher.sign(data);
+      });
+
+  keyManagerMock.$replay();
+
+  asyncTestCase.waitForAsync('Waiting for first import of key.');
+  contextPromise.then(function(c) {
+    context = c;
+    return context.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL);
+  }, fail).then(function(signingKeys) {
+    return context.encryptSign(PLAINTEXT, {}, [], [], signingKeys);
+  }, fail).then(function(ciphertext) {
+    assertTrue(goog.string.startsWith(ciphertext,
+        '-----BEGIN PGP SIGNED MESSAGE-----\r\n'));
+    assertTrue(goog.string.endsWith(ciphertext,
+        '-----END PGP SIGNATURE-----\r\n'));
+    var message = e2e.openpgp.asciiArmor.parseClearSign(ciphertext);
+    assertTrue(message instanceof e2e.openpgp.ClearSignMessage);
+    assertEquals(PLAINTEXT, message.getBody());
+    assertArrayEquals(publicKey.keyPacket.keyId,
+        message.getSignature().getSignerKeyId());
+    keyManagerMock.$verify();
+    asyncTestCase.continueTesting();
+  }, fail);
+}
+
+
+function testByteSign() {
+  // TODO(koto): Add decryption test.
+  var context;
+  var EMAIL = 'test@example.com';
+
+  var privKeyAscii = document.getElementById('e2ePrivKeyAscii').value;
+
+  var privateKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
+      privKeyAscii)[0];
+  privateKey.processSignatures();
+  privateKey.getKeyToSign().cipher.unlockKey();
+  var cipher = privateKey.getKeyToSign().cipher.getWrappedCipher();
+  var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
+  var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
+      publicKeyAscii)[0];
+
+  var keyObject = {
+    uids: [EMAIL],
+    key: {
+      secret: true,
+      algorithm: 'DUMMY',
+      fingerprintHex: '',
+      fingerprint: []
+    },
+    subKeys: [],
+    serialized: null,
+    providerId: 'Test',
+    signingKeyId: privateKey.getKeyToSign().keyId,
+    signAlgorithm: cipher.algorithm,
+    signHashAlgorithm: cipher.getHashAlgorithm()
+  };
+
+  keyManagerMock.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL).
+      $returns(goog.Promise.resolve([keyObject]));
+
+  keyManagerMock.sign(keyObject, keyObject.signingKeyId, cipher.algorithm,
+      cipher.getHashAlgorithm(),
+      goog.testing.mockmatchers.ignoreArgument).
+      $does(function(key, keyId, algo, hashAlgo, data) {
+        return cipher.sign(data);
+      });
+
+  keyManagerMock.$replay();
+
+  asyncTestCase.waitForAsync('Waiting for first import of key.');
+  contextPromise.then(function(c) {
+    context = c;
+    return context.setArmorOutput(false);
+  }, fail).then(function() {
+    return context.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL);
+  }, fail).then(function(signingKeys) {
+    return context.encryptSign(PLAINTEXT, {}, [], [], signingKeys);
+  }, fail).then(function(ciphertext) {
+    var message = e2e.openpgp.block.factory.parseByteArrayMessage(ciphertext);
+    assertTrue(message instanceof e2e.openpgp.block.LiteralMessage);
+    assertEquals(1, message.signatures.length);
+    assertArrayEquals(publicKey.keyPacket.keyId,
+        message.getSignatureKeyIds()[0]);
+    keyManagerMock.$verify();
+    asyncTestCase.continueTesting();
+  }, fail);
 }

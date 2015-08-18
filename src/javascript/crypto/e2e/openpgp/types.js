@@ -153,7 +153,7 @@ e2e.openpgp.VerifyDecryptPromise;
 
 /**
  * Promise resolved with the result of the encryption and signing operation.
- * @typedef {goog.Thenable.<!e2e.ByteArray>|goog.Thenable.<string>}
+ * @typedef {goog.Thenable.<!e2e.ByteArray|string>}
  */
 e2e.openpgp.EncryptSignPromise;
 
@@ -170,7 +170,11 @@ e2e.openpgp.KeyPacketInfo;
  * Key object.
  * @typedef {?{subKeys: !Array.<!e2e.openpgp.KeyPacketInfo>, uids:
  *     !Array.<string>, key: !e2e.openpgp.KeyPacketInfo, serialized:
- *     !e2e.ByteArray, providerId: !e2e.openpgp.KeyProviderId}}
+ *     !e2e.ByteArray, providerId: !e2e.openpgp.KeyProviderId,
+ *     signingKeyId: ?e2e.openpgp.KeyId,
+ *     signAlgorithm: ?e2e.signer.Algorithm,
+ *     signHashAlgorithm: ?e2e.hash.Algorithm
+ *     }}
  */
 e2e.openpgp.Key;
 

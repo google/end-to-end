@@ -30,6 +30,7 @@ goog.require('e2e.debug.Console');
 /** @suppress {extraRequire} force loading of all hash functions */
 goog.require('e2e.hash.all');
 goog.require('e2e.hash.factory');
+goog.require('e2e.openpgp.KeyProviderCipher');
 goog.require('e2e.openpgp.Mpi');
 goog.require('e2e.openpgp.SignatureDigestAlgorithm');
 goog.require('e2e.openpgp.constants');
@@ -613,9 +614,10 @@ e2e.openpgp.packet.Signature.RevocationReason = {
  * @private
  */
 e2e.openpgp.packet.Signature.getSignatureScheme_ = function(signer) {
-  // TODO(koto): Figure out what to do with KeyProviderCipher.
-  // We either keep scheme at the KeyProvider-side (return signer here then)
-  // Or keep schemes local (wrap in scheme here then).
+  // KeyProviderCipher implements a scheme remotely, return it directly.
+  if (signer instanceof e2e.openpgp.KeyProviderCipher) {
+    return signer;
+  }
   switch (signer.algorithm) {
     case e2e.cipher.Algorithm.RSA:
     case e2e.signer.Algorithm.RSA_SIGN:

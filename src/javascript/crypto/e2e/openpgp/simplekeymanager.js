@@ -158,3 +158,17 @@ e2e.openpgp.SimpleKeyManager.prototype.importKeys = function(keySerialization,
 e2e.openpgp.SimpleKeyManager.prototype.removeKeys = function(keys) {
   return this.keyProvider_.removeKeys(keys);
 };
+
+
+/** @override */
+e2e.openpgp.SimpleKeyManager.prototype.sign = function(key, keyId, algorithm,
+    hashAlgorithm, data) {
+  return this.keyProvider_.sign(key, keyId, algorithm, hashAlgorithm, data);
+};
+
+
+/** @override */
+e2e.openpgp.SimpleKeyManager.prototype.decrypt = function(key, keyId, algorithm,
+    ciphertext) {
+  return this.keyProvider_.decrypt(key, keyId, algorithm, ciphertext);
+};

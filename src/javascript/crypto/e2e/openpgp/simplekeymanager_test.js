@@ -116,8 +116,14 @@ DummyKeyProvider.prototype.importKeys = function(keys, options) {
   }, this);
   return goog.Promise.resolve(uids);
 };
-DummyKeyProvider.prototype.decrypt = goog.nullFunction;
-DummyKeyProvider.prototype.sign = goog.nullFunction;
+DummyKeyProvider.prototype.decrypt = function(key, keyId, algorithm,
+    ciphertext) {
+  return goog.Promise.resolve(ciphertext);
+};
+DummyKeyProvider.prototype.sign = function(key, keyId, algorithm, hashAlgorithm,
+    data) {
+  return goog.Promise.resolve(data);
+};
 DummyKeyProvider.prototype.generateKeyPair = function(userId, options) {
   var key = {
     key: {

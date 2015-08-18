@@ -71,8 +71,12 @@ e2e.openpgp.SecretKeyProvider.prototype.generateKeyPair = goog.abstractMethod;
 
 /**
  * Decrypts a ciphertext with an unlocked secret key.
- * @param {!e2e.cipher.ciphertext.CipherText} ciphertext The ciphertext.
  * @param {!e2e.openpgp.Key} key The unlocked key to decrypt with.
+ * @param {!e2e.openpgp.KeyId} keyId Key ID hint for choosing the right key
+ *     packet.
+ * @param {!e2e.cipher.Algorithm} algorithm The declared algorithm to use.
+ *     (on algorithm mismatch, an error will be thrown).
+ * @param {!e2e.cipher.ciphertext.CipherText} ciphertext The ciphertext.
  * @return {!goog.Thenable<!e2e.ByteArray>}  The decrypted data.
  * @export
  */
@@ -81,8 +85,14 @@ e2e.openpgp.SecretKeyProvider.prototype.decrypt = goog.abstractMethod;
 
 /**
  * Signs a message with an unlocked secret key.
- * @param {!e2e.ByteArray} data The data to sign.
  * @param {!e2e.openpgp.Key} key The unlocked key to sign with.
+ * @param {!e2e.openpgp.KeyId} keyId Key ID hint for choosing the right key
+ *     packet.
+ * @param {!e2e.signer.Algorithm} algorithm The declared algorithm to use.
+ *     (on algorithm mismatch, an error will be thrown).
+ * @param {!e2e.hash.Algorithm} hashAlgorithm The declared hash algorithm to
+ *     use (on algorithm mismatch, an error will be thrown).
+ * @param {!e2e.ByteArray} data The data to sign.
  * @return {!goog.Thenable<!e2e.signer.signature.Signature>} The signature.
  * @export
  */
