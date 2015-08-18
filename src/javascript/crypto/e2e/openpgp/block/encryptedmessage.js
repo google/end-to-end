@@ -356,9 +356,8 @@ e2e.openpgp.block.EncryptedMessage.prototype.serializeMessage = function() {
  *   session key with each of these passphrases. Either opt_publicKeys or
  *   opt_passphrases must be provided or
  *   {e2e.openpgp.error.InvalidArgumentsError} will be thrown.
- * @param {e2e.openpgp.block.TransferableKey=} opt_signatureKey The key used
- *   to sign the message. Throws {e2e.openpgp.error.InvalidArgumentsError} if no
- *   provided key has a signing capability.
+ * @param {e2e.openpgp.packet.SecretKeyInterface=} opt_signatureKey The key
+ *   used to sign the message.
  * @return {!e2e.async.Result.<!e2e.openpgp.block.EncryptedMessage>}
  */
 e2e.openpgp.block.EncryptedMessage.construct = function(
@@ -379,19 +378,13 @@ e2e.openpgp.block.EncryptedMessage.construct = function(
         'No public key nor passphrase was provided, encryption is impossible.');
   }
   // Optionally sign the message.
-  var sigKeyPacket = opt_signatureKey && opt_signatureKey.getKeyToSign();
-  if (opt_signatureKey && !sigKeyPacket) {
-    // Signature was requested, but no provided key can sign.
-    throw new e2e.openpgp.error.InvalidArgumentsError(
-        'Provided key does not have a signing capability.');
-  }
   /** @type {!e2e.async.Result.<undefined>} */
   var signResult = new e2e.async.Result;
-  if (sigKeyPacket) {
+  if (opt_signatureKey) {
     // Creates OnePassSignature + LiteralData + Signature sequence.
     // That sequence will be later compressed and encrypted.
     // This allows e.g. GnuPG to verify the signature.
-    signResult = literalMessage.signWithOnePass(sigKeyPacket);
+    signResult = literalMessage.signWithOnePass(opt_signatureKey);
   } else {
     signResult.callback();
   }

@@ -982,7 +982,7 @@ function testEncryptionWithSignatures() {
       literal,
       [publicKeyBlock],
       [],
-      privateKeyBlock)
+      privateKeyBlock.getKeyToSign())
     .addCallback(function(block) {
       var ascii = e2e.openpgp.asciiArmor.encode(block.header,
                                                     block.serialize());

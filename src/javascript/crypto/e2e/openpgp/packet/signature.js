@@ -463,7 +463,7 @@ e2e.openpgp.packet.Signature.prototype.isCertificationSignature = function() {
 
 /**
  * Signs the data and creates a signature packet.
- * @param {!e2e.openpgp.packet.SecretKey} key Key to sign with.
+ * @param {!e2e.openpgp.packet.SecretKeyInterface} key Key to sign with.
  * @param {!e2e.ByteArray} data Data to sign.
  * @param {!e2e.openpgp.packet.Signature.SignatureType} signatureType
  * @param {!Object.<string, number|!e2e.ByteArray>} attributes
@@ -487,8 +487,8 @@ e2e.openpgp.packet.Signature.construct = function(
   var unhashedSubpackets = opt_untrustedAttributes ?
       e2e.openpgp.packet.SignatureSub.construct(opt_untrustedAttributes) :
       [];
-  var signer = key.cipher;
-  var algorithm = /** @type {!e2e.signer.Algorithm} */ (signer.algorithm);
+  var signer = /** @type {!e2e.signer.Signer} */ (key.cipher);
+  var algorithm =  /** @type {!e2e.signer.Algorithm} */ (signer.algorithm);
   goog.asserts.assert(algorithm in e2e.signer.Algorithm);
 
   var plaintext = e2e.openpgp.packet.Signature.getDataToHash(

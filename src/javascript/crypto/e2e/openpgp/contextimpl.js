@@ -513,7 +513,16 @@ e2e.openpgp.ContextImpl.prototype.encryptSign = function(
  */
 e2e.openpgp.ContextImpl.prototype.clearSignInternal = function(
     plaintext, key) {
-  var messageRes = e2e.openpgp.ClearSignMessage.construct(plaintext, key);
+  var keyPacket = null;
+  if (key) {
+    keyPacket = key.getKeyToSign();
+  }
+  if (!keyPacket) {
+    // No provided key can sign.
+    return e2e.async.Result.toError(new e2e.openpgp.error.InvalidArgumentsError(
+        'Provided key does not have a signing capability.'));
+  }
+  var messageRes = e2e.openpgp.ClearSignMessage.construct(plaintext, keyPacket);
   return messageRes.addCallback(function(message) {
     return e2e.openpgp.asciiArmor.encodeClearSign(message, this.armorHeaders_);
   }, this);
@@ -566,11 +575,18 @@ e2e.openpgp.ContextImpl.prototype.encryptSignInternal = function(
     plaintext, options, encryptionKeys, passphrases, opt_signatureKey) {
   try {
     var literal = e2e.openpgp.block.LiteralMessage.construct(plaintext);
+    var sigKeyPacket = opt_signatureKey && opt_signatureKey.getKeyToSign();
+    if (opt_signatureKey && !sigKeyPacket) {
+      // Signature was requested, but no provided key can sign.
+      throw new e2e.openpgp.error.InvalidArgumentsError(
+          'Provided key does not have a signing capability.');
+    }
+
     var blockResult = e2e.openpgp.block.EncryptedMessage.construct(
         literal,
         encryptionKeys,
         passphrases,
-        opt_signatureKey);
+        sigKeyPacket);
     var serializedBlock = blockResult.addCallback(function(block) {
       return block.serialize();
     }, this);

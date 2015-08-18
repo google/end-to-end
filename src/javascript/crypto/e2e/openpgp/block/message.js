@@ -118,7 +118,7 @@ e2e.openpgp.block.Message.prototype.consumeOnePassSignatures = function(
 
 /**
  * Signs the message with the key and adds the signature packet to the message.
- * @param {!e2e.openpgp.packet.SecretKey} key
+ * @param {!e2e.openpgp.packet.SecretKeyInterface} key The key to sign with.
  * @param {e2e.openpgp.packet.Signature.SignatureType=} opt_signatureType Type
  *    of signature to generate (defaults to BINARY)
  * @return {!e2e.async.Result.<undefined>}
@@ -134,7 +134,7 @@ e2e.openpgp.block.Message.prototype.sign = function(key, opt_signatureType) {
 /**
  * Signs the message with the key, and adds OnePassSignature packet to the
  * message.
- * @param {!e2e.openpgp.packet.SecretKey} key
+ * @param {!e2e.openpgp.packet.SecretKeyInterface} key The key to sign with.
  * @param {e2e.openpgp.packet.Signature.SignatureType=} opt_signatureType Type
  *    of signature to generate (defaults to BINARY)
  * @return {!e2e.async.Result.<undefined>}
@@ -163,7 +163,7 @@ e2e.openpgp.block.Message.prototype.addSignature = function(signature) {
 /**
  * Construct a signature over the message and return it without modifying the
  * message.
- * @param  {!e2e.openpgp.packet.SecretKey} key
+ * @param  {!e2e.openpgp.packet.SecretKeyInterface} key The key to sign with.
  * @param  {e2e.openpgp.packet.Signature.SignatureType=} opt_signatureType Type
  *     of signature to generate (defaults to BINARY)
  * @return {!e2e.async.Result.<!e2e.openpgp.packet.Signature>} signature
