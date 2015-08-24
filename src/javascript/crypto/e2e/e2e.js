@@ -174,7 +174,9 @@ e2e.byteArrayToString = function(bytes, opt_charset) {
   if (e2e.USE_TEXT_DECODER) {
     var td = /** @type {{decode: function(Uint8Array):string}} */ (
         new goog.global['TextDecoder'](opt_charset || 'utf-8'));
-    return td.decode(new Uint8Array(bytes));
+    var typedArray = bytes instanceof Uint8Array ? bytes :
+        new Uint8Array(bytes);
+    return td.decode(typedArray);
   } else {
     return goog.crypt.utf8ByteArrayToString(bytes);
   }
@@ -183,7 +185,7 @@ e2e.byteArrayToString = function(bytes, opt_charset) {
 
 /**
  * Converts a byte array into a JS string asynchronously.
- * @param {!e2e.ByteArray} bytes The bytes to convert.
+ * @param {!e2e.ByteArray|!Uint8Array} bytes The bytes to convert.
  * @param {string=} opt_charset The charset to try (defaults to UTF-8).
  * @return {!e2e.async.Result.<string>} The string representation of bytes.
  */
@@ -194,6 +196,8 @@ e2e.byteArrayToStringAsync = function(bytes, opt_charset) {
   } else {
     var res = new e2e.async.Result;
     var fr = new FileReader;
+    var typedArray = bytes instanceof Uint8Array ? bytes :
+        new Uint8Array(bytes);
     fr.onload = function() {
       res.callback(fr.result);
     };
@@ -201,7 +205,7 @@ e2e.byteArrayToStringAsync = function(bytes, opt_charset) {
       res.errback(new Error(String(e)));
     };
     fr.readAsText(
-        new Blob([new Uint8Array(bytes)]), opt_charset || 'utf-8');
+        new Blob([typedArray]), opt_charset || 'utf-8');
     return res;
   }
 };

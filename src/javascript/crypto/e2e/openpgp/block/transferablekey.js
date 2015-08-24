@@ -276,7 +276,7 @@ e2e.openpgp.block.TransferableKey.prototype.getKeyTo = function(use, type) {
 
 
 /**
- * Chooses a key packet for encryption.
+ * Chooses a public key packet for encryption.
  * @return {e2e.openpgp.packet.PublicKey}
  */
 e2e.openpgp.block.TransferableKey.prototype.getKeyToEncrypt =
@@ -284,7 +284,15 @@ e2e.openpgp.block.TransferableKey.prototype.getKeyToEncrypt =
 
 
 /**
- * Chooses a key packet for signing.
+ * Chooses a secret key packet for decryption.
+ * @return {e2e.openpgp.packet.SecretKey}
+ */
+e2e.openpgp.block.TransferableKey.prototype.getKeyToDecrypt =
+    goog.abstractMethod;
+
+
+/**
+ * Chooses a secret key packet for signing.
  * @return {e2e.openpgp.packet.SecretKey}
  */
 e2e.openpgp.block.TransferableKey.prototype.getKeyToSign =
@@ -339,6 +347,7 @@ e2e.openpgp.block.TransferableKey.prototype.serialize = function() {
  * @param {boolean=} opt_dontSerialize if true, skip key serialization in
  *     results.
  * @param {!e2e.openpgp.KeyProviderId=} opt_keyProviderId Key provider ID
+ *     hints for secret key objects will be populated.
  * @return {!e2e.openpgp.Key}
  */
 e2e.openpgp.block.TransferableKey.prototype.toKeyObject = function(
@@ -358,8 +367,27 @@ e2e.openpgp.block.TransferableKey.prototype.toKeyObject = function(
     providerId: keyProviderId,
     signingKeyId: null,
     signAlgorithm: null,
-    signHashAlgorithm: null
+    signHashAlgorithm: null,
+    decryptionKeyId: null,
+    decryptionAlgorithm: null,
   };
+  if (keyObject.key.secret) {
+    // Populate metadata to enable surrogate keys.
+    var keyPacket = this.getKeyToSign();
+    if (keyPacket) {
+      keyObject.signingKeyId = goog.asserts.assertArray(keyPacket.keyId);
+      keyObject.signAlgorithm = /** @type {!e2e.signer.Algorithm} */
+          (goog.asserts.assertString(keyPacket.cipher.algorithm));
+      keyObject.signHashAlgorithm = goog.asserts.assertString(
+          keyPacket.cipher.getHashAlgorithm());
+    }
+    keyPacket = this.getKeyToDecrypt();
+    if (keyPacket) {
+      keyObject.decryptionKeyId = goog.asserts.assertArray(keyPacket.keyId);
+      keyObject.decryptionAlgorithm = /** @type {!e2e.cipher.Algorithm} */
+          (goog.asserts.assertString(keyPacket.cipher.algorithm));
+    }
+  }
   return keyObject;
 };
 

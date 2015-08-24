@@ -28,6 +28,8 @@ goog.require('e2e.compression.all');
 goog.require('e2e.hash.all');
 goog.require('e2e.openpgp.ClearSignMessage');
 goog.require('e2e.openpgp.Context2');
+goog.require('e2e.openpgp.KeyProviderCipher');
+goog.require('e2e.openpgp.KeyPurposeType');
 goog.require('e2e.openpgp.KeyRingType');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.EncryptedMessage');
@@ -43,6 +45,7 @@ goog.require('e2e.signer.all');
 goog.require('goog.Promise');
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.async.Deferred');
 
 
 
@@ -467,15 +470,224 @@ e2e.openpgp.Context2Impl.prototype.encodeMessage_ = function(message) {
 /** @override */
 e2e.openpgp.Context2Impl.prototype.verifyDecrypt = function(encryptedMessage,
     passphraseCallback, opt_decryptionKeys, opt_verificationKeys) {
-  // TODO(koto): implement.
-  return goog.Promise.resolve(/** @type {!e2e.openpgp.VerifiedDecrypt} */ ({
-    decrypt: {
-      data: e2e.stringToByteArray('DUMMY DECRYPTION'),
-      options: {filename: '', creationTime: 0, charset: 'utf-8'},
-      wasEncrypted: false
-    },
-    verify: null
-  }));
+  return goog.Promise.resolve(undefined).then(function() {
+    var encryptedData, charset;
+    if (typeof encryptedMessage == 'string') {
+      if (e2e.openpgp.asciiArmor.isClearSign(encryptedMessage)) {
+        return this.verifyClearSign_(
+            e2e.openpgp.asciiArmor.parseClearSign(encryptedMessage),
+            opt_verificationKeys);
+      }
+      var armoredMessage = e2e.openpgp.asciiArmor.parse(encryptedMessage);
+      charset = armoredMessage.charset;
+      encryptedData = armoredMessage.data;
+    } else {
+      encryptedData = encryptedMessage;
+    }
+    return this.verifyDecryptInternal(
+        encryptedData, passphraseCallback, charset, opt_decryptionKeys,
+        opt_verificationKeys);
+  }, null, this);
+};
+
+
+/**
+ * Verifies a clearsign message signatures.
+ * @param  {!e2e.openpgp.ClearSignMessage} clearSignMessage Message to
+ *     verify.
+ * @param {!Array.<!e2e.openpgp.Key>=} opt_verificationKeys If present,
+ *     only those keys will be used for signature verification. Otherwise,
+ *     Key ID hints in the message will be used to resolve the keys.
+ * @return {!e2e.openpgp.VerifyDecryptPromise} Verification result
+ * @private
+ */
+e2e.openpgp.Context2Impl.prototype.verifyClearSign_ = function(
+    clearSignMessage, opt_verificationKeys) {
+  return this.processLiteralMessage_(clearSignMessage.toLiteralMessage(),
+      opt_verificationKeys)
+      .then(function(result) {
+        result.decrypt.wasEncrypted = false;
+        return result;
+      });
+};
+
+
+/**
+ * Internal implementation of the verification/decryption operation.
+ * @param {!e2e.ByteArray} encryptedMessage The encrypted data.
+ * @param {function(string):!goog.Thenable<string>} passphraseCallback This
+ *     callback is used for requesting an action-specific passphrase from the
+ *     user.
+ * @param {string=} opt_charset The (optional) charset to decrypt with.
+ * @param {!Array.<!e2e.openpgp.Key>=} opt_decryptionKeys If present,
+ *     only those keys will be used for decryption. Otherwise, Context2 uses
+ *     Key ID hints in the message to resolve keys on its own.
+ * @param {!Array.<!e2e.openpgp.Key>=} opt_verificationKeys If present,
+ *     only those keys will be used for signature verification. Otherwise,
+ *     Key ID hints in the message will be used to resolve the keys.
+ * @protected
+ * @return {!e2e.openpgp.VerifyDecryptPromise}
+ */
+e2e.openpgp.Context2Impl.prototype.verifyDecryptInternal = function(
+    encryptedMessage, passphraseCallback, opt_charset, opt_decryptionKeys,
+    opt_verificationKeys) {
+  var block = e2e.openpgp.block.factory.parseByteArrayMessage(
+      encryptedMessage, opt_charset);
+  if (block instanceof e2e.openpgp.block.EncryptedMessage) {
+    var keyCipherCallback = goog.bind(function(keyId, algorithm) {
+      return goog.async.Deferred.fromPromise(
+          this.getDecryptionCipher_(keyId, algorithm, opt_decryptionKeys));
+    }, this);
+
+    var pwCallbackWrapper = function(passphrase) {
+      return goog.async.Deferred.succeed(passphrase).addCallback(
+          passphraseCallback);
+    };
+
+    return block.decrypt(keyCipherCallback, pwCallbackWrapper)
+        .addCallbacks(function(message) {
+          return this.processLiteralMessage_(message, opt_verificationKeys);
+        }, goog.Promise.reject, this)
+        .then(function(result) {
+          result.decrypt.wasEncrypted = true;
+          return result;
+        });
+  } else {
+    return this.processLiteralMessage_(block, opt_verificationKeys)
+        .then(function(result) {
+          result.decrypt.wasEncrypted = false;
+          return result;
+        });
+  }
+};
+
+
+/**
+ * Returns a decrypting cipher for a first found secret key with a given Key ID
+ * Optionally limits the search to a set of key object in a provided array.
+ * @param {!e2e.openpgp.KeyId} keyId Key ID hint.
+ * @param {!e2e.cipher.Algorithm} algorithm Algorithm hint.
+ * @param {!Array.<!e2e.openpgp.Key>=} opt_allowedDecryptionKeys If provided,
+ * only ciphers for keys in that array can be returned.
+ * @return {!goog.Promise<e2e.openpgp.KeyProviderCipher>} The cipher, or null
+ *     if no matching cipher has been found.
+ * @private
+ */
+e2e.openpgp.Context2Impl.prototype.getDecryptionCipher_ = function(keyId,
+    algorithm, opt_allowedDecryptionKeys) {
+  // Currently only the first key matching a Key ID is returned
+  // Key ID collisions in secret keys can prevent decryption.
+  return goog.Promise.resolve().then(function() {
+    if (goog.isArray(opt_allowedDecryptionKeys)) {
+      // Preselect based on the key object
+      var foundKey = goog.array.find(opt_allowedDecryptionKeys, function(key) {
+        return (key.key.secret &&
+            key.decryptionAlgorithm == algorithm &&
+            e2e.compareByteArray(goog.asserts.assertArray(key.decryptionKeyId),
+                keyId));
+      });
+      return foundKey ? [foundKey] : [];
+    } else {
+      // Use the Key ID hint to resolve the key.
+      return this.keyManager_.getKeysByKeyId(
+          e2e.openpgp.KeyPurposeType.DECRYPTION, keyId);
+    }
+  }, null, this).then(function(keyObjects) {
+    if (keyObjects.length == 0) {
+      return null;
+    }
+    if (keyObjects.length > 1) {
+      throw new e2e.openpgp.error.UnsupportedError(
+          'Multiple decryption keys are not supported.');
+    }
+    return new e2e.openpgp.KeyProviderCipher(
+        algorithm,
+        undefined,
+        goog.bind(
+        this.keyManager_.decrypt,
+        this.keyManager_,
+        keyObjects[0],
+        keyId));
+  }, null, this);
+};
+
+
+/**
+ * Processes a literal message and returns the result of verification.
+ * @param {e2e.openpgp.block.Message} block
+ * @param {!Array.<!e2e.openpgp.Key>=} opt_verificationKeys If present,
+ *     only those keys will be used for signature verification. Otherwise,
+ *     Key ID hints in the message will be used to resolve the keys.
+ * @return {!e2e.openpgp.VerifyDecryptPromise}
+ * @private
+ */
+e2e.openpgp.Context2Impl.prototype.processLiteralMessage_ = function(block,
+    opt_verificationKeys) {
+  var literalBlock = block.getLiteralMessage();
+  var verifyPromise = goog.Promise.resolve(null);
+  if (literalBlock.signatures) {
+    verifyPromise = this.verifyMessage_(literalBlock, opt_verificationKeys);
+  }
+  return verifyPromise.then(function(verify) {
+    return /** @type {!e2e.openpgp.VerifiedDecrypt} */ ({
+      'decrypt': {
+        'data': new Uint8Array(literalBlock.getData()),
+        'options': {
+          'charset': literalBlock.getCharset(),
+          'creationTime': literalBlock.getTimestamp(),
+          'filename': literalBlock.getFilename()
+        },
+        'wasEncrypted': false
+      },
+      'verify': verify
+    });
+  });
+};
+
+
+/**
+ * Verifies signatures places on a LiteralMessage
+ * @param  {!e2e.openpgp.block.LiteralMessage} message Block to verify
+ * @param {!Array.<!e2e.openpgp.Key>=} opt_verificationKeys If present,
+ *     only those keys will be used for signature verification. Otherwise,
+ *     Key ID hints in the message will be used to resolve the keys.
+ * @return {!goog.Thenable<e2e.openpgp.VerifyResult>} Verification result.
+ * @private
+ */
+e2e.openpgp.Context2Impl.prototype.verifyMessage_ = function(
+    message, opt_verificationKeys) {
+  var keyBlocksPromise;
+
+  if (goog.isDefAndNotNull(opt_verificationKeys)) {
+    // We know the keys upfront.
+    keyBlocksPromise = goog.Promise.resolve(
+        goog.array.map(opt_verificationKeys, this.requirePublicKey_, this));
+  } else {
+    // Get keys matching key IDs declared in signatures.
+    keyBlocksPromise = goog.Promise.all(
+        goog.array.map(message.getSignatureKeyIds(), goog.bind(function(keyId) {
+          return this.keyManager_.getKeysByKeyId(
+              e2e.openpgp.KeyPurposeType.VERIFICATION, keyId);
+        }, this))).then(function(keyHandles) {
+          var foundKeys = goog.array.flatten(goog.array.filter(
+              keyHandles, function(keyHandle) {
+                return !goog.isNull(keyHandle);
+              }));
+          return goog.array.map(foundKeys, this.requirePublicKey_, this);
+        }, null, this);
+  }
+
+  return keyBlocksPromise.then(function(verificationKeys) {
+    var verifyResult = message.verify(verificationKeys);
+    return {
+      success: goog.array.map(verifyResult.success, function(key) {
+        return key.toKeyObject();
+      }),
+      failure: goog.array.map(verifyResult.failure, function(key) {
+        return key.toKeyObject();
+      })
+    };
+  });
 };
 
 

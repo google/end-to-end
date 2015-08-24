@@ -88,6 +88,15 @@ e2e.openpgp.block.TransferableSecretKey.prototype.getKeyToSign =
 };
 
 
-/** @inheritDoc */
+/** @override */
+e2e.openpgp.block.TransferableSecretKey.prototype.getKeyToDecrypt =
+    function() {
+  return this.getKeyTo(
+      e2e.openpgp.packet.Key.Usage.ENCRYPT,
+      e2e.openpgp.packet.SecretKey);
+};
+
+
+/** @override */
 e2e.openpgp.block.TransferableSecretKey.prototype.header =
     'PRIVATE KEY BLOCK';

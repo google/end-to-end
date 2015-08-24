@@ -266,9 +266,9 @@ e2e.openpgp.Context2.prototype.encryptSign = goog.abstractMethod;
  *     callback is used for requesting an passphrase from the
  *     user if the ciphertext is encrypted to a passphrase.
  * @param {!Array.<!e2e.openpgp.Key>=} opt_decryptionKeys If present,
- *     only those keys will be used for decryptiond. Otherwise, Context2 uses
+ *     only those keys will be used for decryption. Otherwise, Context2 uses
  *     Key ID hints in the message to resolve keys on its own.
- * @param {!Array.<!e2e.openpgp.Key>=} opt_allowedKeys If present,
+ * @param {!Array.<!e2e.openpgp.Key>=} opt_verificationKeys If present,
  *     only those keys will be used for signature verification. Otherwise,
  *     Context2 uses Key ID hints in the message to resolve keys on its own.
  * @return {!e2e.openpgp.VerifyDecryptPromise} The result of the

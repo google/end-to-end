@@ -374,20 +374,20 @@ e2e.openpgp.ContextImpl.prototype.verifyDecryptInternal = function(
     var block = e2e.openpgp.block.factory.parseByteArrayMessage(
         encryptedMessage, opt_charset);
     if (block instanceof e2e.openpgp.block.EncryptedMessage) {
-      var keyCipherCallback = goog.bind(function(keyId) {
-        var secretKeyPacket = this.keyRing_.getSecretKey(keyId);
-        if (!secretKeyPacket) {
-          return null;
-        }
-        var cipher = goog.asserts.assertObject(
-            secretKeyPacket.cipher.getWrappedCipher());
-        // Cipher might also be a signer here. Check if cipher can decrypt
-        // (at runtime, as we can't check for e2e.cipher.Cipher implementation
-        // statically).
-        if (!goog.isFunction(cipher.decrypt)) {
-          return null;
-        }
-        return cipher;
+      var keyCipherCallback = goog.bind(function(keyId, algorithm) {
+        return e2e.async.Result.toResult(null).addCallback(function() {
+          var secretKeyPacket = this.keyRing_.getSecretKey(keyId);
+          if (!secretKeyPacket) {
+            return null;
+          }
+          var cipher = goog.asserts.assertObject(
+              secretKeyPacket.cipher.getWrappedCipher());
+          goog.asserts.assert(algorithm == cipher.algorithm);
+          // Cipher might also be a signer here. Check if cipher can decrypt
+          // (at runtime, as we can't check for e2e.cipher.Cipher implementation
+          // statically).
+          return goog.isFunction(cipher.decrypt) ? cipher : null;
+        }, this);
       }, this);
       return block.decrypt(keyCipherCallback, passphraseCallback).addCallback(
           this.processLiteralMessage_, this).addCallback(function(result) {

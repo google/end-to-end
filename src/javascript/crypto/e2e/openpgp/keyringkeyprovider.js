@@ -35,7 +35,6 @@ goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.signer.Algorithm');
 goog.require('goog.Promise');
 goog.require('goog.array');
-goog.require('goog.asserts');
 goog.require('goog.format.EmailAddress');
 
 
@@ -98,20 +97,8 @@ e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_ = function(transferableKeys) {
  * @private
  */
 e2e.openpgp.KeyringKeyProvider.keyToKeyObject_ = function(transferableKey) {
-  var keyObject = transferableKey.toKeyObject(false,
+  return transferableKey.toKeyObject(false,
       e2e.openpgp.KeyringKeyProvider.PROVIDER_ID_);
-  // Populate metadata to enable surrogate keys.
-  if (keyObject.key.secret) {
-    var keyPacket = transferableKey.getKeyToSign();
-    if (keyPacket) {
-      keyObject.signingKeyId = goog.asserts.assertArray(keyPacket.keyId);
-      keyObject.signAlgorithm = /** @type {!e2e.signer.Algorithm} */
-          (goog.asserts.assertString(keyPacket.cipher.algorithm));
-      keyObject.signHashAlgorithm = goog.asserts.assertString(
-          keyPacket.cipher.getHashAlgorithm());
-    }
-  }
-  return keyObject;
 };
 
 

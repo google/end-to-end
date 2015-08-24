@@ -80,7 +80,7 @@ e2e.openpgp.EncryptOptions;
 
 /**
  * Result of a decrypt operation.
- * @typedef {?{data: !e2e.ByteArray,
+ * @typedef {?{data: (!e2e.ByteArray|!Uint8Array),
  *     options: !e2e.openpgp.FileOptions, wasEncrypted: boolean}}
  */
 e2e.openpgp.DecryptResult;
@@ -173,7 +173,9 @@ e2e.openpgp.KeyPacketInfo;
  *     !e2e.ByteArray, providerId: !e2e.openpgp.KeyProviderId,
  *     signingKeyId: ?e2e.openpgp.KeyId,
  *     signAlgorithm: ?e2e.signer.Algorithm,
- *     signHashAlgorithm: ?e2e.hash.Algorithm
+ *     signHashAlgorithm: ?e2e.hash.Algorithm,
+ *     decryptionKeyId: ?e2e.openpgp.KeyId,
+ *     decryptionAlgorithm: ?e2e.cipher.Algorithm
  *     }}
  */
 e2e.openpgp.Key;

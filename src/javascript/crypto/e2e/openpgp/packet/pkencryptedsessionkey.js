@@ -25,6 +25,7 @@ goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.factory');
 goog.require('e2e.openpgp');
+goog.require('e2e.openpgp.KeyProviderCipher');
 goog.require('e2e.openpgp.Mpi');
 goog.require('e2e.openpgp.constants');
 goog.require('e2e.openpgp.constants.Type');
@@ -165,11 +166,14 @@ e2e.openpgp.packet.PKEncryptedSessionKey.construct = function(publicKey,
 /**
  * Creates an {@link e2e.scheme.EncryptionScheme} for a given cipher.
  * @param {!e2e.cipher.Cipher} cipher
- * @return {!e2e.scheme.EncryptionScheme}
+ * @return {!e2e.scheme.EncryptionScheme|e2e.cipher.Cipher}
  * @private
  */
 e2e.openpgp.packet.PKEncryptedSessionKey.getEncryptionScheme_ =
     function(cipher) {
+  if (cipher instanceof e2e.openpgp.KeyProviderCipher) {
+    return cipher;
+  }
   switch (cipher.algorithm) {
     case e2e.cipher.Algorithm.RSA:
     case e2e.cipher.Algorithm.RSA_ENCRYPT:
