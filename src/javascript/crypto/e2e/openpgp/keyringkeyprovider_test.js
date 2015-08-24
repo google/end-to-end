@@ -21,16 +21,21 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.openpgp.KeyringKeyProviderTest');
 
+goog.require('e2e');
 goog.require('e2e.algorithm.KeyLocations');
+goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
+goog.require('e2e.openpgp.KeyProviderCipher');
 goog.require('e2e.openpgp.KeyPurposeType');
 goog.require('e2e.openpgp.KeyRing');
 goog.require('e2e.openpgp.KeyRingType');
 goog.require('e2e.openpgp.KeyringKeyProvider');
 goog.require('e2e.openpgp.LockableStorage');
+goog.require('e2e.openpgp.block.LiteralMessage');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.ParseError');
+goog.require('e2e.openpgp.packet.SurrogateSecretKey');
 goog.require('e2e.signer.Algorithm');
 goog.require('goog.array');
 goog.require('goog.object');
@@ -264,3 +269,75 @@ function testExport() {
   });
 }
 
+
+function testDecrypt() {
+  var kkp;
+  var keys = e2e.openpgp.block.factory.parseAsciiMulti(
+      document.getElementById('privKeyAscii').value);
+  var message = e2e.openpgp.block.factory.parseAscii(
+      document.getElementById('encryptedSignedMessage').value);
+  providerPromise.then(function(provider) {
+    kkp = provider;
+    asyncTestCase.waitForAsync('Waiting for key import.');
+    return kkp.importKeys(goog.array.concat(keys[0].serialize(),
+        keys[1].serialize()));
+  }).then(function() {
+    asyncTestCase.waitForAsync('Waiting for key retrieval.');
+    return kkp.getTrustedKeysByEmail(e2e.openpgp.KeyPurposeType.DECRYPTION,
+        EMAIL);
+  }).then(function(keyObjects) {
+    assertEquals(1, keyObjects.length);
+    assertEquals('ECDH', keyObjects[0].decryptionAlgorithm);
+    assertArrayEquals(keys[1].subKeys[0].keyId,
+        keyObjects[0].decryptionKeyId);
+    // Assert key ids are present in keyObjects.
+    var cipherCallback = function(keyId, algorithm) {
+      return e2e.async.Result.toResult(new e2e.openpgp.KeyProviderCipher(
+          algorithm, undefined,
+          goog.bind(kkp.decrypt, kkp, keyObjects[0], keyId)));
+    };
+    asyncTestCase.waitForAsync('Waiting for decryption.');
+    return message.decrypt(cipherCallback);
+  }).then(function(res) {
+    assertEquals('test', e2e.byteArrayToString(res.getMessage().getData()));
+    asyncTestCase.continueTesting();
+  }, fail);
+}
+
+function testSign() {
+  var kkp;
+  var keyId;
+  var keys = e2e.openpgp.block.factory.parseAsciiMulti(
+      document.getElementById('privKeyAscii').value);
+  var privateKey = keys[0];
+  var publicKey = keys[1];
+  var PLAINTEXT = 'TEST';
+  var message = e2e.openpgp.block.LiteralMessage.construct(PLAINTEXT);
+  providerPromise.then(function(provider) {
+    kkp = provider;
+    asyncTestCase.waitForAsync('Waiting for key import.');
+    return kkp.importKeys(goog.array.concat(privateKey.serialize(),
+        publicKey.serialize()));
+  }).then(function() {
+    asyncTestCase.waitForAsync('Waiting for key retrieval.');
+    return kkp.getTrustedKeysByEmail(e2e.openpgp.KeyPurposeType.SIGNING,
+        EMAIL);
+  }).then(function(keyObjects) {
+    assertEquals(1, keyObjects.length);
+    var keyObject = keyObjects[0];
+    var signingKey = e2e.openpgp.packet.SurrogateSecretKey.constructSigningKey(
+        keyObject, goog.bind(kkp.sign, kkp));
+    asyncTestCase.waitForAsync('Waiting for signing.');
+    return message.signWithOnePass(signingKey).then(function() {
+      return message;
+    });
+  }).then(function(signedMessage) {
+    assertArrayEquals(publicKey.keyPacket.keyId,
+        signedMessage.signatures[0].getSignerKeyId());
+    return signedMessage.verify([publicKey]);
+  }).then(function(verifyResult) {
+    assertEquals(1, verifyResult.success.length);
+    assertEquals(0, verifyResult.failure.length);
+    asyncTestCase.continueTesting();
+  }, fail);
+}

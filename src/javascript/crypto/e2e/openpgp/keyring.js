@@ -264,23 +264,28 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(uid,
 /**
  * Obtains the key with a given keyId.
  * @param {!e2e.ByteArray} keyId The key id to search for.
+ * @param {!e2e.openpgp.KeyFingerprint=} opt_fingerprint The key packet has
+ *    to come from a key with this fingerprint.
  * @return {?e2e.openpgp.packet.PublicKey} The key packet with that key id or
  *     null.
  */
-e2e.openpgp.KeyRing.prototype.getPublicKey = function(keyId) {
-  return /** @type {e2e.openpgp.packet.PublicKey} */ (this.getKey_(keyId));
+e2e.openpgp.KeyRing.prototype.getPublicKey = function(keyId, opt_fingerprint) {
+  return /** @type {e2e.openpgp.packet.PublicKey} */ (this.getKey_(
+      keyId, undefined, opt_fingerprint));
 };
 
 
 /**
  * Obtains a secret key with a given keyId.
  * @param {!e2e.ByteArray} keyId The key id to search for.
+ * @param {!e2e.openpgp.KeyFingerprint=} opt_fingerprint The key packet has
+ *    to come from a key with this fingerprint.
  * @return {?e2e.openpgp.packet.SecretKey} The secret key with that key id or
  *     null.
  */
-e2e.openpgp.KeyRing.prototype.getSecretKey = function(keyId) {
+e2e.openpgp.KeyRing.prototype.getSecretKey = function(keyId, opt_fingerprint) {
   return /** @type {e2e.openpgp.packet.SecretKey} */ (this.getKey_(
-      keyId, true));
+      keyId, true, opt_fingerprint));
 };
 
 
@@ -289,27 +294,35 @@ e2e.openpgp.KeyRing.prototype.getSecretKey = function(keyId) {
  * secret keys.
  * @param {!e2e.ByteArray} keyId The key id to search for.
  * @param {boolean=} opt_secret Whether to search the private key ring.
+ * @param {!e2e.openpgp.KeyFingerprint=} opt_fingerprint The key packet has
+ *    to come from a key with this fingerprint.
  * @return {?e2e.openpgp.packet.Key} The key packet with that key id or null.
  * @private
  */
-e2e.openpgp.KeyRing.prototype.getKey_ = function(keyId, opt_secret) {
+e2e.openpgp.KeyRing.prototype.getKey_ = function(keyId, opt_secret,
+    opt_fingerprint) {
   var keyRing = opt_secret ? this.privKeyRing_ : this.pubKeyRing_;
-  var result;
-  // Using goog.array.find to break on first match.
-  goog.array.find(goog.array.flatten(keyRing.getValues()), function(key) {
+  var result = null;
+  // Using goog.array.some to break on first match.
+  goog.array.some(goog.array.flatten(keyRing.getValues()), function(key) {
+    if (goog.isDefAndNotNull(opt_fingerprint) &&
+        !e2e.compareByteArray(key.keyPacket.fingerprint, opt_fingerprint)) {
+      return false;
+    }
+    // Check main key packet, then the subkeys.
     if (e2e.compareByteArray(keyId, key.keyPacket.keyId)) {
       result = key.keyPacket;
       return true;
     }
-    return Boolean(goog.array.find(key.subKeys, function(subKey) {
+    return goog.array.some(key.subKeys, function(subKey) {
       if (e2e.compareByteArray(keyId, subKey.keyId)) {
         result = subKey;
         return true;
       }
       return false;
-    }));
+    });
   });
-  return result || null;
+  return result;
 };
 
 

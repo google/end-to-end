@@ -32,9 +32,15 @@ goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.UnsupportedError');
+goog.require('e2e.openpgp.scheme.Ecdh');
+goog.require('e2e.scheme.Ecdsa');
+goog.require('e2e.scheme.Eme');
+goog.require('e2e.scheme.Rsaes');
+goog.require('e2e.scheme.Rsassa');
 goog.require('e2e.signer.Algorithm');
 goog.require('goog.Promise');
 goog.require('goog.array');
+goog.require('goog.asserts');
 goog.require('goog.format.EmailAddress');
 
 
@@ -303,16 +309,128 @@ e2e.openpgp.KeyringKeyProvider.prototype.importKeys = function(keySerialization,
 /** @override */
 e2e.openpgp.KeyringKeyProvider.prototype.decrypt = function(key, keyId,
     algorithm, ciphertext) {
-  return goog.Promise.reject(
-      new e2e.openpgp.error.UnsupportedError('Not implemented'));
+  return goog.Promise.resolve(key)
+      .then(goog.bind(this.getSecretKeyPacket_, this, keyId))
+      .then(goog.bind(this.requireDecryptionScheme_, this, algorithm))
+      .then(function(scheme) {
+        return scheme.decrypt(ciphertext);
+      });
+};
+
+
+/**
+ * Retrieves the secret key packet from a given Key object.
+ * @param {!e2e.openpgp.KeyId} keyId
+ * @param {!e2e.openpgp.Key} key The key object that the packet should
+ *     originate from.
+ * @return {e2e.openpgp.packet.SecretKey} The key packet
+ * @private
+ */
+e2e.openpgp.KeyringKeyProvider.prototype.getSecretKeyPacket_ = function(keyId,
+    key) {
+  if (key.providerId !== e2e.openpgp.KeyringKeyProvider.PROVIDER_ID_ ||
+      !key.key.secret) {
+    throw new e2e.openpgp.error.InvalidArgumentsError('Invalid key handle.');
+  }
+  return this.keyring_.getSecretKey(keyId, key.key.fingerprint);
+};
+
+
+/**
+ * Returns the matching decryption scheme for a given key packet. Throws an
+ * error on algorithm mismatch.
+ * @param  {!e2e.cipher.Algorithm} algorithm Requested decryption algorithm.
+ * @param  {e2e.openpgp.packet.SecretKey} secretKeyPacket Secret key packet
+ *     to extract the cipher from.
+ * @return {!e2e.scheme.EncryptionScheme} The scheme.
+ * @private
+ */
+e2e.openpgp.KeyringKeyProvider.prototype.requireDecryptionScheme_ = function(
+    algorithm, secretKeyPacket) {
+  if (!secretKeyPacket) {
+    throw new e2e.openpgp.error.InvalidArgumentsError(
+        'Could not find a key.');
+  }
+  var cipher = /** @type {!e2e.cipher.Cipher} */ (goog.asserts.assertObject(
+      secretKeyPacket.cipher.getWrappedCipher()));
+  if (algorithm !== cipher.algorithm) {
+    throw new e2e.openpgp.error.InvalidArgumentsError(
+        'Cipher algorithm mismatch.');
+  }
+  if (!goog.isFunction(cipher.decrypt)) {
+    throw new e2e.openpgp.error.InvalidArgumentsError('Invalid cipher.');
+  }
+  switch (cipher.algorithm) {
+    case e2e.cipher.Algorithm.RSA:
+    case e2e.cipher.Algorithm.RSA_ENCRYPT:
+      return new e2e.scheme.Rsaes(cipher);
+      break;
+    case e2e.cipher.Algorithm.ECDH:
+      return new e2e.openpgp.scheme.Ecdh(cipher);
+      break;
+    case e2e.cipher.Algorithm.ELGAMAL:
+      return new e2e.scheme.Eme(cipher);
+      break;
+  }
+  throw new e2e.openpgp.error.InvalidArgumentsError(
+      'Could not find a matching decryption scheme.');
 };
 
 
 /** @override */
 e2e.openpgp.KeyringKeyProvider.prototype.sign = function(key, keyId,
     algorithm, hashAlgorithm, data) {
-  return goog.Promise.reject(
-      new e2e.openpgp.error.UnsupportedError('Not implemented'));
+  return goog.Promise.resolve(key)
+      .then(goog.bind(this.getSecretKeyPacket_, this, keyId))
+      .then(goog.bind(this.requireSignatureScheme_, this, algorithm,
+          hashAlgorithm))
+      .then(function(scheme) {
+        return scheme.sign(data);
+      });
+};
+
+
+/**
+ * Returns the matching signature scheme for a given key packet. Throws an
+ * error on algorithm mismatch.
+ * @param  {!e2e.cipher.Algorithm} algorithm Requested signing algorithm.
+ * @param  {!e2e.hash.Algorithm} hashAlgorithm Requested signing hash algorithm.
+ * @param  {e2e.openpgp.packet.SecretKey} secretKeyPacket Secret key packet
+ *     to extract the cipher from.
+ * @return {!e2e.scheme.SignatureScheme|!e2e.signer.Signer} The scheme.
+ * @private
+ */
+e2e.openpgp.KeyringKeyProvider.prototype.requireSignatureScheme_ = function(
+    algorithm, hashAlgorithm, secretKeyPacket) {
+  if (!secretKeyPacket) {
+    throw new e2e.openpgp.error.InvalidArgumentsError(
+        'Could not find a key.');
+  }
+  var signer = /** @type {e2e.signer.Signer} */ (goog.asserts.assertObject(
+      secretKeyPacket.cipher.getWrappedCipher()));
+  if (algorithm !== signer.algorithm ||
+      hashAlgorithm !== signer.getHashAlgorithm()) {
+    throw new e2e.openpgp.error.InvalidArgumentsError(
+        'Signer algorithm mismatch.');
+  }
+
+  if (!goog.isFunction(signer.sign)) {
+    throw new e2e.openpgp.error.InvalidArgumentsError('Invalid signer.');
+  }
+  switch (signer.algorithm) {
+    case e2e.cipher.Algorithm.RSA:
+    case e2e.signer.Algorithm.RSA_SIGN:
+      return new e2e.scheme.Rsassa(signer);
+      break;
+    case e2e.signer.Algorithm.ECDSA:
+      return new e2e.scheme.Ecdsa(signer);
+      break;
+    case e2e.signer.Algorithm.DSA:
+      return signer;
+      break;
+  }
+  throw new e2e.openpgp.error.InvalidArgumentsError(
+      'Could not find a matching signature scheme.');
 };
 
 
