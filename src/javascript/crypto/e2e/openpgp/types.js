@@ -43,6 +43,7 @@ goog.provide('e2e.openpgp.KeyRingType');
 goog.provide('e2e.openpgp.KeyTrustData');
 goog.provide('e2e.openpgp.KeyUnlockData');
 goog.provide('e2e.openpgp.KeyringBackupInfo');
+goog.provide('e2e.openpgp.KeyringExportFormat');
 goog.provide('e2e.openpgp.KeyringExportOptions');
 goog.provide('e2e.openpgp.Keys');
 goog.provide('e2e.openpgp.KeysPromise');
@@ -319,7 +320,7 @@ e2e.openpgp.KeyGenerateOptions;
 
 /**
  * Keyring export options (opaque to the End-To-End library).
- * @typedef {Object}
+ * @typedef {*}
  */
 e2e.openpgp.KeyringExportOptions;
 
@@ -342,7 +343,6 @@ e2e.openpgp.KeyPair;
 /**
  * Plaintext to be encrypted/signed.
  * @typedef {string|e2e.ByteArray}
- * TODO(koto): Add support for streams (e.g. via Blobs).
  */
 e2e.openpgp.Plaintext;
 
@@ -350,6 +350,15 @@ e2e.openpgp.Plaintext;
 /**
  * Ciphertext to be decrypted/verified.
  * @typedef {string|e2e.ByteArray}
- * TODO(koto): Add support for streams (e.g. via Blobs).
  */
 e2e.openpgp.Ciphertext;
+
+
+/**
+ * Common keyring export formats.
+ * @enum {string}
+ */
+e2e.openpgp.KeyringExportFormat = {
+  'OPENPGP_PACKETS_ASCII': 'OPENPGP_PACKETS_ASCII',
+  'OPENPGP_PACKETS_BINARY': 'OPENPGP_PACKETS_BINARY'
+};

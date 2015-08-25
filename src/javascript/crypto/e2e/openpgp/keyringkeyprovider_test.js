@@ -29,9 +29,12 @@ goog.require('e2e.openpgp.KeyProviderCipher');
 goog.require('e2e.openpgp.KeyPurposeType');
 goog.require('e2e.openpgp.KeyRing');
 goog.require('e2e.openpgp.KeyRingType');
+goog.require('e2e.openpgp.KeyringExportFormat');
 goog.require('e2e.openpgp.KeyringKeyProvider');
 goog.require('e2e.openpgp.LockableStorage');
 goog.require('e2e.openpgp.block.LiteralMessage');
+goog.require('e2e.openpgp.block.TransferablePublicKey');
+goog.require('e2e.openpgp.block.TransferableSecretKey');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.ParseError');
@@ -254,21 +257,125 @@ function testKeyRemoval() {
   });
 }
 
-function testExport() {
+function testExportBackupCode() {
   var kkp;
+  var email = 'export.test@example.com';
+
+  function chooseDefault(options) {
+    return goog.object.map(options, function(value) {
+      return value[0];
+    });
+  }
+
   asyncTestCase.waitForAsync('Waiting for async call.');
   var keys = e2e.openpgp.block.factory.parseAsciiMulti(
       document.getElementById('privKeyAscii').value);
   providerPromise.then(function(provider) {
     kkp = provider;
-    return kkp.getKeyringExportOptions();
+    return kkp.importKeys(goog.array.concat(keys[0].serialize(),
+        keys[1].serialize()));
+  }).then(function() {
+    return kkp.getKeyringExportOptions(e2e.openpgp.KeyRingType.SECRET);
   }).then(function(options) {
-    // Not yet implemented.
-    assertNull(options);
+    var backupCodeOption = goog.array.find(options, function(option) {
+      return option.format == 'backup-code';
+    });
+    assertNull(backupCodeOption); // No keys generated yet.
+    // Generate the key
+    return kkp.getKeyGenerateOptions();
+  }).then(function(kgo) {
+    asyncTestCase.waitForAsync('Waiting for key generation');
+    return kkp.generateKeyPair(email, chooseDefault(kgo[0]));
+  }).then(function() {
+    return kkp.getKeyringExportOptions(e2e.openpgp.KeyRingType.SECRET);
+  }).then(function(options) {
+    var backupCodeOption = goog.array.find(options, function(option) {
+      return option.format == 'backup-code';
+    });
+    assertNotNull(backupCodeOption); // Backup code available.
+    return kkp.exportKeyring(e2e.openpgp.KeyRingType.SECRET, backupCodeOption);
+  }).then(function(keyringExport) {
+    assertEquals(2, keyringExport.count);
+    assertNotNull(keyringExport.seed);
     asyncTestCase.continueTesting();
-  });
+  }, fail);
 }
 
+function testExportOpenpgpPackets() {
+  var kkp;
+  var TEST_PASSPHRASE = 'TEST';
+
+  function chooseDefault(options) {
+    return goog.object.map(options, function(value) {
+      return goog.isArray(value) ? value[0] : value;
+    });
+  }
+
+  asyncTestCase.waitForAsync('Waiting for async call.');
+  var keys = e2e.openpgp.block.factory.parseAsciiMulti(
+      document.getElementById('privKeyAscii').value);
+  providerPromise.then(function(provider) {
+    kkp = provider;
+    return kkp.importKeys(goog.array.concat(keys[0].serialize(),
+        keys[1].serialize()));
+  }).then(function() {
+    return kkp.getKeyringExportOptions(e2e.openpgp.KeyRingType.SECRET);
+  }).then(function(options) {
+    var pgpPacketsOption = goog.array.find(options, function(option) {
+      return option.format ==
+          e2e.openpgp.KeyringExportFormat.OPENPGP_PACKETS_ASCII;
+    });
+    assertNotNull(pgpPacketsOption);
+    pgpPacketsOption.passphrase = TEST_PASSPHRASE;
+    asyncTestCase.waitForAsync('Waiting for async call.');
+    return kkp.exportKeyring(e2e.openpgp.KeyRingType.SECRET, pgpPacketsOption);
+  }).then(function(keyringExport) {
+    var blocks = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
+        keyringExport);
+    assertContains('BEGIN PGP PRIVATE KEY BLOCK', keyringExport);
+    assertEquals(2, blocks.length);
+    assertTrue(blocks[0] instanceof e2e.openpgp.block.TransferableSecretKey);
+    assertTrue(blocks[1] instanceof e2e.openpgp.block.TransferablePublicKey);
+    // Key is encrypted.
+    assertFalse(blocks[0].unlock());
+    assertTrue(blocks[0].unlock(e2e.stringToByteArray(TEST_PASSPHRASE)));
+    return kkp.getKeyringExportOptions(e2e.openpgp.KeyRingType.SECRET);
+  }).then(function(options) {
+    var pgpPacketsOption = goog.array.find(options, function(option) {
+      return option.format ==
+          e2e.openpgp.KeyringExportFormat.OPENPGP_PACKETS_ASCII;
+    });
+    assertNotNull(pgpPacketsOption);
+    pgpPacketsOption.passphrase = ''; // No passphrase
+    asyncTestCase.waitForAsync('Waiting for async call.');
+    return kkp.exportKeyring(e2e.openpgp.KeyRingType.SECRET, pgpPacketsOption);
+  }).then(function(keyringExport) {
+    var blocks = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
+        keyringExport);
+    assertContains('BEGIN PGP PRIVATE KEY BLOCK', keyringExport);
+    assertEquals(2, blocks.length);
+    assertTrue(blocks[0] instanceof e2e.openpgp.block.TransferableSecretKey);
+    assertTrue(blocks[1] instanceof e2e.openpgp.block.TransferablePublicKey);
+    // Key is not encrypted.
+    assertTrue(blocks[0].unlock());
+    return kkp.getKeyringExportOptions(e2e.openpgp.KeyRingType.PUBLIC);
+  }).then(function(options) {
+    var pgpPacketsOption = goog.array.find(options, function(option) {
+      return option.format ==
+          e2e.openpgp.KeyringExportFormat.OPENPGP_PACKETS_BINARY;
+    });
+    assertNotNull(pgpPacketsOption); // Backup code available.
+    assertUndefined(pgpPacketsOption.passphrase);
+    asyncTestCase.waitForAsync('Waiting for async call.');
+    return kkp.exportKeyring(e2e.openpgp.KeyRingType.PUBLIC, pgpPacketsOption);
+  }).then(function(keyringExport) {
+    var blocks = e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(
+        keyringExport);
+    assertEquals(1, blocks.length);
+    assertTrue(blocks[0] instanceof e2e.openpgp.block.TransferablePublicKey);
+    asyncTestCase.continueTesting();
+  }, fail);
+}
 
 function testDecrypt() {
   var kkp;

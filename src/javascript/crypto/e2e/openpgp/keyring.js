@@ -515,13 +515,14 @@ e2e.openpgp.KeyRing.prototype.searchKeyLocalAndRemote = function(uid,
 
 /**
  * Gets all of the keys in the keyring.
- * @param {boolean=} opt_priv If true, fetch only private keys.
+ * @param {boolean=} opt_privOnly If true, fetch only private keys.
  * @return {!e2e.openpgp.TransferableKeyMap} A clone of the key ring maps.
  */
-e2e.openpgp.KeyRing.prototype.getAllKeys = function(opt_priv) {
-  if (opt_priv) {
+e2e.openpgp.KeyRing.prototype.getAllKeys = function(opt_privOnly) {
+  if (opt_privOnly) {
     return this.privKeyRing_.clone();
   }
+  // Return a map of user IDs to an Array of both public and secret keys.
   var keys = this.pubKeyRing_.clone();
   var ids = this.privKeyRing_.getKeys();
   var values = this.privKeyRing_.getValues();

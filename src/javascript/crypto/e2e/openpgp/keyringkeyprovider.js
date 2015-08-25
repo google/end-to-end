@@ -21,17 +21,20 @@
 
 goog.provide('e2e.openpgp.KeyringKeyProvider');
 
+goog.require('e2e');
 goog.require('e2e.algorithm.KeyLocations');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.openpgp.KeyPurposeType');
 goog.require('e2e.openpgp.KeyRing');
 goog.require('e2e.openpgp.KeyRingType');
+goog.require('e2e.openpgp.KeyringExportFormat');
 goog.require('e2e.openpgp.SecretKeyProvider');
+goog.require('e2e.openpgp.asciiArmor');
+goog.require('e2e.openpgp.block.TransferablePublicKey');
 goog.require('e2e.openpgp.block.TransferableSecretKey');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.ParseError');
-goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.openpgp.scheme.Ecdh');
 goog.require('e2e.scheme.Ecdsa');
 goog.require('e2e.scheme.Eme');
@@ -228,17 +231,180 @@ e2e.openpgp.KeyringKeyProvider.prototype.getKeyByFingerprint = function(
 /** @override */
 e2e.openpgp.KeyringKeyProvider.prototype.getKeyringExportOptions = function(
     keyringType) {
-  // TODO(koto): Implement keyring export and keyring backup code.
-  return goog.Promise.resolve(/** @type {e2e.openpgp.KeyringExportOptions} */
-      (null));
+  return goog.Promise.resolve(keyringType).then(function(keyringType) {
+    var options = [];
+    switch (keyringType) {
+      case e2e.openpgp.KeyRingType.PUBLIC:
+        options.push(/** @type {e2e.openpgp.KeyringExportOptions} */ ({
+          'format': e2e.openpgp.KeyringExportFormat.OPENPGP_PACKETS_ASCII
+        }));
+        options.push(/** @type {e2e.openpgp.KeyringExportOptions} */ ({
+          'format': e2e.openpgp.KeyringExportFormat.OPENPGP_PACKETS_BINARY
+        }));
+        break;
+      case e2e.openpgp.KeyRingType.SECRET:
+        options.push(/** @type {e2e.openpgp.KeyringExportOptions} */ ({
+          'format': e2e.openpgp.KeyringExportFormat.OPENPGP_PACKETS_ASCII,
+          'passphrase': null
+        }));
+        options.push(/** @type {e2e.openpgp.KeyringExportOptions} */ ({
+          'format': e2e.openpgp.KeyringExportFormat.OPENPGP_PACKETS_BINARY,
+          'passphrase': null
+        }));
+        if (this.keyring_.getKeyringBackupData().seed) {
+          options.push(/** @type {e2e.openpgp.KeyringExportOptions} */ ({
+            'format': 'backup-code',
+          }));
+        }
+        break;
+    }
+    return options;
+  }, null, this);
 };
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.exportKeyring = function(
+e2e.openpgp.KeyringKeyProvider.prototype.exportKeyring = function(keyringType,
     exportOptions) {
-  return goog.Promise.reject(
-      new e2e.openpgp.error.UnsupportedError('Not implemented'));
+  return goog.Promise.resolve(exportOptions).then(function(exportOptions) {
+    switch (exportOptions.format) {
+      case e2e.openpgp.KeyringExportFormat.OPENPGP_PACKETS_ASCII:
+        return this.exportAllKeys_(keyringType, true,
+            exportOptions['passphrase']);
+        break;
+      case e2e.openpgp.KeyringExportFormat.OPENPGP_PACKETS_BINARY:
+        return this.exportAllKeys_(keyringType, false,
+            exportOptions['passphrase']);
+        break;
+      case 'backup-code':
+        if (keyringType == e2e.openpgp.KeyRingType.SECRET) {
+          return this.keyring_.getKeyringBackupData();
+        }
+        break;
+      default:
+        throw new e2e.openpgp.error.InvalidArgumentsError(
+            'Invalid export options.');
+    }
+  }, null, this);
+};
+
+
+/**
+ * Exports a serialization of a public or private keyring.
+ * @param {!e2e.openpgp.KeyRingType} keyringType The type of the keyring.
+ * @param {boolean} asciiArmor If true, export will be ASCII armored, otherwise
+ *     bytes will be returned.
+ * @param {string=} opt_passphrase A passphrase to lock the private keys with.
+ * @return {!goog.Thenable<string|!e2e.ByteArray>} Key blocks for all keys in a
+ *     given keyring type. Private key exports also include all matching public
+ *     key blocks.
+ * @private
+ */
+e2e.openpgp.KeyringKeyProvider.prototype.exportAllKeys_ = function(
+    keyringType, asciiArmor, opt_passphrase) {
+  return goog.Promise.resolve()
+      .then(goog.bind(
+          this.serializeAllKeyBlocks_,
+          this,
+          keyringType,
+          asciiArmor,
+          opt_passphrase))
+      .then(goog.bind(
+          this.encodeKeyringExport_,
+          this,
+          keyringType,
+          asciiArmor));
+};
+
+
+/**
+ * Serializes all key blocks from a given keyring.
+ * @param  {!e2e.openpgp.KeyRingType} keyringType Type of the keyring.
+ * @param {boolean} asciiArmor If true, export will be ASCII armored, otherwise
+ *     bytes will be returned.
+ * @param  {string=} opt_passphrase A passphrase to lock the private keys with.
+ * @return {!e2e.ByteArray} Serialization of all key blocks.
+ * @private
+ */
+e2e.openpgp.KeyringKeyProvider.prototype.serializeAllKeyBlocks_ = function(
+    keyringType, asciiArmor, opt_passphrase) {
+
+  var isSecret = (keyringType == e2e.openpgp.KeyRingType.SECRET);
+  var passphraseBytes = null;
+  if (goog.isString(opt_passphrase) && opt_passphrase !== '') {
+    if (!isSecret) {
+      throw new e2e.openpgp.error.InvalidArgumentsError(
+          'Cannot use passphrase during a public keyring export.');
+    }
+    passphraseBytes = e2e.stringToByteArray(opt_passphrase);
+  }
+  var keyMap = this.keyring_.getAllKeys(isSecret);
+  var serializedKeys = [];
+  keyMap.forEach(function(keysForUid, uid) {
+    goog.array.forEach(keysForUid, function(key) {
+      goog.array.extend(serializedKeys,
+          this.serializeKey_(isSecret, passphraseBytes, key));
+    }, this);
+  }, this);
+  return serializedKeys;
+};
+
+
+/**
+ * Encoded the OpenPGP blocks serialization for export.
+ * @param  {!e2e.openpgp.KeyRingType} keyringType Type of the keyring.
+ * @param {boolean} asciiArmor If true, export will be ASCII armored, otherwise
+ *     bytes will be returned.
+ * @param  {!e2e.ByteArray} serialized Serialized keys
+ * @return {string|!e2e.ByteArray} Optionally ASCII-armored serialization.
+ * @private
+ */
+e2e.openpgp.KeyringKeyProvider.prototype.encodeKeyringExport_ = function(
+    keyringType, asciiArmor, serialized) {
+  if (asciiArmor) {
+    var header = (keyringType == e2e.openpgp.KeyRingType.SECRET) ?
+        'PRIVATE KEY BLOCK' : 'PUBLIC KEY BLOCK';
+    return e2e.openpgp.asciiArmor.encode(header, serialized);
+  }
+  return serialized;
+};
+
+
+/**
+ * Validates, optionally locks and serializes the key. For private keys also
+ * serializes the matching public key block.
+ * @param  {boolean} isSecret True iff private key is expected.
+ * @param  {?e2e.ByteArray} passphraseBytes Passphrase to use to lock
+ *     the secret key.
+ * @param  {!e2e.openpgp.block.TransferableKey}  key The key block.
+ * @return {!e2e.ByteArray} Serialization of the key(s)
+ * @private
+ */
+e2e.openpgp.KeyringKeyProvider.prototype.serializeKey_ = function(
+    isSecret, passphraseBytes, key) {
+  var matchingKey;
+  var serialized = [];
+  if (isSecret) {
+    goog.asserts.assert(key instanceof e2e.openpgp.block.TransferableSecretKey);
+    // Protect with passphrase
+    key.processSignatures();
+    key.unlock();
+    key.lock(goog.isNull(passphraseBytes) ? undefined :
+        goog.asserts.assertArray(passphraseBytes));
+    // Also add the public key block for this secret key.
+    matchingKey = this.keyring_.getPublicKeyBlockByFingerprint(
+        key.keyPacket.fingerprint);
+  } else {
+    if (!(key instanceof e2e.openpgp.block.TransferablePublicKey)) {
+      // KeyRing.getAllKeys always returns the private keys, ignore them.
+      return [];
+    }
+  }
+  goog.array.extend(serialized, key.serialize());
+  if (matchingKey) {
+    goog.array.extend(serialized, matchingKey.serialize());
+  }
+  return serialized;
 };
 
 

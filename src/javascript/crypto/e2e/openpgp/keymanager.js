@@ -124,8 +124,8 @@ e2e.openpgp.KeyManager.prototype.generateKeyPair = goog.abstractMethod;
 /**
  * Returns the available keyring export options.
  * @param {!e2e.openpgp.KeyRingType} keyringType The type of the keyring.
- * @return {!goog.Thenable<e2e.openpgp.KeyringExportOptions>} The available
- *     export options.
+  * @return {!goog.Thenable<!Array<!e2e.openpgp.KeyringExportOptions>>} The
+ *     available export options.
  * @export
  */
 e2e.openpgp.KeyManager.prototype.getKeyringExportOptions = goog.abstractMethod;
