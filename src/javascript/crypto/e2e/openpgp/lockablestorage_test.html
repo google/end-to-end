@@ -186,8 +186,13 @@ function testLockStaticPassphrase() {
     return lockable.get(key);
   }, fail).then(function(v) {
     assertEquals(value, v);
+    // Cannot setPassphrase on a locked storage.
+    lockable.lock();
+    return lockable.setPassphrase('new-pw');
+  }, fail).then(fail, function(err) {
+    assertTrue(err instanceof Error);
     asyncTestCase.continueTesting();
-  }, fail);
+  });
 }
 
 function testPassphrases() {

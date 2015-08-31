@@ -423,14 +423,17 @@ e2e.openpgp.LockableStorage.prototype.lock = function() {
 /**
  * Encrypts the data in persistent storage with a key derived from a given
  * passphrase. If the passphrase is an empty string, the storage will be
- * unencrypted.
- * Caution - If the object has not been correctly unlocked yet, this will
- * destroy the data!
+ * unencrypted. To protect the caller from destroying the data, LockableStorage
+ * needs to be unlocked at the time of calling this method.
  * @param {string} passphrase The new passphrase.
  * @return {!e2e.async.Result<boolean>} Is the storage encrypted after changing
  *     the passphrase.
  */
 e2e.openpgp.LockableStorage.prototype.setPassphrase = function(passphrase) {
+  if (this.isLocked()) {
+    return e2e.async.Result.toError(new Error(
+        'Cannot set the passphrase on a locked LockableStorage.'));
+  }
   this.passphrase_ = passphrase;
   return this.persist_();
 };

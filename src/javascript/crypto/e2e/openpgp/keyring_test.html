@@ -324,6 +324,22 @@ function getUidCertifications(uid) {
   return ret;
 }
 
+function testLockedStorage() {
+  lockableStorage.lock();
+  asyncTestCase.waitForAsync('Waiting for keyring initialization.');
+  keyRingPromise = e2e.openpgp.KeyRing.launch(lockableStorage);
+  keyRingPromise.then(fail, function(err) {
+    assertTrue(err instanceof Error);
+    return lockableStorage.unlockWithPassphrase('test');
+  }).then(function() {
+    return e2e.openpgp.KeyRing.launch(lockableStorage);
+  }).then(function(kr) {
+    assertTrue(kr instanceof e2e.openpgp.KeyRing);
+    assertTrue(kr.hasPassphrase());
+    asyncTestCase.continueTesting();
+  }, fail);
+}
+
 function testGeneration() {
   asyncTestCase.waitForAsync('Waiting for keyring initialization.');
   keyRingPromise.then(function(keyRing) {
