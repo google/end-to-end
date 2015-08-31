@@ -41,6 +41,52 @@ e2e.openpgp.KeyManager = function() {};
 
 
 /**
+ * Returns IDs of all supported KeyProviders.
+ * @return {!goog.Thenable<!Array<!e2e.openpgp.KeyProviderId>>} Supported key
+ *     provider IDs.
+ * @export
+ */
+e2e.openpgp.KeyManager.prototype.getKeyProviderIds = goog.abstractMethod;
+
+
+/**
+ * Initializes all the key providers.
+ * @param {Object<!e2e.openpgp.KeyProviderId,
+ *     e2e.openpgp.KeyProviderConfig>} config Configuration for the key
+ *     providers.
+ * @return {!goog.Thenable<!Object<!e2e.openpgp.KeyProviderId,
+ *     e2e.openpgp.KeyProviderState>>} The state of the key providers, after
+ *     initialization.
+ * @export
+ */
+e2e.openpgp.KeyManager.prototype.initializeKeyProviders = goog.abstractMethod;
+
+
+/**
+ * Returns the current state of all supported Key Providers.
+ * @return {!goog.Thenable<!Object<!e2e.openpgp.KeyProviderId,
+ *     e2e.openpgp.KeyProviderState>>} The state of all key providers.
+ * @export
+ */
+e2e.openpgp.KeyManager.prototype.getKeyProvidersState = goog.abstractMethod;
+
+
+/**
+ * Reinitializes the individual Key Provider with different configuration data.
+ * Use this function when some provider-specific configuration needs to be
+ * changed at runtime (e.g. when the user requests to change the passphrase of
+ * the provider's storage).
+ * @param {!e2e.openpgp.KeyProviderId} providerId Provider to change the state
+ *     of.
+ * @param {!e2e.openpgp.KeyProviderConfig} newConfig The new
+ *     initialization data.
+ * @return {!goog.Thenable<e2e.openpgp.KeyProviderState>}
+ * @export
+ */
+e2e.openpgp.KeyManager.prototype.reconfigureKeyProvider = goog.abstractMethod;
+
+
+/**
  * Returns trusted keys for a given purpose for a user with given e-mail
  * address. Use this to fetch the keys to use with
  * {@link Context2#verifyDecrypt} and {@link Context2#encryptSign}.

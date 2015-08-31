@@ -205,31 +205,28 @@ e2e.openpgp.Context2Impl.prototype.setArmorHeader = function(name, value) {
 
 
 /** @override */
-e2e.openpgp.Context2Impl.prototype.initializeKeyRing = function(
-    passphraseCallback) {
-  // TODO(koto): implement.
-  return goog.Promise.resolve(undefined);
+e2e.openpgp.Context2Impl.prototype.initializeKeyProviders = function(
+    config) {
+  return this.keyManager_.initializeKeyProviders(config);
 };
 
 
 /** @override */
-e2e.openpgp.Context2Impl.prototype.changeKeyRingPassphrase = function(
-    passphrase) {
-  return goog.Promise.reject(new Error('Not implemented.'));
+e2e.openpgp.Context2Impl.prototype.getKeyProviderIds = function() {
+  return this.keyManager_.getKeyProviderIds();
 };
 
 
 /** @override */
-e2e.openpgp.Context2Impl.prototype.isKeyRingUnlocked = function() {
-  // TODO(koto): implement.
-  return goog.Promise.resolve(true);
+e2e.openpgp.Context2Impl.prototype.getKeyRingState = function() {
+  return this.keyManager_.getKeyProvidersState();
 };
 
 
 /** @override */
-e2e.openpgp.Context2Impl.prototype.isKeyRingEncrypted = function() {
-  // TODO(koto): implement.
-  return goog.Promise.resolve(false);
+e2e.openpgp.Context2Impl.prototype.reconfigureKeyProvider = function(providerId,
+    newConfig) {
+  return this.keyManager_.reconfigureKeyProvider(providerId, newConfig);
 };
 
 

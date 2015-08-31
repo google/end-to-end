@@ -85,6 +85,14 @@ function testKeyManagerProxyMethods() {
   var returnValueCount = 0;
   var expectedReturnValueCount = 0;
 
+  keyManagerMock.getKeyProviderIds().
+      $returns(goog.Promise.resolve(returnValueCount++));
+  keyManagerMock.initializeKeyProviders(options).
+      $returns(goog.Promise.resolve(returnValueCount++));
+  keyManagerMock.getKeyProvidersState().
+      $returns(goog.Promise.resolve(returnValueCount++));
+  keyManagerMock.reconfigureKeyProvider(provider, null).
+      $returns(goog.Promise.resolve(returnValueCount++));
   keyManagerMock.getTrustedKeys(e2e.openpgp.KeyPurposeType.ENCRYPTION, email).
       $returns(goog.Promise.resolve(returnValueCount++));
   keyManagerMock.getAllKeys(e2e.openpgp.KeyRingType.SECRET, provider).
@@ -125,8 +133,22 @@ function testKeyManagerProxyMethods() {
 
   var context = new e2e.openpgp.Context2Impl(keyManagerMock);
 
-  context.getTrustedKeys(e2e.openpgp.KeyPurposeType.ENCRYPTION, email)
+
+  context.getKeyProviderIds()
       .then(function(res) {
+        assertEquals(expectedReturnValueCount++, res);
+        return context.initializeKeyProviders(options);
+      }).then(function(res) {
+        assertEquals(expectedReturnValueCount++, res);
+        return context.getKeyRingState(provider);
+      }).then(function(res) {
+        assertEquals(expectedReturnValueCount++, res);
+        return context.reconfigureKeyProvider(provider, null);
+      }).then(function(res) {
+        assertEquals(expectedReturnValueCount++, res);
+        return context.getTrustedKeys(e2e.openpgp.KeyPurposeType.ENCRYPTION,
+            email);
+      }).then(function(res) {
         assertEquals(expectedReturnValueCount++, res);
         return context.getAllSecretKeys(provider);
       }).then(function(res) {

@@ -54,6 +54,7 @@ var KEY_2 = {
   },
   uids: [EMAIL_2]
 };
+var PROVIDER_ID = 'DUMMY';
 
 
 
@@ -63,10 +64,29 @@ var KEY_2 = {
  */
 var DummyKeyProvider = function() {
   this.keys_ = [];
+  this.state_ = {
+    locked: true
+  };
 };
 DummyKeyProvider.OPTIONS_ = {fake: 'options'};
 DummyKeyProvider.KEYRING_EXPORT_ = {fake: 'keyring_export'};
+DummyKeyProvider.PASSPHRASE_ = 's3cr3t';
 
+
+DummyKeyProvider.prototype.getId = function() {
+  return goog.Promise.resolve(PROVIDER_ID);
+};
+DummyKeyProvider.prototype.configure = function(config) {
+  if (config.passphrase == DummyKeyProvider.PASSPHRASE_) {
+    this.state_.locked = false;
+  } else {
+    this.state_.locked = true;
+  }
+  return this.getState();
+};
+DummyKeyProvider.prototype.getState = function() {
+  return goog.Promise.resolve(this.state_);
+};
 DummyKeyProvider.prototype.getTrustedKeysByEmail = function(purpose,
     email) {
   return goog.Promise.resolve(goog.array.filter(this.keys_, function(key) {
@@ -148,6 +168,31 @@ DummyKeyProvider.prototype.unlockKey = function(key) {
 function setUp() {
   keyProvider = new DummyKeyProvider();
   keyManager = new e2e.openpgp.SimpleKeyManager(keyProvider);
+}
+
+function testInitializeAndConfigure() {
+  var providerConfig =
+      asyncTestCase.waitForAsync('Waiting for async call.');
+  keyManager.getKeyProviderIds().then(function(ids) {
+    assertArrayEquals([PROVIDER_ID], ids);
+    var cfg = {};
+    cfg[PROVIDER_ID] = {passphrase: 'incorrect'};
+    return keyManager.initializeKeyProviders(cfg);
+  }, fail).then(function(states) {
+    assertNotNull(states[PROVIDER_ID]);
+    assertTrue(states[PROVIDER_ID].locked);
+    var newConfig = {passphrase: 's3cr3t'};
+    return keyManager.reconfigureKeyProvider(PROVIDER_ID, newConfig);
+  }, fail).then(function() {
+    return keyManager.reconfigureKeyProvider('INVALID_PROVIDER', {});
+  }, fail).then(fail, function(err) {
+    assertTrue(err instanceof e2e.openpgp.error.InvalidArgumentsError);
+    return keyManager.getKeyProvidersState(PROVIDER_ID);
+  }, fail).then(function(states) {
+    assertNotNull(states[PROVIDER_ID]);
+    assertFalse(states[PROVIDER_ID].locked);
+    asyncTestCase.continueTesting();
+  }, fail);
 }
 
 

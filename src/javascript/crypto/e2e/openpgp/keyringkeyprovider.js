@@ -61,10 +61,8 @@ e2e.openpgp.KeyringKeyProvider = function(keyring) {
 };
 
 
-/**
- * @private {!e2e.openpgp.KeyProviderId}
- */
-e2e.openpgp.KeyringKeyProvider.PROVIDER_ID_ = 'legacy-keyring';
+/** @const {!e2e.openpgp.KeyProviderId} */
+e2e.openpgp.KeyringKeyProvider.PROVIDER_ID = 'legacy-keyring';
 
 
 /**
@@ -89,6 +87,44 @@ e2e.openpgp.KeyringKeyProvider.launch = function(keyRingPromise) {
 };
 
 
+/** @override */
+e2e.openpgp.KeyringKeyProvider.prototype.configure = function(config) {
+  var configObj = config || {};
+  var passphrase = goog.isString(configObj['passphrase']) ?
+      configObj['passphrase'] : undefined;
+
+  // Keyring initialization (no-op if the keyring was already initialized).
+  return this.keyring_.initialize(passphrase)
+      .then(function() {
+        // Optionally, change the passphrase.
+        if (goog.isString(configObj['newPassphrase'])) {
+          return this.keyring_.changePassphrase(configObj['newPassphrase'])
+              .then(function() {
+                return this.getState();
+              }, null, this);
+        } else {
+          return this.getState();
+        }
+      });
+};
+
+
+/** @override */
+e2e.openpgp.KeyringKeyProvider.prototype.getState = function() {
+  return goog.Promise.all([
+    this.keyring_.isEncrypted(),
+    this.keyring_.hasPassphrase()])
+      .then(function(results) {
+        var isEncrypted = results[0];
+        var hasPassphrase = results[1];
+        return /** @type {e2e.openpgp.KeyProviderState}*/ ({
+          'encrypted': isEncrypted,
+          'locked': !hasPassphrase
+        });
+      });
+};
+
+
 /**
  * @param {!Array.<!e2e.openpgp.block.TransferableKey>} transferableKeys
  * @return {!e2e.openpgp.Keys} The key objects
@@ -107,7 +143,7 @@ e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_ = function(transferableKeys) {
  */
 e2e.openpgp.KeyringKeyProvider.keyToKeyObject_ = function(transferableKey) {
   return transferableKey.toKeyObject(false,
-      e2e.openpgp.KeyringKeyProvider.PROVIDER_ID_);
+      e2e.openpgp.KeyringKeyProvider.PROVIDER_ID);
 };
 
 
@@ -147,6 +183,12 @@ e2e.openpgp.KeyringKeyProvider.extractValidEmail_ = function(uid) {
     return null;
   }
   return email;
+};
+
+
+/** @override */
+e2e.openpgp.KeyringKeyProvider.prototype.getId = function() {
+  return goog.Promise.resolve(e2e.openpgp.KeyringKeyProvider.PROVIDER_ID);
 };
 
 
@@ -484,7 +526,7 @@ e2e.openpgp.KeyringKeyProvider.prototype.decrypt = function(key, keyId,
  */
 e2e.openpgp.KeyringKeyProvider.prototype.getSecretKeyPacket_ = function(keyId,
     key) {
-  if (key.providerId !== e2e.openpgp.KeyringKeyProvider.PROVIDER_ID_ ||
+  if (key.providerId !== e2e.openpgp.KeyringKeyProvider.PROVIDER_ID ||
       !key.key.secret) {
     throw new e2e.openpgp.error.InvalidArgumentsError('Invalid key handle.');
   }

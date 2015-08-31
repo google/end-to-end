@@ -56,6 +56,14 @@ e2e.openpgp.SimpleKeyManager.launch = function(keyProviderPromise) {
 
 
 /** @override */
+e2e.openpgp.SimpleKeyManager.prototype.getKeyProviderIds = function() {
+  return this.keyProvider_.getId().then(function(myProviderId) {
+    return [myProviderId];
+  });
+};
+
+
+/** @override */
 e2e.openpgp.SimpleKeyManager.prototype.getTrustedKeys = function(purpose,
     email) {
   return this.keyProvider_.getTrustedKeysByEmail(purpose, email);
@@ -171,4 +179,51 @@ e2e.openpgp.SimpleKeyManager.prototype.sign = function(key, keyId, algorithm,
 e2e.openpgp.SimpleKeyManager.prototype.decrypt = function(key, keyId, algorithm,
     ciphertext) {
   return this.keyProvider_.decrypt(key, keyId, algorithm, ciphertext);
+};
+
+
+/** @override */
+e2e.openpgp.SimpleKeyManager.prototype.initializeKeyProviders = function(
+    config) {
+  return this.keyProvider_.getId().then(function(myProviderId) {
+    return this.keyProvider_.configure(config[myProviderId] || {})
+        .then(goog.bind(this.wrapState_, this, myProviderId));
+  }, null, this);
+};
+
+
+/** @override */
+e2e.openpgp.SimpleKeyManager.prototype.reconfigureKeyProvider = function(
+    providerId, config) {
+  return this.keyProvider_.getId().then(function(myProviderId) {
+    if (providerId !== myProviderId) {
+      throw new e2e.openpgp.error.InvalidArgumentsError('Invalid provider');
+    }
+    return this.keyProvider_.configure(config);
+  }, null, this);
+};
+
+
+/** @override */
+e2e.openpgp.SimpleKeyManager.prototype.getKeyProvidersState = function() {
+  return this.keyProvider_.getId().then(function(myProviderId) {
+    return this.keyProvider_.getState()
+        .then(goog.bind(this.wrapState_, this, myProviderId));
+  }, null, this);
+};
+
+
+/**
+ * Wraps the state into an object keyed by KeyProviderId to satisfy the
+ * KeyManager contract.
+ * @param {!e2e.openpgp.KeyProviderId} providerId
+ * @param {e2e.openpgp.KeyProviderState} state
+ * @return {!Object<e2e.openpgp.KeyProviderId,e2e.openpgp.KeyProviderState>}
+ * @private
+ */
+e2e.openpgp.SimpleKeyManager.prototype.wrapState_ = function(providerId,
+    state) {
+  var states = {};
+  states[providerId] = state;
+  return states;
 };

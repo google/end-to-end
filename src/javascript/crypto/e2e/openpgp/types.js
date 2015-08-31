@@ -34,8 +34,10 @@ goog.provide('e2e.openpgp.KeyId');
 goog.provide('e2e.openpgp.KeyPacketInfo');
 goog.provide('e2e.openpgp.KeyPair');
 goog.provide('e2e.openpgp.KeyPromise');
+goog.provide('e2e.openpgp.KeyProviderConfig');
 goog.provide('e2e.openpgp.KeyProviderCredentials');
 goog.provide('e2e.openpgp.KeyProviderId');
+goog.provide('e2e.openpgp.KeyProviderState');
 goog.provide('e2e.openpgp.KeyPurposeType');
 goog.provide('e2e.openpgp.KeyResult');
 goog.provide('e2e.openpgp.KeyRingMap');
@@ -323,6 +325,22 @@ e2e.openpgp.KeyGenerateOptions;
  * @typedef {*}
  */
 e2e.openpgp.KeyringExportOptions;
+
+
+/**
+ * Configuration data used to initialize or reconfigure a KeyProvider
+ * (opaque to the End-To-End library).
+ * @typedef {*}
+ */
+e2e.openpgp.KeyProviderConfig;
+
+
+/**
+ * State of the KeyProvider (opaque to the End-To-End library). State can
+ * indicate what options can be used to reconfigure the KeyProvider.
+ * @typedef {*}
+ */
+e2e.openpgp.KeyProviderState;
 
 
 /**

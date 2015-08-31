@@ -288,39 +288,47 @@ e2e.openpgp.Context2.prototype.removeKeys = goog.abstractMethod;
 
 
 /**
- * Initialize the key storage.
- * @param {function():goog.Thenable<string>} passphraseCallback Callback
- *     providing the passphrase for decrypting the locally stored KeyRing.
- * @return {!goog.Thenable}
+ * Initializes all the KeyProviders used by the context.
+ * @param {Object<!e2e.openpgp.KeyProviderId,
+ *     e2e.openpgp.KeyProviderConfig>} config Configuration for the key
+ *     providers. Default config will be used, when a KeyProviderId has not been
+ *     specified for a given KeyProvider.
+ * @return {!goog.Thenable<!Object<!e2e.openpgp.KeyProviderId,
+ *     e2e.openpgp.KeyProviderState>>} The state of the key providers, after
+ *     initialization.
  * @export
  */
-e2e.openpgp.Context2.prototype.initializeKeyRing = goog.abstractMethod;
+e2e.openpgp.Context2.prototype.initializeKeyProviders = goog.abstractMethod;
 
 
 /**
- * Changes the passphrase that the storage of the keys is encrypted to.
- * Use an empty string not to use storage encryption.
- * @param {string} passphrase Change the passphrase for encrypting the KeyRing
- *     when stored locally. Use empty string to store the keyring unencrypted.
- * @return {!goog.Thenable}
+ * Returns IDs of all supported KeyProviders.
+ * @return {!goog.Thenable<!Array<!e2e.openpgp.KeyProviderId>>} Supported key
+ *     provider IDs.
  * @export
  */
-e2e.openpgp.Context2.prototype.changeKeyRingPassphrase = goog.abstractMethod;
+e2e.openpgp.Context2.prototype.getKeyProviderIds = goog.abstractMethod;
 
 
 /**
- * Checks if the keys can be accessed without providing a passphrase.
- * @return {!goog.Thenable.<boolean>} True if there is a correct keyring
- *     passphrase set.
+ * Returns the current state of all supported Key Providers.
+ * @return {!goog.Thenable<!Object<!e2e.openpgp.KeyProviderId,
+ *     e2e.openpgp.KeyProviderState>>} The state of all key providers.
  * @export
  */
-e2e.openpgp.Context2.prototype.isKeyRingUnlocked = goog.abstractMethod;
+e2e.openpgp.Context2.prototype.getKeyRingState = goog.abstractMethod;
 
 
 /**
- * Checks if storage of the keys is encrypted.
- * @return {!goog.Thenable.<boolean>} True if the keyring is encrypted
- *     in persistent storage.
+ * Reinitializes the individual key provider with different data.
+ * Use this function when some provider-specific configuration needs to be
+ * changed at runtime (e.g. when the user requests to change the passphrase of
+ * the provider's storage).
+ * @param {!e2e.openpgp.KeyProviderId} providerId Provider to change the state
+ *     of.
+ * @param {!e2e.openpgp.KeyProviderConfig} newConfig The new
+ *     initialization data.
+ * @return {!goog.Thenable<e2e.openpgp.KeyProviderState>}
  * @export
  */
-e2e.openpgp.Context2.prototype.isKeyRingEncrypted = goog.abstractMethod;
+e2e.openpgp.Context2.prototype.reconfigureKeyProvider = goog.abstractMethod;

@@ -30,6 +30,31 @@ e2e.openpgp.PublicKeyProvider = function() {};
 
 
 /**
+ * Returns the provider ID (unique within the Key Manager).
+ * @return {!goog.Thenable<!e2e.openpgp.KeyProviderId>}
+ */
+e2e.openpgp.PublicKeyProvider.prototype.getId = goog.abstractMethod;
+
+
+/**
+ * Configures the Key Provider with a given configuration (opaque to End-To-End
+ * library).
+ * @param {!e2e.openpgp.KeyProviderConfig} config The configuration.
+ * @return {!goog.Thenable<!e2e.openpgp.KeyProviderState>} The state after
+ * reconfiguration.
+ */
+e2e.openpgp.PublicKeyProvider.prototype.configure = goog.abstractMethod;
+
+
+/**
+ * Returns the current state of the provider. State can be null if the provider
+ * does not expose any options to reconfigure it.
+ * @return {!goog.Thenable<e2e.openpgp.KeyProviderState>} The state.
+ */
+e2e.openpgp.PublicKeyProvider.prototype.getState = goog.abstractMethod;
+
+
+/**
  * Returns trusted keys for a given purpose for a user with given e-mail
  * address. Use this to fetch the keys to use with
  * {@link Context2#verifyDecrypt} and {@link Context2#encryptSign}.

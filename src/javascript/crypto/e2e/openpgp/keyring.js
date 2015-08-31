@@ -33,6 +33,7 @@ goog.require('e2e.openpgp.block.TransferablePublicKey');
 goog.require('e2e.openpgp.block.TransferableSecretKey');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.MissingPassphraseError');
+goog.require('e2e.openpgp.error.WrongPassphraseError');
 goog.require('e2e.openpgp.packet.SecretKey');
 goog.require('e2e.signer.Algorithm');
 goog.require('goog.array');
@@ -64,14 +65,16 @@ e2e.openpgp.KeyRing = function(lockableStorage, opt_keyServerUrl) {
   this.pubKeyRing_ = new goog.structs.Map();
   this.privKeyRing_ = new goog.structs.Map();
   this.keyGenerator_ = new e2e.openpgp.KeyGenerator();
+  /** @private {boolean} */
+  this.initialized_ = false;
 };
 
 
 /**
  * Creates and initializes the KeyRing object with an unlocked storage.
  * @param {!e2e.openpgp.LockableStorage} lockableStorage persistent
- *    storage mechanism. Storage must be unlocked, otherwise the keyring will
- *    fail to initialize.
+ *    storage mechanism. Storage must already be unlocked, otherwise this method
+ *    will return a {@link e2e.openpgp.error.MissingPassphraseError}.
  * @param {string=} opt_keyServerUrl The optional http key server url. If not
  *    specified then only support key operation locally.
  * @return {!goog.async.Deferred.<!e2e.openpgp.KeyRing>} The initialized
@@ -81,7 +84,7 @@ e2e.openpgp.KeyRing.launch = function(lockableStorage, opt_keyServerUrl) {
   var keyRing = new e2e.openpgp.KeyRing(lockableStorage, opt_keyServerUrl);
   var returnKeyRing = goog.functions.constant(keyRing);
   return /** @type {!goog.async.Deferred.<!e2e.openpgp.KeyRing>} */ (
-      keyRing.init_().addCallback(returnKeyRing));
+      keyRing.initialize().addCallback(returnKeyRing));
 };
 
 
@@ -766,37 +769,59 @@ e2e.openpgp.KeyRing.prototype.keyRingToObject_ = function(keyRing) {
 
 
 /**
- * Initializes the keyring - reads key data from local storage to memory.
+ * Initializes the keyring if it isn't already initialized. Reads the key data
+ * from lockable storage to memory.
+ *
  * If the storage is locked (e.g. incorrect passphrase has been given), returns
- * an {@link e2e.openpgp.error.MissingPassphraseError} instead.
+ * a {@link e2e.openpgp.error.PassphraseError} instead.
+ * @param {string=} opt_passphrase If given, tries to unlocks the storage with
+ * the given passphrase.
  * @return {!goog.async.Deferred}
- * @private
  */
-e2e.openpgp.KeyRing.prototype.init_ = function() {
+e2e.openpgp.KeyRing.prototype.initialize = function(opt_passphrase) {
+  var result = e2e.async.Result.toResult(undefined);
+
+  if (this.initialized_) { // Keyring was already initialized, exit.
+    return result;
+  }
+
+  // Try to unlock the storage.
+  if (this.localStorage_.isLocked()) {
+    result.addCallback(function() {
+      return this.localStorage_.unlockWithPassphrase(opt_passphrase || '');
+    }).addErrback(function() {
+      if (goog.isDefAndNotNull(opt_passphrase)) {
+        throw new e2e.openpgp.error.WrongPassphraseError();
+      }
+      throw new e2e.openpgp.error.MissingPassphraseError();
+    });
+  }
+
   var keysToGet = [
     e2e.openpgp.KeyRing.PUB_KEYRING_KEY_,
     e2e.openpgp.KeyRing.PRIV_KEYRING_KEY_,
     e2e.openpgp.KeyRing.ECC_SEED_KEY_,
     e2e.openpgp.KeyRing.ECC_COUNT_KEY_
   ];
-  if (this.localStorage_.isLocked()) {
-    return e2e.async.Result.toError(
-        new e2e.openpgp.error.MissingPassphraseError());
-  }
-  return this.localStorage_.getMultiple(keysToGet).addCallback(function(data) {
-    this.pubKeyRing_ = this.objectToPubKeyRing_(
-        /** @type {!e2e.openpgp.SerializedKeyRing} */ (
-        data[e2e.openpgp.KeyRing.PUB_KEYRING_KEY_]));
-    this.privKeyRing_ = this.objectToPrivKeyRing_(
-        /** @type {!e2e.openpgp.SerializedKeyRing} */ (
-        data[e2e.openpgp.KeyRing.PRIV_KEYRING_KEY_]));
-    this.keyGenerator_.setGeneratorState({
-      seed: /** @type {e2e.ByteArray} */ (
-          data[e2e.openpgp.KeyRing.ECC_SEED_KEY_]),
-      count: /** @type {number} */ (
-          data[e2e.openpgp.KeyRing.ECC_COUNT_KEY_])
-    });
-  }, this);
+
+  return result.addCallback(function() {
+    return this.localStorage_.getMultiple(keysToGet);
+  }, this)
+      .addCallback(function(data) {
+        this.pubKeyRing_ = this.objectToPubKeyRing_(
+            /** @type {!e2e.openpgp.SerializedKeyRing} */ (
+            data[e2e.openpgp.KeyRing.PUB_KEYRING_KEY_]));
+        this.privKeyRing_ = this.objectToPrivKeyRing_(
+            /** @type {!e2e.openpgp.SerializedKeyRing} */ (
+            data[e2e.openpgp.KeyRing.PRIV_KEYRING_KEY_]));
+        this.keyGenerator_.setGeneratorState({
+          seed: /** @type {e2e.ByteArray} */ (
+              data[e2e.openpgp.KeyRing.ECC_SEED_KEY_]),
+          count: /** @type {number} */ (
+              data[e2e.openpgp.KeyRing.ECC_COUNT_KEY_])
+        });
+        this.initialized_ = true;
+      }, this);
 };
 
 
