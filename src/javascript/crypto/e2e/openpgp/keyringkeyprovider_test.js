@@ -126,8 +126,12 @@ function testImportKeys() {
     assertTrue(error instanceof e2e.openpgp.error.ParseError);
     return kkp.importKeys(goog.array.concat(keys[0].serialize(),
         keys[1].serialize()));
-  }).then(function(uids) {
-    assertArrayEquals([UID], uids);
+  }).then(function(importedKeys) {
+    assertEquals(2, importedKeys.length);
+    assertArrayEquals(keys[0].keyPacket.fingerprint,
+        importedKeys[0].key.fingerprint);
+    // One public and one secret key.
+    assertEquals(1, importedKeys[0].key.secret ^ importedKeys[1].key.secret);
     assertEquals(1, kkp.keyring_.pubKeyRing_.getValues().length);
     assertEquals(1, kkp.keyring_.pubKeyRing_.getValues()[0].length);
     assertEquals(1, kkp.keyring_.privKeyRing_.getValues().length);
@@ -140,8 +144,8 @@ function testImportKeys() {
         kkp.keyring_.privKeyRing_.getValues()[0][0].keyPacket.fingerprint);
     // Import the same key again.
     return kkp.importKeys(keys[0].serialize());
-  }).then(function(uids) {
-    assertEquals(0, uids.length);
+  }).then(function(importedKeys) {
+    assertEquals(0, importedKeys.length);
     asyncTestCase.continueTesting();
   });
 }

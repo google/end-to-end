@@ -455,19 +455,9 @@ e2e.openpgp.KeyringKeyProvider.prototype.importKeys = function(keySerialization,
         return imported ? key : null;
       });
     }, this));
-  }, null, this).then(function(importedKeys) {
-    var uids = [];
-    goog.array.map(importedKeys, function(importedKey) {
-      // The key is valid, but it didn't import - e.g. key with the same Key ID
-      // already exists for one of its User IDs.
-      if (goog.isNull(importedKey)) {
-        return;
-      }
-      goog.array.forEach(importedKey.getUserIds(), function(userId) {
-        goog.array.insert(uids, userId);
-      });
-    });
-    return uids;
+  }, null, this).then(function(keysOrNull) {
+    return e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_(
+        goog.array.filter(keysOrNull, goog.isDefAndNotNull));
   });
 };
 

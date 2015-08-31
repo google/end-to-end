@@ -205,8 +205,8 @@ e2e.openpgp.KeyManager.prototype.removeKeys = goog.abstractMethod;
  * @param {!function(string):!goog.Thenable<string>} passphraseCallback This
  *     callback is used for requesting an action-specific passphrase from the
  *     user (if the key material is encrypted to a passprase).
- * @return {!e2e.openpgp.UserIdsPromise} List of user IDs that were
- *     successfully imported.
+ * @return {!e2e.openpgp.KeysPromise} List of keys that were successfully
+ *     imported.
  * @export
  */
 e2e.openpgp.KeyManager.prototype.importKeys = goog.abstractMethod;
