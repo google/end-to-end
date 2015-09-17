@@ -1,0 +1,6 @@
+{
+  "type" : "import",
+  "expected_uids" : ["\u0150ry M\u00e1t\u00e9 "],
+  "expected_fingerprint": "e0f7644b5f5c515e8c2501dff854fe8ff17f3813",
+  "expected_subkeys" : []
+}

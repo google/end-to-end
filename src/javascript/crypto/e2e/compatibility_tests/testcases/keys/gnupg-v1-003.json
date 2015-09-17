@@ -1,0 +1,11 @@
+{
+  "type" : "import",
+  "expected_uids" : [
+    "john doe (test) <johndoe@example.com>",
+    "john doe <johndoe@seconddomain.com>"
+  ],
+  "expected_fingerprint": "56c65c513a0d1b9cff532d784c073ae0c8445c0c",
+  "expected_subkeys" : [{
+    "expected_fingerprint": "c6a10a838a716176d5e808de1b00ffe4bc1f8cf6"
+  }]
+}

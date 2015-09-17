@@ -1,0 +1,8 @@
+{
+  "type" : "decrypt",
+  "decryptKey": "e2e-002-decrypt.asc",
+  "verifyKey": "e2e-002-verify.asc",
+  "passphrase": "test",
+  "filename": "",
+  "textcontent": "hello"
+}

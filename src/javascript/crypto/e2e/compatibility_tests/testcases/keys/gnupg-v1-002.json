@@ -1,0 +1,8 @@
+{
+  "type" : "import",
+  "expected_uids" : [
+    "dsa 2048"
+  ],
+  "expected_fingerprint": "a8c3489ad6e31f81f8de9f6672f672d32326fb52",
+  "expected_subkeys" : []
+}

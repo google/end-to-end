@@ -1,0 +1,7 @@
+{
+  "type" : "decrypt",
+  "decryptKey" : "gnupg-v1-4-11-001-decrypt.asc",
+  "passphrase": "test",
+  "filename": "susheep.txt",
+  "textcontent": "susheep\n"
+}

@@ -1,0 +1,8 @@
+{
+  "type" : "decrypt",
+  "decryptKey": "openkeychain-001-decrypt.asc",
+  "passphrase": "q",
+  "verifyKey": "openkeychain-001-verify.asc",
+  "filename": "",
+  "textcontent": "Hello"
+}

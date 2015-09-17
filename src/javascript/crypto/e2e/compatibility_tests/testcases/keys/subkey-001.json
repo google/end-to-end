@@ -1,0 +1,7 @@
+{
+  "type" : "import",
+  "expected_uids" : ["revoked-subkey"],
+  "expected_fingerprint": "fcf583ae030924c5ca3520fd134974721f4867f9",
+  "expected_subkeys" : [],
+  "comment": "Import should ignore the subkeys as they been revoked. Revocations on subkeys are permanent, so it cannot be undone by re-signing a subkey."
+}
