@@ -1,0 +1,8 @@
+{
+  "type" : "import",
+  "expected_uids" : ["e2ekey@example.com"],
+  "expected_fingerprint": "099c5e5d3ca82dac59deb9431446c4a316225086",
+  "expected_subkeys" : [{
+    "expected_fingerprint": "43c788799304b2737511b41e66d2f1269199e424"
+  }]
+}

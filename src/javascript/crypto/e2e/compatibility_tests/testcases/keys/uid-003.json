@@ -1,0 +1,7 @@
+{
+  "type" : "import",
+  "expected_uids" : ["good userid <good@user.id>"],
+  "expected_fingerprint": "25d1a26429b45e34f58cc3a45ce247525526ad43",
+  "expected_subkeys" : [],
+  "comment": "The uid with an invalid self-signature must be removed."
+}

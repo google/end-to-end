@@ -1,0 +1,11 @@
+{
+  "type" : "import",
+  "expected_uids" : [
+    "Andrew David Hintz ( Drew Hintz ) <drew@overt.org>",
+    "Andrew David Hintz ( Drew Hintz ) <drew@guh.nu>"
+  ],
+  "expected_fingerprint": "3c6cf7120a52bd33c51857989014ca992da05e78",
+  "expected_subkeys" : [{
+    "expected_fingerprint": "4cb29c377dbfbbedfcf493ec610abd91b645a031"
+  }]
+}

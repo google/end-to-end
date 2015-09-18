@@ -1,0 +1,8 @@
+{
+  "type" : "import",
+  "expected_uids" : ["Android Security <security@android.com>"],
+  "expected_fingerprint": "5e31485bd84e3ca6e1f6e604731e6b9f00540fc3",
+  "expected_subkeys" : [{
+    "expected_fingerprint": "6834b09572175adadda61ba0708cd053a11a9b3b"
+  }]
+}

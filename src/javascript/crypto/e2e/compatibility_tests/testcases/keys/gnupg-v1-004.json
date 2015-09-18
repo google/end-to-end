@@ -1,0 +1,9 @@
+{
+  "type" : "import",
+  "expected_uids" : [
+    "revoked <revoked@revoked.net>"
+  ],
+  "expected_fingerprint": "7f03a5f84557bef41cf1e81d1875ff0b267cdc0e",
+  "expected_subkeys" : [],
+  "comment": "The caller should not import the revoked encryption subkey"
+}

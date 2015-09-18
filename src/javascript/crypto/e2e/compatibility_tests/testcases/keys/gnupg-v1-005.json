@@ -1,0 +1,7 @@
+{
+  "type" : "import",
+  "expected_uids" : ["with-experimental"],
+  "expected_fingerprint": "dfeb35cf1b3a693438d97a49848df06dc5151158",
+  "expected_subkeys" : [],
+  "comment": "The caller should skip unknown packets"
+}
