@@ -203,17 +203,18 @@
 
     var result = message.decrypt(function(keyid) {
       if (sandbox.e2e.compareByteArray(decryptCert.keyPacket.keyId, keyid)) {
-        return unlock(decryptCert.keyPacket, info.passphrase) /* .cipher */;
+        return sandbox.e2e.async.Result.toResult(
+            unlock(decryptCert.keyPacket, info.passphrase).cipher);
       }
       var ret = null;
       if (decryptCert.subKeys != null) {
         decryptCert.subKeys.forEach(function(subkey) {
           if (sandbox.e2e.compareByteArray(subkey.keyId, keyid)) {
-            ret = unlock(subkey, info.passphrase) /* .cipher */;
+            ret = unlock(subkey, info.passphrase).cipher;
           }
         });
       }
-      return ret;
+      return sandbox.e2e.async.Result.toResult(ret);
     }, null);
 
     result.then(function(message) {
