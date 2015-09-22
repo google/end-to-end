@@ -1,2 +1,127 @@
-<!DOCTYPE html><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"><meta http-equiv="Content-Language" content="en"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Result</title><link href="dossier.css" rel="stylesheet" type="text/css"><header><div><form><div><input type="search" placeholder="Search"></div></form></div></header><main><article><div class="parentlink"><b>Namespace:</b> <a href="namespace_e2e_async.html">e2e.async</a></div><div class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l37">View Source</a></div><h1>class Result&lt;T&gt;</h1><pre class="inheritance">goog.async.Deferred&lt;T&gt;
-  &#x2514; e2e.async.Result</pre><dl><dt>All implemented interfaces:<dd><code>goog.Thenable&lt;VALUE&gt;</code></dl><h2 class="main">new Result(<wbr>opt_onCancelFunction, opt_defaultScope)</h2><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>opt_onCancelFunction<code>?Function=</code><dd><p>A function that will be called if the  Deferred is cancelled. If provided, this function runs before the  Deferred is fired with a <code>CancelledError</code>.</p><dt>opt_defaultScope<code>?<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>=</code><dd><p>The default object context to call  callbacks and errbacks in.</p></dl></div></div><h2>Instance Methods</h2><div id="addCallback" class="function"><div><h3>addCallback(<wbr>arg0, arg1)<span class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l47">code »</a></span></h3><p><b>Overrides: </b><a href="#addCallback">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>arg0<code>function(T): ?</code><dt>arg1<code>T=</code></dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code><a href="class_e2e_async_Result.html">e2e.async.Result</a></code></dl></div></div></div></div><hr class="fn-sep"><div id="addErrback" class="function"><div><h3>addErrback(<wbr>arg0, arg1)<span class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l54">code »</a></span></h3><p><b>Overrides: </b><a href="#addErrback">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>arg0<code>function(?): ?</code><dt>arg1<code>T=</code></dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code><a href="class_e2e_async_Result.html">e2e.async.Result</a></code></dl></div></div></div></div><h2>Static Functions</h2><div id="Result.getValue" class="function"><div><h3><code>&lt;T&gt;</code> Result.getValue(<wbr>result)<span class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l63">code »</a></span></h3><p>Obtains the value if available.</p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>result<code><a href="class_e2e_async_Result.html">e2e.async.Result</a>&lt;T&gt;</code><dd><p>The result.</p></dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code>T</code><dd><p>The value.</p></dl></div></div></div></div><hr class="fn-sep"><div id="Result.toAsynchronousResult" class="function"><div><h3><code>&lt;T&gt;</code> Result.toAsynchronousResult(<wbr>value)<span class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l109">code »</a></span></h3><p>Converts a value to a result that is resolved asynchronously.</p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>value<code>T</code><dd><p>The value to wrap as a result.</p></dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code><a href="class_e2e_async_Result.html">e2e.async.Result</a>&lt;T&gt;</code><dd><p>The value as a result.</p></dl></div></div></div></div><hr class="fn-sep"><div id="Result.toError" class="function"><div><h3>Result.toError(<wbr>error)<span class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l97">code »</a></span></h3><p>Converts a value to a (failed) result.</p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>error<code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a></code><dd><p>The error to resolve to.</p></dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code><a href="class_e2e_async_Result.html">e2e.async.Result</a></code><dd><p>The value as a result.</p></dl></div></div></div></div><hr class="fn-sep"><div id="Result.toResult" class="function"><div><h3><code>&lt;T&gt;</code> Result.toResult(<wbr>value)<span class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l86">code »</a></span></h3><p>Converts a value to a result.</p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>value<code>T</code><dd><p>The value to wrap as a result.</p></dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code><a href="class_e2e_async_Result.html">e2e.async.Result</a>&lt;T&gt;</code><dd><p>The value as a result.</p></dl></div></div></div></div></article><nav><h3><a href="index.html">Overview</a></h3><div><input type="checkbox" id="nav-types" checked/><label for="nav-types"><h3><span class="selectable">Types</span></h3></label><div id="nav-types-view"></div></div></nav></main><div class="pre-footer"><div></div></div><footer><div><a href="https://github.com/jleyba/js-dossier">Generated by dossier</a></div></footer><script src="types.js"></script><script src="dossier.js"></script>
+<!DOCTYPE html><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no"><meta http-equiv="Content-Language" content="en"><meta http-equiv="X-UA-Compatible" content="IE=edge"><title>Result</title><link href="dossier.css" rel="stylesheet" type="text/css"><header><div><form><div><input type="search" placeholder="Search" tabindex="1"></div></form></div></header><main><article><div class="parentlink"><b>Namespace:</b> <a href="namespace_e2e_async.html">e2e.async</a></div><div class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l37">View Source</a></div><h1>class Result&lt;T&gt;</h1><pre class="inheritance">goog.async.Deferred&lt;T&gt;
+  &#x2514; e2e.async.Result</pre><dl><dt>All implemented interfaces<dd><code>IThenable&lt;TYPE&gt;</code><dd><code>goog.Thenable&lt;VALUE&gt;</code></dl><h3>new Result(<wbr>opt_onCancelFunction, opt_defaultScope)</h3><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>opt_onCancelFunction<code>?Function=</code><dd><p>A function that will be called if the
+Deferred is cancelled. If provided, this function runs before the
+Deferred is fired with a <code>CancelledError</code>.</p>
+<dt>opt_defaultScope<code>?<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object">Object</a>=</code><dd><p>The default object context to call
+callbacks and errbacks in.</p>
+</dl></div></div><h2>Instance Methods</h2><div id="addBoth" class="function"><div><h3><code>&lt;T&gt;</code> addBoth(<wbr>f, opt_scope)<span class="codelink"><a href="source/lib/closure-library/third_party/closure/goog/mochikit/async/deferred.js.src.html#l433">code »</a></span></h3><p>Registers one function as both a callback and errback.</p>
+<p><b>Defined by: </b><a href="#addBoth">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>f<code>function(this: T, ?): ?</code><dd><p>The function to be called on any result.</p>
+<dt>opt_scope<code>?T=</code><dd><p>An optional scope to call the function in.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code>goog.async.Deferred</code><dd><p>This Deferred.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="addCallback" class="function"><div><h3>addCallback(<wbr>cb, opt_scope)<span class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l47">code »</a></span></h3><p>Register a callback function to be called with a successful result. If no
+value is returned by the callback function, the result value is unchanged. If
+a new value is returned, it becomes the Deferred result and will be passed to
+the next callback in the execution sequence.</p>
+<p>If the function throws an error, the error becomes the new result and will be
+passed to the next errback in the execution chain.</p>
+<p>If the function returns a Deferred, the execution sequence will be blocked
+until that Deferred fires. Its result will be passed to the next callback (or
+errback if it is an error result) in this Deferred&#39;s execution sequence.</p>
+<p><b>Overrides: </b><a href="#addCallback">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>cb<code>function(this: T, VALUE): ?</code><dd><p>The function to be called with a
+successful result.</p>
+<dt>opt_scope<code>?T=</code><dd><p>An optional scope to call the callback in.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code><a href="class_e2e_async_Result.html">e2e.async.Result</a></code></dl></div></div></div></div><hr class="fn-sep"><div id="addCallbacks" class="function"><div><h3><code>&lt;T&gt;</code> addCallbacks(<wbr>cb, eb, opt_scope)<span class="codelink"><a href="source/lib/closure-library/third_party/closure/goog/mochikit/async/deferred.js.src.html#l474">code »</a></span></h3><p>Registers a callback function and an errback function at the same position
+in the execution sequence. Only one of these functions will execute,
+depending on the error state during the execution sequence.</p>
+<p>NOTE: This is not equivalent to <code>def.addCallback().addErrback()</code>! If
+the callback is invoked, the errback will be skipped, and vice versa.</p>
+<p><b>Defined by: </b><a href="#addCallbacks">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>cb<code>?function(this: T, VALUE): ?</code><dd><p>The function to be called on a
+successful result.</p>
+<dt>eb<code>?function(this: T, ?): ?</code><dd><p>The function to be called on an
+unsuccessful result.</p>
+<dt>opt_scope<code>?T=</code><dd><p>An optional scope to call the functions in.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code>goog.async.Deferred</code><dd><p>This Deferred.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="addErrback" class="function"><div><h3>addErrback(<wbr>eb, opt_scope)<span class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l54">code »</a></span></h3><p>Register a callback function to be called with an error result. If no value
+is returned by the function, the error result is unchanged. If a new error
+value is returned or thrown, that error becomes the Deferred result and will
+be passed to the next errback in the execution sequence.</p>
+<p>If the errback function handles the error by returning a non-error value,
+that result will be passed to the next normal callback in the sequence.</p>
+<p>If the function returns a Deferred, the execution sequence will be blocked
+until that Deferred fires. Its result will be passed to the next callback (or
+errback if it is an error result) in this Deferred&#39;s execution sequence.</p>
+<p><b>Overrides: </b><a href="#addErrback">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>eb<code>function(this: T, ?): ?</code><dd><p>The function to be called on an
+unsuccessful result.</p>
+<dt>opt_scope<code>?T=</code><dd><p>An optional scope to call the errback in.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code><a href="class_e2e_async_Result.html">e2e.async.Result</a></code></dl></div></div></div></div><hr class="fn-sep"><div id="addFinally" class="function"><div><h3><code>&lt;T&gt;</code> addFinally(<wbr>f, opt_scope)<span class="codelink"><a href="source/lib/closure-library/third_party/closure/goog/mochikit/async/deferred.js.src.html#l446">code »</a></span></h3><p>Like addBoth, but propagates uncaught exceptions in the errback.</p>
+<p><b>Defined by: </b><a href="#addFinally">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>f<code>function(this: T, ?): ?</code><dd><p>The function to be called on any result.</p>
+<dt>opt_scope<code>?T=</code><dd><p>An optional scope to call the function in.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code>goog.async.Deferred&lt;VALUE&gt;</code><dd><p>This Deferred.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="awaitDeferred" class="function"><div><h3>awaitDeferred(<wbr>otherDeferred)<span class="codelink"><a href="source/lib/closure-library/third_party/closure/goog/mochikit/async/deferred.js.src.html#l543">code »</a></span></h3><p>Makes this Deferred wait for another Deferred&#39;s execution sequence to
+complete before continuing.</p>
+<p>This is equivalent to adding a callback that returns <code>otherDeferred</code>,
+but doesn&#39;t prevent additional callbacks from being added to
+<code>otherDeferred</code>.</p>
+<p><b>Defined by: </b><a href="#awaitDeferred">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>otherDeferred<code>(goog.async.Deferred|goog.Thenable)</code><dd><p>The Deferred
+to wait for.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code>goog.async.Deferred</code><dd><p>This Deferred.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="branch" class="function"><div><h3>branch(<wbr>opt_propagateCancel)<span class="codelink"><a href="source/lib/closure-library/third_party/closure/goog/mochikit/async/deferred.js.src.html#l569">code »</a></span></h3><p>Creates a branch off this Deferred&#39;s execution sequence, and returns it as a
+new Deferred. The branched Deferred&#39;s starting result will be shared with the
+parent at the point of the branch, even if further callbacks are added to the
+parent.</p>
+<p>All branches at the same stage in the execution sequence will receive the
+same starting value.</p>
+<p><b>Defined by: </b><a href="#branch">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>opt_propagateCancel<code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a>=</code><dd><p>If cancel() is called on every child
+branch created with opt_propagateCancel, the parent will be canceled as
+well.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code>goog.async.Deferred&lt;VALUE&gt;</code><dd><p>A Deferred that will be started with
+the computed result from this stage in the execution sequence.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="callback" class="function"><div><h3>callback(<wbr>opt_result)<span class="codelink"><a href="source/lib/closure-library/third_party/closure/goog/mochikit/async/deferred.js.src.html#l323">code »</a></span></h3><p>Fire the execution sequence for this Deferred by passing the starting result
+to the first registered callback.</p>
+<p><b>Defined by: </b><a href="#callback">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>opt_result<code>?VALUE=</code><dd><p>The starting result.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="cancel" class="function"><div><h3>cancel(<wbr>opt_deepCancel)<span class="codelink"><a href="source/lib/closure-library/third_party/closure/goog/mochikit/async/deferred.js.src.html#l228">code »</a></span></h3><p>Cancels a Deferred that has not yet been fired, or is blocked on another
+deferred operation. If this Deferred is waiting for a blocking Deferred to
+fire, the blocking Deferred will also be canceled.</p>
+<p>If this Deferred was created by calling branch() on a parent Deferred with
+opt_propagateCancel set to true, the parent may also be canceled. If
+opt_deepCancel is set, cancel() will be called on the parent (as well as any
+other ancestors if the parent is also a branch). If one or more branches were
+created with opt_propagateCancel set to true, the parent will be canceled if
+cancel() is called on all of those branches.</p>
+<p><b>Defined by: </b><a href="#cancel">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>opt_deepCancel<code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a>=</code><dd><p>If true, cancels this Deferred&#39;s parent even
+if cancel() hasn&#39;t been called on some of the parent&#39;s branches. Has no
+effect on a branch without opt_propagateCancel set to true.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="chainDeferred" class="function"><div><h3>chainDeferred(<wbr>otherDeferred)<span class="codelink"><a href="source/lib/closure-library/third_party/closure/goog/mochikit/async/deferred.js.src.html#l524">code »</a></span></h3><p>Links another Deferred to the end of this Deferred&#39;s execution sequence. The
+result of this execution sequence will be passed as the starting result for
+the chained Deferred, invoking either its first callback or errback.</p>
+<p><b>Defined by: </b><a href="#chainDeferred">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>otherDeferred<code>goog.async.Deferred</code><dd><p>The Deferred to chain.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code>goog.async.Deferred</code><dd><p>This Deferred.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="errback" class="function"><div><h3>errback(<wbr>opt_result)<span class="codelink"><a href="source/lib/closure-library/third_party/closure/goog/mochikit/async/deferred.js.src.html#l335">code »</a></span></h3><p>Fire the execution sequence for this Deferred by passing the starting error
+result to the first registered errback.</p>
+<p><b>Defined by: </b><a href="#errback">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>opt_result<code>*=</code><dd><p>The starting error.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="hasFired" class="function"><div><h3>hasFired()<span class="codelink"><a href="source/lib/closure-library/third_party/closure/goog/mochikit/async/deferred.js.src.html#l584">code »</a></span></h3><p><b>Defined by: </b><a href="#hasFired">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></code><dd><p>Whether the execution sequence has been started on this
+Deferred by invoking <code>callback</code> or <code>errback</code>.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="isError" class="function"><div><h3>isError(<wbr>res)<span class="codelink"><a href="source/lib/closure-library/third_party/closure/goog/mochikit/async/deferred.js.src.html#l596">code »</a></span></h3><p><b>Defined by: </b><a href="#isError">goog.async.Deferred</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>res<code>*</code><dd><p>The latest result in the execution sequence.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Boolean">boolean</a></code><dd><p>Whether the current result is an error that should cause
+the next errback to fire. May be overridden by subclasses to handle
+special error types.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="then" class="function"><div><h3>then(<wbr>opt_onFulfilled, opt_onRejected, opt_context)<span class="codelink"><a href="source/lib/closure-library/third_party/closure/goog/mochikit/async/deferred.js.src.html#l495">code »</a></span></h3><p>Implements goog.Thenable for seamless integration with
+goog.Promise.
+Deferred results are mutable and may represent multiple values over
+their lifetime. Calling <code>then</code> on a Deferred returns a Promise
+with the result of the Deferred at that point in its callback chain.
+Note that if the Deferred result is never mutated, and only
+<code>then</code> calls are made, the Deferred will behave like a Promise.</p>
+<p><b>Defined by: </b><a href="#then">goog.async.Deferred</a><br><b>Specified by: </b><a href="#then">goog.Thenable</a>, <a href="#then">IThenable</a></p><div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>opt_onFulfilled<code>?function(this: THIS, TYPE): ?(RESULT|{then: ?})=</code><dd><p>A
+function that will be invoked with the fulfillment value if the Promise
+is fullfilled.</p>
+<dt>opt_onRejected<code>?function(this: THIS, *): *=</code><dd><p>A function that will
+be invoked with the rejection reason if the Promise is rejected.</p>
+<dt>opt_context<code>?THIS=</code><dd><p>An optional context object that will be the
+execution context for the callbacks. By default, functions are executed
+with the default this.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code>goog.Promise</code><dd><p>A new Promise that will receive the result
+of the fulfillment or rejection callback.</p>
+</dl></div></div></div></div><h2>Static Functions</h2><div id="Result.getValue" class="function"><div><h3><code>&lt;T&gt;</code> Result.getValue(<wbr>result)<span class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l63">code »</a></span></h3><p>Obtains the value if available.</p>
+<div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>result<code><a href="class_e2e_async_Result.html">e2e.async.Result</a>&lt;T&gt;</code><dd><p>The result.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code>T</code><dd><p>The value.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="Result.toAsynchronousResult" class="function"><div><h3><code>&lt;T&gt;</code> Result.toAsynchronousResult(<wbr>value)<span class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l109">code »</a></span></h3><p>Converts a value to a result that is resolved asynchronously.</p>
+<div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>value<code>T</code><dd><p>The value to wrap as a result.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code><a href="class_e2e_async_Result.html">e2e.async.Result</a>&lt;T&gt;</code><dd><p>The value as a result.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="Result.toError" class="function"><div><h3>Result.toError(<wbr>error)<span class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l97">code »</a></span></h3><p>Converts a value to a (failed) result.</p>
+<div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>error<code><a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error">Error</a></code><dd><p>The error to resolve to.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code><a href="class_e2e_async_Result.html">e2e.async.Result</a></code><dd><p>The value as a result.</p>
+</dl></div></div></div></div><hr class="fn-sep"><div id="Result.toResult" class="function"><div><h3><code>&lt;T&gt;</code> Result.toResult(<wbr>value)<span class="codelink"><a href="source/src/javascript/crypto/e2e/async/result.js.src.html#l86">code »</a></span></h3><p>Converts a value to a result.</p>
+<div><div class="fn-details"><div><b>Parameters</b></div><dl><dt>value<code>T</code><dd><p>The value to wrap as a result.</p>
+</dl></div><div class="fn-details"><div><b>Returns</b></div><dl><dt><code><a href="class_e2e_async_Result.html">e2e.async.Result</a>&lt;T&gt;</code><dd><p>The value as a result.</p>
+</dl></div></div></div></div></article><nav><h3><a href="index.html" tabindex="2">Overview</a></h3><div><input type="checkbox" id="nav-types" checked/><label for="nav-types"><h3><span class="selectable" tabindex="2">Types</span></h3></label><div id="nav-types-view"></div></div></nav></main><footer><div><a href="https://github.com/jleyba/js-dossier">Generated by dossier</a></div></footer><script src="types.js"></script><script src="dossier.js"></script>
