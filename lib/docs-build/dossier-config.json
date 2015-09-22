@@ -4,7 +4,8 @@
   "externs" : ["lib/closure-compiler/contrib/externs/chrome_extensions.js"],
   "closureLibraryDir": "lib/closure-library/closure/goog/",
   "excludes": [
-    "src/**_test.js"
+    "src/**_test.js",
+    "src/javascript/crypto/e2e/compatibility_tests/**"
   ],
   "typeFilters": [
     "^goog",

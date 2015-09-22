@@ -319,22 +319,23 @@ e2e_lint() {
 }
 
 e2e_build_docs() {
+  DOSSIER_JAR="lib/js-dossier/bazel-bin/src/java/com/github/jsdossier/dossier_deploy.jar"
   rm -rf docs/*
-  if [ ! -f lib/js-dossier/buck-out/gen/src/java/com/github/jsdossier/dossier.jar ]; then
-    if [ -z `which buck` ]; then
-      echo "Facebook Buck is not installed. Buck is needed by js-dossier to build the documentation."
-      echo "Follow instructions at http://buckbuild.com/setup/quick_start.html to install."
-      echo "Make sure 'buck' command line tool is available."
+  if [ ! -f $DOSSIER_JAR ]; then
+    if [ -z `which bazel` ]; then
+      echo "Bazel is not installed. Bazel is needed by js-dossier to build the documentation."
+      echo "Follow instructions at http://bazel.io/docs/install.html to install."
+      echo "Make sure 'bazel' command line tool is available."
       RETVAL=1
       exit
     else
-      cd lib/js-dossier
+      pushd lib/js-dossier
       ./gendossier.sh -r
-      cd ../..
+      popd
     fi
   fi
   e2e_build_templates
-  java -jar lib/js-dossier/buck-out/gen/src/java/com/github/jsdossier/dossier.jar -c lib/docs-build/dossier-config.json
+  java -jar $DOSSIER_JAR -c lib/docs-build/dossier-config.json
   RETVAL=$?
 }
 
