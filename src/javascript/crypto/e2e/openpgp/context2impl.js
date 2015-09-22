@@ -92,17 +92,10 @@ e2e.openpgp.Context2Impl.launch = function(keyManagerPromise) {
 
 
 /**
- * Message that can be encoded. Used internally in {@link #encryptSign}.
- * @typedef {!e2e.openpgp.block.Message|!e2e.openpgp.ClearSignMessage}
- * @private
- */
-e2e.openpgp.Context2Impl.EncodableMessage_;
-
-
-/**
  * Promise of a message that can be encoded. Used internally in
  * {@link #encryptSign}.
- * @typedef {!goog.Thenable<!e2e.openpgp.Context2Impl.EncodableMessage_>}
+ * @typedef {!goog.Thenable<!e2e.openpgp.block.Message|
+ *     !e2e.openpgp.ClearSignMessage>}
  * @private
  */
 e2e.openpgp.Context2Impl.EncodableMessagePromise_;
@@ -281,7 +274,7 @@ e2e.openpgp.Context2Impl.prototype.encryptSign = function(plaintext, options,
  * @param {!Array.<string>} passphrases Passphrases to use for symmetric
  *     key encryption of the message.
  * @param  {!Array.<!e2e.openpgp.packet.SurrogateSecretKey>} signKeys
- * @return {!goog.Thenable<!e2e.openpgp.Context2Impl.EncodableMessage_>}
+ * @return {!e2e.openpgp.Context2Impl.EncodableMessagePromise_}
  *     The encrypted and/or signed message, before encoding.
  * @private
  */
@@ -439,7 +432,7 @@ e2e.openpgp.Context2Impl.prototype.byteSign_ = function(
 
 /**
  * Encodes the encrypted and/or signed message for output.
- * @param  {!e2e.openpgp.Context2Impl.EncodableMessage_} message
+ * @param  {!e2e.openpgp.block.Message|!e2e.openpgp.ClearSignMessage} message
  *     The message to encode.
  * @return {!e2e.ByteArray|string} The message, optionally armored.
  * @private
