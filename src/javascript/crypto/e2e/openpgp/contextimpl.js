@@ -258,7 +258,7 @@ e2e.openpgp.ContextImpl.prototype.importKey = function(
  *     opt_result Result from the previous call.
  * @param {string=} opt_passphrase
  * @return {!e2e.async.Result.<e2e.openpgp.block.TransferableKey>}
- *     Result with all imported uids.
+ *     Result with all imported keys.
  * @private
  */
 e2e.openpgp.ContextImpl.prototype.tryToImportKey_ = function(
@@ -270,7 +270,7 @@ e2e.openpgp.ContextImpl.prototype.tryToImportKey_ = function(
       e2e.stringToByteArray(opt_passphrase) : undefined;
   this.keyRing_.importKey(block, passphrase)
       .addCallback(
-      // False as a return value only indicates duplicate keys already exist
+      // Null as a return value only indicates duplicate keys already exist
       // in the keyring. Return original block anyway.
       goog.bind(result.callback, result, block))
       .addErrback(function(error) {

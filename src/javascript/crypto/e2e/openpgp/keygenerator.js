@@ -202,13 +202,16 @@ e2e.openpgp.KeyGenerator.prototype.certifyKeys_ = function(email, keyData) {
 
     var privKeyBlock = new e2e.openpgp.block.TransferableSecretKey();
     privKeyBlock.keyPacket = primaryKey;
-    privKeyBlock.subKeys.push(keyData['privKey'][1]);
-    privKeyBlock.userIds.push(uid);
+    privKeyBlock.addUnverifiedSubKey(keyData['privKey'][1]);
+    privKeyBlock.addUnverifiedUserId(uid);
 
     var pubKeyBlock = new e2e.openpgp.block.TransferablePublicKey();
     pubKeyBlock.keyPacket = keyData['pubKey'][0];
-    pubKeyBlock.subKeys.push(keyData['pubKey'][1]);
-    pubKeyBlock.userIds.push(uid);
+    pubKeyBlock.addUnverifiedSubKey(keyData['pubKey'][1]);
+    pubKeyBlock.addUnverifiedUserId(uid);
+
+    privKeyBlock.processSignatures();
+    pubKeyBlock.processSignatures();
 
     return [pubKeyBlock, privKeyBlock];
   }

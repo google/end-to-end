@@ -23,6 +23,7 @@
   goog.require('goog.testing.jsunit');
   goog.require('e2e.openpgp.block.all');
   goog.require('e2e.openpgp.block.factory');
+  goog.require('e2e.openpgp.packet.all');
   goog.require('e2e.cipher.all');
   goog.require('e2e.signer.all');
  </script>
@@ -1444,7 +1445,7 @@ function getUidRevocations(uid) {
 function testSigningSubkey() {
   var key = getKey('SigningSubkey');
   var mainKeyId = key.keyPacket.keyId;
-  var signingSubKey = key.subKeys[1];
+  var signingSubKey = key.unverifiedSubKeys_[1];
   var bindingSig = signingSubKey.bindingSignatures_.get(0);
   assertArrayEquals(mainKeyId, bindingSig.getSignerKeyId());
   assertTrue(bindingSig.embeddedSignature
@@ -1462,22 +1463,23 @@ function testEmbeddedSignatures() {
   var key, error;
   // Remove embedded signature
   key = getKey('SigningSubkey');
-  delete key.subKeys[1].bindingSignatures_.get(0).embeddedSignature;
+  delete key.unverifiedSubKeys_[1].bindingSignatures_.get(0).embeddedSignature;
   error = assertThrows(function() {
     key.processSignatures();
   });
   assertTrue(error instanceof e2e.openpgp.error.SignatureError);
   // Tamper signature type
   key = getKey('SigningSubkey');
-  key.subKeys[1].bindingSignatures_.get(0).embeddedSignature.signatureType =
-      e2e.openpgp.packet.Signature.SignatureType.SUBKEY;
+  key.unverifiedSubKeys_[1].bindingSignatures_.get(0).embeddedSignature
+      .signatureType = e2e.openpgp.packet.Signature.SignatureType.SUBKEY;
   error = assertThrows(function() {
     key.processSignatures();
   });
   assertTrue(error instanceof e2e.openpgp.error.SignatureError);
   // Invalidate signature
   key = getKey('SigningSubkey');
-  key.subKeys[1].bindingSignatures_.get(0).embeddedSignature.signature.s[0] ^= 0x01;
+  key.unverifiedSubKeys_[1].bindingSignatures_.get(0).embeddedSignature
+      .signature.s[0] ^= 0x01;
   error = assertThrows(function() {
     key.processSignatures();
   });
@@ -1487,15 +1489,17 @@ function testEmbeddedSignatures() {
 
 function testSignatureVerification() {
   var keyBlock = getKey('EccKey');
-  assertEquals(1, keyBlock.subKeys[0].bindingSignatures_.size());
+  assertEquals(1, keyBlock.unverifiedSubKeys_[0].bindingSignatures_.size());
   assertEquals(
       e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
-      keyBlock.subKeys[0].bindingSignatures_.get(0).signatureType);
+      keyBlock.unverifiedSubKeys_[0].bindingSignatures_.get(0).signatureType);
   assertArrayEquals(
-      keyBlock.subKeys[0].bindingSignatures_.get(0).untrustedAttributes.ISSUER,
+      keyBlock.unverifiedSubKeys_[0].bindingSignatures_.get(0)
+          .untrustedAttributes.ISSUER,
       keyBlock.keyPacket.keyId);
   // Modify the signature.
-  keyBlock.subKeys[0].bindingSignatures_.get(0).signature.s[0] ^= 0x01;
+  keyBlock.unverifiedSubKeys_[0].bindingSignatures_.get(0).signature
+      .s[0] ^= 0x01;
 
   var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
       keyBlock.serialize());
@@ -1504,6 +1508,7 @@ function testSignatureVerification() {
     tamperedKey.processSignatures(); // Signature tampering invalidates the key.
   });
   assertTrue(error instanceof e2e.openpgp.error.SignatureError);
+  assertEquals(0, keyBlock.subKeys.length);
 }
 
 
@@ -1514,8 +1519,9 @@ function testGnupgRevokedSubkey() {
   var publicKeyBlock = getKey('RevokedSubKey');
 
   // Parsing revocation signature
-  assertEquals(1, publicKeyBlock.subKeys.length);
-  var revokedSubkey = publicKeyBlock.subKeys[0];
+  assertEquals(1, publicKeyBlock.unverifiedSubKeys_.length);
+  assertEquals(0, publicKeyBlock.subKeys.length);
+  var revokedSubkey = publicKeyBlock.unverifiedSubKeys_[0];
   assertEquals(1, revokedSubkey.revocations_.size());
   assertEquals(e2e.openpgp.packet.Signature.SignatureType.SUBKEY_REVOCATION,
       revokedSubkey.revocations_.get(0).signatureType);
@@ -1527,11 +1533,12 @@ function testGnupgRevokedSubkey() {
   // Applying revocation signature removes the revoked subkey, but the key is
   // still valid.
   publicKeyBlock.processSignatures();
+  assertEquals(1, publicKeyBlock.unverifiedSubKeys_.length);
   assertEquals(0, publicKeyBlock.subKeys.length);
 
   // Tamper revocation signature
   var clone = getKey('RevokedSubKey');
-  clone.subKeys[0].revocations_.get(0).signature.s[0] ^= 0x01;
+  clone.unverifiedSubKeys_[0].revocations_.get(0).signature.s[0] ^= 0x01;
   var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
       clone.serialize());
   var error = assertThrows(function() {
@@ -1573,7 +1580,8 @@ function testGnupgRevokedMainKey() {
 function testGnupgRevokedUid() {
   var key = getKey('RevokedUserId');
   var foreignKeyId = [106, 105, 167, 16, 15, 140, 92, 71];
-  assertEquals(2, key.userIds.length);
+  assertEquals(2, key.unverifiedUserIds_.length);
+  assertEquals(0, key.userIds.length);
 
   // Helper function - checks that all the signatures for a given
   // keyid in the uid signature map are in fact issued by the
@@ -1601,20 +1609,20 @@ function testGnupgRevokedUid() {
   // revoked-userid should have one certification, one revocation
   // signature from the primary key, and one certification
   // from the foreign key.
-  var result = checkUidMap(key.userIds[0], key.keyPacket.keyId);
+  var result = checkUidMap(key.unverifiedUserIds_[0], key.keyPacket.keyId);
   assertEquals(1, result.certificationCount);
   assertEquals(1, result.revocationCount);
-  result = checkUidMap(key.userIds[0], foreignKeyId);
+  result = checkUidMap(key.unverifiedUserIds_[0], foreignKeyId);
   assertEquals(1, result.certificationCount);
   assertEquals(0, result.revocationCount);
 
 
   // non-revoked-uid should have one signature from the primary key,
   // and one from the foreign key.
-  result = checkUidMap(key.userIds[1], key.keyPacket.keyId);
+  result = checkUidMap(key.unverifiedUserIds_[1], key.keyPacket.keyId);
   assertEquals(1, result.certificationCount);
   assertEquals(0, result.revocationCount);
-  result = checkUidMap(key.userIds[1], foreignKeyId);
+  result = checkUidMap(key.unverifiedUserIds_[1], foreignKeyId);
   assertEquals(1, result.certificationCount);
   assertEquals(0, result.revocationCount);
 
@@ -1633,7 +1641,7 @@ function testGnupgRevokedUid() {
   // Check that signature tampering is detected
   key = getKey('RevokedUserId');
 
-  var revocations = getUidRevocations(key.userIds[0]);
+  var revocations = getUidRevocations(key.unverifiedUserIds_[0]);
   revocations[0].signature.s[0] ^= 0x01;
   assertThrows(function() {
     key.processSignatures();
@@ -1641,7 +1649,7 @@ function testGnupgRevokedUid() {
 
   // Check that signatures by unknown keys are ignored.
   key = getKey('RevokedUserId');
-  revocations = getUidRevocations(key.userIds[0]);
+  revocations = getUidRevocations(key.unverifiedUserIds_[0]);
   revocations[0].untrustedAttributes.ISSUER[0] ^= 0x01;
   key.processSignatures();
   assertEquals(2, key.userIds.length);
@@ -1649,8 +1657,8 @@ function testGnupgRevokedUid() {
 
 function testGnupgUserAttr() {
   var key = getKey('UserAttr');
-  assertEquals(1, key.userIds.length);
-  assertEquals(1, key.userAttributes.length);
+  assertEquals(0, key.userIds.length);
+  assertEquals(0, key.userAttributes.length);
   key.processSignatures();
   assertEquals(1, key.userIds.length);
   assertEquals(1, key.userAttributes.length);
@@ -1660,11 +1668,12 @@ function testGnupgUserAttr() {
   assertEquals(0, key.userAttributes.length);
   // Tampering would throw an error though
   key = getKey('UserAttr');
-  key.userAttributes[0].data[0] ^= 0x01;
+  key.unverifiedUserAttributes_[0].data[0] ^= 0x01;
   var error = assertThrows(function() {
     key.processSignatures();
   });
   assertTrue(error instanceof e2e.openpgp.error.SignatureError);
+  assertEquals(0, key.userAttributes.length);
 };
 
 function testKeyUsageFlags() {
@@ -1771,19 +1780,24 @@ function testRSARSADefaultKeyUsage() {
 
 function testExpiredUid() {
   var key = getKey('ExpiredUid');
-  assertEquals(2, key.userIds.length);
-  assertEquals(86400, getUidCertifications(key.userIds[0])[0].attributes.
-      SIGNATURE_EXPIRATION_TIME);
+  assertEquals(2, key.unverifiedUserIds_.length);
+  assertEquals(0, key.userIds.length);
+  assertEquals(86400, getUidCertifications(key.unverifiedUserIds_[0])[0]
+      .attributes.SIGNATURE_EXPIRATION_TIME);
   key.processSignatures();
   // Expired User ID gets rejected
+  assertEquals(2, key.unverifiedUserIds_.length);
   assertEquals(1, key.userIds.length);
+
   assertEquals('good-key', key.userIds[0].userId);
 }
 
 function testValidUid() {
   var key = getKey('ValidUid');
-  assertEquals(1, key.userIds.length);
+  assertEquals(1, key.unverifiedUserIds_.length);
+  assertEquals(0, key.userIds.length);
   key.processSignatures();
+  assertEquals(1, key.unverifiedUserIds_.length);
   assertEquals(1, key.userIds.length);
   assertEquals('should-not-expire', key.userIds[0].userId);
   // Only the latest certification signature should remain.
@@ -1792,7 +1806,8 @@ function testValidUid() {
 
 function testRevokedUid() {
   var key = getKey('RevokedUid');
-  assertEquals(2, key.userIds.length);
+  assertEquals(2, key.unverifiedUserIds_.length);
+  assertEquals(0, key.userIds.length);
   key.processSignatures();
   assertEquals(1, key.userIds.length);
   assertEquals('good', key.userIds[0].userId);
@@ -1800,11 +1815,13 @@ function testRevokedUid() {
 
 function testExpiredSubkey() {
   var key = getKey('ExpiredSubkey');
-  assertEquals(1, key.subKeys.length);
-  assertEquals(86400, key.subKeys[0].bindingSignatures_.get(0).attributes.
-      SIGNATURE_EXPIRATION_TIME);
+  assertEquals(1, key.unverifiedSubKeys_.length);
+  assertEquals(0, key.subKeys.length);
+  assertEquals(86400, key.unverifiedSubKeys_[0].bindingSignatures_.get(0)
+      .attributes.SIGNATURE_EXPIRATION_TIME);
   key.processSignatures();
   // Expired User ID gets rejected
+  assertEquals(1, key.unverifiedSubKeys_.length);
   assertEquals(0, key.subKeys.length);
 }
 
@@ -1833,6 +1850,26 @@ function testInvalidSubpacketLength() {
   });
   assertTrue(e instanceof e2e.openpgp.error.SignatureError);
   assertEquals(e.message, 'No certified user IDs.');
+}
+
+function testAddUnverifiedPackets() {
+  var keyBlock = getKey('EccKey');
+  assertEquals(0, keyBlock.userIds.length);
+  assertEquals(0, keyBlock.subKeys.length);
+  assertEquals(1, keyBlock.unverifiedUserIds_.length);
+  assertEquals(1, keyBlock.unverifiedSubKeys_.length);
+  keyBlock.addUnverifiedUserId(new e2e.openpgp.packet.UserId('userid'));
+  assertEquals(2, keyBlock.unverifiedUserIds_.length);
+  assertEquals(0, keyBlock.userIds.length);
+  keyBlock.addUnverifiedSubKey(new e2e.openpgp.packet.PublicSubkey(4, 1,
+    keyBlock.unverifiedSubKeys_[0].cipher));
+  assertEquals(2, keyBlock.unverifiedSubKeys_.length);
+  assertEquals(0, keyBlock.subKeys.length);
+  keyBlock.processSignatures();
+  assertEquals(1, keyBlock.userIds.length);
+  assertEquals(1, keyBlock.subKeys.length);
+  assertEquals(2, keyBlock.unverifiedUserIds_.length);
+  assertEquals(2, keyBlock.unverifiedSubKeys_.length);
 }
 
 </script>

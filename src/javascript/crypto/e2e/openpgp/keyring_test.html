@@ -439,14 +439,18 @@ function testGeneration() {
 }
 
 function testSearch() {
+  var keyRing;
   asyncTestCase.waitForAsync('Waiting for keyring initialization.');
-  keyRingPromise.then(function(keyRing) {
-    keyRing.generateECKey('adhintz@google.com');
-    keyRing.generateECKey('evn@google.com');
+  keyRingPromise.then(function(kr) {
+    keyRing = kr;
+    return keyRing.generateECKey('adhintz@google.com');
+  }).then(function() {
+    return keyRing.generateECKey('evn@google.com');
+  }).then(function() {
     var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
       document.getElementById('pubKeyAscii').value);
-    keyRing.importKey(publicKeyBlock);
-
+    return keyRing.importKey(publicKeyBlock);
+  }).then(function() {
     var evnPubKeys = keyRing.searchKey('evn@google.com');
     assertEquals(1, evnPubKeys.length);
     var adhintzPubKeys = keyRing.searchKey('adhintz@google.com');
@@ -531,10 +535,11 @@ function testImport() {
     keyRing = kr;
     return keyRing.importKey(publicKeyBlock);
   }).then(function(result) {
-    assertTrue(result);
+    assertTrue(result instanceof e2e.openpgp.block.TransferablePublicKey);
+    assertArrayEquals(result.serialize(), publicKeyBlock.serialize());
     return keyRing.importKey(publicKeyBlock);  // double-import for bug regression.
   }).then(function(result) {
-    assertFalse(result); // Key wasn't imported.
+    assertNull(result); // Key wasn't imported.
     var pubKeyRing = keyRing.getAllKeys();
     assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
     var pubKeys = keyRing.searchKey('<ecc@example.com>');
@@ -783,14 +788,15 @@ function testImportPersistEncrypted() {
 
 
 function importPrivKey(asciiKey, uid) {
+  var keyRing;
   asyncTestCase.waitForAsync('Waiting for keyring initialization.');
-  keyRingPromise.then(function(keyRing) {
 
+  keyRingPromise.then(function(kr) {
+    keyRing = kr;
     var privKeyBlocks = e2e.openpgp.block.factory.parseAsciiMulti(asciiKey);
-    for (var i = 0; i < privKeyBlocks.length; i++) {
-      keyRing.importKey(privKeyBlocks[i]);
-    }
-
+    return goog.Promise.all(goog.array.map(privKeyBlocks, keyRing.importKey,
+        keyRing));
+  }).then(function(importResults) {
     var pubKeys = keyRing.searchKey(uid);
     assertEquals(1, pubKeys.length);
     var privKeys = keyRing.searchKey(uid, e2e.openpgp.KeyRing.Type.PRIVATE);

@@ -379,10 +379,10 @@ function testPartialKeyringImport() {
   var keys =
       e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(bytes);
   assertEquals(2, keys.length);
-  assertEquals(1, keys[0].userIds.length);
-  assertEquals("abc@def.com", keys[0].userIds[0].userId);
-  assertEquals(1, keys[1].userIds.length);
-  assertEquals("rsa-master", keys[1].userIds[0].userId);
+  assertEquals(1, keys[0].unverifiedUserIds_.length);
+  assertEquals("abc@def.com", keys[0].unverifiedUserIds_[0].userId);
+  assertEquals(1, keys[1].unverifiedUserIds_.length);
+  assertEquals("rsa-master", keys[1].unverifiedUserIds_[0].userId);
   // We expect that processing signatures on the weak signature key
   // should throw an error.
   var mustThrow = assertThrows(function() {

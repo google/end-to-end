@@ -184,7 +184,10 @@ e2e.openpgp.KeyRing.prototype.changePassphrase = function(passphrase) {
  *     import.
  * @param {!e2e.ByteArray=} opt_passphrase The passphrase to use to
  *     import the key.
- * @return {!goog.async.Deferred<boolean>} If the key import was successful.
+ * @return {!goog.async.Deferred<?e2e.openpgp.block.TransferableKey>}
+ *     The imported key iff it was imported for all User ID packets,
+ *     or null if the key was not imported (e.g. a duplicate key). Invalid keys
+ *     will call an errback instead.
  */
 e2e.openpgp.KeyRing.prototype.importKey = function(
     keyBlock, opt_passphrase) {
@@ -208,8 +211,8 @@ e2e.openpgp.KeyRing.prototype.importKey = function(
           return this.importKey_(uid, keyBlock, keyRing, opt_passphrase);
         }, this));
     return importedKeysResults.addCallback(function(importedKeys) {
-      // Return true only if the key was imported for all the uids.
-      return (importedKeys.indexOf(false) == -1);
+      // Return the key only if it was imported for all the uids.
+      return (importedKeys.indexOf(false) == -1) ? keyBlock : null;
     });
   }, this);
 };

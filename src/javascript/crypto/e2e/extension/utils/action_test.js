@@ -85,6 +85,7 @@ function tearDown() {
 function testExtractUserIds() {
   var byteData = e2e.openpgp.asciiArmor.parse(PUBLIC_KEY_ASCII).data;
   var key = e2e.openpgp.block.factory.parseByteArrayMulti(byteData)[0];
+  key.processSignatures();
   assertEquals('test 4', utils.extractUserIds([key.toKeyObject()]));
 }
 

@@ -466,6 +466,7 @@ function testDecryptionECDH() {
     '-----END PGP PRIVATE KEY BLOCK-----';
   var privateKeyBlock = e2e.openpgp.block.factory.parseAscii(privateKeyAscii);
   var passphrase = e2e.stringToByteArray('test');
+  privateKeyBlock.processSignatures();
   privateKeyBlock.keyPacket.cipher.unlockKey(passphrase);  // ECDSA
   privateKeyBlock.subKeys[0].cipher.unlockKey(passphrase);  // ECDH
 
@@ -551,6 +552,7 @@ function testEncryptionECDH() {
       '-----END PGP PRIVATE KEY BLOCK-----';
     var privateKeyBlock = e2e.openpgp.block.factory.parseAscii(privateKeyAscii);
     var passphrase = e2e.stringToByteArray('test');
+    privateKeyBlock.processSignatures();
     privateKeyBlock.keyPacket.cipher.unlockKey(passphrase);
     privateKeyBlock.subKeys[0].cipher.unlockKey(passphrase);
 

@@ -491,11 +491,7 @@ e2e.openpgp.KeyringKeyProvider.prototype.importKeys = function(keySerialization,
     return blocks;
   }).then(function(keys) {
     return goog.Promise.all(goog.array.map(keys, function(key) {
-      return this.keyring_.importKey(key).addCallback(function(imported) {
-        // KeyRing.importKey returns a boolean, but we need a key object of
-        // a successfully imported key, or null otherwise.
-        return imported ? key : null;
-      });
+      return this.keyring_.importKey(key);
     }, this));
   }, null, this).then(function(keysOrNull) {
     return e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_(

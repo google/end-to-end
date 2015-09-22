@@ -456,6 +456,7 @@ function testDecrypt() {
       document.getElementById('privKeyAscii').value);
   var message = e2e.openpgp.block.factory.parseAscii(
       document.getElementById('encryptedSignedMessage').value);
+  asyncTestCase.waitForAsync('Waiting for provider initialization.');
   providerPromise.then(function(provider) {
     kkp = provider;
     asyncTestCase.waitForAsync('Waiting for key import.');
@@ -468,8 +469,6 @@ function testDecrypt() {
   }).then(function(keyObjects) {
     assertEquals(1, keyObjects.length);
     assertEquals('ECDH', keyObjects[0].decryptionAlgorithm);
-    assertArrayEquals(keys[1].subKeys[0].keyId,
-        keyObjects[0].decryptionKeyId);
     // Assert key ids are present in keyObjects.
     var cipherCallback = function(keyId, algorithm) {
       return e2e.async.Result.toResult(new e2e.openpgp.KeyProviderCipher(
@@ -493,6 +492,7 @@ function testSign() {
   var publicKey = keys[1];
   var PLAINTEXT = 'TEST';
   var message = e2e.openpgp.block.LiteralMessage.construct(PLAINTEXT);
+  asyncTestCase.waitForAsync('Waiting for provider initialization.');
   providerPromise.then(function(provider) {
     kkp = provider;
     asyncTestCase.waitForAsync('Waiting for key import.');

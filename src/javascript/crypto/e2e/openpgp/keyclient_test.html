@@ -123,14 +123,15 @@ var keyFingerprint = [0x76, 0x57, 0x2f, 0x5b, 0x04,
                       0x51, 0x94, 0x8d, 0x7b, 0x40,
                       0x8f, 0x0a, 0x9d, 0x5b, 0x42,
                       0x73, 0xa2, 0xd3, 0xa7, 0xe8];
+var userIdPacket = new e2e.openpgp.packet.UserId(
+    'testkey <testkey@key.server>');
 var key = e2e.openpgp.block.factory.parseBlock([
   new e2e.openpgp.packet.PublicKey(
     4, 1415736191, e2e.cipher.factory.get(
       e2e.cipher.Algorithm.RSA,
       {n: keyModulus, e: keyExponent}),
     keyFingerprint),
-  new e2e.openpgp.packet.UserId(
-    'testkey <testkey@key.server>')
+  userIdPacket
 ]);
 
 function setUp() {
@@ -142,6 +143,11 @@ function setUp() {
   });
   stubs.replace(e2e.random, 'getRandomBytes', function() {
     return [0];
+  });
+  // Simulate that the user ID packet is correctly signed. We don't have the
+  // private key material in the test to generate the signature.
+  stubs.replace(key, 'getUserIds', function() {
+    return [userIdPacket];
   });
 }
 

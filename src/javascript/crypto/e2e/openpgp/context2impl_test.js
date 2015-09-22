@@ -239,6 +239,7 @@ function testEncryptToKeyNoSign() {
   var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
   var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       publicKeyAscii)[0];
+  publicKey.processSignatures();
 
   keyManagerMock.getTrustedKeys(e2e.openpgp.KeyPurposeType.ENCRYPTION, EMAIL).
       $returns(goog.Promise.resolve([publicKey.toKeyObject()]));
@@ -472,6 +473,7 @@ function testVerifyClearSign() {
   var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
   var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       publicKeyAscii)[0];
+  publicKey.processSignatures();
 
   var keyObject = publicKey.toKeyObject();
 
@@ -501,6 +503,7 @@ function testVerifyByteSign() {
   var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
   var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       publicKeyAscii)[0];
+  publicKey.processSignatures();
 
   var keyObject = publicKey.toKeyObject();
 
@@ -534,6 +537,7 @@ function testVerifyDecrypt() {
   var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
   var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       publicKeyAscii)[0];
+  publicKey.processSignatures();
 
   var privKeyAscii = document.getElementById('e2ePrivKeyAscii').value;
 
@@ -585,9 +589,9 @@ function testVerifyDecryptAllowedDecryptionKeys() {
   var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
   var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       publicKeyAscii)[0];
+  publicKey.processSignatures();
 
   var privKeyAscii = document.getElementById('e2ePrivKeyAscii').value;
-
   var privateKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       privKeyAscii)[0];
   privateKey.processSignatures();
@@ -644,9 +648,10 @@ function testVerifyDecryptAllowedVerificationKeys() {
       publicKeyAscii)[0];
   var otherPublicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       otherPublicKeyAscii)[0];
+  publicKey.processSignatures();
+  otherPublicKey.processSignatures();
 
   var privKeyAscii = document.getElementById('e2ePrivKeyAscii').value;
-
   var privateKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       privKeyAscii)[0];
   privateKey.processSignatures();
