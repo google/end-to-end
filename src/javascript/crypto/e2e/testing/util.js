@@ -36,7 +36,7 @@ goog.setTestOnly();
  * Runs performance tests.
  *
  * The argument to this method should be an array of benchmark tests.  Each
- * element of the array is of the form {benchmark: <function>, label:name}
+ * element of the array is of the form {benchmark: function, label:name}
  *
  * @param {!Array.<{benchmark:!function():*, label:string}>} benchmarks
  *     An array consisting of things we want to time, and the name to show
@@ -82,7 +82,7 @@ e2e.testing.Util.runPerfTests = function(benchmarks, opt_numSamples,
     }
   });
 
-  return new goog.Promise.all(deferredResults).then(function() {
+  return goog.Promise.all(deferredResults).then(function() {
     return allResults;
   });
 };

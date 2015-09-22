@@ -38,8 +38,8 @@ goog.require('goog.messaging.MultiChannel');
  * @param {goog.messaging.MessageChannel} messageChannel The messageChannel to
  *     to wrap and allow for responses. This channel must not have any existing
  *     services registered. All service registration must be done through the
- *     {@link RespondingChannel#registerService} api instead. The other end of
- *     channel must also be a RespondingChannel.
+ *     {@link goog.messaging.RespondingChannel#registerService} API instead.
+ *     The other end of the channel must also be a RespondingChannel.
  * @constructor
  * @extends {goog.Disposable}
  */

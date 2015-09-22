@@ -209,7 +209,7 @@ e2e.openpgp.asciiArmor.parseClearSign = function(text) {
 
 
 /**
- * Canonicalizes data by converting all line endings to <CR><LF> and removing
+ * Canonicalizes data by converting all line endings to CR+LF and removing
  * trailing whitespace.
  * @param {string} data The text to canonicalize.
  * @return {string} The canonicalized text.

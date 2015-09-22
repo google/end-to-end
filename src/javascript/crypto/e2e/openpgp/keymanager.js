@@ -25,8 +25,9 @@ goog.provide('e2e.openpgp.KeyManager');
 /**
  * KeyManager interface.
  * KeyManager is a single per-application object that serves as a high-level
- * resolver for the keys using various KeyProviders and implements the
- * application policy in regards to:
+ * resolver for the keys using various {@link e2e.openpgp.PublicKeyProvider}s
+ * and {@link e2e.openpgp.SecretKeyProvider}s and implements the application
+ * policy in regards to:
  * <ul>
  *   <li>key provider preference
  *   <li>key preference (i.e. which key, if any, should be preferred on
@@ -89,7 +90,8 @@ e2e.openpgp.KeyManager.prototype.reconfigureKeyProvider = goog.abstractMethod;
 /**
  * Returns trusted keys for a given purpose for a user with given e-mail
  * address. Use this to fetch the keys to use with
- * {@link Context2#verifyDecrypt} and {@link Context2#encryptSign}.
+ * {@link e2e.openpgp.Context2#verifyDecrypt} and
+ * {@link e2e.openpgp.Context2#encryptSign}.
  * @param {!e2e.openpgp.KeyPurposeType} purpose The purpose of the key.
  * @param {!e2e.openpgp.UserEmail} email The email address.
  * @return {!e2e.openpgp.KeysPromise} The resulting trusted keys.

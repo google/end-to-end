@@ -57,7 +57,8 @@ e2e.openpgp.PublicKeyProvider.prototype.getState = goog.abstractMethod;
 /**
  * Returns trusted keys for a given purpose for a user with given e-mail
  * address. Use this to fetch the keys to use with
- * {@link Context2#verifyDecrypt} and {@link Context2#encryptSign}.
+ * {@link e2e.openpgp.Context2#verifyDecrypt} and
+ * {@link e2e.openpgp.Context2#encryptSign}.
  * @param {!e2e.openpgp.KeyPurposeType} purpose The purpose of the key.
  * @param {!e2e.openpgp.UserEmail} email The email address.
  * @return {!e2e.openpgp.KeysPromise} The resulting trusted keys.

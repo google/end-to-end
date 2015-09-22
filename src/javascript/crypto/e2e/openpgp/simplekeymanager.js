@@ -27,9 +27,10 @@ goog.require('goog.Promise');
 
 
 /**
- * Implements a simple {@link KeyManager}.
- * This KeyManager uses a single object as a {@link SecretKeyProvier} and
- * {@link PublicKeyProvider}.
+ * Implements a simple {@link e2e.openpgp.KeyManager}.
+ * This KeyManager uses a single object as a
+ * {@link e2e.openpgp.SecretKeyProvider} and
+ * {@link e2e.openpgp.PublicKeyProvider}.
  * @param {!e2e.openpgp.SecretKeyProvider} dualKeyProvider Object to use as both
  *     a public, and a secret key provider.
  * @constructor
