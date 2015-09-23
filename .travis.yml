@@ -1,10 +1,13 @@
+sudo: false
+
 env:
   global:
     - NODEJS_VERSION=0.10
     - NODEJS_CMD=node
 
 install:
-  - sudo pip install git+https://github.com/google/closure-linter.git
+  - export PATH=$HOME/.local/bin:$PATH
+  - pip install --user $USER git+https://github.com/google/closure-linter.git
   - nvm install ${NODEJS_VERSION} && nvm alias default ${NODEJS_VERSION}
   - ./do.sh install_deps
 
