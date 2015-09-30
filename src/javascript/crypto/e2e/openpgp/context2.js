@@ -82,7 +82,8 @@ e2e.openpgp.Context2.prototype.getAllKeysByEmail = goog.abstractMethod;
 
 
 /**
- * Returns a single key that has a matching OpenPGP fingerprint.
+ * Returns a single public key that has a matching OpenPGP fingerprint for the
+ * main key packet.
  * @param {!e2e.openpgp.KeyFingerprint} fingerprint The key fingerprint
  * @param {!e2e.openpgp.KeyProviderId=} opt_providerId If passed, only return
  *     the keys from this KeyProvider.
@@ -90,7 +91,7 @@ e2e.openpgp.Context2.prototype.getAllKeysByEmail = goog.abstractMethod;
  *     untrusted.
  * @export
  */
-e2e.openpgp.Context2.prototype.getKeyByFingerprint = goog.abstractMethod;
+e2e.openpgp.Context2.prototype.getPublicKeyByFingerprint = goog.abstractMethod;
 
 
 /**
@@ -191,7 +192,7 @@ e2e.openpgp.Context2.prototype.isKeyTrusted = goog.abstractMethod;
  * @return {!e2e.openpgp.KeyPromise} The unlocked Key.
  * @export
  */
-e2e.openpgp.Context2.prototype.unlockKey = goog.abstractMethod;
+e2e.openpgp.Context2.prototype.unlockSecretKey = goog.abstractMethod;
 
 
 /**

@@ -54,13 +54,13 @@ goog.require('goog.async.Deferred');
  * encryption and signing. This context is used by external code, such as the
  * extension's user interface, to call the base OpenPGP library.
  * @constructor
- * @param {!e2e.openpgp.KeyManager} keyManager The Key Manager object.
+ * @param {!e2e.openpgp.managers.KeyManager} keyManager The Key Manager object.
  * @implements {e2e.openpgp.Context2}
  */
 e2e.openpgp.Context2Impl = function(keyManager) {
   /**
    * Key Manager object.
-   * @private {!e2e.openpgp.KeyManager}
+   * @private {!e2e.openpgp.managers.KeyManager}
    */
   this.keyManager_ = keyManager;
   /**
@@ -79,8 +79,8 @@ e2e.openpgp.Context2Impl = function(keyManager) {
 
 /**
  * Deferred constructor.
- * @param {!goog.Thenable.<!e2e.openpgp.KeyManager>} keyManagerPromise The
- *     promise of the Key Manager instance.
+ * @param {!goog.Thenable.<!e2e.openpgp.managers.KeyManager>} keyManagerPromise
+ *     The promise of the Key Manager instance.
  * @return {!goog.Thenable.<!e2e.openpgp.Context2Impl>} The Context2Impl
  *     promise, fulfilled when the object will initialize.
  */
@@ -122,9 +122,10 @@ e2e.openpgp.Context2Impl.prototype.getAllPublicKeys = function(opt_providerId) {
 
 
 /** @override */
-e2e.openpgp.Context2Impl.prototype.getKeyByFingerprint = function(fingerprint,
-    opt_providerId) {
-  return this.keyManager_.getKeyByFingerprint(fingerprint, opt_providerId);
+e2e.openpgp.Context2Impl.prototype.getPublicKeyByFingerprint = function(
+    fingerprint, opt_providerId) {
+  return this.keyManager_.getPublicKeyByFingerprint(fingerprint,
+      opt_providerId);
 };
 
 
@@ -178,8 +179,8 @@ e2e.openpgp.Context2Impl.prototype.isKeyTrusted = function(key, email,
 
 
 /** @override */
-e2e.openpgp.Context2Impl.prototype.unlockKey = function(key, unlockData) {
-  return this.keyManager_.unlockKey(key, unlockData);
+e2e.openpgp.Context2Impl.prototype.unlockSecretKey = function(key, unlockData) {
+  return this.keyManager_.unlockSecretKey(key, unlockData);
 };
 
 

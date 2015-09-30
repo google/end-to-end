@@ -14,26 +14,23 @@
  * limitations under the License.
  */
 
-/**
- * @fileoverview Interface to provide a OpenPGP Public Key Provider.
- */
-
-goog.provide('e2e.openpgp.PublicKeyProvider');
+goog.provide('e2e.openpgp.providers.KeyProvider');
 
 
 
 /**
- * PublicKeyProvider interface.
+ * KeyProvider interface.
  * @interface
  */
-e2e.openpgp.PublicKeyProvider = function() {};
+e2e.openpgp.providers.KeyProvider = function() {};
 
 
 /**
  * Returns the provider ID (unique within the Key Manager).
  * @return {!goog.Thenable<!e2e.openpgp.KeyProviderId>}
+ * @export
  */
-e2e.openpgp.PublicKeyProvider.prototype.getId = goog.abstractMethod;
+e2e.openpgp.providers.KeyProvider.prototype.getId = goog.abstractMethod;
 
 
 /**
@@ -42,74 +39,18 @@ e2e.openpgp.PublicKeyProvider.prototype.getId = goog.abstractMethod;
  * @param {!e2e.openpgp.KeyProviderConfig} config The configuration.
  * @return {!goog.Thenable<!e2e.openpgp.KeyProviderState>} The state after
  * reconfiguration.
+ * @export
  */
-e2e.openpgp.PublicKeyProvider.prototype.configure = goog.abstractMethod;
+e2e.openpgp.providers.KeyProvider.prototype.configure = goog.abstractMethod;
 
 
 /**
  * Returns the current state of the provider. State can be null if the provider
  * does not expose any options to reconfigure it.
  * @return {!goog.Thenable<e2e.openpgp.KeyProviderState>} The state.
- */
-e2e.openpgp.PublicKeyProvider.prototype.getState = goog.abstractMethod;
-
-
-/**
- * Returns trusted keys for a given purpose for a user with given e-mail
- * address. Use this to fetch the keys to use with
- * {@link e2e.openpgp.Context2#verifyDecrypt} and
- * {@link e2e.openpgp.Context2#encryptSign}.
- * @param {!e2e.openpgp.KeyPurposeType} purpose The purpose of the key.
- * @param {!e2e.openpgp.UserEmail} email The email address.
- * @return {!e2e.openpgp.KeysPromise} The resulting trusted keys.
  * @export
  */
-e2e.openpgp.PublicKeyProvider.prototype.getTrustedKeysByEmail =
-    goog.abstractMethod;
-
-
-/**
- * Returns keys for a given purpose that match a given OpenPGP Key ID. If a
- * wildcard key ID is passed, return all keys for that purpose.
- * @see https://tools.ietf.org/html/rfc4880#section-5.1
- * @param {!e2e.openpgp.KeyPurposeType} purpose The purpose of the key. Only
- *     verification and decryption purpose should be accepted.
- * @param {!e2e.openpgp.KeyId} id The key ID.
- * @return {!e2e.openpgp.KeysPromise} The resulting keys, potentially untrusted.
- * @export
- */
-e2e.openpgp.PublicKeyProvider.prototype.getKeysByKeyId = goog.abstractMethod;
-
-
-/**
- * Returns all keys in the storage.
- * @param {!e2e.openpgp.KeyRingType} keyringType
- * @return {!e2e.openpgp.KeysPromise} The resulting keys, potentially untrusted.
- * @export
- */
-e2e.openpgp.PublicKeyProvider.prototype.getAllKeys = goog.abstractMethod;
-
-
-/**
- * Returns all keys with User ID pointing to a given e-mail address from the
- * storage. Use this to simplify key management when keys are indexed by e-mail
- * address (e.g. in contact list). Returned keys may be untrusted.
- * @param {!e2e.openpgp.UserEmail} email The email address.
- * @return {!e2e.openpgp.KeysPromise} The resulting keys, potentially untrusted.
- * @export
- */
-e2e.openpgp.PublicKeyProvider.prototype.getAllKeysByEmail = goog.abstractMethod;
-
-
-/**
- * Returns a single key that has a matching OpenPGP fingerprint.
- * @param {!e2e.openpgp.KeyFingerprint} fingerprint The key fingerprint
- * @return {!e2e.openpgp.KeyPromise} The resulting key, potentially
- *     untrusted.
- * @export
- */
-e2e.openpgp.PublicKeyProvider.prototype.getKeyByFingerprint =
-    goog.abstractMethod;
+e2e.openpgp.providers.KeyProvider.prototype.getState = goog.abstractMethod;
 
 
 /**
@@ -119,7 +60,7 @@ e2e.openpgp.PublicKeyProvider.prototype.getKeyByFingerprint =
  *     available export options.
  * @export
  */
-e2e.openpgp.PublicKeyProvider.prototype.getKeyringExportOptions =
+e2e.openpgp.providers.KeyProvider.prototype.getKeyringExportOptions =
     goog.abstractMethod;
 
 
@@ -132,7 +73,7 @@ e2e.openpgp.PublicKeyProvider.prototype.getKeyringExportOptions =
  * @template T
  * @export
  */
-e2e.openpgp.PublicKeyProvider.prototype.exportKeyring = goog.abstractMethod;
+e2e.openpgp.providers.KeyProvider.prototype.exportKeyring = goog.abstractMethod;
 
 
 /**
@@ -141,7 +82,8 @@ e2e.openpgp.PublicKeyProvider.prototype.exportKeyring = goog.abstractMethod;
  * @return {!goog.Thenable}
  * @export
  */
-e2e.openpgp.PublicKeyProvider.prototype.setCredentials = goog.abstractMethod;
+e2e.openpgp.providers.KeyProvider.prototype.setCredentials =
+    goog.abstractMethod;
 
 
 /**
@@ -168,26 +110,18 @@ e2e.openpgp.PublicKeyProvider.prototype.setCredentials = goog.abstractMethod;
  * @return {!e2e.openpgp.KeysPromise} The keys.
  * @export
  */
-e2e.openpgp.PublicKeyProvider.prototype.trustKeys = goog.abstractMethod;
-
-
-/**
- * Removes given keys.
- * @param {!Array<!e2e.openpgp.Key>} keys
- * @return {!goog.Thenable}
- * @export
- */
-e2e.openpgp.PublicKeyProvider.prototype.removeKeys = goog.abstractMethod;
+e2e.openpgp.providers.KeyProvider.prototype.trustKeys = goog.abstractMethod;
 
 
 /**
  * Imports a binary serialization of OpenPGP key(s) into the Context.
  * All keys from the serialization should be processed.
- * @param {!e2e.ByteArray} keySerialization The key(s) to import.
+ * @param {!e2e.ByteArray} serializedKeys Serialization of all the key blocks
+ *     to import.
  * @param {!function(string):!goog.Thenable<string>} passphraseCallback This
  *     callback is used for requesting an action-specific passphrase from the
  *     user (if the key material is encrypted to a passprase).
  * @return {!e2e.openpgp.KeysPromise} List keys that were successfully imported.
  * @export
  */
-e2e.openpgp.PublicKeyProvider.prototype.importKeys = goog.abstractMethod;
+e2e.openpgp.providers.KeyProvider.prototype.importKeys = goog.abstractMethod;

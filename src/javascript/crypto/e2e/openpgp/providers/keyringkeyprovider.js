@@ -19,7 +19,7 @@
  * for the storage.
  */
 
-goog.provide('e2e.openpgp.KeyringKeyProvider');
+goog.provide('e2e.openpgp.providers.KeyringKeyProvider');
 
 goog.require('e2e');
 goog.require('e2e.algorithm.KeyLocations');
@@ -28,13 +28,15 @@ goog.require('e2e.openpgp.KeyPurposeType');
 goog.require('e2e.openpgp.KeyRing');
 goog.require('e2e.openpgp.KeyRingType');
 goog.require('e2e.openpgp.KeyringExportFormat');
-goog.require('e2e.openpgp.SecretKeyProvider');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.TransferablePublicKey');
 goog.require('e2e.openpgp.block.TransferableSecretKey');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.ParseError');
+goog.require('e2e.openpgp.error.UnsupportedError');
+goog.require('e2e.openpgp.providers.PublicKeyProvider');
+goog.require('e2e.openpgp.providers.SecretKeyProvider');
 goog.require('e2e.openpgp.scheme.Ecdh');
 goog.require('e2e.scheme.Ecdsa');
 goog.require('e2e.scheme.Eme');
@@ -47,22 +49,27 @@ goog.require('goog.asserts');
 goog.require('goog.format.EmailAddress');
 
 
+goog.scope(function() {
+var providers = e2e.openpgp.providers;
+
+
 
 /**
  * Secret and public key provider that uses {@link KeyRing} object for storage.
  * All of the keys are implicitly trusted (i.e. {@link #trustKeys} is a no-op).
  * @param {!e2e.openpgp.KeyRing} keyring User's keyring.
  * @constructor
- * @implements {e2e.openpgp.SecretKeyProvider}
+ * @implements {e2e.openpgp.providers.PublicKeyProvider}
+ * @implements {e2e.openpgp.providers.SecretKeyProvider}
  */
-e2e.openpgp.KeyringKeyProvider = function(keyring) {
+providers.KeyringKeyProvider = function(keyring) {
   /** @private {!e2e.openpgp.KeyRing} User's keyring */
   this.keyring_ = keyring;
 };
 
 
 /** @const {!e2e.openpgp.KeyProviderId} */
-e2e.openpgp.KeyringKeyProvider.PROVIDER_ID = 'legacy-keyring';
+providers.KeyringKeyProvider.PROVIDER_ID = 'legacy-keyring';
 
 
 /**
@@ -71,24 +78,24 @@ e2e.openpgp.KeyringKeyProvider.PROVIDER_ID = 'legacy-keyring';
  * keyserver would choose a different key than intended.
  * @private @const
  */
-e2e.openpgp.KeyringKeyProvider.EMAIL_ADDRESS_REGEXP_ =
+providers.KeyringKeyProvider.EMAIL_ADDRESS_REGEXP_ =
     /^[+a-zA-Z0-9_.!-]+@([a-zA-Z0-9-]+\.)+[a-zA-Z0-9]{2,63}$/;
 
 
 /**
  * Deferred constructor.
  * @param  {!goog.Thenable.<!e2e.openpgp.KeyRing>} keyRingPromise
- * @return {!goog.Thenable.<!e2e.openpgp.KeyringKeyProvider>}
+ * @return {!goog.Thenable.<!e2e.openpgp.providers.KeyringKeyProvider>}
  */
-e2e.openpgp.KeyringKeyProvider.launch = function(keyRingPromise) {
+providers.KeyringKeyProvider.launch = function(keyRingPromise) {
   return keyRingPromise.then(function(keyring) {
-    return new e2e.openpgp.KeyringKeyProvider(keyring);
+    return new providers.KeyringKeyProvider(keyring);
   });
 };
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.configure = function(config) {
+providers.KeyringKeyProvider.prototype.configure = function(config) {
   var configObj = config || {};
   var passphrase = goog.isString(configObj['passphrase']) ?
       configObj['passphrase'] : undefined;
@@ -110,7 +117,7 @@ e2e.openpgp.KeyringKeyProvider.prototype.configure = function(config) {
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.getState = function() {
+providers.KeyringKeyProvider.prototype.getState = function() {
   return goog.Promise.all([
     this.keyring_.isEncrypted(),
     this.keyring_.hasPassphrase()])
@@ -130,9 +137,20 @@ e2e.openpgp.KeyringKeyProvider.prototype.getState = function() {
  * @return {!e2e.openpgp.Keys} The key objects
  * @private
  */
-e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_ = function(transferableKeys) {
+providers.KeyringKeyProvider.keysToKeyObjects_ = function(transferableKeys) {
   return goog.array.map(transferableKeys,
-      e2e.openpgp.KeyringKeyProvider.keyToKeyObject_);
+      providers.KeyringKeyProvider.keyToKeyObject_);
+};
+
+
+/**
+ * @param {!Array.<!e2e.openpgp.block.TransferableKey>} transferableKeys
+ * @return {!Array.<!e2e.ByteArray>} The key objects
+ * @private
+ */
+providers.KeyringKeyProvider.keysToSerialization_ = function(transferableKeys) {
+  return goog.array.map(transferableKeys,
+      providers.KeyringKeyProvider.keyToSerialization_);
 };
 
 
@@ -141,9 +159,19 @@ e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_ = function(transferableKeys) {
  * @return {!e2e.openpgp.Key} The key object
  * @private
  */
-e2e.openpgp.KeyringKeyProvider.keyToKeyObject_ = function(transferableKey) {
+providers.KeyringKeyProvider.keyToKeyObject_ = function(transferableKey) {
   return transferableKey.toKeyObject(false,
-      e2e.openpgp.KeyringKeyProvider.PROVIDER_ID);
+      providers.KeyringKeyProvider.PROVIDER_ID);
+};
+
+
+/**
+ * @param {!e2e.openpgp.block.TransferableKey} transferableKey
+ * @return {!e2e.ByteArray} The key object
+ * @private
+ */
+providers.KeyringKeyProvider.keyToSerialization_ = function(transferableKey) {
+  return transferableKey.serialize();
 };
 
 
@@ -152,7 +180,7 @@ e2e.openpgp.KeyringKeyProvider.keyToKeyObject_ = function(transferableKey) {
  * @return {!e2e.openpgp.KeyRing.Type}
  * @private
  */
-e2e.openpgp.KeyringKeyProvider.getKeyringType_ = function(purpose) {
+providers.KeyringKeyProvider.getKeyringType_ = function(purpose) {
   if (purpose == e2e.openpgp.KeyPurposeType.SIGNING ||
       purpose == e2e.openpgp.KeyPurposeType.DECRYPTION) {
     return e2e.openpgp.KeyRing.Type.PRIVATE;
@@ -172,13 +200,13 @@ e2e.openpgp.KeyringKeyProvider.getKeyringType_ = function(purpose) {
  * @return {?e2e.openpgp.UserEmail} Extracted e-mail address, or null.
  * @private
  */
-e2e.openpgp.KeyringKeyProvider.extractValidEmail_ = function(uid) {
+providers.KeyringKeyProvider.extractValidEmail_ = function(uid) {
   var emailAddress = goog.format.EmailAddress.parse(uid);
   if (!emailAddress.isValid()) {
     return null;
   }
   var email = emailAddress.getAddress();
-  if (!e2e.openpgp.KeyringKeyProvider.EMAIL_ADDRESS_REGEXP_.exec(
+  if (!providers.KeyringKeyProvider.EMAIL_ADDRESS_REGEXP_.exec(
       emailAddress.getAddress())) {
     return null;
   }
@@ -187,60 +215,76 @@ e2e.openpgp.KeyringKeyProvider.extractValidEmail_ = function(uid) {
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.getId = function() {
-  return goog.Promise.resolve(e2e.openpgp.KeyringKeyProvider.PROVIDER_ID);
+providers.KeyringKeyProvider.prototype.getId = function() {
+  return goog.Promise.resolve(providers.KeyringKeyProvider.PROVIDER_ID);
 };
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.getTrustedKeysByEmail = function(
+providers.KeyringKeyProvider.prototype.getTrustedPublicKeysByEmail = function(
     purpose, email) {
+  return this.getAllPublicKeysByEmail(email);
+};
+
+
+/** @override */
+providers.KeyringKeyProvider.prototype.getTrustedSecretKeysByEmail = function(
+    purpose, email) {
+  return this.getAllSecretKeysByEmail(email);
+};
+
+
+/**
+ * Resolves the keys for a given e-mail address.
+ * @param {!e2e.openpgp.KeyRing.Type} keyringType Keyring type
+ * @param {!e2e.openpgp.UserEmail} email The email address.
+ * @private
+ * @return {!goog.Thenable<!Array.<!e2e.openpgp.block.TransferableKey>>}
+ */
+providers.KeyringKeyProvider.prototype.resolveKeysByEmail_ = function(
+    keyringType, email) {
   return goog.Promise.resolve(undefined)
       .then(function() {
         return this.keyring_.searchKeysByUidMatcher(function(uid) {
-          return e2e.openpgp.KeyringKeyProvider.extractValidEmail_(uid) ==
+          return providers.KeyringKeyProvider.extractValidEmail_(uid) ==
               email;
         },
-        e2e.openpgp.KeyringKeyProvider.getKeyringType_(purpose));
+        keyringType);
       },
-      null, this)
-      .then(e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_);
+      null, this);
 };
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.getKeysByKeyId = function(purpose,
+providers.KeyringKeyProvider.prototype.getVerificationKeysByKeyId = function(
     id) {
-  var isSecret;
-  switch (purpose) {
-    case e2e.openpgp.KeyPurposeType.VERIFICATION:
-      isSecret = false;
-      break;
-    case e2e.openpgp.KeyPurposeType.DECRYPTION:
-      isSecret = true;
-      break;
-    default:
-      return goog.Promise.reject(
-          new e2e.openpgp.error.InvalidArgumentsError('Invalid key purpose.'));
-  }
   // TODO(koto): Support wildcard key id. Return all keys then.
-  return goog.Promise.resolve([this.keyring_.getKeyBlockById(id, isSecret)]).
-      then(e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_);
+  return goog.Promise.resolve([
+    this.keyring_.getKeyBlockById(id, false /* isSecret*/)
+  ]).then(providers.KeyringKeyProvider.keysToSerialization_);
 };
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.getAllKeys = function(type) {
-  var isSecret = (type == e2e.openpgp.KeyRingType.SECRET);
-  var keyMap = this.keyring_.getAllKeys(isSecret);
+providers.KeyringKeyProvider.prototype.getDecryptionKeysByKeyId = function(id) {
+  // TODO(koto): Support wildcard key id. Return all keys then.
+  return goog.Promise.resolve([
+    this.keyring_.getKeyBlockById(id, true /* isSecret*/)
+  ]).then(providers.KeyringKeyProvider.keysToKeyObjects_);
+};
+
+
+/** @override */
+providers.KeyringKeyProvider.prototype.getAllPublicKeys = function() {
+  var keyMap = this.keyring_.getAllKeys(false /* isSecret*/);
   var keyObjects = [];
   keyMap.forEach(function(keysForUid, uid) {
     goog.array.forEach(keysForUid, function(key) {
-      if (!isSecret && key instanceof e2e.openpgp.block.TransferableSecretKey) {
+      if (key instanceof e2e.openpgp.block.TransferableSecretKey) {
         // KeyRing.getAllKeys always returns the private keys.
         return;
       }
-      keyObjects.push(e2e.openpgp.KeyringKeyProvider.keyToKeyObject_(key));
+      keyObjects.push(providers.KeyringKeyProvider.keyToSerialization_(key));
     }, this);
   }, this);
   return goog.Promise.resolve(keyObjects);
@@ -248,30 +292,57 @@ e2e.openpgp.KeyringKeyProvider.prototype.getAllKeys = function(type) {
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.getAllKeysByEmail = function(email) {
-  return goog.Promise.resolve(undefined).then(function() {
-    return this.keyring_.searchKeysByUidMatcher(function(uid) {
-      return e2e.openpgp.KeyringKeyProvider.extractValidEmail_(uid) == email;
-    }, e2e.openpgp.KeyRing.Type.ALL);
-  },
-  null, this).
-      then(e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_);
+providers.KeyringKeyProvider.prototype.getAllSecretKeys = function() {
+  var keyMap = this.keyring_.getAllKeys(true /* isSecret */);
+  var keyObjects = [];
+  keyMap.forEach(function(keysForUid, uid) {
+    goog.array.forEach(keysForUid, function(key) {
+      keyObjects.push(providers.KeyringKeyProvider.keyToKeyObject_(key));
+    }, this);
+  }, this);
+  return goog.Promise.resolve(keyObjects);
 };
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.getKeyByFingerprint = function(
+providers.KeyringKeyProvider.prototype.getAllPublicKeysByEmail = function(
+    email) {
+  return this.resolveKeysByEmail_(e2e.openpgp.KeyRing.Type.PUBLIC, email)
+      .then(providers.KeyringKeyProvider.keysToSerialization_);
+};
+
+
+/** @override */
+providers.KeyringKeyProvider.prototype.getAllSecretKeysByEmail = function(
+    email) {
+  return this.resolveKeysByEmail_(e2e.openpgp.KeyRing.Type.PRIVATE, email)
+      .then(providers.KeyringKeyProvider.keysToKeyObjects_);
+};
+
+
+/** @override */
+providers.KeyringKeyProvider.prototype.getPublicKeyByFingerprint = function(
     fingerprint) {
   return goog.Promise.resolve(this.keyring_.getPublicKeyBlockByFingerprint(
       fingerprint)).then(
       function(key) {
-        return key ? e2e.openpgp.KeyringKeyProvider.keyToKeyObject_(key) : null;
+        return key ?
+            providers.KeyringKeyProvider.keyToSerialization_(key) :
+            null;
       });
 };
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.getKeyringExportOptions = function(
+providers.KeyringKeyProvider.prototype.getSecretKeyByFingerprint = function(
+    fingerprint) {
+  return goog.Promise.reject(new e2e.openpgp.error.UnsupportedError(
+      'Unsupported'));
+};
+
+
+/** @override */
+providers.KeyringKeyProvider.prototype.getKeyringExportOptions = function(
     keyringType) {
   return goog.Promise.resolve(keyringType).then(function(keyringType) {
     var options = [];
@@ -306,7 +377,7 @@ e2e.openpgp.KeyringKeyProvider.prototype.getKeyringExportOptions = function(
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.exportKeyring = function(keyringType,
+providers.KeyringKeyProvider.prototype.exportKeyring = function(keyringType,
     exportOptions) {
   return goog.Promise.resolve(exportOptions).then(function(exportOptions) {
     switch (exportOptions.format) {
@@ -342,7 +413,7 @@ e2e.openpgp.KeyringKeyProvider.prototype.exportKeyring = function(keyringType,
  *     key blocks.
  * @private
  */
-e2e.openpgp.KeyringKeyProvider.prototype.exportAllKeys_ = function(
+providers.KeyringKeyProvider.prototype.exportAllKeys_ = function(
     keyringType, asciiArmor, opt_passphrase) {
   return goog.Promise.resolve()
       .then(goog.bind(
@@ -368,9 +439,8 @@ e2e.openpgp.KeyringKeyProvider.prototype.exportAllKeys_ = function(
  * @return {!e2e.ByteArray} Serialization of all key blocks.
  * @private
  */
-e2e.openpgp.KeyringKeyProvider.prototype.serializeAllKeyBlocks_ = function(
+providers.KeyringKeyProvider.prototype.serializeAllKeyBlocks_ = function(
     keyringType, asciiArmor, opt_passphrase) {
-
   var isSecret = (keyringType == e2e.openpgp.KeyRingType.SECRET);
   var passphraseBytes = null;
   if (goog.isString(opt_passphrase) && opt_passphrase !== '') {
@@ -401,7 +471,7 @@ e2e.openpgp.KeyringKeyProvider.prototype.serializeAllKeyBlocks_ = function(
  * @return {string|!e2e.ByteArray} Optionally ASCII-armored serialization.
  * @private
  */
-e2e.openpgp.KeyringKeyProvider.prototype.encodeKeyringExport_ = function(
+providers.KeyringKeyProvider.prototype.encodeKeyringExport_ = function(
     keyringType, asciiArmor, serialized) {
   if (asciiArmor) {
     var header = (keyringType == e2e.openpgp.KeyRingType.SECRET) ?
@@ -422,7 +492,7 @@ e2e.openpgp.KeyringKeyProvider.prototype.encodeKeyringExport_ = function(
  * @return {!e2e.ByteArray} Serialization of the key(s)
  * @private
  */
-e2e.openpgp.KeyringKeyProvider.prototype.serializeKey_ = function(
+providers.KeyringKeyProvider.prototype.serializeKey_ = function(
     isSecret, passphraseBytes, key) {
   var matchingKey;
   var serialized = [];
@@ -451,15 +521,14 @@ e2e.openpgp.KeyringKeyProvider.prototype.serializeKey_ = function(
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.setCredentials = function(
-    credentials) {
+providers.KeyringKeyProvider.prototype.setCredentials = function(credentials) {
   // Ignored.
   return goog.Promise.resolve();
 };
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.trustKeys = function(keys, email,
+providers.KeyringKeyProvider.prototype.trustKeys = function(keys, email,
     purpose, opt_trustData) {
   // In the keyring, all keys are trusted.
   return goog.Promise.resolve(keys);
@@ -467,24 +536,31 @@ e2e.openpgp.KeyringKeyProvider.prototype.trustKeys = function(keys, email,
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.removeKeys = function(keys) {
-  goog.array.forEach(keys, function(key) {
-    var keyringType = e2e.openpgp.KeyRing.Type.PUBLIC;
-    if (key.key.secret) {
-      keyringType = e2e.openpgp.KeyRing.Type.PRIVATE;
-    }
-    this.keyring_.deleteKeyByFingerprint(key.key.fingerprint, keyringType);
-  }, this);
-  return goog.Promise.resolve(undefined);
+providers.KeyringKeyProvider.prototype.removePublicKeyByFingerprint = function(
+    fingerprint) {
+  return goog.Promise.resolve(undefined).then(function() {
+    this.keyring_.deleteKeyByFingerprint(fingerprint,
+        e2e.openpgp.KeyRing.Type.PUBLIC);
+  }, null, this);
 };
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.importKeys = function(keySerialization,
+providers.KeyringKeyProvider.prototype.removeSecretKeyByFingerprint = function(
+    fingerprint) {
+  return goog.Promise.resolve(undefined).then(function() {
+    this.keyring_.deleteKeyByFingerprint(fingerprint,
+        e2e.openpgp.KeyRing.Type.PRIVATE);
+  }, null, this);
+};
+
+
+/** @override */
+providers.KeyringKeyProvider.prototype.importKeys = function(serializedKeys,
     passphraseCallback) {
   return goog.Promise.resolve(undefined).then(function() {
     var blocks = e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(
-        keySerialization, true /* skip keys with errors */);
+        serializedKeys, true /* skip keys with errors */);
     if (blocks.length == 0) {
       throw new e2e.openpgp.error.ParseError('No valid key blocks found.');
     }
@@ -494,14 +570,14 @@ e2e.openpgp.KeyringKeyProvider.prototype.importKeys = function(keySerialization,
       return this.keyring_.importKey(key);
     }, this));
   }, null, this).then(function(keysOrNull) {
-    return e2e.openpgp.KeyringKeyProvider.keysToKeyObjects_(
+    return providers.KeyringKeyProvider.keysToKeyObjects_(
         goog.array.filter(keysOrNull, goog.isDefAndNotNull));
   });
 };
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.decrypt = function(key, keyId,
+providers.KeyringKeyProvider.prototype.decrypt = function(key, keyId,
     algorithm, ciphertext) {
   return goog.Promise.resolve(key)
       .then(goog.bind(this.getSecretKeyPacket_, this, keyId))
@@ -520,9 +596,9 @@ e2e.openpgp.KeyringKeyProvider.prototype.decrypt = function(key, keyId,
  * @return {e2e.openpgp.packet.SecretKey} The key packet
  * @private
  */
-e2e.openpgp.KeyringKeyProvider.prototype.getSecretKeyPacket_ = function(keyId,
+providers.KeyringKeyProvider.prototype.getSecretKeyPacket_ = function(keyId,
     key) {
-  if (key.providerId !== e2e.openpgp.KeyringKeyProvider.PROVIDER_ID ||
+  if (key.providerId !== providers.KeyringKeyProvider.PROVIDER_ID ||
       !key.key.secret) {
     throw new e2e.openpgp.error.InvalidArgumentsError('Invalid key handle.');
   }
@@ -539,7 +615,7 @@ e2e.openpgp.KeyringKeyProvider.prototype.getSecretKeyPacket_ = function(keyId,
  * @return {!e2e.scheme.EncryptionScheme} The scheme.
  * @private
  */
-e2e.openpgp.KeyringKeyProvider.prototype.requireDecryptionScheme_ = function(
+providers.KeyringKeyProvider.prototype.requireDecryptionScheme_ = function(
     algorithm, secretKeyPacket) {
   if (!secretKeyPacket) {
     throw new e2e.openpgp.error.InvalidArgumentsError(
@@ -572,8 +648,8 @@ e2e.openpgp.KeyringKeyProvider.prototype.requireDecryptionScheme_ = function(
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.sign = function(key, keyId,
-    algorithm, hashAlgorithm, data) {
+providers.KeyringKeyProvider.prototype.sign = function(key, keyId, algorithm,
+    hashAlgorithm, data) {
   return goog.Promise.resolve(key)
       .then(goog.bind(this.getSecretKeyPacket_, this, keyId))
       .then(goog.bind(this.requireSignatureScheme_, this, algorithm,
@@ -594,7 +670,7 @@ e2e.openpgp.KeyringKeyProvider.prototype.sign = function(key, keyId,
  * @return {!e2e.scheme.SignatureScheme|!e2e.signer.Signer} The scheme.
  * @private
  */
-e2e.openpgp.KeyringKeyProvider.prototype.requireSignatureScheme_ = function(
+providers.KeyringKeyProvider.prototype.requireSignatureScheme_ = function(
     algorithm, hashAlgorithm, secretKeyPacket) {
   if (!secretKeyPacket) {
     throw new e2e.openpgp.error.InvalidArgumentsError(
@@ -629,7 +705,7 @@ e2e.openpgp.KeyringKeyProvider.prototype.requireSignatureScheme_ = function(
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.generateKeyPair = function(userId,
+providers.KeyringKeyProvider.prototype.generateKeyPair = function(userId,
     generateOptions) {
   return this.validateGenerateOptions_(generateOptions)
       .then(function(options) {
@@ -644,8 +720,8 @@ e2e.openpgp.KeyringKeyProvider.prototype.generateKeyPair = function(userId,
         var pubKeyBlock = transferableKeys[0];
         var privKeyBlock = transferableKeys[1];
         return /** @type {e2e.openpgp.KeyPair} */ ({
-          'public': e2e.openpgp.KeyringKeyProvider.keyToKeyObject_(pubKeyBlock),
-          'secret': e2e.openpgp.KeyringKeyProvider.keyToKeyObject_(privKeyBlock)
+          'public': providers.KeyringKeyProvider.keyToKeyObject_(pubKeyBlock),
+          'secret': providers.KeyringKeyProvider.keyToKeyObject_(privKeyBlock)
         });
       }, null, this);
 };
@@ -658,7 +734,7 @@ e2e.openpgp.KeyringKeyProvider.prototype.generateKeyPair = function(userId,
  * @return {!goog.Thenable<!e2e.openpgp.KeyGenerateOptions>}
  * @private
  */
-e2e.openpgp.KeyringKeyProvider.prototype.validateGenerateOptions_ = function(
+providers.KeyringKeyProvider.prototype.validateGenerateOptions_ = function(
     generateOptions) {
   return new goog.Promise(function(resolve, reject) {
     if (!goog.isNumber(generateOptions['keyLength']) ||
@@ -685,7 +761,7 @@ e2e.openpgp.KeyringKeyProvider.prototype.validateGenerateOptions_ = function(
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.getKeyGenerateOptions = function() {
+providers.KeyringKeyProvider.prototype.getKeyGenerateOptions = function() {
   // WebCrypto RSA is no longer possible in Chrome:
   // https://www.chromium.org/blink/webcrypto
   // https://www.w3.org/Bugs/Public/show_bug.cgi?id=25431
@@ -708,7 +784,9 @@ e2e.openpgp.KeyringKeyProvider.prototype.getKeyGenerateOptions = function() {
 
 
 /** @override */
-e2e.openpgp.KeyringKeyProvider.prototype.unlockKey = function(key, unlockData) {
+providers.KeyringKeyProvider.prototype.unlockSecretKey = function(key,
+    unlockData) {
   // In the keyring, all keys are unlocked.
   return goog.Promise.resolve(/** @type {e2e.openpgp.Key} */ (key));
 };
+});  // goog.scope

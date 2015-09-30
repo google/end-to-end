@@ -26,13 +26,13 @@ goog.require('e2e.openpgp.ClearSignMessage');
 goog.require('e2e.openpgp.Context2Impl');
 goog.require('e2e.openpgp.KeyPurposeType');
 goog.require('e2e.openpgp.KeyRingType');
-goog.require('e2e.openpgp.SimpleKeyManager');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.EncryptedMessage');
 goog.require('e2e.openpgp.block.LiteralMessage');
 goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.openpgp.error.DecryptError');
 goog.require('e2e.openpgp.error.Error');
+goog.require('e2e.openpgp.managers.SimpleKeyManager');
 goog.require('e2e.openpgp.packet.PKEncryptedSessionKey');
 goog.require('e2e.openpgp.packet.SymmetricKey');
 goog.require('e2e.openpgp.scheme.Ecdh');
@@ -55,8 +55,10 @@ var KEY_PROVIDER = 'TESTPROVIDER';
 
 function setUp() {
   mockClassFactory = new goog.testing.MockClassFactory();
-  keyManagerMock = mockClassFactory.getStrictMockClass(e2e.openpgp,
-      e2e.openpgp.SimpleKeyManager);
+  /** @suppress {missingRequire} */
+  var ns = e2e.openpgp.managers;
+  keyManagerMock = mockClassFactory.getStrictMockClass(ns,
+      e2e.openpgp.managers.SimpleKeyManager);
   contextPromise = e2e.openpgp.Context2Impl.launch(
       goog.Promise.resolve(keyManagerMock));
 }
@@ -99,7 +101,7 @@ function testKeyManagerProxyMethods() {
       $returns(goog.Promise.resolve(returnValueCount++));
   keyManagerMock.getAllKeys(e2e.openpgp.KeyRingType.PUBLIC, provider).
       $returns(goog.Promise.resolve(returnValueCount++));
-  keyManagerMock.getKeyByFingerprint(fingerprint, provider).
+  keyManagerMock.getPublicKeyByFingerprint(fingerprint, provider).
       $returns(goog.Promise.resolve(returnValueCount++));
   keyManagerMock.setProviderCredentials(provider, credentials).
       $returns(goog.Promise.resolve(returnValueCount++));
@@ -114,7 +116,7 @@ function testKeyManagerProxyMethods() {
   keyManagerMock.trustKeys(
       [key], email, e2e.openpgp.KeyPurposeType.ENCRYPTION, options).
       $returns(goog.Promise.resolve(returnValueCount++));
-  keyManagerMock.unlockKey(key, options).
+  keyManagerMock.unlockSecretKey(key, options).
       $returns(goog.Promise.resolve(returnValueCount++));
   keyManagerMock.importKeys([], options).
       $returns(goog.Promise.resolve(returnValueCount++));
@@ -156,7 +158,7 @@ function testKeyManagerProxyMethods() {
         return context.getAllPublicKeys(provider);
       }).then(function(res) {
         assertEquals(expectedReturnValueCount++, res);
-        return context.getKeyByFingerprint(fingerprint, provider);
+        return context.getPublicKeyByFingerprint(fingerprint, provider);
       }).then(function(res) {
         assertEquals(expectedReturnValueCount++, res);
         return context.setProviderCredentials(provider, credentials);
@@ -178,7 +180,7 @@ function testKeyManagerProxyMethods() {
             e2e.openpgp.KeyPurposeType.ENCRYPTION, options);
       }).then(function(res) {
         assertEquals(expectedReturnValueCount++, res);
-        return context.unlockKey(key, options);
+        return context.unlockSecretKey(key, options);
       }).then(function(res) {
         assertEquals(expectedReturnValueCount++, res);
         return context.importKeys(key, options);

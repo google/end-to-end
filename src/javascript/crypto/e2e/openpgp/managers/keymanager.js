@@ -18,7 +18,7 @@
  * @fileoverview Interface to provide a OpenPGP Key Manager.
  */
 
-goog.provide('e2e.openpgp.KeyManager');
+goog.provide('e2e.openpgp.managers.KeyManager');
 
 
 
@@ -38,7 +38,7 @@ goog.provide('e2e.openpgp.KeyManager');
  * </ul>
  * @interface
  */
-e2e.openpgp.KeyManager = function() {};
+e2e.openpgp.managers.KeyManager = function() {};
 
 
 /**
@@ -47,7 +47,8 @@ e2e.openpgp.KeyManager = function() {};
  *     provider IDs.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.getKeyProviderIds = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.getKeyProviderIds =
+    goog.abstractMethod;
 
 
 /**
@@ -60,7 +61,8 @@ e2e.openpgp.KeyManager.prototype.getKeyProviderIds = goog.abstractMethod;
  *     initialization.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.initializeKeyProviders = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.initializeKeyProviders =
+    goog.abstractMethod;
 
 
 /**
@@ -69,7 +71,8 @@ e2e.openpgp.KeyManager.prototype.initializeKeyProviders = goog.abstractMethod;
  *     e2e.openpgp.KeyProviderState>>} The state of all key providers.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.getKeyProvidersState = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.getKeyProvidersState =
+    goog.abstractMethod;
 
 
 /**
@@ -84,7 +87,8 @@ e2e.openpgp.KeyManager.prototype.getKeyProvidersState = goog.abstractMethod;
  * @return {!goog.Thenable<e2e.openpgp.KeyProviderState>}
  * @export
  */
-e2e.openpgp.KeyManager.prototype.reconfigureKeyProvider = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.reconfigureKeyProvider =
+    goog.abstractMethod;
 
 
 /**
@@ -97,7 +101,7 @@ e2e.openpgp.KeyManager.prototype.reconfigureKeyProvider = goog.abstractMethod;
  * @return {!e2e.openpgp.KeysPromise} The resulting trusted keys.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.getTrustedKeys = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.getTrustedKeys = goog.abstractMethod;
 
 
 /**
@@ -110,7 +114,7 @@ e2e.openpgp.KeyManager.prototype.getTrustedKeys = goog.abstractMethod;
  * @return {!e2e.openpgp.KeysPromise} The resulting keys, potentially untrusted.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.getKeysByKeyId = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.getKeysByKeyId = goog.abstractMethod;
 
 
 /**
@@ -121,7 +125,7 @@ e2e.openpgp.KeyManager.prototype.getKeysByKeyId = goog.abstractMethod;
  * @return {!e2e.openpgp.KeysPromise} The resulting keys, potentially untrusted.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.getAllKeys = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.getAllKeys = goog.abstractMethod;
 
 
 /**
@@ -133,11 +137,13 @@ e2e.openpgp.KeyManager.prototype.getAllKeys = goog.abstractMethod;
  * @return {!e2e.openpgp.KeysPromise} The resulting keys, potentially untrusted.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.getAllKeysByEmail = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.getAllKeysByEmail =
+    goog.abstractMethod;
 
 
 /**
- * Returns a single key that has a matching OpenPGP fingerprint.
+ * Returns a single public key that has a matching OpenPGP fingerprint for the
+ * main key packet.
  * @param {!e2e.openpgp.KeyFingerprint} fingerprint The key fingerprint
  * @param {e2e.openpgp.KeyProviderId=} opt_providerId If passed, only return the
  *     keys from this KeyProvider.
@@ -145,7 +151,8 @@ e2e.openpgp.KeyManager.prototype.getAllKeysByEmail = goog.abstractMethod;
  *     untrusted.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.getKeyByFingerprint = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.getPublicKeyByFingerprint =
+    goog.abstractMethod;
 
 
 /**
@@ -154,7 +161,8 @@ e2e.openpgp.KeyManager.prototype.getKeyByFingerprint = goog.abstractMethod;
  *     key generation options.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.getAllKeyGenerateOptions = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.getAllKeyGenerateOptions =
+    goog.abstractMethod;
 
 
 /**
@@ -166,7 +174,7 @@ e2e.openpgp.KeyManager.prototype.getAllKeyGenerateOptions = goog.abstractMethod;
  * @return {!goog.Thenable<!e2e.openpgp.KeyPair>} The generated keypair.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.generateKeyPair = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.generateKeyPair = goog.abstractMethod;
 
 
 /**
@@ -176,7 +184,8 @@ e2e.openpgp.KeyManager.prototype.generateKeyPair = goog.abstractMethod;
  *     available export options.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.getKeyringExportOptions = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.getKeyringExportOptions =
+    goog.abstractMethod;
 
 
 /**
@@ -188,7 +197,7 @@ e2e.openpgp.KeyManager.prototype.getKeyringExportOptions = goog.abstractMethod;
  * @template T
  * @export
  */
-e2e.openpgp.KeyManager.prototype.exportKeyring = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.exportKeyring = goog.abstractMethod;
 
 
 /**
@@ -198,7 +207,8 @@ e2e.openpgp.KeyManager.prototype.exportKeyring = goog.abstractMethod;
  * @return {!goog.Thenable}
  * @export
  */
-e2e.openpgp.KeyManager.prototype.setProviderCredentials = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.setProviderCredentials =
+    goog.abstractMethod;
 
 
 /**
@@ -221,11 +231,11 @@ e2e.openpgp.KeyManager.prototype.setProviderCredentials = goog.abstractMethod;
  * @return {!e2e.openpgp.KeysPromise} The keys.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.trustKeys = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.trustKeys = goog.abstractMethod;
 
 
 /**
- * Tries to unlock a given key. Noop if the key is already unlocked.
+ * Tries to unlock a given secret key. Noop if the key is already unlocked.
  * Calling this method might cause UI interaction from the KeyProvider.
  * Necessary data for interacting with the user (e.g. MessagePorts,
  * callback functions) should be passed in unlockData.
@@ -234,7 +244,7 @@ e2e.openpgp.KeyManager.prototype.trustKeys = goog.abstractMethod;
  * @return {!e2e.openpgp.KeyPromise} The unlocked Key.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.unlockKey = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.unlockSecretKey = goog.abstractMethod;
 
 
 /**
@@ -243,13 +253,14 @@ e2e.openpgp.KeyManager.prototype.unlockKey = goog.abstractMethod;
  * @return {!goog.Thenable}
  * @export
  */
-e2e.openpgp.KeyManager.prototype.removeKeys = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.removeKeys = goog.abstractMethod;
 
 
 /**
  * Imports a binary-encoded OpenPGP key(s) into the Context.
  * All keys from the serialization will be processed.
- * @param {!e2e.ByteArray} keySerialization The key(s) to import.
+ * @param {!e2e.ByteArray} serializedKeys Serialization of all the key blocks
+ *     to import.
  * @param {!function(string):!goog.Thenable<string>} passphraseCallback This
  *     callback is used for requesting an action-specific passphrase from the
  *     user (if the key material is encrypted to a passprase).
@@ -257,7 +268,7 @@ e2e.openpgp.KeyManager.prototype.removeKeys = goog.abstractMethod;
  *     imported.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.importKeys = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.importKeys = goog.abstractMethod;
 
 
 /**
@@ -271,7 +282,7 @@ e2e.openpgp.KeyManager.prototype.importKeys = goog.abstractMethod;
  * @return {!goog.Thenable<!e2e.ByteArray>}  The decrypted data.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.decrypt = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.decrypt = goog.abstractMethod;
 
 
 /**
@@ -287,4 +298,4 @@ e2e.openpgp.KeyManager.prototype.decrypt = goog.abstractMethod;
  * @return {!goog.Thenable<!e2e.signer.signature.Signature>} The signature.
  * @export
  */
-e2e.openpgp.KeyManager.prototype.sign = goog.abstractMethod;
+e2e.openpgp.managers.KeyManager.prototype.sign = goog.abstractMethod;

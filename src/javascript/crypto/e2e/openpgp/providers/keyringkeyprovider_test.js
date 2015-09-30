@@ -19,7 +19,7 @@
  */
 
 /** @suppress {extraProvide} */
-goog.provide('e2e.openpgp.KeyringKeyProviderTest');
+goog.provide('e2e.openpgp.providers.KeyringKeyProviderTest');
 
 goog.require('e2e');
 goog.require('e2e.algorithm.KeyLocations');
@@ -30,7 +30,6 @@ goog.require('e2e.openpgp.KeyPurposeType');
 goog.require('e2e.openpgp.KeyRing');
 goog.require('e2e.openpgp.KeyRingType');
 goog.require('e2e.openpgp.KeyringExportFormat');
-goog.require('e2e.openpgp.KeyringKeyProvider');
 goog.require('e2e.openpgp.LockableStorage');
 goog.require('e2e.openpgp.block.LiteralMessage');
 goog.require('e2e.openpgp.block.TransferablePublicKey');
@@ -41,6 +40,7 @@ goog.require('e2e.openpgp.error.MissingPassphraseError');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.error.WrongPassphraseError');
 goog.require('e2e.openpgp.packet.SurrogateSecretKey');
+goog.require('e2e.openpgp.providers.KeyringKeyProvider');
 goog.require('e2e.signer.Algorithm');
 goog.require('goog.array');
 goog.require('goog.object');
@@ -62,7 +62,8 @@ function setUp() {
   lockableStorage = new e2e.openpgp.LockableStorage(storage);
   lockableStorage.setPassphrase('test');
   keyRingPromise = e2e.openpgp.KeyRing.launch(lockableStorage);
-  providerPromise = e2e.openpgp.KeyringKeyProvider.launch(keyRingPromise);
+  providerPromise = e2e.openpgp.providers.KeyringKeyProvider.launch(
+      keyRingPromise);
 }
 
 function testConstructor() {
@@ -76,17 +77,19 @@ function testConstructor() {
 function testInvalidPassphrase() {
   lockableStorage.lock();
   keyRingPromise = e2e.openpgp.KeyRing.launch(lockableStorage);
-  providerPromise = e2e.openpgp.KeyringKeyProvider.launch(keyRingPromise);
+  providerPromise = e2e.openpgp.providers.KeyringKeyProvider.launch(
+      keyRingPromise);
   asyncTestCase.waitForAsync('Waiting for async call.');
   providerPromise.then(fail, function(error) {
     assertTrue(error instanceof e2e.openpgp.error.MissingPassphraseError);
     return lockableStorage.unlockWithPassphrase('test');
   }).then(function() {
     keyRingPromise = e2e.openpgp.KeyRing.launch(lockableStorage);
-    providerPromise = e2e.openpgp.KeyringKeyProvider.launch(keyRingPromise);
+    providerPromise = e2e.openpgp.providers.KeyringKeyProvider.launch(
+        keyRingPromise);
     return providerPromise;
   }, fail).then(function(kkp) {
-    assertTrue(kkp instanceof e2e.openpgp.KeyringKeyProvider);
+    assertTrue(kkp instanceof e2e.openpgp.providers.KeyringKeyProvider);
     assertTrue(kkp.keyring_ instanceof e2e.openpgp.KeyRing);
     asyncTestCase.continueTesting();
   }, fail);
@@ -96,13 +99,13 @@ function testConfigure() {
   // Instead of using an already initialized keyring, use locked storage and
   // uninitialized keyring.
   lockableStorage.lock();
-  var kkp = new e2e.openpgp.KeyringKeyProvider(
+  var kkp = new e2e.openpgp.providers.KeyringKeyProvider(
       new e2e.openpgp.KeyRing(lockableStorage));
 
   asyncTestCase.waitForAsync('Waiting for async call.');
 
   kkp.getId().then(function(id) {
-    assertEquals(e2e.openpgp.KeyringKeyProvider.PROVIDER_ID, id);
+    assertEquals(e2e.openpgp.providers.KeyringKeyProvider.PROVIDER_ID, id);
     return kkp.getState();
   }).then(function(state) {
     assertEquals(true, state.encrypted);
@@ -162,14 +165,14 @@ function testGenerateKeys() {
     asyncTestCase.waitForAsync('Waiting for key generation');
     return provider.generateKeyPair(email, chooseDefault(kgo[0]));
   }, fail).then(function(keypair) {
-    assertEquals(e2e.openpgp.KeyringKeyProvider.PROVIDER_ID,
+    assertEquals(e2e.openpgp.providers.KeyringKeyProvider.PROVIDER_ID,
         keypair['public'].providerId);
     assertArrayEquals([email], keypair['public'].uids);
     assertEquals(e2e.signer.Algorithm.ECDSA, keypair['public'].key.algorithm);
     assertEquals(e2e.cipher.Algorithm.ECDH,
         keypair['public'].subKeys[0].algorithm);
     assertTrue(keypair['public'].serialized.length > 0);
-    assertEquals(e2e.openpgp.KeyringKeyProvider.PROVIDER_ID,
+    assertEquals(e2e.openpgp.providers.KeyringKeyProvider.PROVIDER_ID,
         keypair['secret'].providerId);
     assertArrayEquals([email], keypair['secret'].uids);
     assertEquals(0, keypair['secret'].serialized.length);
@@ -228,76 +231,80 @@ function testKeyRetrieval() {
   var signingKeyId = [143, 243, 246, 92, 96, 215, 152, 140];
   var fingerprint = [51, 195, 52, 75, 104, 70, 196, 105, 98, 15, 67, 238, 143,
     243, 246, 92, 96, 215, 152, 140];
+
+  var PUBLIC_KEY_SERIALIZE = keys[1].serialize();
+
   providerPromise.then(function(provider) {
     kkp = provider;
     asyncTestCase.waitForAsync('Waiting for key import.');
     return kkp.importKeys(goog.array.concat(keys[0].serialize(),
-        keys[1].serialize()));
+        PUBLIC_KEY_SERIALIZE));
   }, fail).then(function(uids) {
-    return kkp.getTrustedKeysByEmail(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL);
+    return kkp.getTrustedSecretKeysByEmail(
+        e2e.openpgp.KeyPurposeType.SIGNING,
+        EMAIL);
   }, fail).then(function(foundKeys) {
     assertEquals(1, foundKeys.length);
     var key = foundKeys[0];
-    assertEquals(e2e.openpgp.KeyringKeyProvider.PROVIDER_ID,
+    assertEquals(e2e.openpgp.providers.KeyringKeyProvider.PROVIDER_ID,
         key.providerId);
     assertTrue(key.key.secret);
     assertEquals(0, key.serialized.length);
     assertArrayEquals([UID], key.uids);
     // Search by UID will not find a key.
-    return kkp.getTrustedKeysByEmail(e2e.openpgp.KeyPurposeType.SIGNING, UID);
+    return kkp.getTrustedSecretKeysByEmail(
+        e2e.openpgp.KeyPurposeType.SIGNING,
+        UID);
   }, fail).then(function(foundKeys) {
     assertEquals(0, foundKeys.length);
-    return kkp.getTrustedKeysByEmail(e2e.openpgp.KeyPurposeType.ENCRYPTION,
+    return kkp.getTrustedPublicKeysByEmail(
+        e2e.openpgp.KeyPurposeType.ENCRYPTION,
         EMAIL);
   }, fail).then(function(foundKeys) {
     assertEquals(1, foundKeys.length);
     var key = foundKeys[0];
-    assertEquals(e2e.openpgp.KeyringKeyProvider.PROVIDER_ID,
-        key.providerId);
-    assertFalse(key.key.secret);
-    assertArrayEquals(keys[1].serialize(), key.serialized);
-    assertArrayEquals([UID], key.uids);
-    return kkp.getTrustedKeysByEmail(e2e.openpgp.KeyPurposeType.ENCRYPTION,
+    assertArrayEquals(PUBLIC_KEY_SERIALIZE, key);
+    return kkp.getTrustedPublicKeysByEmail(
+        e2e.openpgp.KeyPurposeType.ENCRYPTION,
         'another@example.com');
   }, fail).then(function(foundKeys) {
     assertEquals(0, foundKeys.length);
     // Ask for a secret key by Key ID.
-    return kkp.getKeysByKeyId(e2e.openpgp.KeyPurposeType.DECRYPTION,
-        encryptionSubkeyId);
+    return kkp.getDecryptionKeysByKeyId(encryptionSubkeyId);
   }, fail).then(function(foundKeys) {
     assertEquals(1, foundKeys.length);
     var key = foundKeys[0];
     assertArrayEquals([], key.serialized);
     assertTrue(key.key.secret);
     // Ask for a public key by Key ID.
-    return kkp.getKeysByKeyId(e2e.openpgp.KeyPurposeType.VERIFICATION,
-        signingKeyId);
+    return kkp.getVerificationKeysByKeyId(signingKeyId);
   }, fail).then(function(foundKeys) {
     assertEquals(1, foundKeys.length);
     var key = foundKeys[0];
-    assertArrayEquals(keys[1].serialize(), key.serialized);
-    assertFalse(key.key.secret);
-    return kkp.getKeysByKeyId(e2e.openpgp.KeyPurposeType.ENCRYPTION,
-        signingKeyId);
-  }, fail).then(fail, function(error) {
-    assertTrue(error instanceof e2e.openpgp.error.InvalidArgumentsError);
-    return kkp.getAllKeysByEmail(EMAIL);
+    assertArrayEquals(PUBLIC_KEY_SERIALIZE, key);
+    return kkp.getAllPublicKeysByEmail(EMAIL);
   }).then(function(foundKeys) {
-    assertEquals(2, foundKeys.length);
+    assertEquals(1, foundKeys.length);
+    assertArrayEquals(PUBLIC_KEY_SERIALIZE, foundKeys[0]);
+    return kkp.getAllSecretKeysByEmail(EMAIL);
+  }).then(function(foundKeys) {
+    assertEquals(1, foundKeys.length);
     // One public and one secret key, order irrelevant.
-    assertEquals(1, foundKeys[0].key.secret ^ foundKeys[1].key.secret);
-    return kkp.getAllKeys(e2e.openpgp.KeyRingType.SECRET);
+    assertEquals(true, foundKeys[0].key.secret);
+    assertArrayEquals([UID], foundKeys[0].uids);
+    return kkp.getAllSecretKeys();
   }, fail).then(function(foundKeys) {
     assertEquals(1, foundKeys.length);
     assertTrue(foundKeys[0].key.secret);
-    return kkp.getAllKeys(e2e.openpgp.KeyRingType.PUBLIC);
+    return kkp.getAllPublicKeys();
   }, fail).then(function(foundKeys) {
     assertEquals(1, foundKeys.length);
-    return kkp.getKeyByFingerprint(fingerprint);
+    assertArrayEquals(PUBLIC_KEY_SERIALIZE, foundKeys[0]);
+    return kkp.getPublicKeyByFingerprint(fingerprint);
   }, fail).then(function(key) {
     // Assert the public key has been returned.
-    assertFalse(key.key.secret);
-    return kkp.getKeyByFingerprint([0]);
+    assertArrayEquals(PUBLIC_KEY_SERIALIZE, key);
+    return kkp.getPublicKeyByFingerprint([0]);
   }, fail).then(function(key) {
     assertNull(key);
     asyncTestCase.continueTesting();
@@ -315,15 +322,15 @@ function testKeyRemoval() {
     return kkp.importKeys(goog.array.concat(keys[0].serialize(),
         keys[1].serialize()));
   }).then(function() {
-    return kkp.getAllKeys(e2e.openpgp.KeyRingType.SECRET);
+    return kkp.getAllSecretKeys();
   }).then(function(secretKeys) {
     assertEquals(1, secretKeys.length);
-    return kkp.removeKeys(secretKeys);
+    return kkp.removeSecretKeyByFingerprint(secretKeys[0].key.fingerprint);
   }).then(function() {
-    return kkp.getAllKeys(e2e.openpgp.KeyRingType.SECRET);
+    return kkp.getAllSecretKeys();
   }).then(function(keys) {
     assertEquals(0, keys.length);
-    return kkp.getAllKeys(e2e.openpgp.KeyRingType.PUBLIC);
+    return kkp.getAllPublicKeys();
   }).then(function(keys) {
     assertEquals(1, keys.length);
     asyncTestCase.continueTesting();
@@ -464,8 +471,8 @@ function testDecrypt() {
         keys[1].serialize()));
   }).then(function() {
     asyncTestCase.waitForAsync('Waiting for key retrieval.');
-    return kkp.getTrustedKeysByEmail(e2e.openpgp.KeyPurposeType.DECRYPTION,
-        EMAIL);
+    return kkp.getTrustedSecretKeysByEmail(
+        e2e.openpgp.KeyPurposeType.DECRYPTION, EMAIL);
   }).then(function(keyObjects) {
     assertEquals(1, keyObjects.length);
     assertEquals('ECDH', keyObjects[0].decryptionAlgorithm);
@@ -500,7 +507,7 @@ function testSign() {
         publicKey.serialize()));
   }).then(function() {
     asyncTestCase.waitForAsync('Waiting for key retrieval.');
-    return kkp.getTrustedKeysByEmail(e2e.openpgp.KeyPurposeType.SIGNING,
+    return kkp.getTrustedSecretKeysByEmail(e2e.openpgp.KeyPurposeType.SIGNING,
         EMAIL);
   }).then(function(keyObjects) {
     assertEquals(1, keyObjects.length);

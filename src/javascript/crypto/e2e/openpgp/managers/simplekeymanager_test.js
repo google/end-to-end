@@ -20,17 +20,18 @@
 
 goog.provide('DummyKeyProvider');
 /** @suppress {extraProvide} */
-goog.provide('e2e.openpgp.SimpleKeyManagerTest');
+goog.provide('e2e.openpgp.managers.SimpleKeyManagerTest');
 
 goog.require('e2e');
 goog.require('e2e.openpgp.KeyPurposeType');
 goog.require('e2e.openpgp.KeyRingType');
-goog.require('e2e.openpgp.SecretKeyProvider');
-goog.require('e2e.openpgp.SimpleKeyManager');
 goog.require('e2e.openpgp.error.InvalidArgumentsError');
+goog.require('e2e.openpgp.managers.SimpleKeyManager');
+goog.require('e2e.openpgp.providers.SecretKeyProvider');
 goog.require('goog.Promise');
 goog.require('goog.array');
 goog.require('goog.testing.AsyncTestCase');
+goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.jsunit');
 goog.setTestOnly();
 
@@ -38,6 +39,7 @@ goog.setTestOnly();
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 var keyManager;
 var keyProvider;
+var stubs = new goog.testing.PropertyReplacer();
 var EMAIL = 'test@example.com';
 var EMAIL_2 = 'test2@example.com';
 var FINGERPRINT = [1, 2, 3, 4];
@@ -54,16 +56,24 @@ var KEY_2 = {
   },
   uids: [EMAIL_2]
 };
+var SECRET_KEY = {
+  key: {
+    fingerprint: FINGERPRINT,
+  },
+  secret: true,
+  uids: [EMAIL]
+};
 var PROVIDER_ID = 'DUMMY';
 
 
 
 /**
  * @constructor
- * @implements {e2e.openpgp.SecretKeyProvider}
+ * @implements {e2e.openpgp.providers.SecretKeyProvider}
  */
 var DummyKeyProvider = function() {
-  this.keys_ = [];
+  this.publicKeys_ = [];
+  this.secretKeys_ = [];
   this.state_ = {
     locked: true
   };
@@ -87,26 +97,47 @@ DummyKeyProvider.prototype.configure = function(config) {
 DummyKeyProvider.prototype.getState = function() {
   return goog.Promise.resolve(this.state_);
 };
-DummyKeyProvider.prototype.getTrustedKeysByEmail = function(purpose,
+DummyKeyProvider.prototype.getTrustedPublicKeysByEmail = function(purpose,
     email) {
-  return goog.Promise.resolve(goog.array.filter(this.keys_, function(key) {
-    return goog.array.contains(key.uids, email);
-  }));
+  return goog.Promise.resolve(goog.array.filter(this.publicKeys_,
+      function(key) {
+        return goog.array.contains(key.uids, email);
+      }));
 };
-DummyKeyProvider.prototype.getKeysByKeyId = function(purpose, id) {
-  return this.getKeyByFingerprint(id);
+DummyKeyProvider.prototype.getTrustedSecretKeysByEmail = function(purpose,
+    email) {
+  return goog.Promise.resolve(goog.array.filter(this.secretKeys_,
+      function(key) {
+        return goog.array.contains(key.uids, email);
+      }));
 };
-DummyKeyProvider.prototype.getAllKeys = function(type) {
-  return goog.Promise.resolve(this.keys_);
+DummyKeyProvider.prototype.getVerificationKeysByKeyId = function(id) {
+  return this.getPublicKeyByFingerprint(id);
 };
-DummyKeyProvider.prototype.getAllKeysByEmail = function(email) {
-  return this.getTrustedKeysByEmail('ignore', email);
+DummyKeyProvider.prototype.getDecryptionKeysByKeyId = function(id) {
+  return goog.Promise.resolve(goog.array.filter(this.secretKeys_,
+      function(key) {
+        return goog.array.equals(key.key.fingerprint, id);
+      }));
 };
-DummyKeyProvider.prototype.getKeyByFingerprint = function(
+DummyKeyProvider.prototype.getAllPublicKeys = function(type) {
+  return goog.Promise.resolve(this.publicKeys_);
+};
+DummyKeyProvider.prototype.getAllSecretKeys = function(type) {
+  return goog.Promise.resolve(this.secretKeys_);
+};
+DummyKeyProvider.prototype.getAllPublicKeysByEmail = function(email) {
+  return this.getTrustedPublicKeysByEmail('ignore', email);
+};
+DummyKeyProvider.prototype.getAllSecretKeysByEmail = function(email) {
+  return this.getTrustedSecretKeysByEmail('ignore', email);
+};
+DummyKeyProvider.prototype.getPublicKeyByFingerprint = function(
     fingerprint) {
-  return goog.Promise.resolve(goog.array.filter(this.keys_, function(key) {
-    return goog.array.equals(key.key.fingerprint, fingerprint);
-  }));
+  return goog.Promise.resolve(goog.array.filter(this.publicKeys_,
+      function(key) {
+        return goog.array.equals(key.key.fingerprint, fingerprint);
+      }));
 };
 DummyKeyProvider.prototype.getKeyringExportOptions = function(
     type) {
@@ -122,19 +153,27 @@ DummyKeyProvider.prototype.trustKeys = function(keys, email,
     purpose, options) {
   return goog.Promise.resolve(keys);
 };
-DummyKeyProvider.prototype.removeKeys = function(keys) {
-  goog.array.forEach(keys, function(key) {
-    goog.array.remove(this.keys_, key);
+DummyKeyProvider.prototype.removePublicKeyByFingerprint = function(fp) {
+  goog.array.removeIf(this.publicKeys_, function(key) {
+    return key.key.fingerprint == fp;
+  }, this);
+  return goog.Promise.resolve(undefined);
+};
+DummyKeyProvider.prototype.removeSecretKeyByFingerprint = function(fp) {
+  goog.array.removeIf(this.secretKeys_, function(key) {
+    return key.key.fingerprint == fp;
   }, this);
   return goog.Promise.resolve(undefined);
 };
 DummyKeyProvider.prototype.importKeys = function(keys, options) {
-  var uids = [];
   goog.array.forEach(keys, function(key) {
-    goog.array.insert(this.keys_, key);
-    uids = goog.array.concat(uids, key.uids);
+    if (key.secret) {
+      goog.array.insert(this.secretKeys_, key);
+    } else {
+      goog.array.insert(this.publicKeys_, key);
+    }
   }, this);
-  return goog.Promise.resolve(uids);
+  return goog.Promise.resolve(keys);
 };
 DummyKeyProvider.prototype.decrypt = function(key, keyId, algorithm,
     ciphertext) {
@@ -160,14 +199,19 @@ DummyKeyProvider.prototype.generateKeyPair = function(userId, options) {
 DummyKeyProvider.prototype.getKeyGenerateOptions = function() {
   return goog.Promise.resolve([DummyKeyProvider.OPTIONS_]);
 };
-DummyKeyProvider.prototype.unlockKey = function(key) {
+DummyKeyProvider.prototype.unlockSecretKey = function(key) {
   return goog.Promise.resolve(key);
 };
 
 
 function setUp() {
   keyProvider = new DummyKeyProvider();
-  keyManager = new e2e.openpgp.SimpleKeyManager(keyProvider);
+  keyManager = new e2e.openpgp.managers.SimpleKeyManager(keyProvider,
+      PROVIDER_ID);
+}
+
+function tearDown() {
+  stubs.reset();
 }
 
 function testInitializeAndConfigure() {
@@ -198,7 +242,7 @@ function testInitializeAndConfigure() {
 
 function testDelayedConstructor() {
   asyncTestCase.waitForAsync('Waiting for async call.');
-  var managerPromise = e2e.openpgp.SimpleKeyManager.launch(
+  var managerPromise = e2e.openpgp.managers.SimpleKeyManager.launch(
       goog.Promise.resolve(keyProvider));
   managerPromise.then(function(km) {
     assertEquals(keyProvider, km.keyProvider_);
@@ -216,10 +260,21 @@ function testGetKeysByKeyId() {
 }
 
 function testKeyManagement() {
+  stubs.setPath('e2e.openpgp.block.factory.parseByteArrayTransferableKey',
+      function(serialization) {
+        var transferableKey = {
+          toKeyObject: function(ignore, id) {
+            serialization.providerId = id;
+            return serialization;
+          }
+        };
+        return transferableKey;
+      });
+
   asyncTestCase.waitForAsync('Waiting for async');
-  keyManager.importKeys([KEY, KEY_2], goog.abstractMethod)
-      .then(function(uids) {
-        assertArrayEquals([EMAIL, EMAIL_2], uids);
+  keyManager.importKeys([KEY, KEY_2, SECRET_KEY], goog.abstractMethod)
+      .then(function(keys) {
+        assertArrayEquals([KEY, KEY_2, SECRET_KEY], keys);
         return keyManager.getTrustedKeys(
             e2e.openpgp.KeyPurposeType.ENCRYPTION, EMAIL);
       }).then(function(keys) {
@@ -227,27 +282,26 @@ function testKeyManagement() {
             e2e.openpgp.KeyPurposeType.ENCRYPTION, 'notexisting@example.com');
       }).then(function(keys) {
         assertArrayEquals([], keys);
-        return keyManager.getKeysByKeyId(e2e.openpgp.KeyPurposeType.ENCRYPTION,
-            FINGERPRINT);
-      }).then(fail, function(e) {
-        assertTrue(e instanceof e2e.openpgp.error.InvalidArgumentsError);
         return keyManager.getKeysByKeyId(
-            e2e.openpgp.KeyPurposeType.VERIFICATION,
-            FINGERPRINT);
+            e2e.openpgp.KeyPurposeType.VERIFICATION, FINGERPRINT);
       }).then(function(keys) {
         assertArrayEquals([KEY], keys);
+        return keyManager.getKeysByKeyId(
+            e2e.openpgp.KeyPurposeType.DECRYPTION, FINGERPRINT);
+      }).then(function(keys) {
+        assertArrayEquals([SECRET_KEY], keys);
         return keyManager.getAllKeys();
       }).then(function(keys) {
         assertArrayEquals([KEY, KEY_2], keys);
         return keyManager.getAllKeysByEmail(EMAIL_2);
       }).then(function(keys) {
         assertArrayEquals([KEY_2], keys);
-        return keyManager.getKeyByFingerprint(FINGERPRINT_2);
+        return keyManager.getPublicKeyByFingerprint(FINGERPRINT_2);
       }).then(function(keys) {
         return keyManager.trustKeys(KEY);
       }).then(function(key) {
         assertEquals(KEY, key);
-        return keyManager.unlockKey(KEY);
+        return keyManager.unlockSecretKey(KEY);
       }).then(function(key) {
         assertEquals(KEY, key);
         return keyManager.removeKeys([KEY]);
