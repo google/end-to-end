@@ -70,8 +70,7 @@ e2e.openpgp.Context2Impl = function(keyManager) {
   this.armorOutput_ = true;
   /**
    * List of headers to add to armored messages (Version, Comment, etc).
-   * @type {!Object.<string>}
-   * @private
+   * @private {!Object.<string>}
    */
   this.armorHeaders_ = {};
 };
