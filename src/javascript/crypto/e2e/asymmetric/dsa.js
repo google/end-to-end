@@ -33,6 +33,7 @@ goog.require('e2e.random');
 goog.require('e2e.signer.Algorithm');
 goog.require('e2e.signer.Signer');
 goog.require('e2e.signer.factory');
+goog.require('goog.array');
 goog.require('goog.asserts');
 
 
@@ -264,7 +265,7 @@ e2e.signer.Dsa.prototype.verify = function(m, sig) {
   }
 
   var w = this.q_.modInverse(s);
-  var z = new e2e.BigNum(this.hash_.hash(m));
+  var z = new e2e.BigNum(this.hashWithTruncation_(m));
   var u1 = this.q_.modMultiply(z.mod(this.q_), w);  // z may be >= q_
   var u2 = this.q_.modMultiply(r, w);
   var v = this.p_.modMultiply(this.p_.modPower(this.g_, u1),
@@ -293,7 +294,7 @@ e2e.signer.Dsa.prototype.signWithNonce_ = function(m, k) {
   }
   // r = (g^k mod p) mod q.
   var r = this.p_.modPower(this.g_, k).mod(this.q_);
-  var hashValue = this.hash_.hash(m);
+  var hashValue = this.hashWithTruncation_(m);
   var z = new e2e.BigNum(hashValue);
   // s = (k^{-1} (z + xr)) mod q.
   var tmp = z.add(this.q_.modMultiply(this.x_, r)).mod(this.q_);
@@ -336,5 +337,24 @@ e2e.signer.Dsa.prototype.generatePerMessageSecret_ = function() {
       e2e.BigNum.ONE);
 };
 
+
+/**
+ * Creates a message digest, truncating it to the bit-length of the prime order.
+ * @param {!e2e.ByteArray} message The message to hash.
+ * @return {!Array.<number>} The digest.
+ * @private
+*/
+e2e.signer.Dsa.prototype.hashWithTruncation_ = function(message) {
+  var hash = this.hash_.hash(message);
+
+  var requiredLength = Math.ceil(this.q_.getBitLength() / 8);
+
+  if (requiredLength > hash.length) {
+    throw new e2e.openpgp.error.InvalidArgumentsError(
+        'Digest algorithm is too short for given DSA parameters.');
+  }
+
+  return goog.array.slice(hash, 0, requiredLength);
+};
 
 e2e.signer.factory.add(e2e.signer.Dsa, e2e.signer.Algorithm.DSA);
