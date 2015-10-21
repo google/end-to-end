@@ -54,6 +54,11 @@ e2e_assert_dependencies() {
   echo "All dependencies met."
 }
 
+e2e_assert_bc() {
+  # Verify, or download the correct bc libraries.
+  src/javascript/crypto/e2e/compatibility_tests/drivers/bc/download-libs.sh || { echo >&2 "Unable to install bouncy castle libraries"; exit 1; }
+}
+
 e2e_assert_nodejs() {
   # Check if nodejs is installed.
   type "$NODEJS_CMD" >/dev/null 2>&1 || { echo >&2 "Please install nodejs to run the compatibility tests."; exit 1; }
@@ -177,6 +182,15 @@ e2e_test_compat_e2e() {
   echo "Done."
 }
 
+e2e_test_compat_bc() {
+  e2e_assert_dependencies
+  set -e
+  e2e_assert_bc
+  echo "Running Bouncycastle compatibility tests..."
+  ant -f src/javascript/crypto/e2e/compatibility_tests/drivers/bc/build.xml run
+  echo "Done."
+}
+
 e2e_build_extension() {
   e2e_assert_dependencies
   set -e
@@ -258,6 +272,8 @@ e2e_build_app() {
 e2e_build_clean() {
   echo "Cleaning all builds..."
   rm -rfv "$BUILD_DIR"
+  rm -rfv "src/javascript/crypto/e2e/compatibility_tests/drivers/bc/lib"
+  rm -rfv "src/javascript/crypto/e2e/compatibility_tests/drivers/bc/build"
   echo "Done."
 }
 
@@ -363,6 +379,9 @@ case "$CMD" in
   test_compat_e2e)
     e2e_test_compat_e2e;
     ;;
+  test_compat_bc)
+    e2e_test_compat_bc;
+    ;;
   build_templates)
     e2e_build_templates;
     ;;
@@ -388,7 +407,7 @@ case "$CMD" in
     e2e_generate_deps;
     ;;
   *)
-    echo "Usage: $0 {build_app|build_extension|build_library|build_templates|build_docs|clean|check_deps|clean_deps|install_deps|testserver|test_compat_e2e|lint} [debug]"
+    echo "Usage: $0 {build_app|build_extension|build_library|build_templates|build_docs|clean|check_deps|clean_deps|install_deps|testserver|test_compat_e2e|test_compat_bc|lint} [debug]"
     RETVAL=1
 esac
 

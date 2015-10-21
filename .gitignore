@@ -3,3 +3,5 @@ docs/*
 node_modules/*
 lib/closure-templates-compiler/*
 lib/typedarray/*
+src/javascript/crypto/e2e/compatibility_tests/drivers/bc/lib/*
+src/javascript/crypto/e2e/compatibility_tests/drivers/bc/build/*
