@@ -57,6 +57,34 @@ goog.inherits(e2e.signer.Dsa, e2e.AlgorithmImpl);
 
 
 /**
+ * List of Hash algorithms that are allowed to be used for DSA for a given q
+ * bitlength. See {@link https://tools.ietf.org/html/rfc4880#section-13.6}.
+ * @type {!Object<number,!Array<!e2e.hash.Algorithm>>}
+ * @private
+ */
+e2e.signer.Dsa.ALLOWED_HASHES_ = {
+  160: [
+    e2e.hash.Algorithm.SHA1,
+    e2e.hash.Algorithm.SHA224,
+    e2e.hash.Algorithm.SHA256,
+    e2e.hash.Algorithm.SHA384,
+    e2e.hash.Algorithm.SHA512
+  ],
+  224: [
+    e2e.hash.Algorithm.SHA224,
+    e2e.hash.Algorithm.SHA256,
+    e2e.hash.Algorithm.SHA384,
+    e2e.hash.Algorithm.SHA512
+  ],
+  256: [
+    e2e.hash.Algorithm.SHA256,
+    e2e.hash.Algorithm.SHA384,
+    e2e.hash.Algorithm.SHA512
+  ]
+};
+
+
+/**
  * The prime modulus. This must be a prime number.
  * @private {e2e.BigPrimeNum}
  */
@@ -114,6 +142,13 @@ e2e.signer.Dsa.prototype.getHashAlgorithm = function() {
 
 /** @override */
 e2e.signer.Dsa.prototype.setHash = function(hash) {
+  var lenQ = this.q_.getBitLength();
+  var algorithm = hash.algorithm;
+  if (!e2e.signer.Dsa.ALLOWED_HASHES_[lenQ] ||
+      !goog.array.contains(e2e.signer.Dsa.ALLOWED_HASHES_[lenQ], algorithm)) {
+    throw new e2e.openpgp.error.InvalidArgumentsError(
+        'Given hash algorithm is disallowed for this DSA key: ' + algorithm);
+  }
   this.hash_ = hash;
 };
 
