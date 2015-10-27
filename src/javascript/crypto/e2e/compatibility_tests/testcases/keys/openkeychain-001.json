@@ -1,0 +1,11 @@
+{
+  "type" : "import",
+  "expected_uids" : [
+    "Google Testing <testing@gmail.com>"
+  ],
+  "expected_fingerprint": "ffe63e2309c6742b49bcb5e679ccd98d266307b8",
+  "expected_subkeys" : [{
+    "expected_fingerprint": "6705343ec2ebb90ea60f89f54f789ce3b58e3a10"
+  }],
+  "comment": "This key uses dsa1024 signature with a SHA-512 hash, requiring the signed digest to be truncated."
+}
