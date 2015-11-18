@@ -15,5 +15,6 @@ script:
   - ./do.sh lint
   - ./do.sh build_app debug
   - ./do.sh test_compat_e2e
+  - ./do.sh test_compat_bc
   - ./do.sh clean
   - ./do.sh build_extension debug
