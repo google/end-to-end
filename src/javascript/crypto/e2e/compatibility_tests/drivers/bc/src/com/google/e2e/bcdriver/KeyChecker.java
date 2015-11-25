@@ -513,7 +513,11 @@ public class KeyChecker {
           + " is not a proper backsignature.\n");
       return false;
     }
-    return isGoodSubkeySignature(esig, target, signer, errors);
+
+    esig.init(new BcPGPContentVerifierBuilderProvider(), target);
+
+    return esig.verifyCertification(signer, target)
+        && isSignatureCurrent(esig, errors);
   }
 
   private static final boolean isGoodUIDSignature(PGPSignature sig,
