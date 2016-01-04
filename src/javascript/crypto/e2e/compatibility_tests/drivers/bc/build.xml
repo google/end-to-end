@@ -43,7 +43,7 @@
         classname="com.google.e2e.bcdriver.Main"
         classpathref="lib.ref"
         failonerror="true">
-      <arg value="${basedir}/../../testcases"/>
+      <arg value="${basedir}/../../openpgp-interop/testcases"/>
       <classpath>
         <pathelement location="${build}"/>
       </classpath>

@@ -1,9 +1,0 @@
-{
-  "type" : "decrypt",
-  "decryptKey": "gnupg-v1-003-decrypt.asc",
-  "verifyKey": "gnupg-v1-003-verify.asc",
-  "passphrase": "test",
-  "filename": "hello.txt",
-  "timestamp": 1418941207,
-  "textcontent": "hello"
-}

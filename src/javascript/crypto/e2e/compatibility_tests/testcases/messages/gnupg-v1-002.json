@@ -1,7 +1,0 @@
-{
-  "type" : "decrypt",
-  "decryptKey": "gnupg-v1-002-decrypt.asc",
-  "passphrase": "test",
-  "filename": "hello.txt",
-  "textcontent": "hello\n"
-}

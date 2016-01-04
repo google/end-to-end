@@ -17,3 +17,6 @@
 [submodule "lib/js-dossier"]
 	path = lib/js-dossier
 	url = https://github.com/jleyba/js-dossier
+[submodule "src/javascript/crypto/e2e/compatibility_tests/openpgp-interop"]
+	path = src/javascript/crypto/e2e/compatibility_tests/openpgp-interop
+	url = https://github.com/google/openpgp-interop
