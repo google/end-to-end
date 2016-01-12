@@ -203,7 +203,7 @@ panels.KeyringMgmtFull.prototype.removeKey = function(userId) {
       });
 
   goog.array.forEach(uidElems, function(elem) {
-    var parentRow = this.getParentTableRow_(elem);
+    var parentRow = this.getParentTableRow_(/** @type {!HTMLElement} */ (elem));
     parentRow.parentElement.removeChild(parentRow);
   }, this);
 
