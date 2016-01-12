@@ -46,7 +46,10 @@ cd lib
 # symlink typedarray
 if [ ! -d typedarray ]; then
   mkdir typedarray
-  ln -s ../zlib.js/define/typedarray/use.js typedarray/use.js
+  if ! ln -s ../zlib.js/define/typedarray/use.js typedarray/use.js
+    # symlink failed; strange filesystem? Let's copy...
+    then cp ../zlib.js/define/typedarray/use.js typedarray/use.js
+  fi
 fi
 
 # build closure compiler
