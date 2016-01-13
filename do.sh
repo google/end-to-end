@@ -178,7 +178,7 @@ e2e_test_compat_e2e() {
   echo
   echo "Running compatibility tests..."
   TEST_ROOT="src/javascript/crypto/e2e/compatibility_tests"
-  $NODEJS_CMD "$TEST_ROOT/drivers/e2e/run.js" "$BUILD_EXT_DIR/end-to-end.debug.js" "$TEST_ROOT/testcases"
+  $NODEJS_CMD "$TEST_ROOT/drivers/e2e/run.js" "$BUILD_EXT_DIR/end-to-end.debug.js" "$TEST_ROOT/openpgp-interop/testcases"
   echo "Done."
 }
 
