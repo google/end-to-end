@@ -20,6 +20,11 @@
 
 export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 
+# symlink function with fallback on cp in case of failure.
+symlink() {
+  ln -s "$@" || cp -R "$@"
+}
+
 type ant >/dev/null 2>&1 || {
   echo >&2 "Ant is required to build End-To-End dependencies."
   exit 1
@@ -46,7 +51,7 @@ cd lib
 # symlink typedarray
 if [ ! -d typedarray ]; then
   mkdir typedarray
-  ln -s ../zlib.js/define/typedarray/use.js typedarray/use.js
+  symlink ../zlib.js/define/typedarray/use.js typedarray/use.js
 fi
 
 # build closure compiler
