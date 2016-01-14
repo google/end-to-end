@@ -191,16 +191,40 @@ e2e.compression.Bzip2.prototype.readBlock_ = function(bits) {
     huffmanTrees[i] = new e2e.compression.Bzip2.Huffman_(lengths);
   }
 
+  var selectorIndex = 1;
   var currentHuffmanTree = huffmanTrees[treeIndexes[0]];
+  var repeat = 0;
+  var repeatPower = 0;
   var decoded = 0;
+
   var decodedData = [];  // Also referred to as T[T[...]]
   while (true) {  // breaks on EOF symbol
     // TODO(adhintz) handle decoded==50 and change currentHuffmanTree
     var v = currentHuffmanTree.decode(bits);  // correct bits passing?
     decoded++;
 
-    // TODO(adhintz) handle v < 2 for RUNA and RUNB symbols.
-    // TODO(adhintz) handle repeat > 0 (from RUNA and RUNB symbols)
+    if (v < 2) {  // RUN symbol.
+      if (repeat == 0) {  // New run-length encoding, so start at 2**0.
+        repeatPower = 1;
+      }
+      if (v == 0) {  // RUNA
+        repeat += repeatPower;
+      } else if (v == 1) {  // RUNB
+        repeat += repeatPower * 2;
+      }
+      repeatPower <<= 1;
+      continue; // Loop until we've read all of the RUN symbols.
+    }
+
+    if (repeat > 0) {
+      if (repeat + decodedData.length > this.blockSize_) {
+        throw new e2e.compression.Error('repeat is too large for block size.');
+      }
+      for (var i = 0; i < repeat; i++) {
+        decodedData.push(decodedData[decodedData.length - 1]);
+      }
+      repeat = 0;
+    }
 
     if (v == numSymbols - 1) {  // EOF symbol.
       break;
