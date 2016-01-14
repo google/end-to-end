@@ -174,7 +174,7 @@ e2e.compression.Bzip2.prototype.readBlock_ = function(bits) {
     while (lengthIndex < numSymbols) {
       if (bits.read(1) == 0) {
         // save length and go to next symbol
-        if (length < 0 || length > 20) {
+        if (length < 1 || length > 20) {
           throw new e2e.compression.Error('Huffman code length out of range.');
         }
         lengths[lengthIndex] = length;
