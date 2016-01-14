@@ -35,6 +35,52 @@ function testReadBits() {
   } catch (e) {
     assertTrue(e instanceof RangeError);
   }
+
+  // test values over 32 bits
+  bitReader = new e2e.compression.Bzip2.Bits_([0xff, 0xff, 0xff, 0xff, 0xff, 0xff]);
+  assertEquals(0xffffffffffff, bitReader.read(48));
+}
+
+function testReadBitsAcrossBoundary() {
+  var bitReader = new e2e.compression.Bzip2.Bits_([0xc1, 0x00, 0x00]);
+  assertEquals(1, bitReader.read(1));
+  assertEquals((0xc1-0x80)*2, bitReader.read(8));
+
+}
+
+function testReadBitsSparse() {
+  var bitReader = new e2e.compression.Bzip2.Bits_([0xab]);
+  assertEquals(1, bitReader.read(1));
+  assertEquals(0, bitReader.read(1));
+  assertEquals(1, bitReader.read(1));
+  assertEquals(0, bitReader.read(1));
+  assertEquals(2, bitReader.read(2));
+  assertEquals(3, bitReader.read(2));
+}
+
+/**
+ * Tests that decompress works.
+ */
+function testDecompress() {
+  var compressedData = [  // 68 69 0a compressed with bzip2
+    0x42, 0x5a, 0x68, 0x39, 0x31, 0x41, 0x59, 0x26, 0x53, 0x59, 0x1d, 0x5e, 0x59, 0xd5, 0x00, 0x00,
+    0x00, 0xc1, 0x00, 0x00, 0x10, 0x00, 0x60, 0x20, 0x00, 0x21, 0x98, 0x19, 0x84, 0x61, 0x77, 0x24,
+    0x53, 0x85, 0x09, 0x01, 0xd5, 0xe5, 0x9d, 0x50
+    ];
+  var algo = new e2e.compression.Bzip2();
+  var decompressedData = e2e.async.Result.getValue(algo.decompress(compressedData));
+  assertArrayEquals([0x68, 0x69, 0x0a], decompressedData);
+}
+
+function testZeros() {
+  var compressedData = [  // 32 0s compressed with bzip2, from golang test.
+    0x42, 0x5a, 0x68, 0x39, 0x31, 0x41, 0x59, 0x26, 0x53, 0x59, 0xb5, 0xaa, 0x50, 0x98, 0x00, 0x00,
+    0x00, 0x60, 0x00, 0x40, 0x00, 0x00, 0x04, 0x20, 0x00, 0x21, 0x00, 0x82, 0x83, 0x17, 0x72, 0x45,
+    0x38, 0x50, 0x90, 0xb5, 0xaa, 0x50, 0x98
+    ];
+  var algo = new e2e.compression.Bzip2();
+  var decompressedData = e2e.async.Result.getValue(algo.decompress(compressedData));
+  assertArrayEquals(new Array(32).fill(0), decompressedData);
 }
 
 </script>
