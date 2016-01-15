@@ -191,15 +191,22 @@ e2e.compression.Bzip2.prototype.readBlock_ = function(bits) {
     huffmanTrees[i] = new e2e.compression.Bzip2.Huffman_(lengths);
   }
 
-  var selectorIndex = 1;
-  var currentHuffmanTree = huffmanTrees[treeIndexes[0]];
+  var selectorIndex = 0;
+  var currentHuffmanTree = huffmanTrees[treeIndexes[selectorIndex]];
   var repeat = 0;
   var repeatPower = 0;
   var decoded = 0;
-
   var decodedData = [];  // Also referred to as T[T[...]]
   while (true) {  // breaks on EOF symbol
-    // TODO(adhintz) handle decoded==50 and change currentHuffmanTree
+    if (decoded == 50) {
+      decoded = 0;
+      selectorIndex++;
+      if (selectorIndex >= treeIndexes.length) {
+        throw new e2e.compression.Error('not enough huffman trees');
+      }
+      currentHuffmanTree = huffmanTrees[treeIndexes[selectorIndex]];
+    }
+
     var v = currentHuffmanTree.decode(bits);  // correct bits passing?
     decoded++;
 
@@ -328,7 +335,15 @@ e2e.compression.Bzip2.Huffman_ = function(lengths) {
   for (var i = 0; i < lengths.length; i++) {
     pairs[i] = {length: lengths[i], value: i};
   }
-  pairs.sort(function(a, b) {return (a.length > b.length ? 1 : -1);});
+  pairs.sort(function(a, b) {
+    if (a.length > b.length) {
+      return 1;
+    } else if (b.length > a.length) {
+      return -1;
+    } else {  // equal length
+      return (a.value > b.value ? 1 : -1);
+    }
+  });
 
   var code = 0;
   var length = 32;

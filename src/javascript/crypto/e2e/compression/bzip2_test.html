@@ -20,6 +20,7 @@
   goog.require('e2e');
   goog.require('e2e.compression.Bzip2');
   goog.require('goog.array');
+  goog.require('goog.crypt');
   goog.require('goog.testing.jsunit');
 </script>
 <script>
@@ -81,6 +82,15 @@ function testZeros() {
   var algo = new e2e.compression.Bzip2();
   var decompressedData = e2e.async.Result.getValue(algo.decompress(compressedData));
   assertArrayEquals(new Array(32).fill(0), decompressedData);
+}
+
+function testRand2() {  // from golang test suite.
+  var compressedData = goog.crypt.hexToByteArray('425a6839314159265359d992d0f60000137dfe84020310091c1e280e100e042801099210094806c0110002e70806402000546034000034000000f2830000032000d3403264049270eb7a9280d308ca06ad28f6981bee1bf8160727c7364510d73a1e123083421b63f031f63993a0f40051fbf177245385090d992d0f60');
+  var algo = new e2e.compression.Bzip2();
+  var decompressedData = e2e.async.Result.getValue(algo.decompress(compressedData));
+  assertArrayEquals(
+    goog.crypt.hexToByteArray('92d5652616ac444a4a04af1a8a3964aca0450d43d6cf233bd03233f4ba92f8719e6c2a2bd4f5f88db07ecd0da3a33b263483db9b2c158786ad6363be35d17335ba'),
+    decompressedData);
 }
 
 </script>
