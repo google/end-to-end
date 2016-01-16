@@ -158,7 +158,7 @@ e2e.compression.Bzip2.prototype.readBlock_ = function(bits) {
     treeIndexes[i] = huffTable[index];
     // move huffTable[index] to front
     for (var gap = index; gap > 0; gap--) {
-      huffTable[index] = huffTable[index - 1];
+      huffTable[gap] = huffTable[gap - 1];
     }
     huffTable[0] = treeIndexes[i];
   }
