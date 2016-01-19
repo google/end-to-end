@@ -29,6 +29,7 @@ goog.require('e2e.async.Result');
 goog.require('e2e.compression.Algorithm');
 goog.require('e2e.compression.Compression');
 goog.require('e2e.compression.Error');
+goog.require('e2e.compression.factory');
 
 goog.require('goog.array');
 
@@ -504,6 +505,5 @@ e2e.compression.Bzip2.Bits_.prototype.read = function(bits) {
   return result;
 };
 
-// TODO(adhintz) Uncomment after bzip2 is implemented.
-// e2e.compression.factory.add(e2e.compression.Bzip2,
-//    e2e.compression.Algorithm.BZIP2);
+e2e.compression.factory.add(e2e.compression.Bzip2,
+    e2e.compression.Algorithm.BZIP2);
