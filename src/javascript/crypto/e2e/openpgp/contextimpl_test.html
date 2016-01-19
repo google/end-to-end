@@ -366,6 +366,32 @@ eGC9JuVC0VK58w==
 -----END PGP PUBLIC KEY BLOCK-----
 </textarea>
 
+<!--
+echo "hello bz2 world" > file.txt
+gpg --armor --compress-algo bzip2 -c file.txt
+
+:symkey enc packet: version 4, cipher 3, s2k 3, hash 2
+  salt 1dea6a58eb6dfdea, count 65536 (96)
+gpg: CAST5 encrypted data
+:encrypted data packet:
+  length: 94
+gpg: encrypted with 1 passphrase
+:compressed packet: algo=3
+:literal data packet:
+  mode b (62), created 1452906719, name="file.txt",
+  raw data: 16 bytes
+-->
+<textarea id="symmetricKeyBzip2">
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1
+
+jA0EAwMCHepqWOtt/epgyV5U5XfyScWgyppsiIm45xEgw8PKjwnjDUTZ1RsBWh5X
+1jBLLMnZ+KV2iATxoChh+/jJFqe02caByMpF/A4CkWS2s5ZFEasuPrG99IYIw9Ji
+hwTUHoOwXZYN6egvFLlN
+=rPTG
+-----END PGP MESSAGE-----
+</textarea>
+
 <script>
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 asyncTestCase.stepTimeout = 10000;
@@ -599,6 +625,19 @@ function testClearSign() {
     assertEquals(1, result.verify.success.length);
     asyncTestCase.continueTesting();
   }, fail);
+}
+
+function testDecryptSymmetricBzip2() {
+  var encrypted = document.getElementById('symmetricKeyBzip2').value;
+  var plaintext = 'hello bz2 world\n';
+  asyncTestCase.waitForAsync('waiting for decryption.');
+  context.verifyDecrypt(passphraseCallback, encrypted).addCallback(function(result) {
+    var data = result['decrypt']['data'];
+    assertEquals(plaintext, e2e.byteArrayToString(data));
+    asyncTestCase.continueTesting();
+  }).addErrback(function(error) {
+    throw error;
+  });
 }
 
 function testEncryptSymmetric() {

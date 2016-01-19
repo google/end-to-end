@@ -22,6 +22,8 @@
 goog.provide('e2e.compression.all');
 
 /** @suppress {extraRequire} intentional import */
+goog.require('e2e.compression.Bzip2');
+/** @suppress {extraRequire} intentional import */
 goog.require('e2e.compression.Zip');
 /** @suppress {extraRequire} intentional import */
 goog.require('e2e.compression.Zlib');
