@@ -71,6 +71,9 @@ e2e.compression.Bzip2.prototype.decompress = function(compressedData) {
   var crc = bits.read(32);  // crc for whole stream.
   // TODO(adhintz) Verify checksum for whole stream.
 
+  // TODO(adhintz) Read concatenated bzip2 streams, such as at
+  // https://github.com/kjn/lbzip2/blob/master/tests/concat.bz2
+
   var data = goog.array.flatten(results);
   return e2e.async.Result.toResult(data);
 };
@@ -277,7 +280,6 @@ e2e.compression.Bzip2.prototype.readBlock_ = function(bits) {
     tPos >>>= 8;
 
     if (byteRepeats == 3) {  // Hit the 4 equal bytes, so repeating time.
-      i++;
       for (var j = 0; j < b; j++) {
         finalData.push(lastByte);
       }
