@@ -73,6 +73,23 @@ function testDecompress() {
   assertArrayEquals([0x68, 0x69, 0x0a], decompressedData);
 }
 
+function testRepeating() {
+  var compressedData = [  // Compressed literal data packet created by gpg.
+    66, 90, 104, 54, 49, 65, 89, 38, 83, 89, 115, 157, 156, 228, 0, 0, 15, 127, 144, 8, 144, 16, 0,
+    0, 0, 132, 0, 32, 0, 1, 16, 62, 161, 212, 128, 8, 4, 32, 0, 34, 128, 0, 0, 242, 133, 6, 141, 26,
+    12, 128, 210, 114, 100, 65, 90, 115, 119, 166, 121, 183, 43, 223, 120, 1, 34, 65, 63, 23, 114,
+    69, 56, 80, 144, 115, 157, 156, 228
+    ];
+  var algo = new e2e.compression.Bzip2();
+  var decompressedData = e2e.async.Result.getValue(algo.decompress(compressedData));
+  assertArrayEquals([
+    172, 52, 98, 3, 100, 111, 99, 86, 163, 47, 119, 114, 101, 112, 101, 97, 116, 105, 110, 103, 65,
+    65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 65, 90, 90, 90,
+    90, 90, 90, 90, 90, 90, 90, 90, 10
+  ],
+                    decompressedData);
+}
+
 function testZeros() {
   var compressedData = [  // 32 0s compressed with bzip2, from golang test.
     0x42, 0x5a, 0x68, 0x39, 0x31, 0x41, 0x59, 0x26, 0x53, 0x59, 0xb5, 0xaa, 0x50, 0x98, 0x00, 0x00,
