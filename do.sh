@@ -151,32 +151,37 @@ e2e_build_jsmodule() {
   echo "Done."
 }
 
-e2e_build_library_ctx1() {
-  echo "Building End-To-End library with Context API into $BUILD_DIR/library..."
+e2e_build_library_prepare() {
+  echo "Building End-To-End library into $BUILD_DIR/library..."
   e2e_assert_dependencies
   set -e
   e2e_assert_jsdeps
   BUILD_EXT_DIR="$BUILD_DIR/library"
   rm -rf "$BUILD_EXT_DIR"
   mkdir -p "$BUILD_EXT_DIR"
-  e2e_build_closure_lib_ "e2e.openpgp.ContextImpl" "$BUILD_EXT_DIR/end-to-end-ctx1.compiled.js"
-  e2e_build_closure_lib_ "e2e.openpgp.ContextImpl" "$BUILD_EXT_DIR/end-to-end-ctx1.debug.js" "" "debug"
-  echo ""
-  echo "Done."
 }
 
 e2e_build_library() {
-  echo "Building End-To-End library with Context2 API into $BUILD_DIR/library..."
-  e2e_assert_dependencies
-  set -e
-  e2e_assert_jsdeps
-  BUILD_EXT_DIR="$BUILD_DIR/library"
-  rm -rf "$BUILD_EXT_DIR"
-  mkdir -p "$BUILD_EXT_DIR"
+  e2e_build_library_prepare
   e2e_build_closure_lib_ "e2e.openpgp.Context2Impl" "$BUILD_EXT_DIR/end-to-end.compiled.js"
   e2e_build_closure_lib_ "e2e.openpgp.Context2Impl" "$BUILD_EXT_DIR/end-to-end.debug.js" "" "debug"
-  echo ""
-  echo "Done."
+  echo -e "\nDone."
+}
+
+e2e_build_library_ctx1() {
+  e2e_build_library_prepare
+  e2e_build_closure_lib_ "e2e.openpgp.ContextImpl" "$BUILD_EXT_DIR/end-to-end-ctx1.compiled.js"
+  e2e_build_closure_lib_ "e2e.openpgp.ContextImpl" "$BUILD_EXT_DIR/end-to-end-ctx1.debug.js" "" "debug"
+  echo -e "\nDone."
+}
+
+e2e_build_library_all() {
+  e2e_build_library_prepare
+  e2e_build_closure_lib_ "e2e.openpgp.ContextImpl" "$BUILD_EXT_DIR/end-to-end-ctx1.compiled.js"
+  e2e_build_closure_lib_ "e2e.openpgp.ContextImpl" "$BUILD_EXT_DIR/end-to-end-ctx1.debug.js" "" "debug"
+  e2e_build_closure_lib_ "e2e.openpgp.Context2Impl" "$BUILD_EXT_DIR/end-to-end.compiled.js"
+  e2e_build_closure_lib_ "e2e.openpgp.Context2Impl" "$BUILD_EXT_DIR/end-to-end.debug.js" "" "debug"
+  echo -e "\nDone."
 }
 
 e2e_test_compat_e2e() {
@@ -387,11 +392,14 @@ case "$CMD" in
   build_app)
     e2e_build_app $1;
     ;;
+  build_library)
+    e2e_build_library;
+    ;;
   build_library_ctx1)
     e2e_build_library_ctx1;
     ;;
-  build_library)
-    e2e_build_library;
+  build_library_all)
+    e2e_build_library_all;
     ;;
   test_compat_e2e)
     e2e_test_compat_e2e;
@@ -424,7 +432,7 @@ case "$CMD" in
     e2e_generate_deps;
     ;;
   *)
-    echo "Usage: $0 {build_app|build_extension|build_library|build_library_ctx1|build_templates|build_docs|clean|check_deps|clean_deps|install_deps|testserver|test_compat_e2e|test_compat_bc|lint} [debug]"
+    echo "Usage: $0 {build_app|build_extension|build_library|build_library_ctx1|build_library_all|build_templates|build_docs|clean|check_deps|clean_deps|install_deps|testserver|test_compat_e2e|test_compat_bc|lint} [debug]"
     RETVAL=1
 esac
 
