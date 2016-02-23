@@ -35,7 +35,6 @@
 
 (function() {
 
-  var vm = require('vm');
   var fs = require('fs');
   var path = require('path');
   var assert = require('assert');
@@ -59,27 +58,16 @@
   var e2e_library = args.shift();
   var testRoot = args.shift();
 
-  /* The library runs within this sandbox. */
-  var sandbox = vm.createContext({
-    'Uint8Array': Uint8Array,
-    'Uint16Array': Uint16Array,
-    'Uint32Array': Uint32Array,
-    'Int8Array': Int8Array,
-    'Int16Array': Int16Array,
-    'Int32Array': Int32Array,
-    'console': console,
-    'setTimeout': setTimeout,
-    'clearTimeout': clearTimeout,
-    'crypto': {
-      'getRandomValues': function(array) {
-        var tmp = crypto_nodejs.randomBytes(array.buffer.byteLength);
-        var dv = new DataView(array.buffer);
-        for (var i = 0; i < tmp.length; i++) {
-          dv.setUint8(i, tmp[i]);
-        }
+  /* This global function is used within the library */
+  global.crypto = {
+    'getRandomValues': function(array) {
+      var tmp = crypto_nodejs.randomBytes(array.buffer.byteLength);
+      var dv = new DataView(array.buffer);
+      for (var i = 0; i < tmp.length; i++) {
+        dv.setUint8(i, tmp[i]);
       }
     }
-  });
+  };
 
 
   /**
@@ -129,7 +117,7 @@
   var readKey = function(path) {
     var data = fs.readFileSync(path, 'utf-8');
     var result =
-        sandbox.e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(data);
+        global.e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(data);
     assert.equal(result.length, 1);
     var key = result[0];
     key.processSignatures();
@@ -144,7 +132,7 @@
    * @return {!e2e.openpgp.packet.Key} The same key that was passed in.
    */
   var unlock = function(key, passphrase) {
-    var asbytes = sandbox.e2e.stringToByteArray(passphrase);
+    var asbytes = global.e2e.stringToByteArray(passphrase);
     key.cipher.unlockKey(asbytes);
     return key;
   };
@@ -191,7 +179,7 @@
   var runDecryptTest = function(info, done) {
     var messageData = fs.readFileSync(info.baseName + '.asc', 'utf-8');
     var message =
-        sandbox.e2e.openpgp.block.factory.parseAsciiMessage(messageData);
+        global.e2e.openpgp.block.factory.parseAsciiMessage(messageData);
     assert(typeof info.decryptKey == 'string', 'Missing decryptKey field');
     var decryptCert = readKey(path.join(info.baseDir, info.decryptKey));
     // If the optional public key is available, the message should also
@@ -202,19 +190,19 @@
     }
 
     var result = message.decrypt(function(keyid) {
-      if (sandbox.e2e.compareByteArray(decryptCert.keyPacket.keyId, keyid)) {
-        return sandbox.e2e.async.Result.toResult(
+      if (global.e2e.compareByteArray(decryptCert.keyPacket.keyId, keyid)) {
+        return global.e2e.async.Result.toResult(
             unlock(decryptCert.keyPacket, info.passphrase).cipher);
       }
       var ret = null;
       if (decryptCert.subKeys != null) {
         decryptCert.subKeys.forEach(function(subkey) {
-          if (sandbox.e2e.compareByteArray(subkey.keyId, keyid)) {
+          if (global.e2e.compareByteArray(subkey.keyId, keyid)) {
             ret = unlock(subkey, info.passphrase).cipher;
           }
         });
       }
-      return sandbox.e2e.async.Result.toResult(ret);
+      return global.e2e.async.Result.toResult(ret);
     }, null);
 
     result.then(function(message) {
@@ -267,8 +255,10 @@
 
   // Main code starts here.
 
-  // 1. Load the library
-  vm.runInContext(fs.readFileSync(e2e_library, 'utf-8'), sandbox, e2e_library);
+  // 1. Evaluate the library in the global context (by using eval indirectly.)
+  var global_eval = eval;
+  global_eval(fs.readFileSync(e2e_library, 'utf-8'));
+  assert(global.e2e != null, 'Failed to eval library.');
 
   // 2. Collect test cases.
   if (fs.statSync(testRoot).isFile()) {
