@@ -213,7 +213,7 @@ e2e_build_extension() {
   e2e_build_closure_lib_ "e2e.ext.ui.settings.bootstrap" "$BUILD_EXT_DIR/settings_binary.js" "$BUILD_TPL_DIR" "$1"
   e2e_build_closure_lib_ "e2e.ext.ui.welcome.bootstrap" "$BUILD_EXT_DIR/welcome_binary.js" "$BUILD_TPL_DIR" "$1"
   # compile css files
-  csscompile_e2e="java -jar lib/closure-stylesheets/build/closure-stylesheets.jar src/javascript/crypto/e2e/extension/ui/styles/base.css"
+  csscompile_e2e="java -jar -Xms512m -Xmx1024m lib/closure-stylesheets/build/closure-stylesheets.jar src/javascript/crypto/e2e/extension/ui/styles/base.css"
   echo "Compiling CSS files..."
   $csscompile_e2e "$SRC_EXT_DIR/ui/glass/glass.css" > "$BUILD_EXT_DIR/glass_styles.css"
   $csscompile_e2e "$SRC_EXT_DIR/ui/prompt/prompt.css" > "$BUILD_EXT_DIR/prompt_styles.css"
