@@ -18,7 +18,7 @@
 #  * @author koto@google.com (Krzysztof Kotowicz)
 #  */
 PYTHON_CMD="python"
-JSCOMPILE_CMD="java -jar lib/closure-compiler/build/compiler.jar --flagfile=compiler.flags"
+JSCOMPILE_CMD="java -jar -Xms512m -Xmx1024m lib/closure-compiler/build/compiler.jar --flagfile=compiler.flags"
 CKSUM_CMD="cksum" # chosen because it's available on most Linux/OS X installations
 NODEJS_CMD="${NODEJS_CMD:-nodejs}"
 BUILD_DIR="build"
