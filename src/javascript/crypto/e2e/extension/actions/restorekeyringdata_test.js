@@ -65,7 +65,8 @@ function testRestoreData() {
   new e2e.ext.actions.RestoreKeyringData().execute(ctx, {
     action: constants.Actions.RESTORE_KEYRING_DATA,
     content: {
-      data: goog.crypt.base64.encodeByteArray([3, 1, 2, 3, 4, 5]),
+      data: goog.crypt.base64.encodeByteArray(
+          [1, 3, 1, 2, 3, 4, 5, 0xa8, 0x4a]),
       email: 'Ryan Chan <rcc@google.com>'
     }
   }, ui, goog.partial(assertEquals, 'Ryan Chan <rcc@google.com>'));
@@ -76,14 +77,15 @@ function testInvalidVersion() {
   new e2e.ext.actions.RestoreKeyringData().execute({}, {
     action: constants.Actions.RESTORE_KEYRING_DATA,
     content: {
-      data: goog.crypt.base64.encodeByteArray([0x80 | 3, 1, 2, 3, 4, 5]),
+      data: goog.crypt.base64.encodeByteArray(
+          [0, 1, 1, 2, 3, 4, 5, 0x50, 0x6f]),
       email: 'Ryan Chan <rcc@google.com>'
     }
   }, ui, function() {
-    assert('Invalid version bit not detected', false);
+    assert('Invalid version not detected', false);
   }, function(err) {
     assertTrue(err instanceof e2e.error.InvalidArgumentsError);
-    assertEquals(err.message, 'Invalid version bit');
+    assertEquals(err.message, 'Invalid version');
   });
 }
 
@@ -92,7 +94,8 @@ function testInvalidRestoreSize() {
   new e2e.ext.actions.RestoreKeyringData().execute({}, {
     action: constants.Actions.RESTORE_KEYRING_DATA,
     content: {
-      data: goog.crypt.base64.encodeByteArray([3, 1, 2, 3, 4, 5, 6]),
+      data: goog.crypt.base64.encodeByteArray(
+          [1, 3, 1, 2, 3, 4, 5, 6, 0x1f, 0x46]),
       email: 'Ryan Chan <rcc@google.com>'
     }
   }, ui, function() {
@@ -100,5 +103,21 @@ function testInvalidRestoreSize() {
   }, function(err) {
     assertTrue(err instanceof e2e.error.InvalidArgumentsError);
     assertEquals(err.message, 'Backup data has invalid length');
+  });
+}
+
+
+function testInvalidChecksum() {
+  new e2e.ext.actions.RestoreKeyringData().execute({}, {
+    action: constants.Actions.RESTORE_KEYRING_DATA,
+    content: {
+      data: goog.crypt.base64.encodeByteArray([1, 3, 1, 2, 3, 4, 5, 0, 0]),
+      email: 'Ryan Chan <rcc@google.com>'
+    }
+  }, ui, function() {
+    assert('Invalid checksum not detected', false);
+  }, function(err) {
+    assertTrue(err instanceof e2e.error.InvalidArgumentsError);
+    assertEquals(err.message, 'Backup data has invalid checksum');
   });
 }
