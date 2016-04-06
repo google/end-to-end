@@ -42,21 +42,8 @@ goog.require('goog.crypt');
  */
 e2e.ciphermode.Ctr = function(cipher) {
   goog.base(this, cipher);
-
 };
 goog.inherits(e2e.ciphermode.Ctr, e2e.ciphermode.CipherMode);
-
-
-/**
- * Increments an unsigned big endian in a ByteArray.
- * @param {!e2e.ByteArray} n The number to increment.
- * @private
- */
-e2e.ciphermode.Ctr.increment_ = function(n) {
-  if (e2e.incrementByteArray(n).every(function(aByte) { return !aByte; })) {
-    throw new e2e.error.UnsupportedError('CTR overflow: Too many blocks.');
-  }
-};
 
 
 /** @inheritDoc */
@@ -73,7 +60,10 @@ e2e.ciphermode.Ctr.prototype.encryptSync = function(data, iv) {
 
   for (var i = 0; i < data.length; i += this.cipher.blockSize) {
     encKey = e2e.async.Result.getValue(this.cipher.encrypt(ctr));
-    e2e.ciphermode.Ctr.increment_(ctr);
+    e2e.incrementByteArray(ctr);
+    if (e2e.compareByteArray(iv, ctr)) {
+      throw new e2e.error.UnsupportedError('CTR overflow: Too many blocks.');
+    }
     block = data.slice(i, i + this.cipher.blockSize);
     Array.prototype.push.apply(ciphertext, goog.crypt.xorByteArray(
         block,

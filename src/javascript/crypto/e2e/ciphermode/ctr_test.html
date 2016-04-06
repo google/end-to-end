@@ -24,25 +24,23 @@
   goog.require('goog.testing.jsunit');
 </script>
 <script>
-  function testIncrement() {
-    var x = [0, 0, 0, 0];
-    e2e.ciphermode.Ctr.increment_(x);
-    assertArrayEquals([0, 0, 0, 1], x);
-    e2e.ciphermode.Ctr.increment_(x);
-    assertArrayEquals([0, 0, 0, 2], x);
-    x = [1, 2, 3, 4];
-    e2e.ciphermode.Ctr.increment_(x);
-    assertArrayEquals([1, 2, 3, 5], x);
-    x = [1, 2, 3, 255];
-    e2e.ciphermode.Ctr.increment_(x);
-    assertArrayEquals([1, 2, 4, 0], x);
-    e2e.ciphermode.Ctr.increment_(x);
-    assertArrayEquals([1, 2, 4, 1], x);
-    x = [7, 255, 255, 255];
-    e2e.ciphermode.Ctr.increment_(x);
-    assertArrayEquals([8, 0, 0, 0], x);
-    x = [255, 255, 255, 255];
-    var err = assertThrows(goog.partial(e2e.ciphermode.Ctr.increment_, x));
+  function testOverflow() {
+    var cipher = {
+      blockSize: 1,
+      encrypt: e2e.async.Result.toResult
+    }
+    var iv = goog.array.repeat(0x77, cipher.blockSize);
+    
+    // Simple overflow should pass.
+    var ctr = new e2e.ciphermode.Ctr(cipher);
+    var plaintext = goog.array.repeat(0x22, Math.pow(256, cipher.blockSize) - 1);
+    ctr.encrypt(plaintext, iv);
+
+    // Cycle should fail.
+    var ctr = new e2e.ciphermode.Ctr(cipher);
+    var plaintext = goog.array.repeat(0x22, Math.pow(256, cipher.blockSize));
+
+    var err = assertThrows(ctr.encrypt.bind(ctr, plaintext, iv));
     assertTrue(err instanceof e2e.error.UnsupportedError);
   }
 
