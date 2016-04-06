@@ -136,7 +136,8 @@ e2e.openpgp.asciiArmor.parseAll = function(text, opt_limit) {
       '((?:[A-Za-z]+:[ ][^\\n]+' + newLine + ')*)' + newLine + // headers
       '((?:[a-zA-Z0-9/+]+=*' + newLine + ')*)' + // body
       '(?:=([a-zA-Z0-9/+]+))?' + newLine + // checksum
-      '(?:' + newLine + ')*-----END PGP \\2-----($|' + newLine + ')', 'gm');
+      '(?:' + newLine + ')*-----END PGP \\2-----([\\t\\u00a0 ]?(?:$|\\r?\\n))',
+      'gm');
   var validArmors = [], payload, checksum, calculatedChecksum, prefixNewline,
       suffixNewline, charset, charsetMatch;
   while ((!goog.isDef(opt_limit) || opt_limit > 0) &&
@@ -181,28 +182,26 @@ e2e.openpgp.asciiArmor.parseAll = function(text, opt_limit) {
  *   and the signature ByteArray.
  */
 e2e.openpgp.asciiArmor.parseClearSign = function(text) {
-  var startMessage = text.indexOf('-----BEGIN PGP SIGNED MESSAGE-----');
+  var newLine = e2e.openpgp.asciiArmor.NEW_LINE_;
+  var signedMessageHeader = '-----BEGIN PGP SIGNED MESSAGE-----';
+  var startMessage = text.indexOf(signedMessageHeader);
   var startSignature = text.indexOf('-----BEGIN PGP SIGNATURE-----');
   var armor = text.substr(startMessage, startSignature - startMessage).match(
-      new RegExp('^-----BEGIN PGP SIGNED MESSAGE-----\\r?\\n' +
-      'Hash:[ ]([^\\n\\r]+)\\r?\\n' + // Hash header
-      '(?:[A-Za-z]+:[ ][^\\n\\r]+\\r?\\n)*' + // Other headers
-      '\\r?\\n')); // New line
+      new RegExp('^' + signedMessageHeader + newLine +
+      'Hash:[ ]([^\\r\\n]+)' + newLine + // Hash header
+      '(?:[A-Za-z]+:[ ][^\\n]+' + newLine + ')*' + // Other headers
+      newLine)); // New line
   if (!armor) {
     throw new e2e.openpgp.error.ParseError('invalid clearsign format');
   }
-  var hashString = armor[1];
-  var startBody = text.indexOf('\n\n') + 2;
-  if (startBody == (-1 + 2)) {
-    startBody = text.indexOf('\r\n\r\n') + 4;
-  }
-  var body = text.substr(startBody,
-                         startSignature - startBody - 1);  // -1 to remove \n
-  if (goog.string.endsWith(body, '\r')) {
-    body = goog.string.removeAt(body, body.length - 1, 1);  // Remove ending \r
-  }
+  var hashString = goog.string.trimRight(armor[1]);
+  var body = text.slice(startMessage + armor[0].length, startSignature);
+
   body = e2e.openpgp.asciiArmor.dashUnescape(body);
   body = e2e.openpgp.asciiArmor.convertNewlines(body);
+  // Remove ending \r\n, canonicalized by convertNewlines
+  body = goog.string.removeAt(body, body.length - 2, 2);
+
   var signature = e2e.openpgp.asciiArmor.parse(text.substr(startSignature));
   return new e2e.openpgp.ClearSignMessage(body, signature.data, hashString);
 };
