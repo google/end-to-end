@@ -94,7 +94,7 @@ ext.Launcher.prototype.start = function(opt_passphrase) {
  * @private
  */
 ext.Launcher.prototype.start_ = function(passphrase) {
-  return this.pgpContext_.initializeKeyRing(passphrase).addCallback(
+  return this.pgpContext_.initializeKeyRing(passphrase).addCallbacks(
       function() {
         if (goog.global.chrome &&
         goog.global.chrome.runtime &&
@@ -104,6 +104,9 @@ ext.Launcher.prototype.start_ = function(passphrase) {
           'Version',
           manifest.name + ' v' + manifest.version);
         }
+      }, function(e) {
+        this.updatePassphraseWarning();
+        throw e;
       }, this).addCallback(this.completeStart_, this);
 };
 
