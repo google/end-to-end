@@ -57,7 +57,8 @@ function testUpdateAuthState() {
 function testProcessMessage() {
   var stubs = new goog.testing.PropertyReplacer();
   var methodCalled = false;
-  stubs.setPath('e2e.otr.message.handler.parse', function(session, receivedArg) {
+  stubs.setPath('e2e.otr.message.handler.parse',
+      function(session, receivedArg) {
     methodCalled = true;
     assertEquals(s, session);
     assertEquals(arg, receivedArg);

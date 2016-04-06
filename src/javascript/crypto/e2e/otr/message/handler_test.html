@@ -17,11 +17,10 @@
 <script src="../../../../../../javascript/closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
-goog.require('e2e.otr.Session');
+goog.require('e2e.otr');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.message.Encoded');
 goog.require('e2e.otr.message.handler');
-goog.require('e2e.otr.testing');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
@@ -42,7 +41,10 @@ var TestMessage = function(session) {
 };
 goog.inherits(TestMessage, e2e.otr.message.Encoded);
 
+/** Test using DATA type */
 TestMessage.MESSAGE_TYPE = constants.MessageType.DATA;
+
+/** Stub process function */
 TestMessage.process = processFn;
 
 function setUp() {
@@ -79,7 +81,8 @@ function testParseEncoded() {
   });
 
   e2e.otr.message.handler.parse(session,
-      constants.MESSAGE_PREFIX.ENCODED + data + constants.MESSAGE_SUFFIX_ENCODED);
+      constants.MESSAGE_PREFIX.ENCODED +
+      data + constants.MESSAGE_SUFFIX_ENCODED);
 
   assertTrue(called);
 }

@@ -161,6 +161,9 @@ e2e.otr.message.RevealSignature.process = function(session, data) {
 
       iter = new e2e.otr.util.Iterator(xb);
       var pubBType = iter.next(2);
+      if (e2e.otr.shortToNum(pubBType) != 0) {
+        throw new e2e.otr.error.ParseError('Unrecognized public key type.');
+      }
       // TODO(rcc): Make Type.parse accept Iterator to pull appropriate data.
       var pubB = new e2e.otr.pubkey.Dsa({
         p: Array.apply([], e2e.otr.Mpi.parse(iter.nextEncoded()).deconstruct()),

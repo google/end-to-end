@@ -29,7 +29,7 @@ goog.require('e2e.otr.Serializable');
 goog.require('e2e.otr.Storable');
 goog.require('e2e.otr.error.ParseError');
 goog.require('e2e.signer.Algorithm');
-goog.require('e2e.signer.factory');
+goog.require('e2e.signer.Dsa');
 goog.require('goog.object');
 
 
@@ -45,7 +45,7 @@ goog.require('goog.object');
 e2e.otr.Sig = function(key, data) {
   assert(key.q.length == 20);
   this.sig_ = e2e.async.Result.getValue(
-      e2e.signer.factory.get(e2e.signer.Algorithm.DSA, key).sign(data));
+      new e2e.signer.Dsa(e2e.signer.Algorithm.DSA, key).sign(data));
   e2e.otr.implements(e2e.otr.Sig, e2e.otr.Serializable);
 };
 goog.inherits(e2e.otr.Sig, e2e.otr.Storable);
@@ -91,7 +91,7 @@ e2e.otr.Sig.parse = function(body) {
  * @return {boolean} Whether the signature is valid.
  */
 e2e.otr.Sig.verify = function(key, m, sig) {
-  return e2e.async.Result.getValue(e2e.signer.factory.get(
+  return e2e.async.Result.getValue(new e2e.signer.Dsa(
       e2e.signer.Algorithm.DSA, key).verify(m, sig.deconstruct()));
 };
 

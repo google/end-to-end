@@ -34,8 +34,13 @@ var pkImpl = function(data) {
 };
 goog.inherits(pkImpl, e2e.otr.pubkey.Pubkey);
 
+/** Pubkey type (0x0000 for DSA) */
 pkImpl.PUBKEY_TYPE = new Uint8Array([0, 0]);
 
+/**
+ * Dumps data for serialization.
+ * @return {!Uint8Array} The serialized data.
+ */
 pkImpl.prototype.serializePubkey = function() {
   return this.data_;
 };
