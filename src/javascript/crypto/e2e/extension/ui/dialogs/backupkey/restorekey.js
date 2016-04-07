@@ -27,7 +27,8 @@ goog.require('e2e.ext.ui.dialogs.Overlay');
 goog.require('e2e.ext.ui.templates.dialogs.backupkey');
 goog.require('goog.array');
 goog.require('goog.dom');
-goog.require('goog.ui.Dialog');
+goog.require('goog.events.EventType');
+goog.require('goog.style');
 goog.require('soy');
 
 goog.scope(function() {
@@ -67,7 +68,7 @@ dialogs.RestoreKey.prototype.decorateInternal = function(elem) {
     backupCodeLabel:
         chrome.i18n.getMessage('keyMgmtRestoreKeyringBackupCodeLabel')
   });
-  
+
   goog.style.setElementShown(
       goog.dom.getElementByClass('modal-dialog-title-close', elem), true);
 };

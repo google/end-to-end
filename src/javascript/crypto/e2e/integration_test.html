@@ -663,10 +663,16 @@ function testClearSignRSA() {
     '-----END PGP SIGNATURE-----';
   var parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
   var signaturePacket = parsed.getSignature();
-  assertTrue(signaturePacket.verify(parsed.toLiteralMessage().getBytesToSign(),
-                                    publicKeyBlock.keyPacket.cipher));
-  assertFalse(signaturePacket.verify(e2e.stringToByteArray('bad world new'),
-                                     publicKeyBlock.keyPacket.cipher));
+  asyncTestCase.waitForAsync('Waiting for verify.');
+  signaturePacket.verify(parsed.toLiteralMessage().getBytesToSign(),
+                                    publicKeyBlock.keyPacket.cipher).then(function(verified) {
+    assertTrue(verified);
+    return signaturePacket.verify(e2e.stringToByteArray('bad world new'),
+                                     publicKeyBlock.keyPacket.cipher);
+  }).then(function(verified) {
+    assertFalse(verified);
+    asyncTestCase.continueTesting();
+  }, fail);
 }
 
 function testClearSignInvalidHashAlgo() {
@@ -711,7 +717,7 @@ function testClearSignInvalidHashAlgo() {
       e2e.openpgp.asciiArmor.parseClearSign(clearSign)});
 }
 
-function testClearSignDSA() {
+function testClearSignDSA1024() {
   var publicKeyAscii =  // 1024bit DSA key
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
     'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
@@ -747,14 +753,23 @@ function testClearSignDSA() {
   var parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
   var signaturePacket = parsed.getSignature();
   var bodyBytes = parsed.toLiteralMessage().getBytesToSign();
-  assertTrue(signaturePacket.verify(bodyBytes,
-                                    publicKeyBlock.keyPacket.cipher));
-  assertFalse(signaturePacket.verify(bodyBytes,
-                                     publicKeyBlock.keyPacket.cipher, 'OTHER'));
-  assertFalse(signaturePacket.verify(e2e.stringToByteArray('bad world new'),
-                                     publicKeyBlock.keyPacket.cipher));
+  asyncTestCase.waitForAsync('Waiting for verify.');
+  signaturePacket.verify(bodyBytes, publicKeyBlock.keyPacket.cipher).then(function(verified) {
+    assertTrue(verified);
+    return signaturePacket.verify(bodyBytes,
+                                     publicKeyBlock.keyPacket.cipher, 'OTHER');
+  }).then(function(verified) {
+    assertFalse(verified);
+    return signaturePacket.verify(e2e.stringToByteArray('bad world new'),
+                                     publicKeyBlock.keyPacket.cipher)
+  }).then(function(verified) {
+    assertFalse(verified);
+    asyncTestCase.continueTesting();
+  }, fail);
+}
 
-  publicKeyAscii =  // 2048bit DSA key
+function testClearSignDSA2048() {
+  var publicKeyAscii =  // 2048bit DSA key
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
     'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
     '\n' +
@@ -780,8 +795,8 @@ function testClearSignDSA() {
     '6INFXCwA/iNvh3PtgrS+urB+oU+/9Ey0hzzkisOR2nEfznYNigW8\n' +
     '=MNsu\n' +
     '-----END PGP PUBLIC KEY BLOCK-----';
-  publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
-  clearSign =
+  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
+  var clearSign =
     '-----BEGIN PGP SIGNED MESSAGE-----\n' +
     'Hash: SHA256\n' +
     '\n' +
@@ -793,15 +808,22 @@ function testClearSignDSA() {
     'tols/YXM1Bbuo1FyuUgA/2DXGQ/0TXohP9ugN6zEy3bxZ6Z8p6yDw3DiO9fa4Q7w\n' +
     '=B1zR\n' +
     '-----END PGP SIGNATURE-----';
-  parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
+  var parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
   var signaturePacket = parsed.getSignature();
   var bodyBytes = parsed.toLiteralMessage().getBytesToSign();
-  assertTrue(signaturePacket.verify(bodyBytes,
-      publicKeyBlock.keyPacket.cipher));
-  assertFalse(signaturePacket.verify(e2e.stringToByteArray('bad world new'),
-                                     publicKeyBlock.keyPacket.cipher));
+  asyncTestCase.waitForAsync('Waiting for verify.');
+  signaturePacket.verify(bodyBytes, publicKeyBlock.keyPacket.cipher).then(function(verified) {
+    assertTrue(verified);
+    return signaturePacket.verify(e2e.stringToByteArray('bad world new'),
+                                     publicKeyBlock.keyPacket.cipher)
+  }).then(function(verified) {
+    assertFalse(verified);
+    asyncTestCase.continueTesting();
+  }, fail);
+}
 
-  publicKeyAscii =  // 3072bit DSA key
+function testClearSignDSA3072() {
+  var publicKeyAscii =  // 3072bit DSA key
     '-----BEGIN PGP PUBLIC KEY BLOCK-----\n' +
     'Version: GnuPG v1.4.11 (GNU/Linux)\n' +
     '\n' +
@@ -835,8 +857,8 @@ function testClearSignDSA() {
     'riMHQ60BANBP5+kiEVxqXSHWTK7K9dNtSPC1bLUAanF5sUhcYYSl\n' +
     '=E1LA\n' +
     '-----END PGP PUBLIC KEY BLOCK-----';
-  publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
-  clearSign =
+  var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
+  var clearSign =
     '-----BEGIN PGP SIGNED MESSAGE-----\n' +
     'Hash: SHA256\n' +
     '\n' +
@@ -848,13 +870,21 @@ function testClearSignDSA() {
     'B9Dep8loLFgcHlLqoigA+wSFa2sn9pvAY5ReGCVr/O185wFLF5ZasweBSbgwMmwA\n' +
     '=0TM7\n' +
     '-----END PGP SIGNATURE-----';
-  parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
+  var parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
   var signaturePacket = parsed.getSignature();
   var bodyBytes = parsed.toLiteralMessage().getBytesToSign();
-  assertTrue(signaturePacket.verify(bodyBytes,
-                                    publicKeyBlock.keyPacket.cipher));
-  assertFalse(signaturePacket.verify(e2e.stringToByteArray('bad world new'),
-                                     publicKeyBlock.keyPacket.cipher));
+  var parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
+  var signaturePacket = parsed.getSignature();
+  var bodyBytes = parsed.toLiteralMessage().getBytesToSign();
+  asyncTestCase.waitForAsync('Waiting for verify.');
+  signaturePacket.verify(bodyBytes, publicKeyBlock.keyPacket.cipher).then(function(verified) {
+    assertTrue(verified);
+    return signaturePacket.verify(e2e.stringToByteArray('bad world new'),
+                                     publicKeyBlock.keyPacket.cipher)
+  }).then(function(verified) {
+    assertFalse(verified);
+    asyncTestCase.continueTesting();
+  }, fail);
 }
 
 
@@ -1014,7 +1044,8 @@ function testEncryptionWithSignatures() {
           assertEquals(
             plaintext, e2e.byteArrayToString(decompressed.getLiteralMessage().getData()));
           // And signature verifies correctly.
-          var verifyResult = decompressed.verify([publicKeyBlock]);
+          return decompressed.verify([publicKeyBlock]);
+        }).addCallback(function(verifyResult) {
           assertEquals(verifyResult.success.length, 1);
           assertEquals(verifyResult.failure.length, 0);
           asyncTestCase.continueTesting();

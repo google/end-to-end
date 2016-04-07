@@ -91,6 +91,13 @@ e2e.Algorithm.prototype.setWebCryptoKey;
 e2e.Algorithm.prototype.getWebCryptoKey;
 
 
+/**
+ * Returns whether a WebCrypto key object exists or not.
+ * @return {boolean}
+ */
+e2e.Algorithm.prototype.hasWebCryptoKey;
+
+
 
 /**
  * @param {!e2e.signer.Algorithm|!e2e.cipher.Algorithm} algorithm
@@ -144,4 +151,10 @@ e2e.AlgorithmImpl.prototype.setKey = function(key, opt_keySize) {
 e2e.AlgorithmImpl.prototype.getWebCryptoKey = function() {
   goog.asserts.assert(goog.isDef(this.webCryptoKey));
   return this.webCryptoKey;
+};
+
+
+/** @override */
+e2e.AlgorithmImpl.prototype.hasWebCryptoKey = function() {
+  return goog.isDefAndNotNull(this.webCryptoKey);
 };

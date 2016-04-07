@@ -283,7 +283,7 @@ e2e.pkcs.eme.Pkcs1.decodeStateTransitionsArray = {};
 
 /**
  * Converts a decodeStateTransitions to an Array to accelerate access time.
- * @param {Object.<string|number, e2e.pkcs.eme.Pkcs1.Transition>}
+ * @param {Object.<(string|number), e2e.pkcs.eme.Pkcs1.Transition>}
  *     trans The transitions to set in the Array.
  * @param {e2e.pkcs.eme.Pkcs1.DecodeState} state The state that the
  *     list of transitions refers to.

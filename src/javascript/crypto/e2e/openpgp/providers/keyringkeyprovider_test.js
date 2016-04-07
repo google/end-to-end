@@ -158,10 +158,14 @@ function testGenerateKeys() {
     return kkp.getKeyGenerateOptions();
   }, fail).then(function(kgo) {
     generateOptions = kgo;
-    assertEquals(1, kgo.length);
+    assertEquals(2, kgo.length);
     assertContains(e2e.algorithm.KeyLocations.JAVASCRIPT, kgo[0].keyLocation);
     assertContains(e2e.signer.Algorithm.ECDSA, kgo[0].keyAlgo);
     assertContains(e2e.cipher.Algorithm.ECDH, kgo[0].subkeyAlgo);
+
+    assertContains(e2e.algorithm.KeyLocations.WEB_CRYPTO, kgo[1].keyLocation);
+    assertContains(e2e.signer.Algorithm.ECDSA, kgo[1].keyAlgo);
+    assertContains(e2e.cipher.Algorithm.ECDH, kgo[1].subkeyAlgo);
     asyncTestCase.waitForAsync('Waiting for key generation');
     return provider.generateKeyPair(email, chooseDefault(kgo[0]));
   }, fail).then(function(keypair) {

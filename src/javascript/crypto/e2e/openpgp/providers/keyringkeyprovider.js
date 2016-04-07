@@ -259,18 +259,20 @@ providers.KeyringKeyProvider.prototype.resolveKeysByEmail_ = function(
 providers.KeyringKeyProvider.prototype.getVerificationKeysByKeyId = function(
     id) {
   // TODO(koto): Support wildcard key id. Return all keys then.
-  return goog.Promise.resolve([
-    this.keyring_.getKeyBlockById(id, false /* isSecret*/)
-  ]).then(providers.KeyringKeyProvider.keysToSerialization_);
+  return this.keyring_.getKeyBlockById(id, false /* isSecret*/).then(
+      function(block) {
+        return providers.KeyringKeyProvider.keysToSerialization_([block]);
+      });
 };
 
 
 /** @override */
 providers.KeyringKeyProvider.prototype.getDecryptionKeysByKeyId = function(id) {
   // TODO(koto): Support wildcard key id. Return all keys then.
-  return goog.Promise.resolve([
-    this.keyring_.getKeyBlockById(id, true /* isSecret*/)
-  ]).then(providers.KeyringKeyProvider.keysToKeyObjects_);
+  return this.keyring_.getKeyBlockById(id, true /* isSecret*/).then(
+      function(block) {
+        return providers.KeyringKeyProvider.keysToKeyObjects_([block]);
+      });
 };
 
 
@@ -436,7 +438,7 @@ providers.KeyringKeyProvider.prototype.exportAllKeys_ = function(
  * @param {boolean} asciiArmor If true, export will be ASCII armored, otherwise
  *     bytes will be returned.
  * @param  {string=} opt_passphrase A passphrase to lock the private keys with.
- * @return {!e2e.ByteArray} Serialization of all key blocks.
+ * @return {!goog.Thenable<!e2e.ByteArray>} Serialization of all key blocks.
  * @private
  */
 providers.KeyringKeyProvider.prototype.serializeAllKeyBlocks_ = function(
@@ -451,14 +453,15 @@ providers.KeyringKeyProvider.prototype.serializeAllKeyBlocks_ = function(
     passphraseBytes = e2e.stringToByteArray(opt_passphrase);
   }
   var keyMap = this.keyring_.getAllKeys(isSecret);
-  var serializedKeys = [];
+  /** @type {!Array<!goog.Thenable<!e2e.ByteArray>>} */
+  var pendingSerializedKeys = [];
   keyMap.forEach(function(keysForUid, uid) {
     goog.array.forEach(keysForUid, function(key) {
-      goog.array.extend(serializedKeys,
+      pendingSerializedKeys.push(
           this.serializeKey_(isSecret, passphraseBytes, key));
     }, this);
   }, this);
-  return serializedKeys;
+  return goog.Promise.all(pendingSerializedKeys).then(goog.array.flatten);
 };
 
 
@@ -489,34 +492,38 @@ providers.KeyringKeyProvider.prototype.encodeKeyringExport_ = function(
  * @param  {?e2e.ByteArray} passphraseBytes Passphrase to use to lock
  *     the secret key.
  * @param  {!e2e.openpgp.block.TransferableKey}  key The key block.
- * @return {!e2e.ByteArray} Serialization of the key(s)
+ * @return {!goog.Thenable<!e2e.ByteArray>} Serialization of the key(s)
  * @private
  */
 providers.KeyringKeyProvider.prototype.serializeKey_ = function(
     isSecret, passphraseBytes, key) {
-  var matchingKey;
-  var serialized = [];
+  /** @type {!goog.Thenable<e2e.openpgp.block.TransferableKey>} */
+  var matchingKeyPromise = goog.Promise.resolve(
+      /** @type {e2e.openpgp.block.TransferableKey} */(null));
   if (isSecret) {
     goog.asserts.assert(key instanceof e2e.openpgp.block.TransferableSecretKey);
     // Protect with passphrase
-    key.processSignatures();
-    key.unlock();
-    key.lock(goog.isNull(passphraseBytes) ? undefined :
-        goog.asserts.assertArray(passphraseBytes));
-    // Also add the public key block for this secret key.
-    matchingKey = this.keyring_.getPublicKeyBlockByFingerprint(
-        key.keyPacket.fingerprint);
+    matchingKeyPromise = key.processSignatures().then(goog.bind(function() {
+      key.unlock();
+      key.lock(goog.isNull(passphraseBytes) ? undefined :
+          goog.asserts.assertArray(passphraseBytes));
+      // Also add the public key block for this secret key.
+      return this.keyring_.getPublicKeyBlockByFingerprint(
+          key.keyPacket.fingerprint);
+    }, this));
   } else {
     if (!(key instanceof e2e.openpgp.block.TransferablePublicKey)) {
       // KeyRing.getAllKeys always returns the private keys, ignore them.
-      return [];
+      return goog.Promise.resolve([]);
     }
   }
-  goog.array.extend(serialized, key.serialize());
-  if (matchingKey) {
-    goog.array.extend(serialized, matchingKey.serialize());
-  }
-  return serialized;
+  return matchingKeyPromise.then(function(matchingKey) {
+    var serialized = key.serialize();
+    if (matchingKey) {
+      goog.array.extend(serialized, matchingKey.serialize());
+    }
+    return serialized;
+  });
 };
 
 
@@ -746,13 +753,13 @@ providers.KeyringKeyProvider.prototype.validateGenerateOptions_ = function(
       throw new e2e.openpgp.error.InvalidArgumentsError(
           'Invalid subkeyLength');
     }
-    if (!generateOptions['keyAlgo'] in e2e.signer.Algorithm) {
+    if (!(generateOptions['keyAlgo'] in e2e.signer.Algorithm)) {
       throw new e2e.openpgp.error.InvalidArgumentsError('Invalid keyAlgo');
     }
-    if (!generateOptions['subkeyAlgo'] in e2e.cipher.Algorithm) {
+    if (!(generateOptions['subkeyAlgo'] in e2e.cipher.Algorithm)) {
       throw new e2e.openpgp.error.InvalidArgumentsError('Invalid subkeyAlgo');
     }
-    if (!generateOptions['keyLocation'] in e2e.algorithm.KeyLocations) {
+    if (!(generateOptions['keyLocation'] in e2e.algorithm.KeyLocations)) {
       throw new e2e.openpgp.error.InvalidArgumentsError('Invalid keyLocation');
     }
     resolve(generateOptions);
@@ -762,14 +769,11 @@ providers.KeyringKeyProvider.prototype.validateGenerateOptions_ = function(
 
 /** @override */
 providers.KeyringKeyProvider.prototype.getKeyGenerateOptions = function() {
-  // WebCrypto RSA is no longer possible in Chrome:
-  // https://www.chromium.org/blink/webcrypto
-  // https://www.w3.org/Bugs/Public/show_bug.cgi?id=25431
   var webCryptoKeyGenerateOptions = {
-    keyAlgo: [e2e.signer.Algorithm.RSA],
-    keyLength: [4096, 8192],
-    subkeyAlgo: [e2e.cipher.Algorithm.RSA],
-    subkeyLength: [4096, 8192],
+    keyAlgo: [e2e.signer.Algorithm.ECDSA],
+    keyLength: [256],
+    subkeyAlgo: [e2e.cipher.Algorithm.ECDH],
+    subkeyLength: [256],
     keyLocation: [e2e.algorithm.KeyLocations.WEB_CRYPTO]
   };
   var javascriptKeyGenerateOptions = {
@@ -779,7 +783,10 @@ providers.KeyringKeyProvider.prototype.getKeyGenerateOptions = function() {
     subkeyLength: [256],
     keyLocation: [e2e.algorithm.KeyLocations.JAVASCRIPT]
   };
-  return goog.Promise.resolve([javascriptKeyGenerateOptions]);
+  return goog.Promise.resolve([
+    javascriptKeyGenerateOptions,
+    webCryptoKeyGenerateOptions
+  ]);
 };
 
 

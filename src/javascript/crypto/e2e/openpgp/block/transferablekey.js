@@ -34,6 +34,7 @@ goog.require('e2e.openpgp.packet.UserAttribute');
 goog.require('e2e.openpgp.packet.UserId');
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.async.DeferredList');
 
 
 
@@ -221,6 +222,7 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
  *     missing signatures. Revoked keys and User IDs are also removed.
  *  This method will throw an error if the resulting TransferableKey has no
  *  user IDs or any signature has been tampered with.
+ *  @return {!e2e.async.Result<undefined>}
  */
 e2e.openpgp.block.TransferableKey.prototype.processSignatures = function() {
   var signingKey = goog.asserts.assertObject(this.keyPacket);
@@ -229,35 +231,49 @@ e2e.openpgp.block.TransferableKey.prototype.processSignatures = function() {
   this.userIds = [];
   this.userAttributes = [];
 
-  if (!this.keyPacket.verifySignatures(signingKey)) {
-    // main key is invalid
-    throw new e2e.openpgp.error.SignatureError(
-        'Main key is invalid.');
-  }
-  // Process subkeys
-  var keysToRemove = [];
-  for (var i = 0; i < this.unverifiedSubKeys_.length; i++) {
-    if (this.unverifiedSubKeys_[i].verifySignatures(signingKey)) {
-      this.subKeys.push(this.unverifiedSubKeys_[i]);
-    }
-  }
-  // Process user IDs
-  for (i = 0; i < this.unverifiedUserIds_.length; i++) {
-    if (!this.unverifiedUserIds_[i].verifySignatures(signingKey)) {
-      e2e.openpgp.block.TransferableKey.console_.warn(
-          'No valid signatures found for ', this.unverifiedUserIds_[i].userId);
-    } else {
-      this.userIds.push(this.unverifiedUserIds_[i]);
-    }
-  }
-  if (this.userIds.length == 0) {
-    throw new e2e.openpgp.error.SignatureError('No certified user IDs.');
-  }
-  for (i = 0; i < this.unverifiedUserAttributes_.length; i++) {
-    if (this.unverifiedUserAttributes_[i].verifySignatures(signingKey)) {
-      this.userAttributes.push(this.unverifiedUserAttributes_[i]);
-    }
-  }
+  return this.keyPacket.verifySignatures(signingKey)
+      .addCallback(function(mainKeyVerified) {
+        if (!mainKeyVerified) {
+          // main key is invalid
+          throw new e2e.openpgp.error.SignatureError(
+             'Main key is invalid.');
+        }
+        var pendingVerifies = [];
+        // Process subkeys
+        this.unverifiedSubKeys_.forEach(function(subKey) {
+          pendingVerifies.push(subKey.verifySignatures(signingKey)
+             .addCallback(function(didVerify) {
+               if (didVerify) {
+                 this.subKeys.push(subKey);
+               }
+             }, this));
+        }, this);
+        // Process user IDs
+        this.unverifiedUserIds_.forEach(function(userId) {
+          pendingVerifies.push(userId.verifySignatures(signingKey)
+             .addCallback(function(didVerify) {
+               if (!didVerify) {
+                 e2e.openpgp.block.TransferableKey.console_.warn(
+                 'No valid signatures found for ', userId.userId);
+               } else {
+                 this.userIds.push(userId);
+               }
+             }, this));
+        }, this);
+        this.unverifiedUserAttributes_.forEach(function(attribute) {
+          pendingVerifies.push(attribute.verifySignatures(signingKey)
+             .addCallback(function(didVerify) {
+               if (didVerify) {
+                 this.userAttributes.push(attribute);
+               }
+             }, this));
+        }, this);
+        return goog.async.DeferredList.gatherResults(pendingVerifies);
+      }, this).addCallback(function(ignored) {
+        if (this.userIds.length == 0) {
+          throw new e2e.openpgp.error.SignatureError('No certified user IDs.');
+        }
+      }, this);
 };
 
 

@@ -22,6 +22,7 @@
 goog.provide('e2e.openpgp.block.Message');
 
 goog.require('e2e');
+goog.require('e2e.async.Result');
 goog.require('e2e.openpgp.block.Block');
 goog.require('e2e.openpgp.packet.OnePassSignature');
 goog.require('e2e.openpgp.packet.Signature');
@@ -29,6 +30,7 @@ goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.openpgp.types');
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.async.DeferredList');
 
 
 
@@ -209,14 +211,15 @@ e2e.openpgp.block.Message.prototype.getSignatureKeyIds = function() {
  * Signatures created by other keys are ignored.
  * @param {!Array.<!e2e.openpgp.block.TransferableKey>} keys Keys to verify
  *     the signature against.
- * @return {!e2e.openpgp.block.Message.VerifyResult}
+ * @return {!e2e.async.Result<e2e.openpgp.block.Message.VerifyResult>}
  */
 e2e.openpgp.block.Message.prototype.verify = function(keys) {
-  /** @type {!e2e.openpgp.block.Message.VerifyResult} */
-  var result = {success: [], failure: []};
-  var resultsByKey = [];
+  /** @type {!e2e.async.Result<e2e.openpgp.block.Message.VerifyResult>} */
+  var result = new e2e.async.Result();
   var signedData = this.getBytesToSign();
-  goog.array.forEach(this.signatures, function(signature) {
+  /** @type {!Array<!e2e.async.Result<
+   *      !e2e.openpgp.block.Message.VerifyResult>>} */
+  var pendingVerifies = goog.array.map(this.signatures, function(signature) {
     var keyId = signature.getSignerKeyId();
     /** @type {e2e.signer.Signer} */
     var signer;
@@ -226,14 +229,34 @@ e2e.openpgp.block.Message.prototype.verify = function(keys) {
       return !!innerKey;
     });
     if (!verifyingKey) { // Key not found, ignore signature.
-      return;
+      return e2e.async.Result.toResult({success: [], failure: []});
     }
-    if (signature.verify(signedData, goog.asserts.assertObject(signer))) {
-      result.success.push(verifyingKey);
-    } else {
-      result.failure.push(verifyingKey);
-    }
+    return signature.verify(signedData, goog.asserts.assertObject(signer))
+        .addCallback(function(signatureVerified) {
+          if (signatureVerified) {
+            return {success: [verifyingKey], failure: []};
+          } else {
+            return {failure: [verifyingKey], success: []};
+          }
+        });
   });
+  goog.async.DeferredList.gatherResults(pendingVerifies).addCallback(
+      function(verifyResults) {
+        /** @type {!e2e.openpgp.block.Message.VerifyResult} */
+        var combinedResult = {success: [], failure: []};
+        verifyResults.forEach(function(verifyResult) {
+          // verifyResult is constructed in the callback above, so it always has
+          // at most one success or one failure.
+          goog.asserts.assert(verifyResult.success.length +
+              verifyResult.failure.length <= 1);
+          if (verifyResult.success.length > 0) {
+            combinedResult.success.push(verifyResult.success[0]);
+          } else if (verifyResult.failure.length > 0) {
+            combinedResult.failure.push(verifyResult.failure[0]);
+          }
+        });
+        result.callback(combinedResult);
+      }).addErrback(result.errback, result);
   return result;
 };
 

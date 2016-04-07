@@ -394,7 +394,7 @@ hwTUHoOwXZYN6egvFLlN
 
 <script>
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
-asyncTestCase.stepTimeout = 10000;
+asyncTestCase.stepTimeout = 20000;
 
 var publicKeyAscii = document.getElementById('publicKeyAscii').value;
 var publicKeyAsciiOther = document.getElementById('publicKeyAsciiOther').value;
@@ -514,6 +514,7 @@ function testEncrypt() {
 
 
 // Test for regression of https://github.com/google/closure-library/pull/356
+// TODO(user): Chrome 48 takes longer to run this test, why?
 function testEncryptLarge() {
   var plaintext = e2e.byteArrayToString(goog.array.repeat(3, 1000000));  // 1M
   encryptAsymmetric_(plaintext);

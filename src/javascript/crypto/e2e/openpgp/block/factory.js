@@ -22,6 +22,7 @@
 
 goog.provide('e2e.openpgp.block.factory');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.debug.Console');
 goog.require('e2e.openpgp.ByteStream');
 goog.require('e2e.openpgp.asciiArmor');
@@ -42,6 +43,7 @@ goog.require('e2e.openpgp.packet.PublicKey');
 goog.require('e2e.openpgp.packet.SecretKey');
 goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.openpgp.parse');
+goog.require('goog.async.DeferredList');
 
 
 /**
@@ -457,25 +459,26 @@ e2e.openpgp.block.factory.byteArrayToPackets = function(data, opt_skiponerror) {
  *     to extract keys from.
  * @param {boolean=} opt_skiponerror true to skip keys with errors,
  *     and defaults to false.
- * @return {!e2e.openpgp.Keys} Extracted Keys.
+ * @return {!e2e.async.Result<!e2e.openpgp.Keys>} Extracted Keys.
  */
 e2e.openpgp.block.factory.extractKeys = function(blocks, opt_skiponerror) {
-  /** @type {!e2e.openpgp.Keys} */
-  var keys = [];
-  for (var b = 0; b < blocks.length; b++) {
-    var block = blocks[b];
-    try {
-      block.processSignatures();
-      keys.push(block.toKeyObject(true));
-    } catch (e) {
+  /** @type {!e2e.async.Result<!e2e.openpgp.Keys>} */
+  var result = new e2e.async.Result();
+  goog.async.DeferredList.gatherResults(blocks.map(function(block) {
+    return block.processSignatures().addCallbacks(function() {
+      return block.toKeyObject(true);
+    }, function(e) {
       if (opt_skiponerror) {
         e2e.openpgp.block.factory.console_.warn('Discarding key', e.message);
+        return null;  // Converts the errback into a callback(null)
       } else {
         throw e;
       }
-    }
-  }
-  return keys;
+    });
+  })).addCallback(function(keys) {
+    result.callback(keys.filter(goog.isDefAndNotNull));
+  }).addErrback(result.errback, result);
+  return result;
 };
 
 

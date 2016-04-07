@@ -198,9 +198,8 @@ e2e.openpgp.ContextImpl.prototype.getKeyDescription = function(key) {
     if (blocks.length == 0) {
       throw new e2e.openpgp.error.ParseError('No valid key blocks found.');
     }
-    return e2e.async.Result.toResult(
-        e2e.openpgp.block.factory.extractKeys(
-            blocks, true /* skip keys with errors */));
+    return e2e.openpgp.block.factory.extractKeys(
+        blocks, true /* skip keys with errors */);
   } catch (e) {
     return e2e.async.Result.toError(e);
   }
@@ -414,92 +413,98 @@ e2e.openpgp.ContextImpl.prototype.verifyDecryptInternal = function(
  */
 e2e.openpgp.ContextImpl.prototype.processLiteralMessage_ = function(block) {
   var literalBlock = block.getLiteralMessage();
-  var verifyResult = null;
+  var verifyResult = e2e.async.Result.toResult(null);
   if (literalBlock.signatures) {
     verifyResult = this.verifyMessage_(literalBlock);
   }
-  /** @type {!e2e.openpgp.VerifiedDecrypt} */
-  var result = {
-    'decrypt': {
-      'data': literalBlock.getData(),
-      'options': {
-        'charset': literalBlock.getCharset(),
-        'creationTime': literalBlock.getTimestamp(),
-        'filename': literalBlock.getFilename()
+  return verifyResult.addCallback(function(verify) {
+    return {
+      'decrypt': {
+        'data': literalBlock.getData(),
+        'options': {
+          'charset': literalBlock.getCharset(),
+          'creationTime': literalBlock.getTimestamp(),
+          'filename': literalBlock.getFilename()
+        },
+        'wasEncrypted': false
       },
-      'wasEncrypted': false
-    },
-    'verify': verifyResult
-  };
-  return e2e.async.Result.toResult(result);
+      'verify': verify
+    };
+  });
 };
 
 
 /**
  * Verifies signatures places on a LiteralMessage
  * @param  {!e2e.openpgp.block.LiteralMessage} message Block to verify
- * @return {!e2e.openpgp.VerifyResult} Verification result.
+ * @return {!e2e.async.Result<!e2e.openpgp.VerifyResult>} Verification result.
  * @private
  */
 e2e.openpgp.ContextImpl.prototype.verifyMessage_ = function(
     message) {
+  /** @type {!e2e.async.Result<!e2e.openpgp.VerifyResult>}} */
+  var result = new e2e.async.Result();
   // Get keys matching key IDs declared in signatures.
-  var keyBlocks = goog.array.map(message.getSignatureKeyIds(), goog.bind(
+  goog.async.DeferredList.gatherResults(
+      goog.array.map(message.getSignatureKeyIds(),
       function(keyId) {
         return this.keyRing_.getKeyBlockById(keyId);
-      }, this));
-  // Verify not empty key blocks only
-  var verifyResult = message.verify(goog.array.filter(keyBlocks,
-      function(block) {
-        return !goog.isNull(block);
-      }));
-  return {
-    success: goog.array.map(verifyResult.success, function(key) {
-      return key.toKeyObject();
-    }),
-    failure: goog.array.map(verifyResult.failure, function(key) {
-      return key.toKeyObject();
-    })
-  };
+      }, this)).addCallback(function(keyBlocks) {
+    // Verify not empty key blocks only
+    return message.verify(goog.array.filter(keyBlocks, goog.isDefAndNotNull));
+  }).addCallback(function(verifyResult) {
+    result.callback({
+      success: goog.array.map(verifyResult.success, function(key) {
+        return key.toKeyObject();
+      }),
+      failure: goog.array.map(verifyResult.failure, function(key) {
+        return key.toKeyObject();
+      })
+    });
+  }).addErrback(result.errback, result);
+  return result;
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.encryptSign = function(
     plaintext, options, encryptionKeys, passphrases, opt_signatureKey) {
-  var signatureKeyBlock;
-  if (opt_signatureKey) {
-    signatureKeyBlock = this.keyRing_.getKeyBlock(opt_signatureKey);
-  }
-  if (encryptionKeys.length == 0 && passphrases.length == 0 &&
-      signatureKeyBlock) {
-    if (typeof plaintext == 'string' && this.armorOutput) {
-      return this.clearSignInternal(plaintext, signatureKeyBlock);
-    } else {
-      return this.byteSignInternal(
-          goog.asserts.assertArray(plaintext), signatureKeyBlock);
+  var pendingBlock = opt_signatureKey ?
+      this.keyRing_.getKeyBlock(opt_signatureKey) :
+      e2e.async.Result.toResult(null);
+  return pendingBlock.addCallback(function(signatureKeyBlock) {
+    if (encryptionKeys.length == 0 && passphrases.length == 0 &&
+        signatureKeyBlock) {
+      if (typeof plaintext == 'string' && this.armorOutput) {
+        return this.clearSignInternal(plaintext, signatureKeyBlock);
+      } else {
+        return this.byteSignInternal(
+            goog.asserts.assertArray(plaintext), signatureKeyBlock);
+      }
     }
-  }
-  // De-duplicate keys.
-  var keyMap = new goog.structs.Map();
-  goog.array.forEach(encryptionKeys, function(key) {
-    keyMap.set(key.key.fingerprintHex, key);
-  });
-  var encryptSignResult = this.encryptSignInternal(
-      plaintext,
-      options,
-      goog.array.map(keyMap.getValues(), this.keyRing_.getKeyBlock,
-                     this.keyRing_),
-      passphrases,
-      signatureKeyBlock);
-  if (this.armorOutput) {
-    return encryptSignResult.addCallback(function(data) {
-      return e2e.openpgp.asciiArmor.encode(
-          'MESSAGE', goog.asserts.assertArray(data), this.armorHeaders_);
+    // De-duplicate keys.
+    var keyMap = new goog.structs.Map();
+    goog.array.forEach(encryptionKeys, function(key) {
+      keyMap.set(key.key.fingerprintHex, key);
+    });
+    return goog.async.DeferredList.gatherResults(
+        goog.array.map(keyMap.getValues(), this.keyRing_.getKeyBlock,
+            this.keyRing_)).addCallback(function(blocks) {
+      return this.encryptSignInternal(
+          plaintext,
+          options,
+          blocks,
+          passphrases,
+          signatureKeyBlock);
+    }, this).addCallback(function(data) {
+      if (this.armorOutput) {
+        return e2e.openpgp.asciiArmor.encode(
+            'MESSAGE', goog.asserts.assertArray(data), this.armorHeaders_);
+      } else {
+        return data;
+      }
     }, this);
-  } else {
-    return encryptSignResult;
-  }
+  }, this);
 };
 
 
@@ -680,20 +685,23 @@ e2e.openpgp.ContextImpl.prototype.getPassphrase_ =
 
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.exportKeyring = function(armored) {
-  return this.getAllKeys().addCallback(
-      function(keys) {
-        keys = new goog.structs.Map(keys);
-        var serialized = goog.array.flatten(goog.array.map(
-            goog.array.flatten(keys.getValues()),
-            function(keyInfo) {
-              return this.keyRing_.getKeyBlock(keyInfo).serialize();
-            }, this));
-        if (armored) {
-          return e2e.openpgp.asciiArmor.encode(
-              'PRIVATE KEY BLOCK', serialized, this.armorHeaders_);
-        }
-        return serialized;
-      }, this);
+  return this.getAllKeys().addCallback(function(keys) {
+    keys = new goog.structs.Map(keys);
+    return goog.async.DeferredList.gatherResults(goog.array.map(
+        goog.array.flatten(keys.getValues()), function(keyInfo) {
+          return this.keyRing_.getKeyBlock(keyInfo)
+              .addCallback(function(block) {
+                return block.serialize();
+              });
+        }, this));
+  }, this).addCallback(function(serialized) {
+    serialized = goog.array.flatten(serialized);
+    if (armored) {
+      return e2e.openpgp.asciiArmor.encode(
+          'PRIVATE KEY BLOCK', serialized, this.armorHeaders_);
+    }
+    return serialized;
+  }, this);
 };
 
 

@@ -33,7 +33,7 @@ goog.require('goog.debug.Error');
  * @extends {goog.debug.Error}
  */
 e2e.error.Error = function(opt_msg) {
-  goog.base(this, opt_msg);
+  e2e.error.Error.base(this, 'constructor', opt_msg);
 };
 goog.inherits(e2e.error.Error, goog.debug.Error);
 
@@ -46,7 +46,7 @@ goog.inherits(e2e.error.Error, goog.debug.Error);
  * @extends {e2e.error.Error}
 */
 e2e.error.InvalidArgumentsError = function(message) {
-  goog.base(this, message);
+  e2e.error.InvalidArgumentsError.base(this, 'constructor', message);
 };
 goog.inherits(e2e.error.InvalidArgumentsError,
               e2e.error.Error);
@@ -60,7 +60,7 @@ goog.inherits(e2e.error.InvalidArgumentsError,
  * @extends {e2e.error.Error}
 */
 e2e.error.UnsupportedError = function(message) {
-  goog.base(this, message);
+  e2e.error.UnsupportedError.base(this, 'constructor', message);
 };
 goog.inherits(e2e.error.UnsupportedError,
               e2e.error.Error);

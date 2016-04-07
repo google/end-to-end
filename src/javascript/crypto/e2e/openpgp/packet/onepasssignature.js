@@ -20,6 +20,7 @@
 
 goog.provide('e2e.openpgp.packet.OnePassSignature');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.factory');
 
@@ -81,14 +82,15 @@ e2e.openpgp.packet.OnePassSignature.prototype.serializePacketBody =
  *     signed the data.
  * @param {string=} opt_hashAlgo message digest algorithm declared in the
  *     message.
- * @return {boolean} True if the signature correctly verifies.
+ * @return {!e2e.async.Result<boolean>} True if the signature correctly
+ *     verifies.
  */
 e2e.openpgp.packet.OnePassSignature.prototype.verify = function(
     data, signer, opt_hashAlgo) {
   if (this.signature) {
     return this.signature.verify(data, signer, opt_hashAlgo);
   }
-  return false;
+  return e2e.async.Result.toResult(false);
 };
 
 

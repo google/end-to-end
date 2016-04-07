@@ -90,11 +90,20 @@ goog.inherits(e2e.scheme.EncryptionScheme, e2e.scheme.Scheme);
 
 
 /**
+ * @define {string} List of algorithms to force web crypto (comma separated).
+ */
+e2e.scheme.EncryptionScheme.WEBCRYPTO_ALGORITHMS = '';
+
+
+/**
  * @param {!e2e.ByteArray} plaintext
  * @return {!e2e.async.Result.<e2e.cipher.ciphertext.CipherText>}
  */
 e2e.scheme.EncryptionScheme.prototype.encrypt = function(plaintext) {
-  if (this.useWebCrypto) {
+  var whitelist = e2e.scheme.EncryptionScheme.WEBCRYPTO_ALGORITHMS.split(',');
+  if (whitelist.indexOf(this.cipher.algorithm) > -1) {
+    return this.encryptJavaScriptKeyWithWebCrypto(plaintext);
+  } else if (this.useWebCrypto) {
     return this.encryptWebCrypto(plaintext);
   } else {
     /* Don't bother doing encryption in hardware since it provides no security
@@ -160,6 +169,14 @@ e2e.scheme.EncryptionScheme.prototype.decryptHardware;
 e2e.scheme.EncryptionScheme.prototype.decryptWebCrypto;
 
 
+/**
+ * Forces a JavaScript key to be used for encryption using WebCrypto.
+ * @param {!e2e.ByteArray} plaintext
+ * @return {!e2e.async.Result.<e2e.cipher.ciphertext.CipherText>}
+ */
+e2e.scheme.EncryptionScheme.prototype.encryptJavaScriptKeyWithWebCrypto;
+
+
 
 /** Crypto scheme for signing.
  * @param {e2e.signer.Signer} signer
@@ -170,6 +187,12 @@ e2e.scheme.SignatureScheme = function(signer) {
   goog.base(this, signer);
 };
 goog.inherits(e2e.scheme.SignatureScheme, e2e.scheme.Scheme);
+
+
+/**
+ * @define {string} List of algorithms to force web crypto (comma separated).
+ */
+e2e.scheme.SignatureScheme.WEBCRYPTO_ALGORITHMS = '';
 
 
 /**
@@ -199,7 +222,10 @@ e2e.scheme.SignatureScheme.prototype.verify = function(m, sig) {
   if (!(goog.isDefAndNotNull(m) && goog.isDefAndNotNull(sig))) {
     return e2e.async.Result.toResult(false);
   }
-  if (this.useWebCrypto) {
+  var whitelist = e2e.scheme.SignatureScheme.WEBCRYPTO_ALGORITHMS.split(',');
+  if (whitelist.indexOf(this.signer.algorithm) > -1) {
+    return this.verifyJavaScriptKeyWithWebCrypto(m, sig);
+  } else if (this.useWebCrypto) {
     return this.verifyWebCrypto(m, sig);
   } else {
     // Don't bother verifying in hardware
@@ -248,3 +274,12 @@ e2e.scheme.SignatureScheme.prototype.verifyJavaScript;
  * @return {!e2e.async.Result.<boolean>}
  */
 e2e.scheme.SignatureScheme.prototype.verifyWebCrypto;
+
+
+/**
+ * Forces a JavaScript key to be used for verification using WebCrypto.
+ * @param {!e2e.ByteArray} data The data to verify.
+ * @param {!e2e.signer.signature.Signature} sig The signature to check.
+ * @return {!e2e.async.Result.<boolean>}
+ */
+e2e.scheme.SignatureScheme.prototype.verifyJavaScriptKeyWithWebCrypto;

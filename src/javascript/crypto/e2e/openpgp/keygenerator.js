@@ -149,21 +149,16 @@ e2e.openpgp.KeyGenerator.prototype.generateKey = function(email,
           this.getNextKey_(subkeyLength));
       this.extractKeyData_(keyData, ecdh, true);
     }
-    return e2e.async.Result.toResult(this.certifyKeys_(email, keyData));
+    return this.certifyKeys_(email, keyData);
   } else if (opt_keyLocation == e2e.algorithm.KeyLocations.WEB_CRYPTO) {
-    if (keyAlgo == e2e.signer.Algorithm.RSA) {
-      if ((keyLength != 4096 && keyLength != 8192) ||
-          subkeyAlgo != e2e.cipher.Algorithm.RSA || subkeyLength != keyLength) {
-        throw new e2e.openpgp.error.UnsupportedError(
-            'WebCrypto RSA keyLength must be 4096 or 8192');
-      }
-      return e2e.asymmetric.keygenerator.newWebCryptoRsaKeys(
-          keyLength).addCallback(
+    if (keyAlgo == e2e.signer.Algorithm.ECDSA && keyLength == 256 &&
+        subkeyAlgo == e2e.cipher.Algorithm.ECDH && subkeyLength == 256) {
+      return e2e.asymmetric.keygenerator.newWebCryptoP256Keys().addCallback(
           function(ciphers) {
-            this.extractKeyData_(keyData, ciphers[0]);
-            this.extractKeyData_(keyData, ciphers[1]);
+            this.extractKeyData_(keyData, ciphers[0], false, false);
+            this.extractKeyData_(keyData, ciphers[1], true, false);
             return this.certifyKeys_(email, keyData);
-          });
+          }, this);
     }
   } else if (opt_keyLocation == e2e.algorithm.KeyLocations.HARDWARE) {
     // TODO(user): https://code.google.com/p/end-to-end/issues/detail?id=130
@@ -179,7 +174,7 @@ e2e.openpgp.KeyGenerator.prototype.generateKey = function(email,
 /**
  * @param {string} email The email to associate the key with.
  * @param {{privKey: Array, pubKey: Array}} keyData
- * @return {!Array.<!e2e.openpgp.block.TransferableKey>}
+ * @return {!e2e.async.Result<!Array<!e2e.openpgp.block.TransferableKey>>}
  * @private
  */
 e2e.openpgp.KeyGenerator.prototype.certifyKeys_ = function(email, keyData) {
@@ -187,37 +182,44 @@ e2e.openpgp.KeyGenerator.prototype.certifyKeys_ = function(email, keyData) {
     // TODO(evn): Move this code to a .construct.
     var primaryKey = keyData['privKey'][0];
     var uid = new e2e.openpgp.packet.UserId(email);
-    uid.certifyBy(primaryKey);
-    keyData['privKey'][1].bindTo(
-        primaryKey,
-        e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
-        e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_COMMUNICATION |
-        e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_STORAGE);
-    keyData['pubKey'][1].bindTo(
-        primaryKey,
-        e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
-        e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_COMMUNICATION |
-        e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_STORAGE
-    );
+    return uid.certifyBy(primaryKey).addCallback(function() {
+      var privateBind = keyData['privKey'][1].bindTo(
+          primaryKey,
+          e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
+          e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_COMMUNICATION |
+          e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_STORAGE);
+      var publicBind = keyData['pubKey'][1].bindTo(
+          primaryKey,
+          e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
+          e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_COMMUNICATION |
+          e2e.openpgp.packet.SignatureSub.KeyFlags.ENCRYPT_STORAGE
+          );
 
-    var privKeyBlock = new e2e.openpgp.block.TransferableSecretKey();
-    privKeyBlock.keyPacket = primaryKey;
-    privKeyBlock.addUnverifiedSubKey(keyData['privKey'][1]);
-    privKeyBlock.addUnverifiedUserId(uid);
+      var privKeyBlock = new e2e.openpgp.block.TransferableSecretKey();
+      privKeyBlock.keyPacket = primaryKey;
+      privKeyBlock.addUnverifiedSubKey(keyData['privKey'][1]);
+      privKeyBlock.addUnverifiedUserId(uid);
 
-    var pubKeyBlock = new e2e.openpgp.block.TransferablePublicKey();
-    pubKeyBlock.keyPacket = keyData['pubKey'][0];
-    pubKeyBlock.addUnverifiedSubKey(keyData['pubKey'][1]);
-    pubKeyBlock.addUnverifiedUserId(uid);
+      var pubKeyBlock = new e2e.openpgp.block.TransferablePublicKey();
+      pubKeyBlock.keyPacket = keyData['pubKey'][0];
+      pubKeyBlock.addUnverifiedSubKey(keyData['pubKey'][1]);
+      pubKeyBlock.addUnverifiedUserId(uid);
 
-    privKeyBlock.processSignatures();
-    pubKeyBlock.processSignatures();
+      privateBind.addCallback(function() {
+        return privKeyBlock.processSignatures();
+      });
+      publicBind.addCallback(function() {
+        return pubKeyBlock.processSignatures();
+      });
 
-    return [pubKeyBlock, privKeyBlock];
+      return privateBind.awaitDeferred(publicBind).addCallback(function() {
+        return [pubKeyBlock, privKeyBlock];
+      });
+    });
   }
   // Should never happen.
-  throw new e2e.openpgp.error.UnsupportedError(
-      'Unsupported key type or length.');
+  return e2e.async.Result.toError(new e2e.openpgp.error.UnsupportedError(
+      'Unsupported key type or length.'));
 };
 
 
@@ -243,36 +245,49 @@ e2e.openpgp.KeyGenerator.prototype.extractKeyData_ = function(
   var pubKey = new publicConstructor(
       version, timestamp, cryptor);
   var serializedPubKey = pubKey.serializePacketBody();
+  // The public key constructor returns a key that is missing the fingerprint
+  // and keyId.  Serializing and parsing computes and populates the fingerprint
+  // and keyId, but throws away and regenerates cipher, losing the key location.
+  // Therefore, we serialize, deserialize, and then copy the fingerprint and
+  // keyId back to to the original.
+  // parse() also destroys its input, so we give it a copy.
+  // TODO(evn): Design a cleaner key packet constructor API.
+  var deserializedPubKey = publicConstructor.parse(serializedPubKey.slice());
+  pubKey.fingerprint = deserializedPubKey.fingerprint;
+  pubKey.keyId = deserializedPubKey.keyId;
 
   if (!goog.isDef(opt_isJS)) {
     opt_isJS = true;
   }
-  var serializedPrivKey;
+  /** @type {e2e.ByteArray} */ var serializedPrivKey;
+  /** @type {e2e.openpgp.packet.SecretKey} */ var privKey;
   if (opt_isJS) {
-    // privKey is MPI, needs to serialize to get the right byte array.
-    var privKey = e2e.openpgp.Mpi.serialize(cryptor.getKey()['privKey']);
+    // privKeyMpi needs to serialize to get the right byte array.
+    var privKeyMpi = e2e.openpgp.Mpi.serialize(cryptor.getKey()['privKey']);
     serializedPrivKey = goog.array.flatten(
         serializedPubKey,
         /* key is not encrypted individually. */
         e2e.openpgp.EncryptedCipher.KeyDerivationType.PLAINTEXT,
-        privKey,
-        e2e.openpgp.calculateNumericChecksum(privKey));
+        privKeyMpi,
+        e2e.openpgp.calculateNumericChecksum(privKeyMpi));
+    privKey = secretConstructor.parse(serializedPrivKey);
+    privKey.cipher.unlockKey();
+    keyData['privKey'].push(privKey);
+    keyData['pubKey'].push(deserializedPubKey);
   } else {
     // Use dummy s2k
     var s2k = new e2e.openpgp.DummyS2k(new e2e.hash.Sha256,
-        [0x45, 0x32, 0x45],
+        e2e.openpgp.DummyS2k.E2E_HEADER,
         e2e.openpgp.DummyS2k.E2E_modes.WEB_CRYPTO);
-    serializedPrivKey = goog.array.flatten(
-        serializedPubKey,
-        e2e.openpgp.EncryptedCipher.KeyDerivationType.S2K_CHECKSUM,
-        s2k.serialize(), [0], [0]);
+    var secretKeyAndChecksum = [0, 0];
+    var encryptedCipher = new e2e.openpgp.EncryptedCipher(secretKeyAndChecksum,
+        e2e.openpgp.EncryptedCipher.KeyDerivationType.PLAINTEXT, cryptor);
+    privKey = new secretConstructor(version, timestamp, encryptedCipher,
+        pubKey.fingerprint, pubKey.keyId);
+    keyData['privKey'].push(privKey);
+    keyData['pubKey'].push(pubKey);
   }
 
-  privKey = secretConstructor.parse(serializedPrivKey);
-  privKey.cipher.unlockKey();
-  keyData['privKey'].push(privKey);
-  keyData['pubKey'].push(
-      publicConstructor.parse(serializedPubKey));
 };
 
 

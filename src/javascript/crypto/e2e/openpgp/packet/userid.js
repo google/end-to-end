@@ -23,6 +23,7 @@ goog.provide('e2e.openpgp.packet.UserId');
 
 goog.require('e2e');
 goog.require('e2e.ImmutableArray');
+goog.require('e2e.async.Result');
 /** @suppress {extraRequire} intentional import */
 goog.require('e2e.compression.all');
 goog.require('e2e.compression.factory');
@@ -42,6 +43,7 @@ goog.require('e2e.openpgp.packet.SignatureSub');
 goog.require('e2e.openpgp.packet.factory');
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.async.DeferredList');
 goog.require('goog.crypt');
 
 
@@ -252,7 +254,7 @@ e2e.openpgp.packet.UserId.prototype.addRevocation = function(signature) {
  * @param {!e2e.ByteArray} signedData data that was signed.
  * @param {string} verificationErrorMsg error message when signature did not
  *     verify.
- * @return {boolean} True iff signature verified correctly.
+ * @return {!e2e.async.Result<boolean>} True iff signature verified correctly.
  * @private
  */
 e2e.openpgp.packet.UserId.prototype.verifySignatureInternal_ = function(
@@ -260,28 +262,27 @@ e2e.openpgp.packet.UserId.prototype.verifySignatureInternal_ = function(
   if (!verifyingKey.keyId || !e2e.compareByteArray(signature.getSignerKeyId(),
       verifyingKey.keyId)) {
     // Different key, ignore signature.
-    return false;
+    return e2e.async.Result.toResult(false);
   }
   var signer = /** @type {!e2e.signer.Signer} */ (verifyingKey.cipher);
-  try {
-    var signatureVerified = signature.verify(signedData,
-        goog.asserts.assertObject(signer));
-  } catch (e) {
-    e2e.openpgp.packet.UserId.console_.warn(
-        'Unable to verify signature for ', this.userId, e);
-    // Ignore signatures that throw unsupported errors (e.g. weak hash
-    // algorithms) and expired signatures.
-    if (e instanceof e2e.openpgp.error.UnsupportedError) {
-      return false;
-    } else if (e instanceof e2e.openpgp.error.SignatureExpiredError) {
-      return false;
-    }
-    throw e;
-  }
-  if (!signatureVerified) {
-    throw new e2e.openpgp.error.SignatureError(verificationErrorMsg);
-  }
-  return true;
+  return signature.verify(signedData, goog.asserts.assertObject(signer))
+      .addCallback(function(signatureVerified) {
+        if (!signatureVerified) {
+          throw new e2e.openpgp.error.SignatureError(verificationErrorMsg);
+        }
+        return true;
+      }).addErrback(function(e) {
+        e2e.openpgp.packet.UserId.console_.warn(
+           'Unable to verify signature for ', this.userId, e);
+        // Ignore signatures that throw unsupported errors (e.g. weak hash
+        // algorithms) and expired signatures.
+        if (e instanceof e2e.openpgp.error.UnsupportedError) {
+          return false;
+        } else if (e instanceof e2e.openpgp.error.SignatureExpiredError) {
+          return false;
+        }
+        throw e;
+      });
 };
 
 
@@ -291,13 +292,13 @@ e2e.openpgp.packet.UserId.prototype.verifySignatureInternal_ = function(
  *     fails.
  * @param {!e2e.openpgp.packet.Key} verifyingKey key packet that should
  *     verify the signatures
- * @return {boolean} True if key has a valid certification.
+ * @return {!e2e.async.Result<boolean>} True if key has a valid certification.
  */
 e2e.openpgp.packet.UserId.prototype.verifySignatures = function(verifyingKey) {
   // 0. Only permit verification by keys with a Key ID.
   if (!goog.isDef(verifyingKey.keyId)) {
     e2e.openpgp.packet.UserId.console_.warn('No Key ID in verifying key');
-    return false;
+    return e2e.async.Result.toResult(false);
   }
 
   // 1. Check if we have any signatures by the verifying Key ID.
@@ -305,7 +306,7 @@ e2e.openpgp.packet.UserId.prototype.verifySignatures = function(verifyingKey) {
   var signatures = this.keyIdSignatureMap_[kid];
   if (!goog.isDefAndNotNull(signatures)) {
     e2e.openpgp.packet.UserId.console_.warn('No signatures made by ', kid);
-    return false;
+    return e2e.async.Result.toResult(false);
   }
 
   // We first find the newest valid signature made by the verifying key.
@@ -336,25 +337,26 @@ e2e.openpgp.packet.UserId.prototype.verifySignatures = function(verifyingKey) {
   // and only the latest (valid) signature is stored in the
   // ImmutableArray.
 
-  var newestSignature = this.findNewestValidSignature_(
-      signatures, verifyingKey);
+  return this.findNewestValidSignature_(
+      signatures, verifyingKey).addCallback(function(newestSignature) {
+    if (goog.isNull(newestSignature)) {
+      e2e.openpgp.packet.UserId.console_.warn(
+          'No usable signatures from ', kid);
+      return false;
+    }
 
-  if (goog.isNull(newestSignature)) {
-    e2e.openpgp.packet.UserId.console_.warn('No usable signatures from ', kid);
-    return false;
-  }
+    // Reject unless the most recent signature is a certification signature.
+    if (!newestSignature.isCertificationSignature()) {
+      return false;
+    }
 
-  // Reject unless the most recent signature is a certification signature.
-  if (!newestSignature.isCertificationSignature()) {
-    return false;
-  }
-
-  // 3. Now we clear the ImmutableArray of everything except
-  // the one valid signature, and mark it as verified.
-  this.keyIdSignatureMap_[kid] = new e2e.ImmutableArray(
-      [newestSignature],
-      e2e.openpgp.packet.UserIdCertificationState_.VERIFIED);
-  return true;
+    // 3. Now we clear the ImmutableArray of everything except
+    // the one valid signature, and mark it as verified.
+    this.keyIdSignatureMap_[kid] = new e2e.ImmutableArray(
+        [newestSignature],
+        e2e.openpgp.packet.UserIdCertificationState_.VERIFIED);
+    return true;
+  }, this);
 };
 
 
@@ -365,26 +367,39 @@ e2e.openpgp.packet.UserId.prototype.verifySignatures = function(verifyingKey) {
  *     !e2e.openpgp.packet.Signature,
  *      e2e.openpgp.packet.UserIdCertificationState_>} signatures
  * @param {!e2e.openpgp.packet.Key} verifyingKey
- * @return {e2e.openpgp.packet.Signature}
+ * @return {!e2e.async.Result<?e2e.openpgp.packet.Signature>}
  * @private
  */
 e2e.openpgp.packet.UserId.prototype.findNewestValidSignature_ = function(
     signatures, verifyingKey) {
-  var latestSignature = null;
-  var latestTimestamp = -1;
   var signatureData = this.getCertificationSignatureData_(verifyingKey);
+  /** @type {!Array.<!e2e.async.Result<?e2e.openpgp.packet.Signature>>} */
+  var pendingVerifies = [];
   e2e.ImmutableArray.forEach(signatures, function(signature) {
-    if (this.verifySignatureInternal_(
+    pendingVerifies.push(this.verifySignatureInternal_(
         signature, verifyingKey, signatureData,
-        'User ID signature verification failed.')) {
-      // See if this is newer than our current newest signature.
-      if (signature.creationTime >= latestTimestamp) {
-        latestSignature = signature;
-        latestTimestamp = signature.creationTime;
-      }
-    }
+        'User ID signature verification failed.')
+        .addCallback(function(verified) {
+          return verified ? signature : null;
+        }, this));
   }, this);
-  return latestSignature;
+  /** @type {!e2e.async.Result<?e2e.openpgp.packet.Signature>} */
+  var result = new e2e.async.Result();
+  goog.async.DeferredList.gatherResults(pendingVerifies)
+      .addCallback(function(verifiedSignatures) {
+        /** @type {?e2e.openpgp.packet.Signature} */
+        var latestSignature = null;
+        var latestTimestamp = -1;
+        verifiedSignatures.forEach(function(signature) {
+          if (signature && signature.creationTime >= latestTimestamp) {
+            // See if this is newer than our current newest signature.
+            latestSignature = signature;
+            latestTimestamp = signature.creationTime;
+          }
+        });
+        result.callback(latestSignature);
+      }).addErrback(result.errback, result);
+  return result;
 };
 
 
@@ -443,6 +458,7 @@ e2e.openpgp.packet.UserId.prototype.getCertificationSignatureData_ = function(
 
 /**
  * @param {e2e.openpgp.packet.SecretKey} key
+ * @return {!e2e.async.Result<undefined>}
  */
 e2e.openpgp.packet.UserId.prototype.certifyBy = function(key) {
   var data = goog.array.flatten(
@@ -456,19 +472,21 @@ e2e.openpgp.packet.UserId.prototype.certifyBy = function(key) {
       this.getSignatureAttributes_(key));
 
   var pubkey = key.getPublicKeyPacket();
-  sigResult.addCallback(function(sig) {
+  return sigResult.addCallback(function(sig) {
     // This newly minted signature should become the latest, valid
     // certification on this User ID. We check this by explicitly
     // verifying the newly created signature.
     this.addCertification(sig);
-    if (!this.verifySignatures(pubkey)) {
-      throw new e2e.openpgp.error.SignatureError(
-          'Unexpected - newly certified signature could not be verified.');
-    }
-    if (sig != this.getVerifiedCertification_(pubkey)) {
-      throw new e2e.openpgp.error.SignatureError(
-          'Unexpected - new certification was not the latest.');
-    }
+    return this.verifySignatures(pubkey).addCallback(function(verified) {
+      if (!verified) {
+        throw new e2e.openpgp.error.SignatureError(
+            'Unexpected - newly certified signature could not be verified.');
+      }
+      if (sig != this.getVerifiedCertification_(pubkey)) {
+        throw new e2e.openpgp.error.SignatureError(
+            'Unexpected - new certification was not the latest.');
+      }
+    }, this);
   }, this);
 };
 

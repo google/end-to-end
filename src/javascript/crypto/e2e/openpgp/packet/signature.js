@@ -400,12 +400,13 @@ e2e.openpgp.packet.Signature.prototype.constructOnePassSignaturePacket =
  *     signed the data.
  * @param {string=} opt_hashAlgo message digest algorithm declared in the
  *     message.
- * @return {boolean} True if the signature correctly verifies.
+ * @return {!e2e.async.Result<boolean>} True if the signature correctly
+ *     verifies.
  */
 e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
     opt_hashAlgo) {
   if (this.pubKeyAlgorithm != signer.algorithm) {
-    return false;
+    return e2e.async.Result.toResult(false);
   }
 
   // Hash algorithm declared in signature may differ from the one used
@@ -413,8 +414,8 @@ e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
   // (if it's allowed).
   var allowedAlgo = e2e.openpgp.SignatureDigestAlgorithm[this.hashAlgorithm];
   if (!allowedAlgo) {
-    throw new e2e.openpgp.error.UnsupportedError(
-        'Specified hash algorithm is not allowed for signatures.');
+    return e2e.async.Result.toError(new e2e.openpgp.error.UnsupportedError(
+        'Specified hash algorithm is not allowed for signatures.'));
   }
   if (allowedAlgo !== signer.getHashAlgorithm()) {
     signer.setHash(e2e.hash.factory.require(allowedAlgo));
@@ -422,27 +423,31 @@ e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
 
   if (goog.isDef(opt_hashAlgo) && opt_hashAlgo !== signer.getHashAlgorithm()) {
     // Hash algorithm mismatch.
-    return false;
+    return e2e.async.Result.toResult(false);
   }
   if (this.version != 0x04) {
-    throw new e2e.openpgp.error.UnsupportedError(
-        'Verification of old signature packets is not implemented.');
+    return e2e.async.Result.toError(new e2e.openpgp.error.UnsupportedError(
+        'Verification of old signature packets is not implemented.'));
   }
-  var signatureVerified = e2e.async.Result.getValue(
-      e2e.openpgp.packet.Signature.getSignatureScheme_(signer).verify(
-          e2e.openpgp.packet.Signature.getDataToHash(
-          data,
-          this.signatureType, this.pubKeyAlgorithm,
-          this.hashAlgorithm, this.hashedSubpackets),
-          this.signature));
-  if (signatureVerified &&
-      this.attributes.SIGNATURE_EXPIRATION_TIME &&
-      this.attributes.SIGNATURE_EXPIRATION_TIME <
-          Math.floor(new Date().getTime() / 1e3)) {
-    throw new e2e.openpgp.error.SignatureExpiredError(
-        'Signature expired.');
+  try {
+    return e2e.openpgp.packet.Signature.getSignatureScheme_(signer).verify(
+        e2e.openpgp.packet.Signature.getDataToHash(
+        data,
+        this.signatureType, this.pubKeyAlgorithm,
+        this.hashAlgorithm, this.hashedSubpackets),
+        this.signature).addCallback(function(signatureVerified) {
+      if (signatureVerified &&
+          this.attributes.SIGNATURE_EXPIRATION_TIME &&
+          this.attributes.SIGNATURE_EXPIRATION_TIME <
+              Math.floor(new Date().getTime() / 1e3)) {
+        throw new e2e.openpgp.error.SignatureExpiredError(
+            'Signature expired.');
+      }
+      return signatureVerified;
+    }, this);
+  } catch (e) {
+    return e2e.async.Result.toError(e);
   }
-  return signatureVerified;
 };
 
 

@@ -21,6 +21,7 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.openpgp.KeyGeneratorTest');
 
+goog.require('e2e.algorithm.KeyLocations');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.openpgp.KeyGenerator');
 goog.require('e2e.signer.Algorithm');
@@ -74,4 +75,19 @@ function testGenerateKeyProducesTwoKeyPairs() {
   assertEquals(keyGenerator.eccCount_, 2);
   fn();
   assertEquals(keyGenerator.eccCount_, 4);
+}
+
+
+/**
+Test WebCrypto EC key generation
+*/
+function testGenerateWebCryptoECKey() {
+  asyncTestCase.waitForAsync('Waiting for webcrypto keygen');
+  var asyncKeys = keyGenerator.generateKey(
+      'test <test@example.com>', e2e.signer.Algorithm['ECDSA'], 256,
+      e2e.cipher.Algorithm['ECDH'], 256, e2e.algorithm.KeyLocations.WEB_CRYPTO);
+  asyncKeys.addCallback(function(keys) {
+    assertTrue(keys.length > 0);
+    asyncTestCase.continueTesting();
+  }).addErrback(fail);
 }
