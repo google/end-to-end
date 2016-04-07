@@ -25,6 +25,7 @@ goog.provide('e2e.openpgp.asciiArmor');
 goog.require('e2e');
 goog.require('e2e.openpgp.ClearSignMessage');
 goog.require('e2e.openpgp.error.ParseError');
+goog.require('e2e.openpgp.error.SerializationError');
 goog.require('goog.array');
 goog.require('goog.crypt');
 goog.require('goog.crypt.base64');
@@ -259,25 +260,6 @@ e2e.openpgp.asciiArmor.dashUnescape = function(plaintext) {
 
 
 /**
- * Construct a cleartext signature ASCII Armor.
- * Specified in RFC 4880 Section 7.
- * @param {e2e.openpgp.ClearSignMessage} message The message.
- * @param {!Object.<string>=} opt_headers Extra headers to add to signature.
- * @return {string} The ASCII Armored text.
- */
-e2e.openpgp.asciiArmor.encodeClearSign = function(message, opt_headers) {
-  return ['-----BEGIN PGP SIGNED MESSAGE-----',
-          'Hash: ' + message.getSignature().hashAlgorithm,
-          '',
-          e2e.openpgp.asciiArmor.dashEscape(
-              e2e.openpgp.asciiArmor.convertNewlines(message.getBody())),
-          e2e.openpgp.asciiArmor.encode('SIGNATURE',
-              message.getSignature().serialize(), opt_headers)
-  ].join('\r\n');
-};
-
-
-/**
  * Encode data as ASCII Armor, with a trailing new line characters (\r\n).
  * Specified in RFC 4880 Section 6.2.
  * @param {string} type Descriptive type, such as "MESSAGE".
@@ -313,6 +295,38 @@ e2e.openpgp.asciiArmor.encode = function(type, payload, opt_headers) {
       '-----END PGP ' + type + '-----',
       ''
   ).join('\r\n');
+};
+
+
+/**
+ * ASCII armors the OpenPGP block - supports both regular OpenPGP blocks and
+ * clearsign messages.
+ * @param {!e2e.openpgp.block.Armorable} block The block to armor.
+ * @param {!Object.<string>=} opt_headers Extra headers to add.
+ * @return {string} The ASCII Armored text.
+ */
+e2e.openpgp.asciiArmor.armorBlock = function(block, opt_headers) {
+  if (block.header == 'SIGNED MESSAGE') { // Clearsign - special type
+    var body = block.getArmorBody();
+    var sigs = block.getArmorSignatures();
+    if (sigs.length !== 1) {
+      throw new e2e.openpgp.error.SerializationError(
+          'Clearsign messages need to have one and only one signature.');
+    }
+    var signature = sigs[0];
+    return ['-----BEGIN PGP ' + block.header + '-----',
+            'Hash: ' + signature.hashAlgorithm,
+            '',
+            e2e.openpgp.asciiArmor.dashEscape(
+                e2e.openpgp.asciiArmor.convertNewlines(
+                    e2e.byteArrayToString(body))),
+            e2e.openpgp.asciiArmor.encode('SIGNATURE',
+                signature.serialize(), opt_headers)
+    ].join('\r\n');
+  } else {
+    return e2e.openpgp.asciiArmor.encode(block.header,
+        block.getArmorBody());
+  }
 };
 
 

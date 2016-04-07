@@ -23,6 +23,7 @@
 goog.provide('e2e.openpgp.ClearSignMessage');
 
 goog.require('e2e');
+goog.require('e2e.openpgp.block.Armorable');
 goog.require('e2e.openpgp.block.LiteralMessage');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.Signature');
@@ -37,6 +38,7 @@ goog.require('goog.string');
  * @param {!e2e.ByteArray} signatureBytes The serialized signature
  * @param {string=} opt_hash Hash algorithm declared in the message
  * @constructor
+ * @implements {e2e.openpgp.block.Armorable}
  */
 e2e.openpgp.ClearSignMessage = function(body, signatureBytes, opt_hash) {
   this.literal_ = e2e.openpgp.block.LiteralMessage.construct(body);
@@ -51,6 +53,10 @@ e2e.openpgp.ClearSignMessage = function(body, signatureBytes, opt_hash) {
     throw new e2e.openpgp.error.ParseError('Digest algorithms mismatch.');
   }
 };
+
+
+/** @override */
+e2e.openpgp.ClearSignMessage.prototype.header = 'SIGNED MESSAGE';
 
 
 /**
@@ -111,20 +117,28 @@ e2e.openpgp.ClearSignMessage.prototype.toLiteralMessage = function() {
 
 
 /**
- * Returns clearsigned text as a string.
- * @return {string}
- */
-e2e.openpgp.ClearSignMessage.prototype.getBody = function() {
-  return e2e.byteArrayToString(this.literal_.getData(),
-      this.literal_.getCharset());
-};
-
-
-/**
  * Returns signature packet.
  * @return {!e2e.openpgp.packet.Signature}
  */
 e2e.openpgp.ClearSignMessage.prototype.getSignature = function() {
   return /** @type {!e2e.openpgp.packet.Signature} */ (
       this.literal_.signatures[0]);
+};
+
+
+/** @override */
+e2e.openpgp.ClearSignMessage.prototype.getArmorSignatures = function() {
+  return this.literal_.signatures;
+};
+
+
+/** @override */
+e2e.openpgp.ClearSignMessage.prototype.getArmorBody = function() {
+  return this.literal_.getData();
+};
+
+
+/** @override */
+e2e.openpgp.ClearSignMessage.prototype.serialize = function() {
+  return this.literal_.serialize();
 };

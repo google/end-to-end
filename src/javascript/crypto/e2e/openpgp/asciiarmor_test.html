@@ -169,9 +169,9 @@
       '=qRFP\r\n' +
       '-----END PGP SIGNATURE-----';
     var parsed = e2e.openpgp.asciiArmor.parseClearSign(clearSign);
-    assertEquals('hello world new', parsed.getBody());
+    assertEquals('hello world new', e2e.byteArrayToString(
+        parsed.getArmorBody()));
     assertEquals('SHA1', parsed.getSignature().hashAlgorithm);
-    console.log(e2e.openpgp.asciiArmor.encodeClearSign(parsed));
     var invalid =
       '-----BEGIN PGP SIGNED MESSAGE-----\n' +
       'Hash: SHA1\n \ntampered message.\n' +
@@ -189,7 +189,11 @@
     assertThrows('invalid armor, should throw error', function() {
         e2e.openpgp.asciiArmor.parseClearSign(invalid)
     });
-
+    var armored = e2e.openpgp.asciiArmor.armorBlock(parsed);
+    var reparsed = e2e.openpgp.asciiArmor.parseClearSign(armored);
+    assertEquals('hello world new', e2e.byteArrayToString(
+        reparsed.getArmorBody()));
+    assertEquals('SHA1', reparsed.getSignature().hashAlgorithm);
   }
 
   var PUBLIC_KEY_ASCII =
@@ -224,7 +228,6 @@
       'msKSPseUtmsJdu9oQyZdFU4igAWSRKvXQOXAbjBdgmw=\n' +
       '=HSJn\n' +
       '-----END PGP MESSAGE-----';
-
 
   function testExtractPgpBlockNone() {
     assertEquals('non-pgp content', e2e.openpgp.asciiArmor.extractPgpBlock('non-pgp content'));

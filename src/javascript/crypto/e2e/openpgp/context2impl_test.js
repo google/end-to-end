@@ -400,7 +400,7 @@ function testClearSign() {
         '-----END PGP SIGNATURE-----\r\n'));
     var message = e2e.openpgp.asciiArmor.parseClearSign(ciphertext);
     assertTrue(message instanceof e2e.openpgp.ClearSignMessage);
-    assertEquals(PLAINTEXT, message.getBody());
+    assertEquals(PLAINTEXT, e2e.byteArrayToString(message.getArmorBody()));
     assertArrayEquals(publicKey.keyPacket.keyId,
         message.getSignature().getSignerKeyId());
     keyManagerMock.$verify();
@@ -765,3 +765,4 @@ function testVerifyDecryptPassphrase() {
     asyncTestCase.continueTesting();
   }, fail);
 }
+

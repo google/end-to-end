@@ -217,8 +217,7 @@ function testEncryption() {
   e2e.openpgp.block.EncryptedMessage.construct(
       literal,
       [publicKeyBlock]).addCallback(function(block) {
-    var ascii = e2e.openpgp.asciiArmor.encode(block.header,
-                                                  block.serialize());
+    var ascii = e2e.openpgp.asciiArmor.armorBlock(block);
 
     // Decrypt the message.
     var messageBlock = e2e.openpgp.block.factory.parseAscii(ascii);
@@ -413,8 +412,7 @@ function testSymmetricEncryption() {
       [],  // No public keys to encrypt to.
       [passphraseString]// Passphrases for symmetric-key ESKs.
   ).addCallback(function(block){
-    var message = e2e.openpgp.asciiArmor.encode(block.header,
-                                                    block.serialize());
+    var message = e2e.openpgp.asciiArmor.armorBlock(block);
 
     // Decrypt the message.
     var messageBlock = e2e.openpgp.block.factory.parseAscii(message);
@@ -528,8 +526,7 @@ function testEncryptionECDH() {
   e2e.openpgp.block.EncryptedMessage.construct(
       literal,
       [publicKeyBlock]).addCallback(function(block) {
-    var ascii = e2e.openpgp.asciiArmor.encode(block.header,
-                                                  block.serialize());
+    var ascii = e2e.openpgp.asciiArmor.armorBlock(block);
 
     var privateKeyAscii =
       '-----BEGIN PGP PRIVATE KEY BLOCK-----\n' +
@@ -986,8 +983,7 @@ function testEncryptionWithSignatures() {
       [],
       privateKeyBlock.getKeyToSign())
     .addCallback(function(block) {
-      var ascii = e2e.openpgp.asciiArmor.encode(block.header,
-                                                    block.serialize());
+      var ascii = e2e.openpgp.asciiArmor.armorBlock(block);
       // Decrypt the message.
       var messageBlock = e2e.openpgp.block.factory.parseAscii(ascii);
 

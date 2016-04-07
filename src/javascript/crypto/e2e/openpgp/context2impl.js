@@ -70,7 +70,7 @@ e2e.openpgp.Context2Impl = function(keyManager) {
   this.armorOutput_ = true;
   /**
    * List of headers to add to armored messages (Version, Comment, etc).
-   * @private {!Object.<string>}
+   * @private {!Object<string>}
    */
   this.armorHeaders_ = {};
 };
@@ -78,9 +78,9 @@ e2e.openpgp.Context2Impl = function(keyManager) {
 
 /**
  * Deferred constructor.
- * @param {!goog.Thenable.<!e2e.openpgp.managers.KeyManager>} keyManagerPromise
+ * @param {!goog.Thenable<!e2e.openpgp.managers.KeyManager>} keyManagerPromise
  *     The promise of the Key Manager instance.
- * @return {!goog.Thenable.<!e2e.openpgp.Context2Impl>} The Context2Impl
+ * @return {!goog.Thenable<!e2e.openpgp.Context2Impl>} The Context2Impl
  *     promise, fulfilled when the object will initialize.
  */
 e2e.openpgp.Context2Impl.launch = function(keyManagerPromise) {
@@ -93,8 +93,7 @@ e2e.openpgp.Context2Impl.launch = function(keyManagerPromise) {
 /**
  * Promise of a message that can be encoded. Used internally in
  * {@link #encryptSign}.
- * @typedef {!goog.Thenable<!e2e.openpgp.block.Message|
- *     !e2e.openpgp.ClearSignMessage>}
+ * @typedef {!goog.Thenable<!e2e.openpgp.block.Armorable>}
  * @private
  */
 e2e.openpgp.Context2Impl.EncodableMessagePromise_;
@@ -255,7 +254,8 @@ e2e.openpgp.Context2Impl.prototype.importKeys = function(keySerialization,
 e2e.openpgp.Context2Impl.prototype.encryptSign = function(plaintext, options,
     encryptionKeys, passphrases, signatureKeys) {
   return this.createSurrogateSecretKeys_(signatureKeys)
-      .then(goog.partial(this.doEncryptSignOperation_,
+      .then(goog.partial(
+          this.doEncryptSignOperation_,
           plaintext,
           options,
           encryptionKeys,
@@ -266,14 +266,14 @@ e2e.openpgp.Context2Impl.prototype.encryptSign = function(plaintext, options,
 
 /**
  * Selects the correct encrypt/sign operation and calls it, returning the
- *     results.
+ * results.
  * @param {!e2e.openpgp.Plaintext} plaintext The plaintext.
  * @param {!e2e.openpgp.EncryptOptions} options Metadata to add.
- * @param {!Array.<!e2e.openpgp.Key>} encryptionKeys The keys to
+ * @param {!Array<!e2e.openpgp.Key>} encryptionKeys The keys to
  *     encrypt the message with.
- * @param {!Array.<string>} passphrases Passphrases to use for symmetric
+ * @param {!Array<string>} passphrases Passphrases to use for symmetric
  *     key encryption of the message.
- * @param  {!Array.<!e2e.openpgp.packet.SurrogateSecretKey>} signKeys
+ * @param {!Array<!e2e.openpgp.packet.SurrogateSecretKey>} signKeys
  * @return {!e2e.openpgp.Context2Impl.EncodableMessagePromise_}
  *     The encrypted and/or signed message, before encoding.
  * @private
@@ -323,13 +323,13 @@ e2e.openpgp.Context2Impl.prototype.doEncryptSignOperation_ = function(
  * @param {!e2e.openpgp.EncryptOptions} options Metadata to add.
  * @param {!e2e.openpgp.Keys} encryptionKeys The key handles to encrypt the
  *     message to.
- * @param {!Array.<string>} passphrases Passphrases to use for symmetric
+ * @param {!Array<string>} passphrases Passphrases to use for symmetric
  *     key encryption of the message.
- * @param {!Array.<!e2e.openpgp.packet.SurrogateSecretKey>} signatureKeys
+ * @param {!Array<!e2e.openpgp.packet.SurrogateSecretKey>} signatureKeys
  *     The keys to sign the message with.
- * @private
  * @return {!goog.Thenable<!e2e.openpgp.block.EncryptedMessage>} The encrypted
  *     message.
+ * @private
  */
 e2e.openpgp.Context2Impl.prototype.encryptSign_ = function(
     plaintext, options, encryptionKeys, passphrases, signatureKeys) {
@@ -348,7 +348,7 @@ e2e.openpgp.Context2Impl.prototype.encryptSign_ = function(
  * Converts a public key handle to a key block.
  * Throws an error when a key handle does not represent a public key or the
  * resulting key is invalid due to e.g. invalid/outdated signatures.
- * @param  {!e2e.openpgp.Key} key A key handle.
+ * @param {!e2e.openpgp.Key} key A key handle.
  * @return {!e2e.openpgp.block.TransferablePublicKey}
  * @private
  */
@@ -366,7 +366,7 @@ e2e.openpgp.Context2Impl.prototype.requirePublicKey_ = function(key) {
 
 /**
  * Creates surrogate keys with encryption/signing backed by the KeyProvider.
- * @param  {!e2e.openpgp.Keys} keys
+ * @param {!e2e.openpgp.Keys} keys
  * @return {!goog.Thenable<!Array<!e2e.openpgp.packet.SurrogateSecretKey>>}
  *     The surrogate keys.
  * @private
@@ -379,7 +379,7 @@ e2e.openpgp.Context2Impl.prototype.createSurrogateSecretKeys_ = function(keys) {
 
 /**
  * Creates surrogate keys with encryption/signing backed by the KeyProvider.
- * @param  {!e2e.openpgp.Key} key
+ * @param {!e2e.openpgp.Key} key
  * @return {!goog.Thenable<!e2e.openpgp.packet.SurrogateSecretKey>} The
  *     surrogate key.
  * @private
@@ -399,8 +399,8 @@ e2e.openpgp.Context2Impl.prototype.createSurrogateSecretKey_ = function(key) {
  * @param {string} plaintext The plaintext.
  * @param {!e2e.openpgp.packet.SurrogateSecretKey} key The key to sign the
  *     message with.
+ * @return {!goog.Thenable<!e2e.openpgp.ClearSignMessage>}
  * @private
- * @return {!goog.Thenable.<!e2e.openpgp.ClearSignMessage>}
  */
 e2e.openpgp.Context2Impl.prototype.clearSign_ = function(
     plaintext, key) {
@@ -413,8 +413,8 @@ e2e.openpgp.Context2Impl.prototype.clearSign_ = function(
  * @param {!e2e.ByteArray|string} plaintext The plaintext.
  * @param {!Array<!e2e.openpgp.packet.SurrogateSecretKey>} sigKeys The keys to
  *     sign the message with.
- * @private
  * @return {!goog.Thenable<!e2e.openpgp.block.Message>}
+ * @private
  */
 e2e.openpgp.Context2Impl.prototype.byteSign_ = function(
     plaintext, sigKeys) {
@@ -432,28 +432,16 @@ e2e.openpgp.Context2Impl.prototype.byteSign_ = function(
 
 /**
  * Encodes the encrypted and/or signed message for output.
- * @param  {!e2e.openpgp.block.Message|!e2e.openpgp.ClearSignMessage} message
- *     The message to encode.
+ * @param {!e2e.openpgp.block.Armorable} message The message to encode.
  * @return {!e2e.ByteArray|string} The message, optionally armored.
  * @private
  */
 e2e.openpgp.Context2Impl.prototype.encodeMessage_ = function(message) {
-  // Special encoding for clearsigned messages (they are not block.Message)
-  if (message instanceof e2e.openpgp.ClearSignMessage) {
-    if (this.armorOutput_) {
-      return e2e.openpgp.asciiArmor.encodeClearSign(
-          message, this.armorHeaders_);
-    }
-    // Convert to literal message to output a byte serialization.
-    message = message.toLiteralMessage();
-  }
-  var bytes = message.serialize();
   if (this.armorOutput_) {
-    return e2e.openpgp.asciiArmor.encode(
-        'MESSAGE', goog.asserts.assertArray(bytes),
-        this.armorHeaders_);
+    return e2e.openpgp.asciiArmor.armorBlock(message, this.armorHeaders_);
+  } else {
+    return message.serialize();
   }
-  return bytes;
 };
 
 
@@ -483,9 +471,9 @@ e2e.openpgp.Context2Impl.prototype.verifyDecrypt = function(encryptedMessage,
 
 /**
  * Verifies a clearsign message signatures.
- * @param  {!e2e.openpgp.ClearSignMessage} clearSignMessage Message to
+ * @param {!e2e.openpgp.ClearSignMessage} clearSignMessage Message to
  *     verify.
- * @param {!Array.<!e2e.openpgp.Key>=} opt_verificationKeys If present,
+ * @param {!Array<!e2e.openpgp.Key>=} opt_verificationKeys If present,
  *     only those keys will be used for signature verification. Otherwise,
  *     Key ID hints in the message will be used to resolve the keys.
  * @return {!e2e.openpgp.VerifyDecryptPromise} Verification result
@@ -509,10 +497,10 @@ e2e.openpgp.Context2Impl.prototype.verifyClearSign_ = function(
  *     callback is used for requesting an action-specific passphrase from the
  *     user.
  * @param {string=} opt_charset The (optional) charset to decrypt with.
- * @param {!Array.<!e2e.openpgp.Key>=} opt_decryptionKeys If present,
+ * @param {!Array<!e2e.openpgp.Key>=} opt_decryptionKeys If present,
  *     only those keys will be used for decryption. Otherwise, Context2 uses
  *     Key ID hints in the message to resolve keys on its own.
- * @param {!Array.<!e2e.openpgp.Key>=} opt_verificationKeys If present,
+ * @param {!Array<!e2e.openpgp.Key>=} opt_verificationKeys If present,
  *     only those keys will be used for signature verification. Otherwise,
  *     Key ID hints in the message will be used to resolve the keys.
  * @protected
@@ -557,55 +545,83 @@ e2e.openpgp.Context2Impl.prototype.verifyDecryptInternal = function(
  * Optionally limits the search to a set of key object in a provided array.
  * @param {!e2e.openpgp.KeyId} keyId Key ID hint.
  * @param {!e2e.cipher.Algorithm} algorithm Algorithm hint.
- * @param {!Array.<!e2e.openpgp.Key>=} opt_allowedDecryptionKeys If provided,
- * only ciphers for keys in that array can be returned.
+ * @param {!e2e.openpgp.Keys=} opt_allowedDecryptionKeys If provided,
+ *     only ciphers for keys in that array can be returned.
  * @return {!goog.Promise<e2e.openpgp.KeyProviderCipher>} The cipher, or null
  *     if no matching cipher has been found.
  * @private
  */
 e2e.openpgp.Context2Impl.prototype.getDecryptionCipher_ = function(keyId,
     algorithm, opt_allowedDecryptionKeys) {
-  // Currently only the first key matching a Key ID is returned
-  // Key ID collisions in secret keys can prevent decryption.
-  return goog.Promise.resolve().then(function() {
-    if (goog.isArray(opt_allowedDecryptionKeys)) {
-      // Preselect based on the key object
-      var foundKey = goog.array.find(opt_allowedDecryptionKeys, function(key) {
-        return (key.key.secret &&
-            key.decryptionAlgorithm == algorithm &&
-            e2e.compareByteArray(goog.asserts.assertArray(key.decryptionKeyId),
-                keyId));
-      });
-      return foundKey ? [foundKey] : [];
-    } else {
-      // Use the Key ID hint to resolve the key.
-      return this.keyManager_.getKeysByKeyId(
-          e2e.openpgp.KeyPurposeType.DECRYPTION, keyId);
-    }
-  }, null, this).then(function(keyObjects) {
-    if (keyObjects.length == 0) {
-      return null;
-    }
-    if (keyObjects.length > 1) {
-      throw new e2e.openpgp.error.UnsupportedError(
-          'Multiple decryption keys are not supported.');
-    }
-    return new e2e.openpgp.KeyProviderCipher(
-        algorithm,
-        undefined,
-        goog.bind(
-        this.keyManager_.decrypt,
-        this.keyManager_,
-        keyObjects[0],
-        keyId));
-  }, null, this);
+  return goog.Promise.resolve(opt_allowedDecryptionKeys)
+      .then(goog.partial(this.getDecryptionKeys_, keyId, algorithm), null, this)
+      .then(goog.partial(this.getCipherForDecryptionKeys_, keyId, algorithm),
+          null, this);
+};
+
+
+/**
+ * Returns decryption key objects that match the given algorithm and keyId
+ * hints. Optionally restricts the returned keys to given allowed keys list.
+ * @param {!e2e.openpgp.KeyId} keyId Key ID hint.
+ * @param {!e2e.cipher.Algorithm} algorithm Algorithm hint.
+ * @param {!e2e.openpgp.Keys=} opt_allowedDecryptionKeys If provided,
+ *     only keys in that array can be returned.
+ * @return {!goog.Thenable<!e2e.openpgp.Keys>} The decryption keys.
+ * @private
+ */
+e2e.openpgp.Context2Impl.prototype.getDecryptionKeys_ = function(
+    keyId, algorithm, opt_allowedDecryptionKeys) {
+  if (goog.isArray(opt_allowedDecryptionKeys)) {
+    // Currently only the first key matching a Key ID is returned
+    // Key ID collisions in secret keys can prevent decryption.
+
+    // Preselect based on the key object
+    var foundKey = goog.array.find(opt_allowedDecryptionKeys, function(key) {
+      return (key.key.secret &&
+          key.decryptionAlgorithm == algorithm &&
+          e2e.compareByteArray(goog.asserts.assertArray(key.decryptionKeyId),
+              keyId));
+    });
+    return goog.Promise.resolve(foundKey ? [foundKey] : []);
+  } else {
+    // Use the Key ID hint to resolve the key.
+    return this.keyManager_.getKeysByKeyId(
+        e2e.openpgp.KeyPurposeType.DECRYPTION, keyId);
+  }
+};
+
+
+/**
+ * Creates a decrypting cipher for the first of the given keys.
+ * @param {!e2e.openpgp.KeyId} keyId Key ID hint.
+ * @param {!e2e.cipher.Algorithm} algorithm Algorithm hint.
+ * @param {!e2e.openpgp.Keys} keys Decryption keys. For the time being, only
+ *     single-element arrays are accepted.
+ * @return {?e2e.openpgp.KeyProviderCipher} Cipher bound to the provided key
+ *     that can only decrypt. Null when no key was provided.
+ * @private
+ */
+e2e.openpgp.Context2Impl.prototype.getCipherForDecryptionKeys_ = function(keyId,
+    algorithm, keys) {
+  if (keys.length == 0) {
+    return null;
+  }
+  if (keys.length > 1) {
+    throw new e2e.openpgp.error.UnsupportedError(
+        'Multiple decryption keys are not supported.');
+  }
+  return new e2e.openpgp.KeyProviderCipher(
+      algorithm,
+      undefined,
+      goog.bind(this.keyManager_.decrypt, this.keyManager_, keys[0], keyId));
 };
 
 
 /**
  * Processes a literal message and returns the result of verification.
  * @param {e2e.openpgp.block.Message} block
- * @param {!Array.<!e2e.openpgp.Key>=} opt_verificationKeys If present,
+ * @param {!Array<!e2e.openpgp.Key>=} opt_verificationKeys If present,
  *     only those keys will be used for signature verification. Otherwise,
  *     Key ID hints in the message will be used to resolve the keys.
  * @return {!e2e.openpgp.VerifyDecryptPromise}
@@ -637,8 +653,8 @@ e2e.openpgp.Context2Impl.prototype.processLiteralMessage_ = function(block,
 
 /**
  * Verifies signatures places on a LiteralMessage
- * @param  {!e2e.openpgp.block.LiteralMessage} message Block to verify
- * @param {!Array.<!e2e.openpgp.Key>=} opt_verificationKeys If present,
+ * @param {!e2e.openpgp.block.LiteralMessage} message Block to verify
+ * @param {!Array<!e2e.openpgp.Key>=} opt_verificationKeys If present,
  *     only those keys will be used for signature verification. Otherwise,
  *     Key ID hints in the message will be used to resolve the keys.
  * @return {!goog.Thenable<e2e.openpgp.VerifyResult>} Verification result.
@@ -694,9 +710,9 @@ e2e.openpgp.Context2Impl.prototype.removeKeys = function(keys) {
 
 
 /**
- * @private
  * @param {string} text String with one or more armor messages.
- * @return {!e2e.ByteArray} Serialized keys
+ * @return {!e2e.ByteArray} Serialized keys.
+ * @private
  */
 e2e.openpgp.Context2Impl.prototype.extractByteArrayFromArmorText_ = function(
     text) {
@@ -707,3 +723,4 @@ e2e.openpgp.Context2Impl.prototype.extractByteArrayFromArmorText_ = function(
   });
   return bytes;
 };
+

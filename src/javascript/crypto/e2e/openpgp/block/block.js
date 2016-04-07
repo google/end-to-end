@@ -24,11 +24,14 @@
 
 goog.provide('e2e.openpgp.block.Block');
 
+goog.require('e2e.openpgp.block.Armorable');
+
 
 
 /**
  * Representation of a collection of packets that have a specific meaning.
  * @constructor
+ * @implements {e2e.openpgp.block.Armorable}
  */
 e2e.openpgp.block.Block = function() {
   /**
@@ -48,18 +51,20 @@ e2e.openpgp.block.Block = function() {
 e2e.openpgp.block.Block.prototype.parse = goog.abstractMethod;
 
 
-/**
- * Serializes the block to a byte array.
- * @return {!e2e.ByteArray} The serialization of the block.
- */
+/** @override */
 e2e.openpgp.block.Block.prototype.serialize = goog.abstractMethod;
 
 
-/**
- * Text to use in the ASCII Armor message header for this type of block.
- * @type {string}
- */
-e2e.openpgp.block.Block.prototype.header;
+/** @override */
+e2e.openpgp.block.Block.prototype.getArmorBody = function() {
+  return this.serialize();
+};
+
+
+/** @override */
+e2e.openpgp.block.Block.prototype.getArmorSignatures = function() {
+  return [];
+};
 
 
 /**
@@ -85,3 +90,7 @@ e2e.openpgp.block.Block.prototype.setCharset = function(charset) {
 e2e.openpgp.block.Block.prototype.getCharset = function() {
   return this.charset_;
 };
+
+
+/** @override */
+e2e.openpgp.block.Block.prototype.header = '';
