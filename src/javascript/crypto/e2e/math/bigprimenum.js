@@ -45,7 +45,7 @@ goog.inherits(e2e.BigPrimeNum, e2e.BigNumModulus);
  * @param {!e2e.ByteArray} input Number to negate.
  * @return {!e2e.ByteArray} Negated number.
  */
-e2e.BigNum.prototype.negateExponent = function(input) {
+e2e.BigPrimeNum.prototype.negateExponent = function(input) {
   return this.negateExponent_(input);
 };
 

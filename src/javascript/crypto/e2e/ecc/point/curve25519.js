@@ -33,7 +33,7 @@ goog.require('goog.asserts');
 /**
  * Constructs a point on the elliptic curve Curve25519 defined over a
  * prime field.
- * @param {!e2e.ecc.curve.Curve} curve The curve.
+ * @param {!e2e.ecc.curve.Curve25519} curve The curve.
  * @param {!e2e.ecc.Element} x The x Jacobian coordinate.
  * @param {!e2e.ecc.Element=} opt_z The optional z Jacobian coordinate.
  * @constructor
@@ -42,6 +42,12 @@ goog.require('goog.asserts');
 e2e.ecc.point.Curve25519 = function(curve, x, opt_z) {
   e2e.ecc.point.Curve25519.base(
       this, 'constructor', curve);
+
+  /**
+   * @type {!e2e.ecc.curve.Curve25519}
+   */
+  this.curve = curve;
+
   var z = opt_z || curve.ONE;
   goog.asserts.assert(!x.isEqual(curve.ZERO) || !z.isEqual(curve.ZERO),
       '(0,0) point is undefined');
@@ -59,9 +65,9 @@ e2e.ecc.point.Curve25519 = function(curve, x, opt_z) {
 
   /**
    * The equivalent affine Point.
-   * @type {e2e.ecc.point.Curve25519}
+   * @private {e2e.ecc.point.Curve25519}
    */
-  this.affine = this.z.isEqual(curve.ONE) ? this : null;
+  this.affine_ = this.z.isEqual(curve.ONE) ? this : null;
 };
 goog.inherits(e2e.ecc.point.Curve25519, e2e.ecc.point.Point);
 
@@ -120,7 +126,7 @@ e2e.ecc.point.Curve25519.prototype.isIdentity = function() {
 
 /**
  * Compares another point with this. Return true if they are the same.
- * @param {!e2e.ecc.point.Point} that The point to compare.
+ * @param {!e2e.ecc.point.Curve25519} that The point to compare.
  * @return {boolean}
  */
 e2e.ecc.point.Curve25519.prototype.isEqual = function(that) {

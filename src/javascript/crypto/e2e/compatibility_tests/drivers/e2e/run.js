@@ -207,11 +207,6 @@
 
     result.then(function(message) {
       message = message.getLiteralMessage(message);
-      if (verifyCert != null) {
-        var verify = message.verify([verifyCert]);
-        assert.equal(verify.success.length, 1, 'No successful verifications');
-        assert.equal(verify.failure.length, 0, 'Unexpected failures');
-      }
       if (info.filename != null) {
         assert.equal(info.filename, message.getFilename());
       }
@@ -221,6 +216,12 @@
       if (info.textcontent != null) {
         assert.equal(
             new Buffer(message.getData()).toString('utf-8'), info.textcontent);
+      }
+      if (verifyCert != null) {
+        return message.verify([verifyCert]).then(function(verify) {
+          assert.equal(verify.success.length, 1, 'No successful verifications');
+          assert.equal(verify.failure.length, 0, 'Unexpected failures');
+        });
       }
     }).then(done);
   };

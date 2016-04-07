@@ -1,0 +1,62 @@
+<!-- Copyright 2016 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>KeyGenerator Performance Tests</title>
+<script src="../../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.testing.jsunit');
+  goog.require('e2e.openpgp.KeyGenerator');
+  goog.require('e2e.testing.Util');
+</script>
+<h1>KeyGenerator Performance tests</h1>
+<p>
+<strong>User-agent:</strong>
+<script>document.write(navigator.userAgent);</script>
+</p>
+
+<script>
+
+function shouldRunTests() {
+  return e2e.testing.Util.hasRunPerfParameter();
+}
+
+function testBenchmark() {
+  var keyGenerator = new e2e.openpgp.KeyGenerator();
+
+  var tests = [];
+
+  e2e.testing.Util.addBenchmark(tests,
+      function() {
+        keyGenerator.eccCount_ = 0;  // Override safety limit on number of keys.
+        return keyGenerator.generateKey(
+            'test <test@example.com>', e2e.signer.Algorithm['ECDSA'], 256,
+            e2e.cipher.Algorithm['ECDH'], 256);
+      },
+      'Generate EC keys', true);
+
+  e2e.testing.Util.addBenchmark(tests,
+      function() {
+        return keyGenerator.generateKey(
+            'test <test@example.com>', e2e.signer.Algorithm['ECDSA'], 256,
+            e2e.cipher.Algorithm['ECDH'], 256,
+            e2e.algorithm.KeyLocations.WEB_CRYPTO);
+      },
+      'Generate EC keys (WebCrypto)', true);
+
+  console.log(e2e.testing.Util.runPerfTests(tests, 100, 100000));
+}
+
+</script>

@@ -43,7 +43,7 @@ goog.require('goog.debug.Error');
  * @extends {goog.debug.Error}
  */
 e2e.openpgp.error.Error = function(opt_msg) {
-  goog.base(this, opt_msg);
+  e2e.openpgp.error.Error.base(this, 'constructor', opt_msg);
 };
 goog.inherits(e2e.openpgp.error.Error, goog.debug.Error);
 
@@ -56,7 +56,7 @@ goog.inherits(e2e.openpgp.error.Error, goog.debug.Error);
  * @extends {e2e.openpgp.error.Error}
  */
 e2e.openpgp.error.ParseError = function(opt_msg) {
-  goog.base(this, opt_msg);
+  e2e.openpgp.error.ParseError.base(this, 'constructor', opt_msg);
 };
 goog.inherits(e2e.openpgp.error.ParseError, e2e.openpgp.error.Error);
 
@@ -69,7 +69,7 @@ goog.inherits(e2e.openpgp.error.ParseError, e2e.openpgp.error.Error);
  * @extends {e2e.openpgp.error.Error}
  */
 e2e.openpgp.error.SignatureError = function(opt_msg) {
-  goog.base(this, opt_msg);
+  e2e.openpgp.error.SignatureError.base(this, 'constructor', opt_msg);
 };
 goog.inherits(e2e.openpgp.error.SignatureError,
     e2e.openpgp.error.Error);
@@ -83,7 +83,7 @@ goog.inherits(e2e.openpgp.error.SignatureError,
  * @extends {e2e.openpgp.error.SignatureError}
  */
 e2e.openpgp.error.SignatureExpiredError = function(opt_msg) {
-  goog.base(this, opt_msg);
+  e2e.openpgp.error.SignatureExpiredError.base(this, 'constructor', opt_msg);
 };
 goog.inherits(e2e.openpgp.error.SignatureExpiredError,
     e2e.openpgp.error.SignatureError);
@@ -97,7 +97,7 @@ goog.inherits(e2e.openpgp.error.SignatureExpiredError,
  * @extends {e2e.openpgp.error.Error}
  */
 e2e.openpgp.error.DecryptError = function(opt_msg) {
-  goog.base(this, opt_msg);
+  e2e.openpgp.error.DecryptError.base(this, 'constructor', opt_msg);
 };
 goog.inherits(e2e.openpgp.error.DecryptError, e2e.openpgp.error.Error);
 
@@ -110,7 +110,7 @@ goog.inherits(e2e.openpgp.error.DecryptError, e2e.openpgp.error.Error);
  * @extends {e2e.openpgp.error.Error}
  */
 e2e.openpgp.error.SerializationError = function(opt_msg) {
-  goog.base(this, opt_msg);
+  e2e.openpgp.error.SerializationError.base(this, 'constructor', opt_msg);
 };
 goog.inherits(e2e.openpgp.error.SerializationError,
               e2e.openpgp.error.Error);
@@ -124,7 +124,7 @@ goog.inherits(e2e.openpgp.error.SerializationError,
  * @extends {e2e.openpgp.error.Error}
 */
 e2e.openpgp.error.InvalidArgumentsError = function(message) {
-  goog.base(this, message);
+  e2e.openpgp.error.InvalidArgumentsError.base(this, 'constructor', message);
 };
 goog.inherits(e2e.openpgp.error.InvalidArgumentsError,
               e2e.openpgp.error.Error);
@@ -138,7 +138,7 @@ goog.inherits(e2e.openpgp.error.InvalidArgumentsError,
  * @extends {e2e.openpgp.error.Error}
 */
 e2e.openpgp.error.UnsupportedError = function(message) {
-  goog.base(this, message);
+  e2e.openpgp.error.UnsupportedError.base(this, 'constructor', message);
 };
 goog.inherits(e2e.openpgp.error.UnsupportedError,
               e2e.openpgp.error.Error);
@@ -152,7 +152,7 @@ goog.inherits(e2e.openpgp.error.UnsupportedError,
  * @extends {e2e.openpgp.error.Error}
 */
 e2e.openpgp.error.PassphraseError = function(message) {
-  goog.base(this, message);
+  e2e.openpgp.error.PassphraseError.base(this, 'constructor', message);
 };
 goog.inherits(e2e.openpgp.error.PassphraseError,
               e2e.openpgp.error.Error);
@@ -165,7 +165,8 @@ goog.inherits(e2e.openpgp.error.PassphraseError,
  * @extends {e2e.openpgp.error.PassphraseError}
 */
 e2e.openpgp.error.MissingPassphraseError = function() {
-  goog.base(this, 'Missing passphrase.');
+  e2e.openpgp.error.MissingPassphraseError.base(
+      this, 'constructor', 'Missing passphrase.');
 };
 goog.inherits(e2e.openpgp.error.MissingPassphraseError,
               e2e.openpgp.error.PassphraseError);
@@ -178,7 +179,8 @@ goog.inherits(e2e.openpgp.error.MissingPassphraseError,
  * @extends {e2e.openpgp.error.PassphraseError}
 */
 e2e.openpgp.error.WrongPassphraseError = function() {
-  goog.base(this, 'Wrong passphrase.');
+  e2e.openpgp.error.WrongPassphraseError.base(
+      this, 'constructor', 'Wrong passphrase.');
 };
 goog.inherits(e2e.openpgp.error.WrongPassphraseError,
               e2e.openpgp.error.PassphraseError);

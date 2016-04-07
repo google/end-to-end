@@ -1,0 +1,98 @@
+<!-- Copyright 2016 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>ECDH/ECDSA Performance Tests</title>
+<script src="../../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.asymmetric.keygenerator');
+  goog.require('e2e.random');
+  goog.require('e2e.scheme.Ecdh');
+  goog.require('e2e.scheme.Ecdsa');
+  goog.require('e2e.testing.Util');
+  goog.require('goog.testing.jsunit');
+</script>
+<h1>ECDH/ECDSA Performance tests</h1>
+<p>
+<strong>User-agent:</strong>
+<script>document.write(navigator.userAgent);</script>
+</p>
+
+<script>
+
+function shouldRunTests() {
+  return e2e.testing.Util.hasRunPerfParameter();
+}
+
+function testBenchmark() {
+  var tests = [];
+
+  var jsSigner = e2e.asymmetric.keygenerator.newEcdsaWithP256();
+  var jsEcdsa = new e2e.scheme.Ecdsa(jsSigner);
+  var message = e2e.random.getRandomBytes(20000);
+
+  e2e.testing.Util.addBenchmark(tests,
+      function() {
+        return jsEcdsa.signJavaScript(message).addCallback(function(sig) {
+          return jsEcdsa.verifyJavaScript(message, sig);
+        });
+      },
+      'ECDSA 20KB (Javascript)', true);
+
+  // Fake a key fingerprint, since it isn't meaningful at this layer (e.g. no email address).
+  var fingerprint = e2e.random.getRandomBytes(20);
+
+  var jsCipher = e2e.asymmetric.keygenerator.newEcdhWithP256();
+  jsCipher.key.fingerprint = fingerprint;
+  var jsEcdh = new e2e.scheme.Ecdh(jsCipher);
+  var toWrap = e2e.random.getRandomBytes(16);
+
+  e2e.testing.Util.addBenchmark(tests,
+      function() {
+        return jsEcdh.encryptJavaScript(toWrap).addCallback(function(c) {
+          return jsEcdh.decryptJavaScript(c);
+        });
+      },
+      'ECDH (Javascript)', true);
+
+  e2e.asymmetric.keygenerator.newWebCryptoP256Keys().then(function(ciphers) {
+    var webCryptoSigner = ciphers[0];
+    var webCryptoEcdsa = new e2e.scheme.Ecdsa(webCryptoSigner);
+
+    var webCryptoCipher = ciphers[1];
+    webCryptoCipher.key.fingerprint = fingerprint;
+    var webCryptoEcdh = new e2e.scheme.Ecdh(webCryptoCipher);
+
+    e2e.testing.Util.addBenchmark(tests,
+        function() {
+          return webCryptoEcdsa.signWebCrypto(message).addCallback(function(sig) {
+            return webCryptoEcdsa.verifyWebCrypto(message, sig);
+          });
+        },
+        'ECDSA 20KB (WebCrypto)', true);
+
+    e2e.testing.Util.addBenchmark(tests,
+        function() {
+          return webCryptoEcdh.encryptWebCrypto(toWrap).addCallback(function(c) {
+            return webCryptoEcdh.decryptWebCrypto(c);
+          });
+        },
+        'ECDH (WebCrypto)', true);
+
+    console.log(e2e.testing.Util.runPerfTests(tests, 100, 100000));
+  }, fail);
+}
+
+</script>

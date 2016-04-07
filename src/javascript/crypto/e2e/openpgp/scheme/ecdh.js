@@ -56,6 +56,21 @@ e2e.openpgp.scheme.Ecdh.prototype.decryptJavaScript = function(ciphertext) {
 };
 
 
+/** @override */
+e2e.openpgp.scheme.Ecdh.prototype.encryptWebCrypto = function(plaintext) {
+  var paddingSize = 40 - plaintext.length;
+  goog.array.extend(plaintext, goog.array.repeat(paddingSize, paddingSize));
+  return goog.base(this, 'encryptWebCrypto', plaintext);
+};
+
+
+/** @override */
+e2e.openpgp.scheme.Ecdh.prototype.decryptWebCrypto = function(ciphertext) {
+  return goog.base(this, 'decryptWebCrypto', ciphertext)
+      .addCallback(this.removeEccPadding_, this);
+};
+
+
 /**
  * Removes the padding for ECC OpenPGP keys.
  * @param {!e2e.ByteArray} decrypted The data with the padding.

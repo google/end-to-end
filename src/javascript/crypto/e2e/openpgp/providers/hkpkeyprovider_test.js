@@ -18,7 +18,9 @@
  * @fileoverview Tests for the HkpKeyProvider.
  */
 
+
 /** @suppress {extraProvide} */
+goog.setTestOnly('e2e.openpgp.providers.HkpKeyProviderTest');
 goog.provide('e2e.openpgp.providers.HkpKeyProviderTest');
 
 /** @suppress {extraRequire} */
@@ -164,12 +166,20 @@ function testImportKey() {
       document.getElementById('samplePublicKey').value).data, function(s) {
         throw new Error('Should not require passwords for public keys');
       });
-  var xhrios = goog.testing.net.XhrIo.getSendInstances();
-  assertEquals(1, xhrios.length);
-  assertEquals('POST', xhrios[0].getLastMethod());
-  assertEquals('https://127.0.0.1/pks/add', xhrios[0].getLastUri());
+
+  // TODO(evn): Figure out how to do this without a polling loop
+  var handle = setInterval(function() {
+    var xhrios = goog.testing.net.XhrIo.getSendInstances();
+    if (xhrios.length > 0) {
+      clearInterval(handle);
+      assertEquals(1, xhrios.length);
+      assertEquals('POST', xhrios[0].getLastMethod());
+      assertEquals('https://127.0.0.1/pks/add', xhrios[0].getLastUri());
+      xhrios[0].simulateResponse(200, 'ok');
+    }
+  }, 50);
+
   asyncTestCase.waitForAsync('Waiting for response to be processed.');
-  xhrios[0].simulateResponse(200, 'ok');
   promise.then(function(keys) {
     assertEquals(1, keys.length);
     var key = keys[0];

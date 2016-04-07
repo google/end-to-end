@@ -399,7 +399,7 @@ e2e.incrementByteArray = function(n) {
  * that may be retrieved later on. The reference to this state cannot
  * be modified through public methods.
  *
- * @param {!e2e.ImmutableArray<T>|!Array<T>|!goog.array.ArrayLike} elements
+ * @param {!e2e.ImmutableArray<T>|!IArrayLike<T>} elements
  * @param {S=} opt_state opaque data that may be retrieved via the
  *     getState() method.
  * @template T,S

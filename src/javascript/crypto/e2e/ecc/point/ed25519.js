@@ -36,7 +36,7 @@ goog.require('goog.asserts');
 /**
  * Constructs a point on the elliptic curve y^2 = x^3 - 3*x + B defined
  *     over a prime field.
- * @param {!e2e.ecc.curve.Curve} curve The curve.
+ * @param {!e2e.ecc.curve.Ed25519} curve The curve.
  * @param {!e2e.ecc.Element} x The x Jacobian coordinate.
  * @param {!e2e.ecc.Element} y The y Jacobian coordinate.
  * @param {!e2e.ecc.Element=} opt_t The optional t Jacobian coordinate.
@@ -46,6 +46,11 @@ goog.require('goog.asserts');
  */
 e2e.ecc.point.Ed25519 = function(curve, x, y, opt_t, opt_z) {
   e2e.ecc.point.Ed25519.base(this, 'constructor', curve);
+
+  /**
+   * @type {!e2e.ecc.curve.Ed25519}
+   */
+  this.curve = curve;
 
   var z = opt_z || this.curve.ONE;
   var t;
@@ -90,9 +95,9 @@ e2e.ecc.point.Ed25519 = function(curve, x, y, opt_t, opt_z) {
 
   /**
    * The equivalent affine Point.
-   * @type {e2e.ecc.point.Ed25519}
+   * @private {e2e.ecc.point.Ed25519}
    */
-  this.affine = this.z.isEqual(this.curve.ONE) ? this : null;
+  this.affine_ = this.z.isEqual(this.curve.ONE) ? this : null;
 };
 goog.inherits(e2e.ecc.point.Ed25519, e2e.ecc.point.Point);
 
@@ -346,14 +351,17 @@ e2e.ecc.point.Ed25519.prototype.initializeForFastMultiply = function() {
 /**
  * Take a pre-constructed fast multiply table and convert it into a form so
  * that it can be attached to this point.
- * @param {!Array.<!Array.<
- *           (Array.<Array.<number>> | e2e.ecc.point.Ed25519)>>} table
+ * @param {{
+ *  data: !Array.<!Array.<Array.<!Array.<!number>>|!e2e.ecc.point.Ed25519X>>,
+ *  isConverted: boolean,
+ *  isAffine: boolean,
+ * }} table
  */
 e2e.ecc.point.Ed25519.prototype.setFastMultiplyTable = function(table) {
   var identityX = this.curve.IDENTITY.toPointX();
   if (!table.isConverted) {
     var curve = this.curve;
-    var newTable = goog.array.map(table, function(row) {
+    var newTable = goog.array.map(table.data, function(row) {
       return goog.array.map(row, function(encodedPoint) {
         if (encodedPoint == null) {
           return identityX;
@@ -368,14 +376,14 @@ e2e.ecc.point.Ed25519.prototype.setFastMultiplyTable = function(table) {
       });
     });
     // Splice the new table into the array where the old table was.
-    goog.array.clear(table);
-    goog.array.extend(table, newTable);
+    goog.array.clear(table.data);
+    goog.array.extend(table.data, newTable);
     table.isConverted = true;
   }
-  goog.asserts.assert(this.isEqual(table[0][1].toPoint()),
+  goog.asserts.assert(this.isEqual(table.data[0][1].toPoint()),
       'Fast Multiply table is being attached to the wrong point');
   this.fastMultiplyTable_ =
-      /** @type {Array.<!Array.<!e2e.ecc.point.Ed25519X>>} */ (table);
+      /** @type {Array.<!Array.<!e2e.ecc.point.Ed25519X>>} */ (table.data);
 };
 
 
@@ -525,7 +533,8 @@ goog.inherits(e2e.ecc.point.Ed25519X, e2e.ecc.point.Point);
 e2e.ecc.point.Ed25519X.prototype.toPoint = function() {
   var x = this.sum.subtract(this.delta).shiftRight(1);
   var y = this.sum.add(this.delta).shiftRight(1);
-  return new e2e.ecc.point.Ed25519(this.curve, x, y);
+  return new e2e.ecc.point.Ed25519(
+      /** @type {!e2e.ecc.curve.Ed25519} */ (this.curve), x, y);
 };
 
 
@@ -567,7 +576,8 @@ e2e.ecc.point.Ed25519X.prototype.add = function(that) {
   var F = D.subtract(C);
   var G = D.add(C);
   var H = B.add(A);
-  return new e2e.ecc.point.Ed25519(this.curve, E.multiply(F),
+  return new e2e.ecc.point.Ed25519(
+      /** @type {!e2e.ecc.curve.Ed25519} */ (this.curve), E.multiply(F),
       G.multiply(H), E.multiply(H), F.multiply(G));
 };
 

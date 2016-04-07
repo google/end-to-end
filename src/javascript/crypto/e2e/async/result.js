@@ -35,7 +35,8 @@ goog.require('goog.async.Deferred');
  * @extends {goog.async.Deferred.<T>}
  */
 e2e.async.Result = function(opt_onCancelFunction, opt_defaultScope) {
-  goog.base(this, opt_onCancelFunction, opt_defaultScope);
+  e2e.async.Result.base(
+      this, 'constructor', opt_onCancelFunction, opt_defaultScope);
 };
 goog.inherits(e2e.async.Result, goog.async.Deferred);
 
@@ -86,6 +87,22 @@ e2e.async.Result.getValue = function(result) {
 e2e.async.Result.toResult = function(value) {
   return /** @type {!e2e.async.Result} */(
       goog.async.Deferred.succeed(value));
+};
+
+
+/**
+ * Converts a Promise to a result.
+ * @param {!Promise<T>} promise The Promise to wrap as a result.
+ * @return {!e2e.async.Result.<T>} The corresponding result.
+ * @template T
+ */
+e2e.async.Result.fromPromise = function(promise) {
+  var r = new e2e.async.Result();
+  r.callback();
+  r.addCallback(function() {
+    return promise;
+  });
+  return r;
 };
 
 

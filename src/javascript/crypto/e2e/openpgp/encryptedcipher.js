@@ -436,6 +436,12 @@ e2e.openpgp.EncryptedCipher.prototype.getKey = function() {
 
 
 /** @inheritDoc */
+e2e.openpgp.EncryptedCipher.prototype.getWebCryptoKey = function() {
+  return this.cipher_.getWebCryptoKey();
+};
+
+
+/** @inheritDoc */
 e2e.openpgp.EncryptedCipher.prototype.encrypt = function(data) {
   return this.cipher_.encrypt(data);
 };

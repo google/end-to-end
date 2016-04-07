@@ -179,44 +179,48 @@ HkpKeyProvider.prototype.importKeys = function(
 
   // 1. First validate the keys from the serialization. We also
   // need this to return keyobject results.
-  var validatedKeys = goog.array.filter(
+  /** @type {!Array<!e2e.async.Result<?e2e.openpgp.block.TransferableKey>>} */
+  var pendingValidations = goog.array.map(
       e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(
           keySerialization, true), function(key) {
-            try {
-              key.processSignatures();
-              return true;
-            } catch (any) {
+            return key.processSignatures().addCallback(function() {
+              return key;
+            }).addErrback(function(err) {
               // Discard invalid keys.
-              return false;
-            }
+              return null;
+            });
           });
 
-  // 2. Convert to keyobjects for the return value.
-  var result = goog.array.map(validatedKeys, function(key) {
-    return key.toKeyObject(true, HkpKeyProvider.PROVIDER_ID);
-  });
+  return goog.Promise.all(pendingValidations).then(
+      goog.bind(function(validations) {
+        var validatedKeys = validations.filter(goog.isDefAndNotNull);
+        // 2. Convert to keyobjects for the return value.
+        var result = goog.array.map(validatedKeys, function(key) {
+          return key.toKeyObject(true, HkpKeyProvider.PROVIDER_ID);
+        });
 
-  // 3. Reserialize the validated transferable keys for upload.
-  var validatedSerialization = goog.array.flatten(goog.array.map(
-      validatedKeys, function(key) {
-        return key.serialize();
-      }));
+        // 3. Reserialize the validated transferable keys for upload.
+        var validatedSerialization = goog.array.flatten(goog.array.map(
+        validatedKeys, function(key) {
+          return key.serialize();
+        }));
 
-  // 4. Upload content.
-  var data = new goog.Uri.QueryData();
-  data.add(HkpKeyProvider.PARAM_KEYTEXT_, e2e.openpgp.asciiArmor.encode(
-      'PUBLIC KEY BLOCK', validatedSerialization));
-  return new goog.Promise(function(resolve, reject) {
-    goog.net.XhrIo.send(
-        this.hkpRoot_ + HkpKeyProvider.PATH_ADD_,
-        function(e) {
-          if (e.target.isSuccess()) {
-            resolve(result);
-          } else {
-            resolve([]);
-          }
-        }, 'POST', data.toString());
-  }, this);
+        // 4. Upload content.
+        var data = new goog.Uri.QueryData();
+        data.add(HkpKeyProvider.PARAM_KEYTEXT_, e2e.openpgp.asciiArmor.encode(
+        'PUBLIC KEY BLOCK', validatedSerialization));
+        return new goog.Promise(function(resolve, reject) {
+          goog.net.XhrIo.send(
+          this.hkpRoot_ + HkpKeyProvider.PATH_ADD_,
+          function(e) {
+            if (e.target.isSuccess()) {
+              resolve(result);
+            } else {
+              resolve([]);
+            }
+          }, 'POST', data.toString());
+        }, this);
+      }, this));
 };
 
 

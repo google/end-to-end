@@ -23,6 +23,7 @@ goog.provide('e2e.ext.ui.dialogs.Overlay');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
+goog.require('goog.style');
 goog.require('goog.ui.Dialog');
 
 goog.scope(function() {

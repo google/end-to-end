@@ -38,7 +38,7 @@ goog.require('goog.asserts');
 /**
  * Constructs a point on the elliptic curve y^2 = x^3 - 3*x + B defined
  *     over a prime field.
- * @param {!e2e.ecc.curve.Curve} curve The curve.
+ * @param {!e2e.ecc.curve.Nist} curve The curve.
  * @param {!e2e.ecc.Element} x The x Jacobian coordinate.
  * @param {!e2e.ecc.Element} y The y Jacobian coordinate.
  * @param {!e2e.ecc.Element=} opt_z The optional z Jacobian coordinate.
@@ -47,6 +47,11 @@ goog.require('goog.asserts');
  */
 e2e.ecc.point.Nist = function(curve, x, y, opt_z) {
   e2e.ecc.point.Nist.base(this, 'constructor', curve);
+
+  /**
+   * @type {!e2e.ecc.curve.Nist}
+   */
+  this.curve = curve;
 
   /**
    * The x Jacobian projective coordinate of this.
@@ -68,9 +73,9 @@ e2e.ecc.point.Nist = function(curve, x, y, opt_z) {
 
   /**
    * The equivalent affine Point.
-   * @type {e2e.ecc.point.Nist}
+   * @private {e2e.ecc.point.Nist}
    */
-  this.affine = this.z.isEqual(this.curve.ONE) ? this : null;
+  this.affine_ = this.z.isEqual(this.curve.ONE) ? this : null;
 };
 goog.inherits(e2e.ecc.point.Nist, e2e.ecc.point.Point);
 
@@ -441,13 +446,16 @@ e2e.ecc.point.Nist.prototype.initializeForFastMultiply = function() {
 /**
  * Take a pre-constructed fast multiply table and convert it into a form so
  * that it can be attached to this point.
- * @param {!Array.<!Array.<
- *           (Array.<Array.<number>> | e2e.ecc.point.Nist)>>} table
+ * @param {{
+ *  data: !Array.<!Array.<Array.<!Array.<!number>>|!e2e.ecc.point.Nist>>,
+ *  isConverted: boolean,
+ *  isAffine: boolean,
+ * }} table
  */
 e2e.ecc.point.Nist.prototype.setFastMultiplyTable = function(table) {
   if (!table.isConverted) {
     var curve = this.curve;
-    var newTable = goog.array.map(table, function(row) {
+    var newTable = goog.array.map(table.data, function(row) {
       return goog.array.map(row, function(encodedPoint) {
         if (encodedPoint == null) {
           return curve.INFINITY;
@@ -460,15 +468,15 @@ e2e.ecc.point.Nist.prototype.setFastMultiplyTable = function(table) {
       });
     });
     // Splice the new table into the array where the old table was.
-    goog.array.clear(table);
-    goog.array.extend(table, newTable);
+    goog.array.clear(table.data);
+    goog.array.extend(table.data, newTable);
     table.isConverted = true;
     table.isAffine = true;  // Maybe we can use this fact in the future.
   }
   goog.asserts.assert(this.isEqual(
-      /** @type {!e2e.ecc.point.Nist} */ (table[0][1])),
+      /** @type {!e2e.ecc.point.Nist} */ (table.data[0][1])),
       'Fast Multiply table is being attached to wrong point');
-  this.fastMultiplyTable_ = table;
+  this.fastMultiplyTable_ = table.data;
 };
 
 

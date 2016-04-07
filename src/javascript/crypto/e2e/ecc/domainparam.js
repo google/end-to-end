@@ -194,6 +194,37 @@ e2e.ecc.DomainParam.fromCurve = function(curveName) {
 
 
 /**
+ * @type {Object<!e2e.ecc.PrimeCurve, {
+ *  data: !Array.<!Array.<Array.<!Array.<!number>>>>,
+ *  isConverted: boolean,
+ *  isAffine: boolean,
+ * }>}
+ */
+e2e.ecc.DomainParam.fastMultiplyTable = {};
+
+e2e.ecc.DomainParam.fastMultiplyTable[e2e.ecc.PrimeCurve.P_256] = {
+  data: e2e.ecc.constant.p_256.G_FAST_MULTIPLY_TABLE,
+  isConverted: false,
+  isAffine: false
+};
+e2e.ecc.DomainParam.fastMultiplyTable[e2e.ecc.PrimeCurve.P_384] = {
+  data: e2e.ecc.constant.p_384.G_FAST_MULTIPLY_TABLE,
+  isConverted: false,
+  isAffine: false
+};
+e2e.ecc.DomainParam.fastMultiplyTable[e2e.ecc.PrimeCurve.P_521] = {
+  data: e2e.ecc.constant.p_521.G_FAST_MULTIPLY_TABLE,
+  isConverted: false,
+  isAffine: false
+};
+e2e.ecc.DomainParam.fastMultiplyTable[e2e.ecc.PrimeCurve.ED_25519] = {
+  data: e2e.ecc.constant.ed_25519.G_FAST_MULTIPLY_TABLE,
+  isConverted: false,
+  isAffine: false
+};
+
+
+/**
  * @typedef {?{privateKey: !e2e.ByteArray,
  *             publicKey: !e2e.ByteArray,
  *             privateKeyBigNum: ?e2e.BigNum,
@@ -256,18 +287,16 @@ goog.inherits(e2e.ecc.DomainParam.NIST, e2e.ecc.DomainParam);
  * @return {!e2e.ecc.DomainParam.NIST}
  */
 e2e.ecc.DomainParam.NIST.fromCurve = function(curveName) {
-  var constants, fastModulus, fastMultiplyTable;
+  var constants, fastModulus;
+  var fastMultiplyTable = e2e.ecc.DomainParam.fastMultiplyTable[curveName];
   if (curveName == e2e.ecc.PrimeCurve.P_256) {
     constants = e2e.ecc.constant.P_256;
     fastModulus = e2e.ecc.fastModulus.Nist.P_256;
-    fastMultiplyTable = e2e.ecc.constant.p_256.G_FAST_MULTIPLY_TABLE;
   } else if (curveName == e2e.ecc.PrimeCurve.P_384) {
     constants = e2e.ecc.constant.P_384;
     fastModulus = e2e.ecc.fastModulus.Nist.P_384;
-    fastMultiplyTable = e2e.ecc.constant.p_384.G_FAST_MULTIPLY_TABLE;
   } else if (curveName == e2e.ecc.PrimeCurve.P_521) {
     constants = e2e.ecc.constant.P_521;
-    fastMultiplyTable = e2e.ecc.constant.p_521.G_FAST_MULTIPLY_TABLE;
   } else {
     throw new e2e.error.InvalidArgumentsError('Unknown curve.');
   }
@@ -278,7 +307,7 @@ e2e.ecc.DomainParam.NIST.fromCurve = function(curveName) {
   }
   var curve = new e2e.ecc.curve.Nist(q, b);
 
-  var g = curve.pointFromByteArray(constants.G);
+  var g =/**@type{!e2e.ecc.point.Nist}*/(curve.pointFromByteArray(constants.G));
   if (fastMultiplyTable) {
     g.setFastMultiplyTable(fastMultiplyTable);
   }
@@ -329,7 +358,7 @@ e2e.ecc.DomainParam.NIST.prototype.generateKeyPair = function(
 /** @override */
 e2e.ecc.DomainParam.NIST.prototype.calculateSharedSecret = function(
     peerPublicKey, myPrivateKey) {
-  var S = peerPublicKey.multiply(myPrivateKey);
+  var S = /**@type{!e2e.ecc.point.Nist}*/(peerPublicKey.multiply(myPrivateKey));
   if (S.isInfinity()) {
     throw new e2e.error.InvalidArgumentsError(
         'ECDH: Cannot derive shared secret.');
@@ -462,8 +491,8 @@ e2e.ecc.DomainParam.Ed25519.fromCurve = function(curveName) {
   q.setFastModulus(new e2e.ecc.fastModulus.Curve25519(q));
   var curve = new e2e.ecc.curve.Ed25519(q);
 
-  var g = /** @type {e2e.ecc.point.Point} */ (curve.B);
-  g.setFastMultiplyTable(e2e.ecc.constant.ed_25519.G_FAST_MULTIPLY_TABLE);
+  var g = /** @type {!e2e.ecc.point.Ed25519} */ (curve.B);
+  g.setFastMultiplyTable(e2e.ecc.DomainParam.fastMultiplyTable[curveName]);
   var n = new e2e.BigPrimeNum(constants.N);  // order of group
   n.setFastModulusType(e2e.FastModulus.Ox1000000);
   return new e2e.ecc.DomainParam.Ed25519(curve, g, n);

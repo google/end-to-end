@@ -21,8 +21,6 @@
 /** @suppress {extraProvide} provide the whole namespace for simplicity */
 goog.provide('e2e.algorithm.AsymmetricKey');
 goog.provide('e2e.algorithm.KeyLocations');
-goog.provide('e2e.algorithm.WebCryptoAID');
-goog.provide('e2e.algorithm.WebCryptoKey');
 goog.provide('e2e.algorithm.WebCryptoKeyPair');
 /** @suppress {extraProvide} provide the whole namespace for simplicity */
 goog.provide('e2e.cipher.key');
@@ -119,7 +117,7 @@ e2e.cipher.key.Rsa;
  * @typedef {?{curve: ?e2e.ecc.PrimeCurveOid,
  *     kdfInfo: !e2e.ByteArray,
  *     pubKey: !e2e.ByteArray,
- *     fingerprint: !e2e.ByteArray,
+ *     fingerprint: (undefined|!e2e.ByteArray),
  *     privKey: ?e2e.ByteArray,
  *     loc: (undefined|!e2e.algorithm.KeyLocations)}}
  */
@@ -135,23 +133,8 @@ e2e.cipher.key.ElGamal;
 
 
 /**
- * Used to store the algorithm identifier, including things like name, key size,
- * public exponent (for RSA), etc.
- * @typedef {*}
- */
-e2e.algorithm.WebCryptoAID;
-
-
-/**
- * @typedef {!{algorithm: !e2e.algorithm.WebCryptoAID, extractable: boolean,
- *           type:string, usages: !Array.<string>}}
- */
-e2e.algorithm.WebCryptoKey;
-
-
-/**
- * @typedef {!{privateKey: (e2e.algorithm.WebCryptoKey|undefined),
- *             publicKey: e2e.algorithm.WebCryptoKey}}
+ * @typedef {!{privateKey: (webCrypto.CryptoKey|undefined),
+ *             publicKey: webCrypto.CryptoKey}}
  */
 e2e.algorithm.WebCryptoKeyPair;
 

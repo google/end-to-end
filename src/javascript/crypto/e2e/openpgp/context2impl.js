@@ -333,14 +333,17 @@ e2e.openpgp.Context2Impl.prototype.doEncryptSignOperation_ = function(
  */
 e2e.openpgp.Context2Impl.prototype.encryptSign_ = function(
     plaintext, options, encryptionKeys, passphrases, signatureKeys) {
-  var keys = goog.array.map(encryptionKeys, this.requirePublicKey_, this);
+  var keyPromises = goog.array.map(encryptionKeys,
+      this.requirePublicKey_, this);
   var literal = e2e.openpgp.block.LiteralMessage.construct(plaintext);
   goog.asserts.assert(signatureKeys.length <= 1);
-  return e2e.openpgp.block.EncryptedMessage.construct(
-      literal,
-      keys,
-      passphrases,
-      signatureKeys[0] || undefined);
+  return goog.Promise.all(keyPromises).then(function(keys) {
+    return e2e.openpgp.block.EncryptedMessage.construct(
+        literal,
+        keys,
+        passphrases,
+        signatureKeys[0] || undefined);
+  });
 };
 
 
@@ -349,7 +352,7 @@ e2e.openpgp.Context2Impl.prototype.encryptSign_ = function(
  * Throws an error when a key handle does not represent a public key or the
  * resulting key is invalid due to e.g. invalid/outdated signatures.
  * @param {!e2e.openpgp.Key} key A key handle.
- * @return {!e2e.openpgp.block.TransferablePublicKey}
+ * @return {!goog.Thenable<!e2e.openpgp.block.TransferablePublicKey>}
  * @private
  */
 e2e.openpgp.Context2Impl.prototype.requirePublicKey_ = function(key) {
@@ -357,8 +360,7 @@ e2e.openpgp.Context2Impl.prototype.requirePublicKey_ = function(key) {
   var keyBlock = e2e.openpgp.block.factory.parseByteArrayTransferableKey(
       key.serialized);
   if (keyBlock instanceof e2e.openpgp.block.TransferablePublicKey) {
-    keyBlock.processSignatures();
-    return keyBlock;
+    return keyBlock.processSignatures().then(function() { return keyBlock; });
   }
   throw new e2e.openpgp.error.InvalidArgumentsError('Invalid public key.');
 };
@@ -666,7 +668,7 @@ e2e.openpgp.Context2Impl.prototype.verifyMessage_ = function(
 
   if (goog.isDefAndNotNull(opt_verificationKeys)) {
     // We know the keys upfront.
-    keyBlocksPromise = goog.Promise.resolve(
+    keyBlocksPromise = goog.Promise.all(
         goog.array.map(opt_verificationKeys, this.requirePublicKey_, this));
   } else {
     // Get keys matching key IDs declared in signatures.
@@ -679,12 +681,14 @@ e2e.openpgp.Context2Impl.prototype.verifyMessage_ = function(
               keyHandles, function(keyHandle) {
                 return !goog.isNull(keyHandle);
               }));
-          return goog.array.map(foundKeys, this.requirePublicKey_, this);
+          return goog.Promise.all(
+              goog.array.map(foundKeys, this.requirePublicKey_, this));
         }, null, this);
   }
 
   return keyBlocksPromise.then(function(verificationKeys) {
-    var verifyResult = message.verify(verificationKeys);
+    return message.verify(verificationKeys);
+  }).then(function(verifyResult) {
     return {
       success: goog.array.map(verifyResult.success, function(key) {
         return key.toKeyObject();

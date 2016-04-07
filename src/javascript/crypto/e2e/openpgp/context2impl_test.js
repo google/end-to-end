@@ -241,15 +241,17 @@ function testEncryptToKeyNoSign() {
   var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
   var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       publicKeyAscii)[0];
-  publicKey.processSignatures();
 
   keyManagerMock.getTrustedKeys(e2e.openpgp.KeyPurposeType.ENCRYPTION, EMAIL).
       $returns(goog.Promise.resolve([publicKey.toKeyObject()]));
 
   keyManagerMock.$replay();
 
-  asyncTestCase.waitForAsync('Waiting for encryption.');
-  contextPromise.then(function(c) {
+  asyncTestCase.waitForAsync('Waiting for signature processing.');
+  publicKey.processSignatures().then(function() {
+    asyncTestCase.waitForAsync('Waiting for encryption.');
+    return contextPromise;
+  }).then(function(c) {
     context = c;
     return context.getTrustedKeys(e2e.openpgp.KeyPurposeType.ENCRYPTION, EMAIL);
   }, fail).then(function(encryptionKeys) {
@@ -303,26 +305,31 @@ function testEncryptToPassphraseSign() {
 
   var privateKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       privKeyAscii)[0];
-  privateKey.processSignatures();
-  privateKey.getKeyToSign().cipher.unlockKey();
-  var cipher = privateKey.getKeyToSign().cipher.getWrappedCipher();
 
-  var keyObject = privateKey.toKeyObject(undefined, KEY_PROVIDER);
+  var keyObject;
 
-  keyManagerMock.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL).
-      $returns(goog.Promise.resolve([keyObject]));
+  asyncTestCase.waitForAsync('Waiting for signature processing.');
+  privateKey.processSignatures().then(function() {
+    privateKey.getKeyToSign().cipher.unlockKey();
+    var cipher = privateKey.getKeyToSign().cipher.getWrappedCipher();
 
-  keyManagerMock.sign(keyObject, keyObject.signingKeyId, cipher.algorithm,
-      cipher.getHashAlgorithm(),
-      goog.testing.mockmatchers.ignoreArgument).
-      $does(function(key, keyId, signAlgo, hashAlgo, data) {
-        return cipher.sign(data);
-      });
+    keyObject = privateKey.toKeyObject(undefined, KEY_PROVIDER);
 
-  keyManagerMock.$replay();
+    keyManagerMock.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL).
+        $returns(goog.Promise.resolve([keyObject]));
 
-  asyncTestCase.waitForAsync('Waiting for first import of key.');
-  contextPromise.then(function(c) {
+    keyManagerMock.sign(keyObject, keyObject.signingKeyId, cipher.algorithm,
+        cipher.getHashAlgorithm(),
+        goog.testing.mockmatchers.ignoreArgument).
+        $does(function(key, keyId, signAlgo, hashAlgo, data) {
+          return cipher.sign(data);
+        });
+
+    keyManagerMock.$replay();
+
+    asyncTestCase.waitForAsync('Waiting for first import of key.');
+    return contextPromise;
+  }).then(function(c) {
     context = c;
     return context.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL);
   }, fail).then(function(signingKeys) {
@@ -352,43 +359,46 @@ function testClearSign() {
 
   var privateKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       privKeyAscii)[0];
-  privateKey.processSignatures();
-  privateKey.getKeyToSign().cipher.unlockKey();
-  var cipher = privateKey.getKeyToSign().cipher.getWrappedCipher();
   var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
   var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       publicKeyAscii)[0];
 
-  var keyObject = {
-    uids: [EMAIL],
-    key: {
-      secret: true,
-      algorithm: 'DUMMY',
-      fingerprintHex: '',
-      fingerprint: []
-    },
-    subKeys: [],
-    serialized: null,
-    providerId: 'Test',
-    signingKeyId: privateKey.getKeyToSign().keyId,
-    signAlgorithm: cipher.algorithm,
-    signHashAlgorithm: cipher.getHashAlgorithm()
-  };
+  asyncTestCase.waitForAsync('Waiting for signature processing.');
+  privateKey.processSignatures().then(function() {
+    privateKey.getKeyToSign().cipher.unlockKey();
+    var cipher = privateKey.getKeyToSign().cipher.getWrappedCipher();
 
-  keyManagerMock.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL).
-      $returns(goog.Promise.resolve([keyObject]));
+    var keyObject = {
+      uids: [EMAIL],
+      key: {
+        secret: true,
+        algorithm: 'DUMMY',
+        fingerprintHex: '',
+        fingerprint: []
+      },
+      subKeys: [],
+      serialized: null,
+      providerId: 'Test',
+      signingKeyId: privateKey.getKeyToSign().keyId,
+      signAlgorithm: cipher.algorithm,
+      signHashAlgorithm: cipher.getHashAlgorithm()
+    };
 
-  keyManagerMock.sign(keyObject, keyObject.signingKeyId, cipher.algorithm,
-      cipher.getHashAlgorithm(),
-      goog.testing.mockmatchers.ignoreArgument).
-      $does(function(key, keyId, algo, hashAlgo, data) {
-        return cipher.sign(data);
-      });
+    keyManagerMock.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL).
+        $returns(goog.Promise.resolve([keyObject]));
 
-  keyManagerMock.$replay();
+    keyManagerMock.sign(keyObject, keyObject.signingKeyId, cipher.algorithm,
+        cipher.getHashAlgorithm(),
+        goog.testing.mockmatchers.ignoreArgument).
+        $does(function(key, keyId, algo, hashAlgo, data) {
+          return cipher.sign(data);
+        });
 
-  asyncTestCase.waitForAsync('Waiting for first import of key.');
-  contextPromise.then(function(c) {
+    keyManagerMock.$replay();
+
+    asyncTestCase.waitForAsync('Waiting for first import of key.');
+    return contextPromise;
+  }).then(function(c) {
     context = c;
     return context.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL);
   }, fail).then(function(signingKeys) {
@@ -417,43 +427,46 @@ function testByteSign() {
 
   var privateKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       privKeyAscii)[0];
-  privateKey.processSignatures();
-  privateKey.getKeyToSign().cipher.unlockKey();
-  var cipher = privateKey.getKeyToSign().cipher.getWrappedCipher();
   var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
   var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       publicKeyAscii)[0];
 
-  var keyObject = {
-    uids: [EMAIL],
-    key: {
-      secret: true,
-      algorithm: 'DUMMY',
-      fingerprintHex: '',
-      fingerprint: []
-    },
-    subKeys: [],
-    serialized: null,
-    providerId: 'Test',
-    signingKeyId: privateKey.getKeyToSign().keyId,
-    signAlgorithm: cipher.algorithm,
-    signHashAlgorithm: cipher.getHashAlgorithm()
-  };
+  asyncTestCase.waitForAsync('Waiting for signature processing.');
+  privateKey.processSignatures().then(function() {
+    privateKey.getKeyToSign().cipher.unlockKey();
+    var cipher = privateKey.getKeyToSign().cipher.getWrappedCipher();
 
-  keyManagerMock.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL).
-      $returns(goog.Promise.resolve([keyObject]));
+    var keyObject = {
+      uids: [EMAIL],
+      key: {
+        secret: true,
+        algorithm: 'DUMMY',
+        fingerprintHex: '',
+        fingerprint: []
+      },
+      subKeys: [],
+      serialized: null,
+      providerId: 'Test',
+      signingKeyId: privateKey.getKeyToSign().keyId,
+      signAlgorithm: cipher.algorithm,
+      signHashAlgorithm: cipher.getHashAlgorithm()
+    };
 
-  keyManagerMock.sign(keyObject, keyObject.signingKeyId, cipher.algorithm,
-      cipher.getHashAlgorithm(),
-      goog.testing.mockmatchers.ignoreArgument).
-      $does(function(key, keyId, algo, hashAlgo, data) {
-        return cipher.sign(data);
-      });
+    keyManagerMock.getTrustedKeys(e2e.openpgp.KeyPurposeType.SIGNING, EMAIL).
+        $returns(goog.Promise.resolve([keyObject]));
 
-  keyManagerMock.$replay();
+    keyManagerMock.sign(keyObject, keyObject.signingKeyId, cipher.algorithm,
+        cipher.getHashAlgorithm(),
+        goog.testing.mockmatchers.ignoreArgument).
+        $does(function(key, keyId, algo, hashAlgo, data) {
+          return cipher.sign(data);
+        });
 
-  asyncTestCase.waitForAsync('Waiting for first import of key.');
-  contextPromise.then(function(c) {
+    keyManagerMock.$replay();
+
+    asyncTestCase.waitForAsync('Waiting for first import of key.');
+    return contextPromise;
+  }).then(function(c) {
     context = c;
     return context.setArmorOutput(false);
   }, fail).then(function() {
@@ -475,20 +488,24 @@ function testVerifyClearSign() {
   var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
   var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       publicKeyAscii)[0];
-  publicKey.processSignatures();
 
-  var keyObject = publicKey.toKeyObject();
+  var keyObject;
 
-  keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.VERIFICATION,
-      goog.testing.mockmatchers.ignoreArgument).
-      $returns(goog.Promise.resolve([keyObject]));
+  asyncTestCase.waitForAsync('Waiting for signature processing.');
+  publicKey.processSignatures().then(function() {
+    keyObject = publicKey.toKeyObject();
 
-  keyManagerMock.$replay();
+    keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.VERIFICATION,
+        goog.testing.mockmatchers.ignoreArgument).
+        $returns(goog.Promise.resolve([keyObject]));
 
-  var message = document.getElementById('e2eClearSign').value;
-  asyncTestCase.waitForAsync('Waiting for async.');
-  contextPromise.then(function(c) {
+    keyManagerMock.$replay();
+
+    asyncTestCase.waitForAsync('Waiting for async.');
+    return contextPromise;
+  }).then(function(c) {
     context = c;
+    var message = document.getElementById('e2eClearSign').value;
     return context.verifyDecrypt(message, fail);
   }, fail).then(function(res) {
     assertEquals(1, res.verify.success.length);
@@ -505,20 +522,24 @@ function testVerifyByteSign() {
   var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
   var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       publicKeyAscii)[0];
-  publicKey.processSignatures();
 
-  var keyObject = publicKey.toKeyObject();
+  var keyObject;
 
-  keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.VERIFICATION,
-      goog.testing.mockmatchers.ignoreArgument).
-      $returns(goog.Promise.resolve([keyObject])).$times(2);
+  asyncTestCase.waitForAsync('Waiting for signature processing.');
+  publicKey.processSignatures().then(function() {
+    keyObject = publicKey.toKeyObject();
 
-  keyManagerMock.$replay();
+    keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.VERIFICATION,
+        goog.testing.mockmatchers.ignoreArgument).
+        $returns(goog.Promise.resolve([keyObject])).$times(2);
 
-  var message = document.getElementById('e2eByteSign').value;
-  asyncTestCase.waitForAsync('Waiting for async.');
-  contextPromise.then(function(c) {
+    keyManagerMock.$replay();
+
+    asyncTestCase.waitForAsync('Waiting for async.');
+    return contextPromise;
+  }).then(function(c) {
     context = c;
+    var message = document.getElementById('e2eByteSign').value;
     return context.verifyDecrypt(message, fail);
   }, fail).then(function(res) {
     assertEquals(1, res.verify.success.length);
@@ -527,6 +548,7 @@ function testVerifyByteSign() {
     assertFalse(res.decrypt.wasEncrypted);
     assertEquals(PLAINTEXT, e2e.byteArrayToString(res.decrypt.data));
     // Also test the ByteArray with packets.
+    var message = document.getElementById('e2eByteSign').value;
     return context.verifyDecrypt(e2e.openpgp.asciiArmor.parse(message).data,
         fail);
   }, fail).then(function(res) {
@@ -539,41 +561,48 @@ function testVerifyDecrypt() {
   var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
   var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       publicKeyAscii)[0];
-  publicKey.processSignatures();
+  var pubKeyObject;
 
   var privKeyAscii = document.getElementById('e2ePrivKeyAscii').value;
 
   var privateKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       privKeyAscii)[0];
-  privateKey.processSignatures();
+  var privKeyObject;
 
-  var pubKeyObject = publicKey.toKeyObject();
-  var privKeyObject = privateKey.toKeyObject(undefined, KEY_PROVIDER);
+  asyncTestCase.waitForAsync('Waiting for public key signature processing.');
+  publicKey.processSignatures().then(function() {
+    pubKeyObject = publicKey.toKeyObject();
+    asyncTestCase.waitForAsync('Waiting for private key signature processing.');
+    return privateKey.processSignatures();
+  }).then(function() {
+    privKeyObject = privateKey.toKeyObject(undefined, KEY_PROVIDER);
 
-  keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.DECRYPTION,
-      goog.testing.mockmatchers.ignoreArgument).
-      $returns(goog.Promise.resolve([privKeyObject]));
+    keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.DECRYPTION,
+        goog.testing.mockmatchers.ignoreArgument).
+        $returns(goog.Promise.resolve([privKeyObject]));
 
-  keyManagerMock.decrypt(privKeyObject,
-      privateKey.subKeys[0].keyId,
-      privateKey.subKeys[0].cipher.algorithm,
-      goog.testing.mockmatchers.ignoreArgument).$does(function(key, keyId,
-          algo, ct) {
-        privateKey.subKeys[0].cipher.unlockKey();
-        var scheme = new e2e.openpgp.scheme.Ecdh(privateKey.subKeys[0].cipher);
-        return goog.Promise.resolve(scheme.decrypt(ct));
-      });
+    keyManagerMock.decrypt(privKeyObject,
+        privateKey.subKeys[0].keyId,
+        privateKey.subKeys[0].cipher.algorithm,
+        goog.testing.mockmatchers.ignoreArgument).$does(function(key, keyId,
+            algo, ct) {
+          privateKey.subKeys[0].cipher.unlockKey();
+          var scheme = new e2e.openpgp.scheme.Ecdh(
+              privateKey.subKeys[0].cipher);
+          return goog.Promise.resolve(scheme.decrypt(ct));
+        });
 
-  keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.VERIFICATION,
-      goog.testing.mockmatchers.ignoreArgument).
-      $returns(goog.Promise.resolve([pubKeyObject]));
+    keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.VERIFICATION,
+        goog.testing.mockmatchers.ignoreArgument).
+        $returns(goog.Promise.resolve([pubKeyObject]));
 
-  keyManagerMock.$replay();
+    keyManagerMock.$replay();
 
-  var message = document.getElementById('e2eEncrypted').value;
-  asyncTestCase.waitForAsync('Waiting for async.');
-  contextPromise.then(function(c) {
+    asyncTestCase.waitForAsync('Waiting for async.');
+    return contextPromise;
+  }).then(function(c) {
     context = c;
+    var message = document.getElementById('e2eEncrypted').value;
     return context.verifyDecrypt(message, fail);
   }, fail).then(function(res) {
     assertEquals(1, res.verify.success.length);
@@ -591,41 +620,48 @@ function testVerifyDecryptAllowedDecryptionKeys() {
   var publicKeyAscii = document.getElementById('e2ePubKeyAscii').value;
   var publicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       publicKeyAscii)[0];
-  publicKey.processSignatures();
+  var pubKeyObject;
 
   var privKeyAscii = document.getElementById('e2ePrivKeyAscii').value;
   var privateKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       privKeyAscii)[0];
-  privateKey.processSignatures();
+  var privKeyObject;
 
-  var pubKeyObject = publicKey.toKeyObject();
-  var privKeyObject = privateKey.toKeyObject(undefined, KEY_PROVIDER);
+  asyncTestCase.waitForAsync('Waiting for public key signature processing.');
+  publicKey.processSignatures().then(function() {
+    pubKeyObject = publicKey.toKeyObject();
+    asyncTestCase.waitForAsync('Waiting for private key signature processing.');
+    return privateKey.processSignatures();
+  }).then(function() {
+    privKeyObject = privateKey.toKeyObject(undefined, KEY_PROVIDER);
 
-  // KeyManager is never asked to get a decryption key by Key ID.
-  keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.DECRYPTION,
-      goog.testing.mockmatchers.ignoreArgument).$never();
+    // KeyManager is never asked to get a decryption key by Key ID.
+    keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.DECRYPTION,
+        goog.testing.mockmatchers.ignoreArgument).$never();
 
-  keyManagerMock.decrypt(privKeyObject,
-      privateKey.subKeys[0].keyId,
-      privateKey.subKeys[0].cipher.algorithm,
-      goog.testing.mockmatchers.ignoreArgument).$does(function(key, keyId,
-          algo, ct) {
-        privateKey.subKeys[0].cipher.unlockKey();
-        var scheme = new e2e.openpgp.scheme.Ecdh(privateKey.subKeys[0].cipher);
-        return goog.Promise.resolve(scheme.decrypt(ct));
-      });
+    keyManagerMock.decrypt(privKeyObject,
+        privateKey.subKeys[0].keyId,
+        privateKey.subKeys[0].cipher.algorithm,
+        goog.testing.mockmatchers.ignoreArgument).$does(function(key, keyId,
+            algo, ct) {
+          privateKey.subKeys[0].cipher.unlockKey();
+          var scheme = new e2e.openpgp.scheme.Ecdh(
+              privateKey.subKeys[0].cipher);
+          return goog.Promise.resolve(scheme.decrypt(ct));
+        });
 
-  keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.VERIFICATION,
-      goog.testing.mockmatchers.ignoreArgument).
-      $returns(goog.Promise.resolve([pubKeyObject]));
+    keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.VERIFICATION,
+        goog.testing.mockmatchers.ignoreArgument).
+        $returns(goog.Promise.resolve([pubKeyObject]));
 
-  keyManagerMock.$replay();
+    keyManagerMock.$replay();
 
-  var message = document.getElementById('e2eEncrypted').value;
-  asyncTestCase.waitForAsync('Waiting for async.');
-  contextPromise.then(function(c) {
+    asyncTestCase.waitForAsync('Waiting for async.');
+    return contextPromise;
+  }).then(function(c) {
     context = c;
     // Explicitly ask for a decryption key.
+    var message = document.getElementById('e2eEncrypted').value;
     return context.verifyDecrypt(message, fail, [privKeyObject]);
   }, fail).then(function(res) {
     assertEquals(1, res.verify.success.length);
@@ -634,6 +670,7 @@ function testVerifyDecryptAllowedDecryptionKeys() {
     assertTrue(res.decrypt.wasEncrypted);
     assertEquals('hello encrypted', e2e.byteArrayToString(res.decrypt.data));
     // Empty decryption key list.
+    var message = document.getElementById('e2eEncrypted').value;
     return context.verifyDecrypt(message, fail, []);
   }, fail).then(fail, function(error) {
     assertTrue(error instanceof e2e.openpgp.error.DecryptError);
@@ -650,47 +687,55 @@ function testVerifyDecryptAllowedVerificationKeys() {
       publicKeyAscii)[0];
   var otherPublicKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       otherPublicKeyAscii)[0];
-  publicKey.processSignatures();
-  otherPublicKey.processSignatures();
+  var pubKeyObject, otherPubKeyObject;
 
   var privKeyAscii = document.getElementById('e2ePrivKeyAscii').value;
   var privateKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       privKeyAscii)[0];
-  privateKey.processSignatures();
+  var privKeyObject;
 
-  var pubKeyObject = publicKey.toKeyObject();
-  var otherPubKeyObject = otherPublicKey.toKeyObject();
-  var privKeyObject = privateKey.toKeyObject(undefined, KEY_PROVIDER);
+  asyncTestCase.waitForAsync('Waiting for public key signature processing.');
+  publicKey.processSignatures().then(function() {
+    pubKeyObject = publicKey.toKeyObject();
+    return otherPublicKey.processSignatures();
+  }).then(function() {
+    otherPubKeyObject = otherPublicKey.toKeyObject();
+    asyncTestCase.waitForAsync('Waiting for private key signature processing.');
+    return privateKey.processSignatures();
+  }).then(function() {
+    privKeyObject = privateKey.toKeyObject(undefined, KEY_PROVIDER);
 
-  for (var i = 0; i < 2; i++) { // Two decryptions
-    keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.DECRYPTION,
-        goog.testing.mockmatchers.ignoreArgument).
-        $returns(goog.Promise.resolve([privKeyObject]));
 
-    keyManagerMock.decrypt(privKeyObject,
-        privateKey.subKeys[0].keyId,
-        privateKey.subKeys[0].cipher.algorithm,
-        goog.testing.mockmatchers.ignoreArgument).$does(function(key, keyId,
-            algo, ct) {
-          privateKey.subKeys[0].cipher.unlockKey();
-          var scheme = new e2e.openpgp.scheme.Ecdh(
-              privateKey.subKeys[0].cipher);
-          return goog.Promise.resolve(scheme.decrypt(ct));
-        });
-  }
+    for (var i = 0; i < 2; i++) { // Two decryptions
+      keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.DECRYPTION,
+          goog.testing.mockmatchers.ignoreArgument).
+          $returns(goog.Promise.resolve([privKeyObject]));
 
-  // KeyManager is never asked to get a verification key by key id.
-  keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.VERIFICATION,
-      goog.testing.mockmatchers.ignoreArgument).$never();
+      keyManagerMock.decrypt(privKeyObject,
+          privateKey.subKeys[0].keyId,
+          privateKey.subKeys[0].cipher.algorithm,
+          goog.testing.mockmatchers.ignoreArgument).$does(function(key, keyId,
+              algo, ct) {
+            privateKey.subKeys[0].cipher.unlockKey();
+            var scheme = new e2e.openpgp.scheme.Ecdh(
+                privateKey.subKeys[0].cipher);
+            return goog.Promise.resolve(scheme.decrypt(ct));
+          });
+    }
 
-  keyManagerMock.$replay();
+    // KeyManager is never asked to get a verification key by key id.
+    keyManagerMock.getKeysByKeyId(e2e.openpgp.KeyPurposeType.VERIFICATION,
+        goog.testing.mockmatchers.ignoreArgument).$never();
 
-  var message = document.getElementById('e2eEncrypted').value;
-  asyncTestCase.waitForAsync('Waiting for async.');
-  contextPromise.then(function(c) {
+    keyManagerMock.$replay();
+
+    asyncTestCase.waitForAsync('Waiting for async.');
+    return contextPromise;
+  }).then(function(c) {
     context = c;
     asyncTestCase.waitForAsync('Waiting for async.');
     // Explicitly ask for a decryption key.
+    var message = document.getElementById('e2eEncrypted').value;
     return context.verifyDecrypt(message, fail, undefined, [pubKeyObject,
       otherPubKeyObject]);
   }, fail).then(function(res) {
@@ -701,6 +746,7 @@ function testVerifyDecryptAllowedVerificationKeys() {
     assertEquals('hello encrypted', e2e.byteArrayToString(res.decrypt.data));
     asyncTestCase.waitForAsync('Waiting for async.');
     // Empty verification key list.
+    var message = document.getElementById('e2eEncrypted').value;
     return context.verifyDecrypt(message, fail, undefined, []);
   }, fail).then(function(res) {
     // Signing key was ignored.
@@ -718,29 +764,32 @@ function testVerifyDecryptPassphrase() {
   var privKeyAscii = document.getElementById('e2ePrivKeyAscii').value;
   var privateKey = e2e.openpgp.block.factory.parseAsciiAllTransferableKeys(
       privKeyAscii)[0];
-  privateKey.processSignatures();
-  var privKeyObject = privateKey.toKeyObject(undefined, KEY_PROVIDER);
+  var privKeyObject;
 
-  keyManagerMock.decrypt(privKeyObject,
-      privateKey.subKeys[0].keyId,
-      privateKey.subKeys[0].cipher.algorithm,
-      goog.testing.mockmatchers.ignoreArgument).$does(function(key, keyId,
-          algo, ct) {
-        decryptedWithKeyManager = true;
-        privateKey.subKeys[0].cipher.unlockKey();
-        var scheme = new e2e.openpgp.scheme.Ecdh(
-            privateKey.subKeys[0].cipher);
-        return goog.Promise.resolve(scheme.decrypt(ct));
-      });
+  asyncTestCase.waitForAsync('Waiting for private key signature processing.');
+  privateKey.processSignatures().then(function() {
+    privKeyObject = privateKey.toKeyObject(undefined, KEY_PROVIDER);
+    keyManagerMock.decrypt(privKeyObject,
+        privateKey.subKeys[0].keyId,
+        privateKey.subKeys[0].cipher.algorithm,
+        goog.testing.mockmatchers.ignoreArgument).$does(function(key, keyId,
+            algo, ct) {
+          decryptedWithKeyManager = true;
+          privateKey.subKeys[0].cipher.unlockKey();
+          var scheme = new e2e.openpgp.scheme.Ecdh(
+              privateKey.subKeys[0].cipher);
+          return goog.Promise.resolve(scheme.decrypt(ct));
+        });
 
-  keyManagerMock.$replay();
+    keyManagerMock.$replay();
 
-  var message = document.getElementById('e2ePassphraseEncrypted').value;
-  asyncTestCase.waitForAsync('Waiting for async.');
-  contextPromise.then(function(c) {
+    asyncTestCase.waitForAsync('Waiting for async.');
+    return contextPromise;
+  }).then(function(c) {
     context = c;
     asyncTestCase.waitForAsync('Waiting for async.');
     // Ignore the keys by passing an empty opt_decryptionKeys array
+    var message = document.getElementById('e2ePassphraseEncrypted').value;
     return context.verifyDecrypt(message, function() {
       pwCalledTimes++;
       return goog.Promise.resolve(pwCalledTimes > 3 ? 'test' : 'invalid');
@@ -755,6 +804,7 @@ function testVerifyDecryptPassphrase() {
         e2e.byteArrayToString(res.decrypt.data));
     asyncTestCase.waitForAsync('Waiting for async.');
     // Correct key will not trigger passphraseCallback
+    var message = document.getElementById('e2ePassphraseEncrypted').value;
     return context.verifyDecrypt(message, fail, [privKeyObject]);
   }, fail).then(function(res) {
     assertTrue(decryptedWithKeyManager);
