@@ -166,8 +166,8 @@ function testBuildPGPMimeTree() {
     ' version.asc"', 'Content-Transfer-Encoding: 7bit',
     'Content-Description: PGP/MIME Versions Identification', '',
     'Version: 1', '----foo',
-    'Content-Type: text/plain; charset="utf-8"; ' +
-        'name="encrypted.asc"',
+    'Content-Type: application/octet-stream; name="encrypted.asc"',
+    'Content-Disposition: inline; name="encrypted.asc"',
     'Content-Transfer-Encoding: 7bit', '', 'some encrypted text',
     '----foo--', ''].join('\r\n');
   var encryptedText = 'some encrypted text';

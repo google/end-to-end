@@ -121,6 +121,7 @@ e2e.openpgp.pgpmime.Constants.Mime = {
 
   // Content dispositions
   ATTACHMENT: 'attachment',
+  INLINE: 'inline',
 
   // Charset. Case-insensitive.
   UTF8: 'utf-8',

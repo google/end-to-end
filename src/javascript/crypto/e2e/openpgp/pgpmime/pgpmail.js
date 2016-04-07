@@ -180,14 +180,14 @@ e2e.openpgp.pgpmime.PgpMail.prototype.buildPGPMimeTree = function() {
         value: constants.Mime.PGP_MIME_DESCRIPTION}]});
   versionNode.setContent(constants.Mime.VERSION_CONTENT);
 
-  // Set the ciphertext. Due to Gmail bug, we use constants.Mime.PLAINTEXT
-  // instead of constants.Mime.OCTET_STREAM for contentType
   var contentNode = rootNode.addChild({multipart: false,
     optionalHeaders: [
       {name: constants.Mime.CONTENT_TYPE,
-        value: constants.Mime.PLAINTEXT,
-        params: {'charset': constants.Mime.UTF8,
-          'name': constants.Mime.ENCRYPTED_ASC}},
+        value: constants.Mime.OCTET_STREAM,
+        params: {'name': constants.Mime.ENCRYPTED_ASC}},
+      {name: constants.Mime.CONTENT_DISPOSITION,
+        value: constants.Mime.INLINE,
+        params: {'name': constants.Mime.ENCRYPTED_ASC}},
       {name: constants.Mime.CONTENT_TRANSFER_ENCODING,
         value: constants.Mime.SEVEN_BIT}]});
   contentNode.setContent(this.content.body);
