@@ -524,7 +524,7 @@ e2e.openpgp.ContextImpl.prototype.clearSignInternal = function(
   }
   var messageRes = e2e.openpgp.ClearSignMessage.construct(plaintext, keyPacket);
   return messageRes.addCallback(function(message) {
-    return e2e.openpgp.asciiArmor.encodeClearSign(message, this.armorHeaders_);
+    return e2e.openpgp.asciiArmor.armorBlock(message, this.armorHeaders_);
   }, this);
 };
 

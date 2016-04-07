@@ -446,7 +446,3 @@ e2e.openpgp.block.EncryptedMessage.construct = function(
   });
   return blockResult;
 };
-
-
-/** @inheritDoc */
-e2e.openpgp.block.EncryptedMessage.prototype.header = 'MESSAGE';

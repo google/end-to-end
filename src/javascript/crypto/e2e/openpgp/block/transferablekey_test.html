@@ -1501,8 +1501,7 @@ function testSignatureVerification() {
   keyBlock.unverifiedSubKeys_[0].bindingSignatures_.get(0).signature
       .s[0] ^= 0x01;
 
-  var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
-      keyBlock.serialize());
+  var tamperedAscii = e2e.openpgp.asciiArmor.armorBlock(keyBlock);
   var tamperedKey = e2e.openpgp.block.factory.parseAscii(tamperedAscii);
   var error = assertThrows(function() {
     tamperedKey.processSignatures(); // Signature tampering invalidates the key.
@@ -1539,8 +1538,7 @@ function testGnupgRevokedSubkey() {
   // Tamper revocation signature
   var clone = getKey('RevokedSubKey');
   clone.unverifiedSubKeys_[0].revocations_.get(0).signature.s[0] ^= 0x01;
-  var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
-      clone.serialize());
+  var tamperedAscii = e2e.openpgp.asciiArmor.armorBlock(clone);
   var error = assertThrows(function() {
       var key = e2e.openpgp.block.factory.parseAscii(tamperedAscii);
       key.processSignatures(); // Signature tampering invalidates the key.
@@ -1567,8 +1565,7 @@ function testGnupgRevokedMainKey() {
 
   // Tamper revocation signature
   publicKeyBlock.keyPacket.revocations_.get(0).signature.s[0] ^= 0x01;
-  var tamperedAscii = e2e.openpgp.asciiArmor.encode('PUBLIC KEY BLOCK',
-      publicKeyBlock.serialize());
+  var tamperedAscii = e2e.openpgp.asciiArmor.armorBlock(publicKeyBlock);
   var error = assertThrows(function() {
       var key = e2e.openpgp.block.factory.parseAscii(tamperedAscii)
       key.processSignatures();

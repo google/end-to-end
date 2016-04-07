@@ -176,8 +176,7 @@ e2e.openpgp.KeyClient.prototype.importPublicKey = function(key) {
     throw new Error('Invalid user ID for key import.');
   }
   var nonce = goog.crypt.byteArrayToHex(e2e.random.getRandomBytes(16));
-  var serializedKey = e2e.openpgp.asciiArmor.encode(
-      'PUBLIC KEY BLOCK', key.serialize());
+  var serializedKey = e2e.openpgp.asciiArmor.armorBlock(key);
   return this.getOpenIdCredentials_(uids[0], nonce).addCallback(
       goog.bind(this.importKeyWithCredentials_, this, nonce, serializedKey));
 };

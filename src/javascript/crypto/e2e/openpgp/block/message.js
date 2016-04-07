@@ -238,6 +238,10 @@ e2e.openpgp.block.Message.prototype.verify = function(keys) {
 };
 
 
+/** @override */
+e2e.openpgp.block.Message.prototype.header = 'MESSAGE';
+
+
 /**
  * Result of a verification operation.
  * @typedef {?{
