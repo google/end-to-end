@@ -25,6 +25,7 @@
 --jscomp_error=unknownDefines
 --jscomp_error=uselessCode
 --jscomp_error=visibility
+--jscomp_warning=deprecated
 --externs=lib/closure-compiler/contrib/externs/chrome_extensions.js
 --only_closure_dependencies
 --manage_closure_dependencies
