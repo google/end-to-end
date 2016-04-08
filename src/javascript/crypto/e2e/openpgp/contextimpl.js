@@ -295,7 +295,7 @@ e2e.openpgp.ContextImpl.prototype.tryToImportKey_ = function(
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.generateKey = function(
     keyAlgo, keyLength, subkeyAlgo, subkeyLength,
-    name, comment, email, expirationDate) {
+    name, comment, email, expirationDate, opt_keyLocation) {
   var description = name || '';
   if (email) {
     if (description.length > 0) {
@@ -303,8 +303,8 @@ e2e.openpgp.ContextImpl.prototype.generateKey = function(
     }
     description += '<' + email + '>';
   }
-  return this.keyRing_.generateKey(
-      description, keyAlgo, keyLength, subkeyAlgo, subkeyLength).addCallback(
+  return this.keyRing_.generateKey(description, keyAlgo, keyLength, subkeyAlgo,
+      subkeyLength, opt_keyLocation).addCallback(
       function(res) {
         return goog.array.map(res, function(keyBlock) {
           return keyBlock.toKeyObject();
