@@ -29,5 +29,4 @@
 --externs=lib/closure-compiler/contrib/externs/chrome_extensions.js
 --only_closure_dependencies
 --manage_closure_dependencies
---js lib/closure-library/closure/goog/deps.js
 --js build/deps.js
