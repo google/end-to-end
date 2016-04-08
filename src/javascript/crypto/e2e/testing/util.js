@@ -24,7 +24,6 @@
 goog.provide('e2e.testing.Util');
 
 goog.require('goog.Promise');
-goog.require('goog.array');
 goog.require('goog.dom');
 goog.require('goog.testing.PerformanceTable');
 goog.require('goog.testing.PerformanceTimer');
@@ -57,7 +56,6 @@ e2e.testing.Util.runPerfTests = function(benchmarks, opt_numSamples,
     doc = goog.dom.getDocument();
   } catch (e) {}
   var allResults = {};
-  var deferredResults = [];
   var displayResultsFun;
   if (doc) { // We run in a browser.
     displayResultsFun = e2e.testing.Util.createPerformanceTable(timer);
@@ -70,19 +68,27 @@ e2e.testing.Util.runPerfTests = function(benchmarks, opt_numSamples,
     }
   };
 
-  goog.array.forEach(benchmarks, function(benchmark) {
+  var i = 0;
+  var runNextTask = function() {
+    var benchmark = benchmarks[i];
+    ++i;
     var task = new goog.testing.PerformanceTimer.Task(benchmark.benchmark);
+    var completionPromise;
     if (benchmark.async) {
-      var deferredResult = timer.runAsyncTask(task);
-      deferredResult.then(goog.bind(processTaskResults, this,
-          benchmark.label));
-      deferredResults.unshift(deferredResult);
+      completionPromise = timer.runAsyncTask(task).then(
+          goog.bind(processTaskResults, this, benchmark.label));
     } else {
-      processTaskResults(benchmark.label, timer.runTask(task));
+      completionPromise = goog.Promise.resolve(
+          processTaskResults(benchmark.label, timer.runTask(task)));
     }
-  });
+    if (i < benchmarks.length) {
+      return completionPromise.then(runNextTask);
+    } else {
+      return completionPromise;
+    }
+  };
 
-  return goog.Promise.all(deferredResults).then(function() {
+  return runNextTask().then(function() {
     return allResults;
   });
 };

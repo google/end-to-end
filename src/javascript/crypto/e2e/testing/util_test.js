@@ -65,7 +65,6 @@ function testSynchronous() {
     assertEquals(10, results['dummy'].count);
     asyncTestCase.continueTesting();
   });
-  assertEquals(20, counter); // All tests completed immediately.
 }
 
 
@@ -93,6 +92,4 @@ function testAsynchronous() {
     assertTrue(results['async'].average > 0);
     asyncTestCase.continueTesting();
   });
-  // Synchronous tests completed immediately.
-  assertEquals(counter, 10);
 }
