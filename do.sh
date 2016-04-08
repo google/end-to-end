@@ -56,7 +56,7 @@ e2e_assert_dependencies() {
 
 e2e_assert_bc() {
   # Verify, or download the correct bc libraries.
-  src/javascript/crypto/e2e/compatibility_tests/drivers/bc/download-libs.sh || { echo >&2 "Unable to install bouncy castle libraries"; exit 1; }
+  . src/javascript/crypto/e2e/compatibility_tests/drivers/bc/download-libs.sh || { echo >&2 "Unable to install bouncy castle libraries"; exit 1; }
 }
 
 e2e_assert_nodejs() {
