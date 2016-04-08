@@ -93,10 +93,10 @@ utils.getPgpAction = function(content) {
 
 
 /**
- * Extract a valid e-mail address from 'user id <email>' string. If no valid
- *   e-mail address can be extracted, returns null. Uses
- *   goog.format.EmailAddress, but also enforces stricter rules.
- * @param {string} recipient "username <email> string".
+ * Extract a valid e-mail address from 'user id &lt;email&gt;' string. If no
+ * valid e-mail address can be extracted, returns null. Uses
+ * {@link goog.format.EmailAddress}, but also enforces stricter rules.
+ * @param {string} recipient "username &lt;email&gt;" string.
  * @return {?string} Valid email address or null
  */
 utils.extractValidEmail = function(recipient) {

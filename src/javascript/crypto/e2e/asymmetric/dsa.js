@@ -33,6 +33,7 @@ goog.require('e2e.random');
 goog.require('e2e.signer.Algorithm');
 goog.require('e2e.signer.Signer');
 goog.require('e2e.signer.factory');
+goog.require('goog.array');
 goog.require('goog.asserts');
 
 
@@ -53,6 +54,34 @@ e2e.signer.Dsa = function(algorithm, opt_key) {
   goog.base(this, e2e.signer.Algorithm.DSA, opt_key);
 };
 goog.inherits(e2e.signer.Dsa, e2e.AlgorithmImpl);
+
+
+/**
+ * List of Hash algorithms that are allowed to be used for DSA for a given q
+ * bitlength. See {@link https://tools.ietf.org/html/rfc4880#section-13.6}.
+ * @type {!Object<number,!Array<!e2e.hash.Algorithm>>}
+ * @private
+ */
+e2e.signer.Dsa.ALLOWED_HASHES_ = {
+  160: [
+    e2e.hash.Algorithm.SHA1,
+    e2e.hash.Algorithm.SHA224,
+    e2e.hash.Algorithm.SHA256,
+    e2e.hash.Algorithm.SHA384,
+    e2e.hash.Algorithm.SHA512
+  ],
+  224: [
+    e2e.hash.Algorithm.SHA224,
+    e2e.hash.Algorithm.SHA256,
+    e2e.hash.Algorithm.SHA384,
+    e2e.hash.Algorithm.SHA512
+  ],
+  256: [
+    e2e.hash.Algorithm.SHA256,
+    e2e.hash.Algorithm.SHA384,
+    e2e.hash.Algorithm.SHA512
+  ]
+};
 
 
 /**
@@ -106,7 +135,20 @@ e2e.signer.Dsa.prototype.getHash = function() {
 
 
 /** @override */
+e2e.signer.Dsa.prototype.getHashAlgorithm = function() {
+  return this.hash_.algorithm;
+};
+
+
+/** @override */
 e2e.signer.Dsa.prototype.setHash = function(hash) {
+  var lenQ = this.q_.getBitLength();
+  var algorithm = hash.algorithm;
+  if (!e2e.signer.Dsa.ALLOWED_HASHES_[lenQ] ||
+      !goog.array.contains(e2e.signer.Dsa.ALLOWED_HASHES_[lenQ], algorithm)) {
+    throw new e2e.openpgp.error.InvalidArgumentsError(
+        'Given hash algorithm is disallowed for this DSA key: ' + algorithm);
+  }
   this.hash_ = hash;
 };
 
@@ -258,7 +300,7 @@ e2e.signer.Dsa.prototype.verify = function(m, sig) {
   }
 
   var w = this.q_.modInverse(s);
-  var z = new e2e.BigNum(this.hash_.hash(m));
+  var z = new e2e.BigNum(this.hashWithTruncation_(m));
   var u1 = this.q_.modMultiply(z.mod(this.q_), w);  // z may be >= q_
   var u2 = this.q_.modMultiply(r, w);
   var v = this.p_.modMultiply(this.p_.modPower(this.g_, u1),
@@ -287,7 +329,7 @@ e2e.signer.Dsa.prototype.signWithNonce_ = function(m, k) {
   }
   // r = (g^k mod p) mod q.
   var r = this.p_.modPower(this.g_, k).mod(this.q_);
-  var hashValue = this.hash_.hash(m);
+  var hashValue = this.hashWithTruncation_(m);
   var z = new e2e.BigNum(hashValue);
   // s = (k^{-1} (z + xr)) mod q.
   var tmp = z.add(this.q_.modMultiply(this.x_, r)).mod(this.q_);
@@ -330,5 +372,24 @@ e2e.signer.Dsa.prototype.generatePerMessageSecret_ = function() {
       e2e.BigNum.ONE);
 };
 
+
+/**
+ * Creates a message digest, truncating it to the bit-length of the prime order.
+ * @param {!e2e.ByteArray} message The message to hash.
+ * @return {!Array.<number>} The digest.
+ * @private
+*/
+e2e.signer.Dsa.prototype.hashWithTruncation_ = function(message) {
+  var hash = this.hash_.hash(message);
+
+  var requiredLength = Math.ceil(this.q_.getBitLength() / 8);
+
+  if (requiredLength > hash.length) {
+    throw new e2e.openpgp.error.InvalidArgumentsError(
+        'Digest algorithm is too short for given DSA parameters.');
+  }
+
+  return goog.array.slice(hash, 0, requiredLength);
+};
 
 e2e.signer.factory.add(e2e.signer.Dsa, e2e.signer.Algorithm.DSA);

@@ -39,7 +39,7 @@ var ui = null;
 function setUp() {
   mockControl = new goog.testing.MockControl();
 
-  stubs.setPath('e2e.openpgp.KeyRing.ECC_SEED_SIZE', 5);
+  stubs.setPath('e2e.openpgp.KeyGenerator.ECC_SEED_SIZE', 5);
 
   ui = new goog.ui.Component();
   ui.render(document.body);

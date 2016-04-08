@@ -19,10 +19,14 @@
  * @fileoverview A scheme for using different sources (e.g., webcrypto, JS) to
  * encrypt with ecdh.
  */
+goog.provide('e2e.scheme.Ecdh');
+
+goog.require('e2e.asymmetric.keygenerator');
+goog.require('e2e.async.Result');
 goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.scheme.EncryptionScheme');
-
-goog.provide('e2e.scheme.Ecdh');
+goog.require('goog.asserts');
+goog.require('goog.object');
 
 
 
@@ -33,7 +37,6 @@ goog.provide('e2e.scheme.Ecdh');
  * @extends {e2e.scheme.EncryptionScheme}
  */
 e2e.scheme.Ecdh = function(cipher) {
-  // This isn't actually implemented in Chrome yet...
   this.algorithmIdentifier = {
     'name': 'ECDH',
     'namedCurve': 'P-256'
@@ -45,15 +48,125 @@ goog.inherits(e2e.scheme.Ecdh, e2e.scheme.EncryptionScheme);
 
 /** @override */
 e2e.scheme.Ecdh.prototype.encryptWebCrypto = function(plaintext) {
-  throw new e2e.openpgp.error.UnsupportedError(
-      "Chrome doesn't support ecdh yet!");
+  // Together, generateKey and deriveBits should be equivalent to the Alice
+  // operation.
+  return e2e.async.Result.fromPromise(this.webCryptoGenerateEphemeralKey_()
+      .then(goog.bind(this.webCryptoDeriveBitsAlice_, this))
+      // WebCrypto includes built-in support for AES key wrapping ('AES-KW').
+      // Unfortunately, subtle.wrapKey requires the key to be in raw, pkcs8, or
+      // jwk format.  OpenPGP format is not supported.
+      // Therefore, we have to implement AES key wrapping ourselves by calling
+      // deriveBits.  We also have to do AES in javascript, because WebCrypto
+      // only supports AES-derived stream ciphers.
+      .then(goog.bind(this.webCryptoExportAndWrap_, this, plaintext)));
+};
+
+
+/**
+ * @private @typedef {{
+ *   privateKey: webCrypto.CryptoKey,
+ *   publicKey:webCrypto.CryptoKey
+ * }}
+ */
+e2e.scheme.Ecdh.WebCryptoKeyPair_;
+
+
+/**
+ * @return {!Promise<e2e.scheme.Ecdh.WebCryptoKeyPair_>}
+ * @private
+ */
+e2e.scheme.Ecdh.prototype.webCryptoGenerateEphemeralKey_ = function() {
+  return window.crypto.subtle.generateKey(this.algorithmIdentifier, true,
+      ['deriveBits']);
+};
+
+
+/**
+ * @private @typedef {{
+ *   derivedBits: ArrayBuffer,
+ *   ephemeralKey: e2e.scheme.Ecdh.WebCryptoKeyPair_
+ * }}
+ */
+e2e.scheme.Ecdh.WrapInputs_;
+
+
+/**
+ * @param {e2e.scheme.Ecdh.WebCryptoKeyPair_} ephemeralKey
+ * @return {!Promise<e2e.scheme.Ecdh.WrapInputs_>}
+ * @private
+ */
+e2e.scheme.Ecdh.prototype.webCryptoDeriveBitsAlice_ = function(ephemeralKey) {
+  var ecdhParams = goog.object.clone(this.algorithmIdentifier);
+  ecdhParams['public'] = this.cipher.getWebCryptoKey().publicKey;
+  return window.crypto.subtle.deriveBits(
+      ecdhParams, ephemeralKey.privateKey, 256).then(function(derivedBits) {
+    goog.asserts.assert(derivedBits.byteLength == 32);
+    return {
+      derivedBits: derivedBits,
+      ephemeralKey: ephemeralKey
+    };
+  });
+};
+
+
+/**
+ * @param {!e2e.ByteArray} plaintext
+ * @param {e2e.scheme.Ecdh.WrapInputs_} bitsAndKey
+ * @return {!Promise<e2e.cipher.ciphertext.CipherText>}
+ * @private
+ */
+e2e.scheme.Ecdh.prototype.webCryptoExportAndWrap_ = function(plaintext,
+    bitsAndKey) {
+  var derivedBits = bitsAndKey.derivedBits;
+  var ephemeralPubKey = bitsAndKey.ephemeralKey.publicKey;
+  var keyWrapper =
+      this.cipher.getKeyWrapper(new Uint8Array(derivedBits));
+  var u = keyWrapper.wrap(plaintext);
+  return window.crypto.subtle.exportKey('jwk', ephemeralPubKey)
+      .then(function(jwkKey) {
+        var ecKey = e2e.asymmetric.keygenerator.jwkToEc(jwkKey);
+        return {
+          'u': u,
+          'v': ecKey.pubKey
+        };
+      });
 };
 
 
 /** @override */
 e2e.scheme.Ecdh.prototype.decryptWebCrypto = function(ciphertext) {
-  throw new e2e.openpgp.error.UnsupportedError(
-      "Chrome doesn't support ecdh yet!");
+  return e2e.async.Result.fromPromise(
+      e2e.asymmetric.keygenerator.importWebCryptoKey(ciphertext.v,
+          this.algorithmIdentifier)
+      .then(goog.bind(this.webCryptoDeriveBitsBob_, this))
+      .then(goog.bind(this.webCryptoUnwrap_, this, ciphertext.u)));
+};
+
+
+/**
+ * @param {webCrypto.CryptoKey} ephemeralPubKey
+ * @return {!Promise<!ArrayBuffer>} The 32-byte (256-bit) shared secret.
+ * @private
+ */
+e2e.scheme.Ecdh.prototype.webCryptoDeriveBitsBob_ = function(ephemeralPubKey) {
+  var ecdhParams = goog.object.clone(this.algorithmIdentifier);
+  ecdhParams['public'] = ephemeralPubKey;
+  var myPrivateKey = this.cipher.getWebCryptoKey().privateKey;
+  return window.crypto.subtle.deriveBits(ecdhParams, myPrivateKey, 256);
+};
+
+
+/**
+ * @param {e2e.ByteArray} u The wrapped plaintext
+ * @param {ArrayBuffer} derivedBits A 256-bit shared secret
+ * @return {e2e.ByteArray} The plaintext
+ * @private
+ */
+e2e.scheme.Ecdh.prototype.webCryptoUnwrap_ = function(u, derivedBits) {
+  goog.asserts.assert(derivedBits.byteLength == 32);
+  var keyWrapper =
+      this.cipher.getKeyWrapper(new Uint8Array(derivedBits));
+  return keyWrapper.unwrap(u);
 };
 
 
@@ -75,3 +188,20 @@ e2e.scheme.Ecdh.prototype.decryptHardware = function(ciphertext) {
       "Hardware API doesn't exist yet");
 };
 
+
+/** @override */
+e2e.scheme.Ecdh.prototype.encryptJavaScriptKeyWithWebCrypto = function(
+    plaintext) {
+  if (!this.cipher.hasWebCryptoKey()) {
+    return e2e.async.Result.fromPromise(
+        e2e.asymmetric.keygenerator.importWebCryptoKey(
+            this.cipher.getKey()['pubKey'],
+            this.algorithmIdentifier)
+        .then(goog.bind(function(webCryptoKey) {
+          this.cipher.setWebCryptoKey({'publicKey': webCryptoKey});
+          return this.encryptWebCrypto(plaintext);
+        }, this)));
+  } else {
+    return this.encryptWebCrypto(plaintext);
+  }
+};

@@ -55,6 +55,18 @@ if (e2e.ext.utils.isChromeExtensionWindow() ||
       promptCompleteHandler = function() {
         window.close();
       };
+      // Add workaround for #242.
+      if (!isPopout) {
+        setTimeout(function() {
+          // Add a dummy element to resize the window, if Chrome did not resize
+          // it properly within a second.
+          if (window.outerWidth < 200) {
+            var dummy = document.createElement('div');
+            dummy.id = 'popupResizeWorkaround';
+            document.body.appendChild(dummy);
+          }
+        }, 1000);
+      }
     } else if (e2e.ext.utils.isChromeAppWindow()) {
       var webviewId = location.hash.substring(1);
       helperProxy = new e2e.ext.utils.WebviewHelperProxy(false,

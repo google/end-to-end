@@ -21,6 +21,7 @@
 /** @suppress {extraProvide} */
 goog.provide('e2e.ext.actions.ImportKeyTest');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.ext.actions.GetKeyDescription');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.testingstubs');
@@ -86,7 +87,8 @@ function testExecute() {
   parentUi.render(document.body);
 
   var pgpContext = new e2e.openpgp.ContextImpl(storage);
-  pgpContext.setKeyRingPassphrase(''); // No passphrase.
+  // No passphrase.
+  e2e.async.Result.getValue(pgpContext.initializeKeyRing(''));
   var request = {
     content: PUBLIC_KEY_ASCII,
     passphraseCallback: goog.nullFunction

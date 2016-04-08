@@ -24,50 +24,242 @@
   goog.require('e2e.async.Peer');
 </script>
 <script>
-  var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall();
+  var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(
+      document.title);
   function testEndToEnd() {
     var TEST_SERVICE = "http://test.example/e2e.test";
     var BAD_SERVICE = "http://test.example/bad.test";
+    var TEST_SERVICE_NAME = 'e2e';
     var ERROR_MSG = "Test error propagation.";
 
-    function FakeClient(port) {goog.base(this, port);}
+    function FakeClient(port) {
+      goog.base(this, port);
+    }
     goog.inherits(FakeClient, e2e.async.Client);
+
     FakeClient.prototype.ping = function(msg, callback, opt_errback) {
-      this.call("ping", [msg], callback, function() {
+      this.call("ping", [msg], callback, function(error) {
         if (!opt_errback) {
           fail("Error while invoking async method.");
         } else {
-          opt_errback();
+          opt_errback(error);
+        }
+      });
+    };
+    FakeClient.prototype.undef = function(one, two, callback, opt_errback) {
+      this.call("undef", [one, undefined, two], callback, function(error) {
+        if (!opt_errback) {
+          fail("Error while invoking async method.");
+        } else {
+          opt_errback(error);
         }
       });
     };
     FakeClient.prototype.err = function(errback) {
-      this.call("err", [], function(error){
+      this.call("err", [], function(error) {
         fail("Error wasn't propagated to client.");
       }, errback);
     };
     FakeClient.prototype.invalid = function(errback) {
-      this.call("invalid", [], function(error){
+      this.call("invalid", [], function(error) {
         fail("Invalid service succeeded..");
       }, errback);
     };
-
-    function FakeService(port) {goog.base(this, port);}
+    function FakeService(port) {
+      goog.base(this, port);
+    }
     goog.inherits(FakeService, e2e.async.Service);
+    FakeService.prototype.getResponse = function() {
+      var result = new e2e.async.Result();
+      asyncTestCase.timeout(function() {
+        result.callback({
+          name: TEST_SERVICE_NAME
+        });
+      }, 100);
+      return result;
+    };
     FakeService.prototype._public_err = function() {
       throw new Error(ERROR_MSG);
     };
+    FakeService.prototype._public_undef = function(one, undef, two) {
+      return one + undef + two;
+    };
 
-    function FakeServiceChild(port) {goog.base(this, port);}
+    function FakeServiceChild(port) {
+      goog.base(this, port);
+    }
     goog.inherits(FakeServiceChild, FakeService);
     FakeServiceChild.prototype._public_ping = function(msg) {
       if (msg == "loop") {
-        var x = {'z': function(){}, 'y': window, 'w': '1337'};
+        var x = {
+          'z': goog.nullFunction,
+          'y': window,
+          'w': '1337'
+        };
         x.x = x;
         return x;
       }
       return "pong " + msg;
     };
+    var fakeNetwork = new MessageChannel();
+    var sideOne = new e2e.async.Peer();
+    sideOne.addPort(fakeNetwork.port1);
+    var sideTwo = new e2e.async.Peer();
+    sideTwo.addPort(fakeNetwork.port2);
+    sideOne.init = sideTwo.init = goog.nullFunction;
+
+    assertArrayEquals("Ports in peers are registered.",
+                      sideOne.getPorts(),
+                      [fakeNetwork.port1]);
+
+    sideOne.registerService(TEST_SERVICE, FakeServiceChild);
+
+    asyncTestCase.waitForAsync("Waiting for test service to be discovered..");
+    sideTwo.findService(BAD_SERVICE, {}).addCallbacks(function(result) {
+      fail("Invalid service was found.");
+    }, function(err) {
+      fail("Errback called on invalid service when no timeout was present.");
+    });
+    sideOne.findService(TEST_SERVICE, {}).addCallbacks(function(result) {
+      fail("Service on own port shouldn't be found.");
+    },function(err) {
+      fail("Errback called when no timeout was present.");
+    });
+    sideTwo.findService(TEST_SERVICE, {}).addCallback(function(result) {
+      var res = result.response;
+      var port = result.port;
+      assertEquals(res.name, TEST_SERVICE_NAME);
+      asyncTestCase.waitForAsync("Waiting for ping RPC..");
+      var fc = new FakeClient(port);
+      fc.ping("asdf", function(ret) {
+        assertEquals("Service/Client communication test.", "pong asdf", ret);
+        asyncTestCase.waitForAsync('Waiting for err RPC..');
+        fc.err(function(error) {
+          if (error != ERROR_MSG) {
+            fail("Error wasn't propagated correctly.");
+          }
+          asyncTestCase.waitForAsync("Waiting for invalid RPC..");
+          fc.invalid(function() {
+            asyncTestCase.waitForAsync("Waiting for loop error");
+            fc.ping("loop", function(x) {
+              fail('Unserializable object should trigger an error.' + x.x);
+            }, function(error) {
+              assertTrue(goog.isString(error));
+              asyncTestCase.waitForAsync("Waiting for undef RPC");
+              fc.undef('1', undefined, function(result) {
+                assertEquals('1undefinedundefined', result);
+                asyncTestCase.continueTesting();
+              }, function() {
+                fail('Undefined parameters should not trigger errors');
+              });
+            });
+          });
+        });
+      });
+    });
+  }
+
+
+  function testDiscoveryErrors() {
+    var TEST_SERVICE = "http://test.example/e2e.test";
+    var TEST_SERVICE_NAME = 'e2e';
+    var ERROR_MSG = "Test error propagation.";
+
+    function FakeClient(port) {
+      goog.base(this, port);
+    }
+    goog.inherits(FakeClient, e2e.async.Client);
+    function FakeService(port) {
+      goog.base(this, port);
+    }
+    goog.inherits(FakeService, e2e.async.Service);
+    FakeService.prototype.getResponse = function() {
+      var result = new e2e.async.Result();
+      result.errback(ERROR_MSG);
+      return result;
+    };
+    var calledTimes = 0;
+    var fakeNetwork = new MessageChannel();
+    var sideOne = new e2e.async.Peer();
+    sideOne.addPort(fakeNetwork.port1);
+    var sideTwo = new e2e.async.Peer();
+    sideTwo.addPort(fakeNetwork.port2);
+    sideOne.init = sideTwo.init = goog.nullFunction;
+
+    sideOne.registerService(TEST_SERVICE, FakeService);
+    asyncTestCase.waitForAsync('Waiting for discovery error');
+    sideTwo.findService(TEST_SERVICE, {}).addCallbacks(function(response) {
+      fail('Callback called unexpectedly.');
+    }, function(err) {
+      assertEquals(ERROR_MSG, err);
+      asyncTestCase.continueTesting();
+    });
+  }
+
+
+  function testDiscoveryTimeouts() {
+    var TEST_SERVICE = "http://test.example/e2e.test";
+    var TEST_SERVICE_NAME = 'e2e';
+    var ERROR_MSG = "Test error propagation.";
+    var TIMEOUT_LENGTH = 50;
+    function FakeClient(port) {
+      goog.base(this, port);
+    }
+    goog.inherits(FakeClient, e2e.async.Client);
+    function FakeService(port) {
+      goog.base(this, port);
+    }
+    goog.inherits(FakeService, e2e.async.Service);
+    // Increase the service delay over the discovery timeout.
+    FakeService.prototype.getResponse = function() {
+      var result = new e2e.async.Result();
+      asyncTestCase.timeout(function() {
+        result.errback(ERROR_MSG);
+      }, TIMEOUT_LENGTH * 2);
+      return result;
+    };
+    var called = false;
+    var fakeNetwork = new MessageChannel();
+    var sideOne = new e2e.async.Peer();
+    sideOne.addPort(fakeNetwork.port1);
+    var sideTwo = new e2e.async.Peer();
+    sideTwo.addPort(fakeNetwork.port2);
+    sideOne.init = sideTwo.init = goog.nullFunction;
+
+    sideOne.registerService(TEST_SERVICE, FakeService);
+    asyncTestCase.waitForAsync("Waiting for test service to be discovered..");
+    sideTwo.findService(TEST_SERVICE, {}, TIMEOUT_LENGTH).addCallbacks(
+        function() {
+      fail('Callback called unexpectedly.');
+    }, function(err) {
+      called = true;
+      assertEquals(e2e.async.Broker.Error.FIND_SERVICE_TIMEOUT, err);
+    });
+    asyncTestCase.timeout(function() {
+      assertTrue(called);
+      asyncTestCase.continueTesting();
+    }, TIMEOUT_LENGTH * 4);
+  };
+
+
+  function testCallbacksEndToEnd() {
+    var TEST_SERVICE = "http://test.example/e2e.test";
+    var TEST_SERVICE_NAME = 'e2e';
+    var ERROR_MSG = "Test error propagation.";
+
+    function FakeClient(port) {
+      goog.base(this, port);
+    }
+    goog.inherits(FakeClient, e2e.async.Client);
+    function FakeService(port) {
+      goog.base(this, port);
+    }
+    goog.inherits(FakeService, e2e.async.Service);
+    FakeService.prototype.name = TEST_SERVICE_NAME;
+    function FakeServiceChild(port) {
+      goog.base(this, port);
+    }
+    goog.inherits(FakeServiceChild, FakeService);
 
     var fakeNetwork = new MessageChannel();
     var sideOne = new e2e.async.Peer();
@@ -76,44 +268,90 @@
     sideTwo.addPort(fakeNetwork.port2);
     sideOne.init = sideTwo.init = goog.nullFunction;
 
-    assertArrayEquals("Ports in peer are registered.",
-                      sideOne.getPorts(),
-                      [fakeNetwork.port1]);
-
     sideOne.registerService(TEST_SERVICE, FakeServiceChild);
 
     asyncTestCase.waitForAsync("Waiting for test service to be discovered..");
-    sideTwo.findService(BAD_SERVICE, {}, function(res, port) {
-      fail("Invalid service was found.");
-    });
-    sideOne.findService(TEST_SERVICE, {}, function(res, port) {
-      fail("Service on own port shouldn't be found.");
-    });
-    sideTwo.findService(TEST_SERVICE, {}, function(res, port) {
-      asyncTestCase.continueTesting();
-      asyncTestCase.waitForAsync("Waiting for ping RPC..");
+    sideTwo.findService(TEST_SERVICE, {}).addCallbacks(function(response) {
+      var res = response.response;
+      var port = response.port;
+      assertEquals(res.name, TEST_SERVICE_NAME);
+      asyncTestCase.waitForAsync("Waiting for callbackParam RPC");
       var fc = new FakeClient(port);
-      fc.ping("asdf", function(ret) {
-        assertEquals("Service/Client communication test.", "pong asdf", ret);
-        asyncTestCase.continueTesting();
-        asyncTestCase.waitForAsync('Waiting for err RPC..');
-        fc.err(function(error){
-          if (error != ERROR_MSG) {
-            fail("Error wasn't propagated correctly.");
-          }
-          asyncTestCase.continueTesting();
-          asyncTestCase.waitForAsync("Waiting for invalid RPC..");
-          fc.invalid(function(){
-            asyncTestCase.continueTesting();
-            asyncTestCase.waitForAsync("Waiting for loop error");
-            fc.ping("loop", function(x) {
-              fail('Unserializable object should trigger an error.' + x.x);
-            }, function() {
-              asyncTestCase.continueTesting();
+      // Test that parameter functions are being called, are async-aware and
+      // can be called multiple times.
+      FakeClient.prototype.callbackParam = function(p, firstCallbackParam, p2,
+          secondCallbackParam, callback) {
+        this.call("callbackParam", [p, firstCallbackParam, p2,
+            secondCallbackParam],
+            callback, fail);
+      };
+      FakeServiceChild.prototype._public_callbackParam = function(p,
+          firstCallbackParam, p2, secondCallbackParam) {
+        // Calls callbacks in a certain order a few times.
+        var outerResult = new e2e.async.Result();
+        firstCallbackParam(p + p2).addCallback(function(result) {
+          secondCallbackParam(result).addCallback(function(result) {
+            secondCallbackParam(result).addCallback(function(result) {
+              outerResult.callback(result);
             });
           });
         });
+        return outerResult;
+      };
+      fc.callbackParam('p', function(p) {
+        return 'one(' + p + ')';
+      }, 'P', function(p) {
+        return e2e.async.Result.toResult('two(' + p + ')');
+      }, function(result) {
+        assertEquals('two(two(one(pP)))', result);
+        asyncTestCase.waitForAsync('Waiting for error test.');
+        // Test that errors thrown are correctly resolved.
+        FakeClient.prototype.errorTest = function(callback) {
+          return this.deferredCall('errorTest', [callback]);
+        };
+        FakeServiceChild.prototype._public_errorTest = function(callback) {
+          var result = new e2e.async.Result();
+          callback().addCallback(fail).addErrback(function(err) {
+            result.errback(err);
+          });
+          return result;
+        };
+        var result = fc.errorTest(function() {
+          throw new Error(ERROR_MSG);
+        });
+        result.addCallbacks(fail, function(err) {
+          assertEquals(err, ERROR_MSG);
+          asyncTestCase.waitForAsync('Waiting for nested callbacks test.');
+          // Test nested callback parameters.
+          FakeClient.prototype.nestedCb = function(outerCallback) {
+            return this.deferredCall('nestedCb', [outerCallback]);
+          };
+          FakeServiceChild.prototype._public_nestedCb = function(
+              outerCallback) {
+            var innerCb = function(param) {
+              return param + 1;
+            }
+            var outerResult = new e2e.async.Result();
+            outerCallback(innerCb).addCallbacks(function(result) {
+              outerResult.callback(result);
+            }, fail);
+            return outerResult;
+          };
+          var result = fc.nestedCb(function(innerCb) {
+            var outerResult = new e2e.async.Result();
+            innerCb(1).addCallback(function(result) {
+              outerResult.callback(result);
+            }).addErrback(fail);
+            return outerResult;
+          });
+          result.addCallbacks(function(res) {
+            assertEquals(2, res);
+            asyncTestCase.continueTesting();
+          }, fail);
+        });
       });
+    }, function() {
+      fail('Errback unexpectedly called on findService().');
     });
   }
 </script>

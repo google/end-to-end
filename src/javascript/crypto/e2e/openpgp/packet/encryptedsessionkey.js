@@ -20,6 +20,8 @@
 
 goog.provide('e2e.openpgp.packet.EncryptedSessionKey');
 
+goog.require('e2e.async.Result');
+goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.packet.Packet');
 
 
@@ -56,11 +58,33 @@ goog.inherits(e2e.openpgp.packet.EncryptedSessionKey,
 
 
 /**
+ * Creates a cipher decrypting the session key encrpted in this packet.
+ * @param {!e2e.cipher.key.Key} key The key to decrypt the session key.
+ * @return {!e2e.cipher.Cipher} Cipher
+ */
+e2e.openpgp.packet.EncryptedSessionKey.prototype.createCipher =
+    goog.abstractMethod;
+
+
+/**
  * Decrypts the encrypted session key.
- * @param {e2e.cipher.key.Key} key The key to decrypt the session key.
- * @return {e2e.async.Result.<boolean>} True if decryption succeeded.
+ * @param {!e2e.cipher.key.Key} key The key to decrypt the session key.
+ * @return {!e2e.async.Result.<boolean>} True if decryption succeeded.
  */
 e2e.openpgp.packet.EncryptedSessionKey.prototype.decryptSessionKey =
+    function(key) {
+  return e2e.async.Result.toResult(key)
+      .addCallback(this.createCipher, this)
+      .addCallback(this.decryptSessionKeyWithCipher, this);
+};
+
+
+/**
+ * Decrypts the encrypted session key.
+ * @param {!e2e.cipher.Cipher} cipher The cipher decrypting the session key.
+ * @return {!e2e.async.Result.<boolean>} True if decryption succeeded.
+ */
+e2e.openpgp.packet.EncryptedSessionKey.prototype.decryptSessionKeyWithCipher =
     goog.abstractMethod;
 
 
@@ -76,4 +100,22 @@ e2e.openpgp.packet.EncryptedSessionKey.prototype.getSessionKey =
     return this.sessionKey;
   }
   throw new Error('Invalid session key.');
+};
+
+
+/**
+ * Ensures that the cipher can be applied to the symmetric key decryption for
+ * this packet.
+ * @param  {!e2e.cipher.Cipher} cipher The cipher.
+ * @return {!e2e.cipher.Cipher} The cipher.
+ * @protected
+ */
+e2e.openpgp.packet.EncryptedSessionKey.prototype.validateCipher = function(
+    cipher) {
+  // Algoritm mismatch.
+  if (cipher.algorithm !== this.algorithm) {
+    throw new e2e.openpgp.error.InvalidArgumentsError(
+        'Invalid cipher during SKESK packet decryption.');
+  }
+  return cipher;
 };

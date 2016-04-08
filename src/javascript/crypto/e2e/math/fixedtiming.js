@@ -21,19 +21,16 @@
 
 goog.provide('e2e.fixedtiming');
 
-goog.require('goog.asserts');
-
 
 /**
- * Selects a if bit is 1; otherwise selects b.
- * Copied from "Fast Elliptic Curve Cryptography in OpenSSL".
+ * Selects a if bit is 1, or selects b if bit is 0. Undefined if bit has other
+ *     values. Copied from "Fast Elliptic Curve Cryptography in OpenSSL".
  * @param {number} a
  * @param {number} b
  * @param {number} bit
  * @return {number}
  */
 e2e.fixedtiming.select = function(a, b, bit) {
-  goog.asserts.assert(bit === 0 || bit === 1, 'Wrong bit.');
   /* -0 = 0, -1 = 0xff....ff */
   var mask = (-bit) | 0;
   var ret = mask & (a ^ b);
@@ -43,7 +40,7 @@ e2e.fixedtiming.select = function(a, b, bit) {
 
 
 /**
- * Returns a if a > b; otherwise b;
+ * Returns a if a > b; otherwise b.
  * @param {number} a
  * @param {number} b
  * @return {number}

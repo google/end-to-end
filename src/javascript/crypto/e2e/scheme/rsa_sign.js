@@ -38,12 +38,14 @@ goog.provide('e2e.scheme.Rsassa');
 e2e.scheme.Rsassa = function(signer) {
   this.signer = signer;
   goog.base(this, signer);
-  this.algorithmIdentifier = {
-    'name': 'RSASSA-PKCS1-v1_5',
-    'modulusLength': signer.keySize,
-    'publicExponent': new Uint8Array(signer.getKey()['e']),
-    'hash': {'name': this.key.publicKey.algorithm.hash.name}
-  };
+  if (this.useWebCrypto) {
+    this.algorithmIdentifier = {
+      'name': 'RSASSA-PKCS1-v1_5',
+      'modulusLength': signer.keySize,
+      'publicExponent': new Uint8Array(signer.getKey()['e']),
+      'hash': {'name': this.key.publicKey.algorithm.hash.name}
+    };
+  }
 };
 goog.inherits(e2e.scheme.Rsassa, e2e.scheme.SignatureScheme);
 
@@ -113,6 +115,3 @@ e2e.scheme.Rsassa.prototype.signHardware = function(data) {
   throw new e2e.openpgp.error.UnsupportedError(
       "Hardware API doesn't support RSA yet");
 };
-
-
-

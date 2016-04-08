@@ -16,44 +16,83 @@
 
 
 /**
- * @fileoverview Definition of a messaging service interacting with an
- * OpenPGP ContextImpl. Meant to be used in a WebWorker.
+ * @fileoverview Definition of an async service exposed over a
+ * {@link MessagePort} interacting with an OpenPGP ContextImpl.
  */
 goog.provide('e2e.openpgp.ContextService');
 
-goog.require('e2e.messaging.AsyncRespondingChannel');
+goog.require('e2e.async.Result');
+goog.require('e2e.async.Service');
 goog.require('goog.array');
 
 
 
 /**
- * Service exposing an OpenPGP Context over Closure messaging channel.
- * @param {!e2e.openpgp.Context} contextImpl OpenPGP context
- * @param {!goog.messaging.PortChannel} portChannel Messaging channel that the
- *     service will listen at.
+ * Constructor for the ContextService. It will expose OpenPGP Context functions,
+ * dispatching them to a Context implementation resolved in a promise passed
+ * during instantiation.
+ * @param {e2e.async.Result<!e2e.openpgp.Context>} contextPromise Promise of
+ *    Context.
+ * @param {MessagePort} port The port to use for the service.
+ * @extends {e2e.async.Service}
  * @constructor
  */
-e2e.openpgp.ContextService = function(contextImpl, portChannel) {
+e2e.openpgp.ContextService = function(contextPromise, port) {
+  goog.base(this, port);
   /**
-   * @type {!e2e.openpgp.Context}
-   * @private
+   * Bid response, resolved when the context is ready.
+   * @private {!e2e.async.Result.<!e2e.async.BidResponse>}
    */
-  this.context_ = contextImpl;
-  /**
-   * @type {!e2e.messaging.AsyncRespondingChannel}
-   * @private
-   */
-  this.channel_ = new e2e.messaging.AsyncRespondingChannel(portChannel);
-  this.channel_.registerService(e2e.openpgp.ContextService.SERVICE_NAME,
-      goog.bind(this.handleMessage_, this));
+  this.bidResponse_ = new e2e.async.Result();
+  contextPromise.addCallback(function(context) {
+    this.initializeContext_(context);
+  }, this);
 };
+goog.inherits(e2e.openpgp.ContextService, e2e.async.Service);
+
+
+/**
+ * Initializes the context.
+ * @param  {!e2e.openpgp.Context} context The OpenPGP context.
+ * @private
+ */
+e2e.openpgp.ContextService.prototype.initializeContext_ = function(context) {
+  this.bindContextMethods_(context);
+  var response = /** @type {!e2e.async.BidResponse} */ ({
+    'name': this.name
+  });
+  this.bidResponse_.callback(response);
+};
+
+
+/**
+ * Binds exposed OpenPGP service methods to a given Context object.
+ * @param {!e2e.openpgp.Context} context The OpenPGP context.
+ * @private
+ */
+e2e.openpgp.ContextService.prototype.bindContextMethods_ = function(context) {
+  goog.array.forEach(e2e.openpgp.ContextService.allowedMethods_, function(
+      method) {
+        if (goog.isFunction(context[method])) {
+          this['_public_' + method] = goog.bind(context[method], context);
+        }
+      }, this);
+};
+
+
+/**
+ * Name of the service in a static context.
+ * @type {string}
+ * @export
+ */
+e2e.openpgp.ContextService.NAME = 'e2e.openpgp.ContextService';
 
 
 /**
  * Name of the service.
  * @type {string}
  */
-e2e.openpgp.ContextService.SERVICE_NAME = 'e2e-context';
+e2e.openpgp.ContextService.prototype.name = e2e.openpgp.ContextService.NAME;
 
 
 /**
@@ -72,6 +111,7 @@ e2e.openpgp.ContextService.allowedMethods_ = [
   'getKeyringBackupData',
   'hasPassphrase',
   'isKeyRingEncrypted',
+  'initializeKeyRing',
   'restoreKeyring',
   'searchKey',
   'searchPrivateKey',
@@ -83,17 +123,18 @@ e2e.openpgp.ContextService.allowedMethods_ = [
 
 
 /**
- * Forwards all incoming messages to an OpenPGP context.
- * @param  {Object} message The message
- * @return {?} Responses from the internal context.
- * @private
+ * Registers a ContextService.
+ * @param {!e2e.async.Peer} peer Peer to register the service in.
+ * @param {!e2e.async.Result<!e2e.openpgp.Context>} contextPromise Promise of a
+ * Context implementation that will handle all the requests coming to a peer.
  */
-e2e.openpgp.ContextService.prototype.handleMessage_ = function(message) {
-  var incomingMessage = /** @type {{name:string, params:Array.<?>}} */ (
-      message);
-  if (goog.array.contains(e2e.openpgp.ContextService.allowedMethods_,
-      incomingMessage.name) && goog.isArray(incomingMessage.params)) {
-    return this.context_[incomingMessage.name].apply(
-        this.context_, incomingMessage.params);
-  }
+e2e.openpgp.ContextService.launch = function(peer, contextPromise) {
+  peer.registerService(e2e.openpgp.ContextService.NAME,
+      goog.bind(e2e.openpgp.ContextService, null, contextPromise));
+};
+
+
+/** @override */
+e2e.openpgp.ContextService.prototype.getResponse = function(bid) {
+  return this.bidResponse_;
 };

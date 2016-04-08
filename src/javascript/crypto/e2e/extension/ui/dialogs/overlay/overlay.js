@@ -23,6 +23,7 @@ goog.provide('e2e.ext.ui.dialogs.Overlay');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
+goog.require('goog.style');
 goog.require('goog.ui.Dialog');
 
 goog.scope(function() {
@@ -48,8 +49,8 @@ dialogs.Overlay.prototype.decorateInternal = function(elem) {
   goog.base(this, 'decorateInternal', elem);
   this.setButtonSet(goog.ui.Dialog.ButtonSet.createOk());
   goog.dom.classlist.add(this.getElement(), 'overlayDialog');
-  goog.dom.removeNode(
-      goog.dom.getElementByClass('modal-dialog-title-close', elem));
+  goog.style.setElementShown(
+      goog.dom.getElementByClass('modal-dialog-title-close', elem), false);
 
 
   /*

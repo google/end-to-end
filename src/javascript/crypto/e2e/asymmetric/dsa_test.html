@@ -40,6 +40,7 @@ function testWithNISTVectors() {
             'y': vector['Y']};
         var dsa = new e2e.signer.Dsa(
             e2e.signer.Algorithm.DSA, key);
+        assertEquals(vector['hash'], dsa.getHashAlgorithm());
 
         // Test consistency
         for (var i = 0; i < 10; i++) {
@@ -101,5 +102,41 @@ function testInvalidSignature() {
   };
   assertFalse('s should be less than Q.',
       e2e.async.Result.getValue(dsa.verify(m, sig)));
+}
+
+function testSetHash() {
+  // L=1024, N=160, SHA1 and longer allowed as per RFC 4880
+  var vector = e2e.signer.dsaTestData.NIST_VECTORS[0];
+  var key = {
+      'p': vector['P'],
+      'q': vector['Q'],
+      'g': vector['G'],
+      'x': vector['X'],
+      'y': vector['Y']};
+
+  var dsa = new e2e.signer.Dsa(e2e.signer.Algorithm.DSA, key);
+  assertEquals('SHA1', dsa.getHashAlgorithm());
+  var hash = new e2e.hash.Sha1();
+  dsa.setHash(hash);
+  assertEquals(hash, dsa.getHash());
+
+  // L=3072, N=256, SHA-256 and longer allowed as per RFC 4880
+  vector = e2e.signer.dsaTestData.NIST_VECTORS[4];
+  key = {
+      'p': vector['P'],
+      'q': vector['Q'],
+      'g': vector['G'],
+      'x': vector['X'],
+      'y': vector['Y']};
+  dsa = new e2e.signer.Dsa(e2e.signer.Algorithm.DSA, key);
+  hash = new e2e.hash.Sha1();
+  assertEquals('SHA256', dsa.getHashAlgorithm());
+  assertThrows(function() {
+    dsa.setHash(hash);
+  });
+  assertEquals('SHA256', dsa.getHashAlgorithm());
+  hash =  new e2e.hash.Sha512();
+  dsa.setHash(hash);
+  assertEquals('SHA512', dsa.getHashAlgorithm());
 }
 </script>

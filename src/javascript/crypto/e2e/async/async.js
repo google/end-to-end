@@ -22,6 +22,8 @@
 
 goog.provide('e2e.async.Bid');
 goog.provide('e2e.async.BidResponse');
+goog.provide('e2e.async.ServiceLookupResponse');
+goog.provide('e2e.async.ServiceLookupResponseResult');
 
 
 /**
@@ -37,3 +39,16 @@ e2e.async.Bid;
  */
 e2e.async.BidResponse;
 
+
+/**
+ * Holds service response to the client at discovery time.
+ * @typedef {{port: !MessagePort, response: !e2e.async.BidResponse}}
+ */
+e2e.async.ServiceLookupResponse;
+
+
+/**
+ * Holds an asynchronous result of a service discovery.
+ * @typedef {!e2e.async.Result.<!e2e.async.ServiceLookupResponse>}
+ */
+e2e.async.ServiceLookupResponseResult;

@@ -1,0 +1,127 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<html>
+<head>
+<title>Unit of e2e.openpgp.providers.KeyringKeyProvider</title>
+<script src="../../../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.openpgp.providers.KeyringKeyProviderTest');
+</script>
+</head>
+<body>
+<!--
+:secret key packet:
+  version 4, algo 19, created 0, expires 0
+  unknown algorithm 19
+:user ID packet: "<ecc@example.com>"
+:signature packet: algo 19, keyid 8FF3F65C60D7988C
+  version 4, created 1437491193, md5len 0, sigclass 0x10
+  digest algo 8, begin of digest 2c 85
+  critical hashed subpkt 2 len 4 (sig created 2015-07-21)
+  critical hashed subpkt 11 len 1 (pref-sym-algos: 9)
+  critical hashed subpkt 16 len 8 (issuer key ID 8FF3F65C60D7988C)
+  critical hashed subpkt 21 len 4 (pref-hash-algos: 8 9 10 11)
+  critical hashed subpkt 22 len 2 (pref-zip-algos: 1 2)
+  critical hashed subpkt 27 len 1 (key flags: 03)
+  critical hashed subpkt 30 len 1 (features: 01)
+  unknown algorithm 19
+:secret sub key packet:
+  version 4, algo 18, created 0, expires 0
+  unknown algorithm 18
+:signature packet: algo 19, keyid 8FF3F65C60D7988C
+  version 4, created 1437491193, md5len 0, sigclass 0x18
+  digest algo 8, begin of digest 7b 95
+  critical hashed subpkt 2 len 4 (sig created 2015-07-21)
+  critical hashed subpkt 16 len 8 (issuer key ID 8FF3F65C60D7988C)
+  critical hashed subpkt 27 len 1 (key flags: 0C)
+  unknown algorithm 19
+:public key packet:
+  version 4, algo 19, created 0, expires 0
+  unknown algorithm 19
+:user ID packet: "<ecc@example.com>"
+:signature packet: algo 19, keyid 8FF3F65C60D7988C
+  version 4, created 1437491193, md5len 0, sigclass 0x10
+  digest algo 8, begin of digest 2c 85
+  critical hashed subpkt 2 len 4 (sig created 2015-07-21)
+  critical hashed subpkt 11 len 1 (pref-sym-algos: 9)
+  critical hashed subpkt 16 len 8 (issuer key ID 8FF3F65C60D7988C)
+  critical hashed subpkt 21 len 4 (pref-hash-algos: 8 9 10 11)
+  critical hashed subpkt 22 len 2 (pref-zip-algos: 1 2)
+  critical hashed subpkt 27 len 1 (key flags: 03)
+  critical hashed subpkt 30 len 1 (features: 01)
+  unknown algorithm 19
+:public sub key packet:
+  version 4, algo 18, created 0, expires 0
+  unknown algorithm 18
+:signature packet: algo 19, keyid 8FF3F65C60D7988C
+  version 4, created 1437491193, md5len 0, sigclass 0x18
+  digest algo 8, begin of digest 7b 95
+  critical hashed subpkt 2 len 4 (sig created 2015-07-21)
+  critical hashed subpkt 16 len 8 (issuer key ID 8FF3F65C60D7988C)
+  critical hashed subpkt 27 len 1 (key flags: 0C)
+  unknown algorithm 19
+-->
+<textarea id="privKeyAscii">
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+Charset: UTF-8
+Version: End-To-End v0.3.1342
+
+xf8AAAB3BAAAAAATCCqGSM49AwEHAgMEoSifuQo4/H+V0Gp5tL4CK2OWzWj8IPnz
+9UgcjzVD+XuQn0df2EOvzaYyrsPg22EtYL2zC9YmnYCepAb5xwpkuAABAKwU3Ben
+cEHRUx6ttG2D451GToF/qzJRq8npUxC4/idmD+TN/wAAABE8ZWNjQGV4YW1wbGUu
+Y29tPsL/AAAAjQQQEwgAP/8AAAAFglWuX/n/AAAAAosJ/wAAAAmQj/P2XGDXmIz/
+AAAABZUICQoL/wAAAAOWAQL/AAAAApsD/wAAAAKeAQAALIUBALZW5k3tDXKPF1K8
+nRVMEBHVANNA9/Xaeh9aGpST52V7AP0T5DmVdI+GBvpuIRaajrtsuRGC8dN2ntUg
+NJuw0oTfw8f/AAAAewQAAAAAEggqhkjOPQMBBwIDBIqfSEyGDjC9hIyoDkXf+WmX
++e8W8JsmME5HmC25rfRIZeMLwrCQhSneG+84Ayl80dhqbEiwBaA0YwDGaqo/OzgD
+AQgHAAEAg+my62jbyoXnnrxai+YZ7x71S5eCU5HxsxNgK7vioGYS8ML/AAAAbQQY
+EwgAH/8AAAAFglWuX/n/AAAACZCP8/ZcYNeYjP8AAAACmwwAAHuVAQC62gMtCv45
+Esvv4jCVQaQwAv5CovijlQ6ui15Yc8r2dgEAy2BpitZApn6ex1E6x7HpKiF43POm
+cUrKGTjgUzG3jhTG/wAAAFIEAAAAABMIKoZIzj0DAQcCAwShKJ+5Cjj8f5XQanm0
+vgIrY5bNaPwg+fP1SByPNUP5e5CfR1/YQ6/NpjKuw+DbYS1gvbML1iadgJ6kBvnH
+CmS4zf8AAAARPGVjY0BleGFtcGxlLmNvbT7C/wAAAI0EEBMIAD//AAAABYJVrl/5
+/wAAAAKLCf8AAAAJkI/z9lxg15iM/wAAAAWVCAkKC/8AAAADlgEC/wAAAAKbA/8A
+AAACngEAACyFAQC2VuZN7Q1yjxdSvJ0VTBAR1QDTQPf12nofWhqUk+dlewD9E+Q5
+lXSPhgb6biEWmo67bLkRgvHTdp7VIDSbsNKE38PO/wAAAFYEAAAAABIIKoZIzj0D
+AQcCAwSKn0hMhg4wvYSMqA5F3/lpl/nvFvCbJjBOR5gtua30SGXjC8KwkIUp3hvv
+OAMpfNHYamxIsAWgNGMAxmqqPzs4AwEIB8L/AAAAbQQYEwgAH/8AAAAFglWuX/n/
+AAAACZCP8/ZcYNeYjP8AAAACmwwAAHuVAQDiH5ZSA1uK1cBkYiE8XsOPMDPMuJCk
+eHG2lkUe7Bnf4wEAoMSOzO3OkDmqdIIRM3kdJo2tH5TRjX0t8iTC2ExSQ/Q=
+=e1oC
+-----END PGP PRIVATE KEY BLOCK-----
+</textarea>
+<!--
+Message signed by privKeyAscii and encrypted to it.
+-->
+<textarea id="encryptedSignedMessage">
+-----BEGIN PGP MESSAGE-----
+Charset: UTF-8
+Version: End-To-End v0.31337.1
+
+wf8AAAB+A+pNsW88ZmiXEgIDBLoMx/0zyqWkbgPA8Fsy3a3TwL4uR9kmhekcHJCl
+5CRx8e7gZIO1Ftq7uN1mRartauhrlNZuM1gDPumTGyMAfLUwVxqjAo2i/4mVgN+q
+2xGZLDU5Z/ILv087WVuUOXk3/n+fuvCCgBEmS3R2houY6v2R0v8AAADaAWNh478w
+hVTeJWyxvERIDVH8Xd0YmO/fbg69Z3lcugihyiq6wMaWmjmHYTW9+DXyVUoSQzpS
+NJsjUPjEr2vZYb277LHLO0UHjLZCW+BANRXGUF2wtTvbRhqlXhYorj8Weixk9Gkn
+TWh8XA1phM7gZ+9tJzTTH8RTrbglCmuVj0YNJo3mkzw7tmSj52BHX4B1dbT29A3I
+nycE5ygLzRdxhj2tqJ68VFl04r3GZtrY5ekEpk13J1mZO8kOb8z2ABzxsMUkOG7y
+GohKKIef3LR50tUBQ/6j4cP+TR8=
+=rQe7
+-----END PGP MESSAGE-----
+</textarea>
+</body>
+</html>

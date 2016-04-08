@@ -20,6 +20,11 @@
 
 export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 
+# symlink function with fallback on cp in case of failure.
+symlink() {
+  ln -s "$@" || cp -R "$@"
+}
+
 type ant >/dev/null 2>&1 || {
   echo >&2 "Ant is required to build End-To-End dependencies."
   exit 1
@@ -37,26 +42,16 @@ fi
 if [ ! -d lib ]; then
   mkdir lib
 fi
+
+git submodule init
+git submodule update
+
 cd lib
 
-# checkout closure library
-if [ ! -d closure-library/.git ]; then
-  git clone --depth 1 https://github.com/google/closure-library closure-library
-fi
-
-# checkout zlib.js
-if [ ! -d zlib.js/.git ]; then
-  git clone --depth 1 https://github.com/imaya/zlib.js zlib.js
+# symlink typedarray
+if [ ! -d typedarray ]; then
   mkdir typedarray
-  ln -s ../zlib.js/define/typedarray/use.js typedarray/use.js
-fi
-
-# checkout closure compiler
-if [ ! -d closure-compiler/.git ]; then
-  if [ -d closure-compiler ]; then # remove binary release directory
-    rm -rf closure-compiler
-  fi
-  git clone --depth 1 https://github.com/google/closure-compiler closure-compiler
+  symlink ../zlib.js/define/typedarray/use.js typedarray/use.js
 fi
 
 # build closure compiler
@@ -74,23 +69,22 @@ if [ ! -d closure-templates-compiler ]; then
   rm closure-templates-for-javascript-latest.zip
 fi
 
-# checkout css compiler
-if [ ! -d closure-stylesheets ]; then
-  git clone https://github.com/google/closure-stylesheets
+# build css compiler
+if [ ! -f closure-stylesheets/build/closure-stylesheets.jar ]; then
   cd closure-stylesheets
   ant
   cd ..
 fi
 
-if [ ! -f chrome_extensions.js ]; then
-  curl https://raw.githubusercontent.com/google/closure-compiler/master/contrib/externs/chrome_extensions.js -O
+if [ -f chrome_extensions.js ]; then
+  rm -f chrome_extensions.js
 fi
 
 # Temporary fix
 # Soy file bundled with the compiler does not compile with strict settings:
 # lib/closure-templates-compiler/soyutils_usegoog.js:1762: ERROR - element JS_STR_CHARS does not exist on this enum
 cd closure-templates-compiler
-curl https://raw.githubusercontent.com/google/closure-templates/master/javascript/soyutils_usegoog.js -O
+curl https://raw.githubusercontent.com/google/closure-templates/0cbc8543c34d3f7727dd83a2d1938672f16d5c20/javascript/soyutils_usegoog.js -O
 cd ..
 
 cd ..

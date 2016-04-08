@@ -163,13 +163,34 @@ input:focus {
   visibility: hidden;
 }
 
+.key-info {
+  padding: 5px;
+  width: 530px;
+}
+
+.key-meta {
+  opacity: .6;
+}
+
 .key-meta > * {
   display: inline-block;
 }
 
-.key-meta > input[type="checkbox"] {
-  margin-right: 10px;
-  vertical-align: middle;
+.keyring-signup {
+  position: relative;
+  padding-left: 10px;
+}
+
+.keyring-signup:before {
+  content: '+';
+  position: absolute;
+  left: 0;
+  margin-top: 2px;
+  font-size: 11px;
+}
+
+.keyring-signup:hover {
+  text-decoration: underline;
 }
 
 .key-type-description {
@@ -178,7 +199,6 @@ input:focus {
 }
 
 .key-fingerprint {
-  font-family: monospace;
   white-space: pre;
 }
 

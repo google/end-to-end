@@ -15,16 +15,18 @@
  */
 
 /**
- * @fileoverview Starts the extension.
+ * @fileoverview Starts the extension/app.
  */
+goog.provide('e2e.ext.bootstrap');
 
 goog.require('e2e.ext.AppLauncher');
 goog.require('e2e.ext.ExtensionLauncher');
+goog.require('e2e.ext.constants.StorageKey');
 goog.require('e2e.ext.util.ChromeStorageLocal');
 goog.require('e2e.ext.utils');
+goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.storage.mechanism.HTML5LocalStorage');
-
-goog.provide('e2e.ext.bootstrap');
+goog.require('goog.storage.mechanism.PrefixedMechanism');
 
 
 /**
@@ -45,19 +47,34 @@ e2e.ext.bootstrapLauncher_ = function(launcher) {
 e2e.ext.bootstrap = false;
 
 
+/**
+ * Creates the launcher, detecting the runtime environment and starts it.
+ * @private
+ */
+e2e.ext.bootstrap_ = function() {
+  if (e2e.ext.utils.isChromeAppWindow()) {
+    // For the app, use chrome.local.storage backend.
+    new e2e.ext.util.ChromeStorageLocal(
+        /** @type {function(!e2e.ext.util.ChromeStorageLocal)} */ (function(
+        storage) {
+          var contextImpl = new e2e.openpgp.ContextImpl(storage);
+          var prefStorage = new goog.storage.mechanism.PrefixedMechanism(
+              storage,
+              e2e.ext.constants.StorageKey.PREFERENCES);
+          var launcher = new e2e.ext.AppLauncher(contextImpl, prefStorage);
+          e2e.ext.bootstrapLauncher_(launcher);
+        }));
+  } else if (e2e.ext.utils.isChromeExtensionWindow()) {
+    // For the extension, use ContextImpl with default localStorage backend.
+    // We don't use chrome.storage.local, because it's accessible from content
+    // scripts, that may share processes with arbitrary web origins.
+    var storage = new goog.storage.mechanism.HTML5LocalStorage();
+    var contextImpl = new e2e.openpgp.ContextImpl(storage);
+    var prefStorage = new goog.storage.mechanism.PrefixedMechanism(storage,
+        e2e.ext.constants.StorageKey.PREFERENCES);
+    e2e.ext.bootstrapLauncher_(new e2e.ext.ExtensionLauncher(contextImpl,
+        prefStorage));
+  }
+};
 
-// Create the launcher and start it.
-if (e2e.ext.utils.isChromeAppWindow()) {
-  // Use chrome.local.storage for an app.
-  new e2e.ext.util.ChromeStorageLocal(
-      /** @type {function(!e2e.ext.util.ChromeStorageLocal)} */ (function(
-      storage) {
-        e2e.ext.bootstrapLauncher_(new e2e.ext.AppLauncher(storage));
-      }));
-} else if (e2e.ext.utils.isChromeExtensionWindow()) {
-  // For extension, use ContextImpl with default localStorage backend.
-  // We don't use chrome.storage.local, because it's accessible from content
-  // scripts, that may share processes with arbitrary web origins.
-  e2e.ext.bootstrapLauncher_(new e2e.ext.ExtensionLauncher(
-      new goog.storage.mechanism.HTML5LocalStorage()));
-}
+e2e.ext.bootstrap_();

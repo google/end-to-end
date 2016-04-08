@@ -22,6 +22,9 @@
 
 goog.provide('e2e.async.Client');
 
+goog.require('e2e.async.Result');
+goog.require('e2e.async.util');
+
 
 
 /**
@@ -43,12 +46,12 @@ e2e.async.Client = function(port, opt_errback) {
    * @type {function(*)}
    * @private
    */
-  this.errback_ = opt_errback || function() {};
+  this.errback_ = opt_errback || goog.nullFunction;
 };
 
 
 /**
- * Invokes a service method and returns it's value to callback.
+ * Invokes a service method and returns its value to callback.
  * @param {string} method The method to invoke in the service.
  * @param {Array.<*>} args The arguments to send to the method.
  * @param {function(*)} callback The callback for this service.
@@ -57,10 +60,36 @@ e2e.async.Client = function(port, opt_errback) {
 e2e.async.Client.prototype.call = function(
     method, args, callback, opt_errback) {
   var mc = new MessageChannel();
+  var otherPorts = [];
   this.registerCallback_(mc.port1, callback, opt_errback || this.errback_);
+  for (var i = 0; i < args.length; i++) {
+    if (typeof args[i] == 'function') {
+      var portWrap = e2e.async.util.wrapFunction(
+          /** @type {function(...*):*} */(args[i]));
+      otherPorts.push(portWrap);
+      // There's no off-by-1, as the first port will be mc.port2.
+      args[i] = {'__port__': otherPorts.length};
+    }
+  }
   this.port_.postMessage({
     'method': method,
-    'arguments': args}, [mc.port2]);
+    'arguments': args}, [mc.port2].concat(otherPorts));
+};
+
+
+/**
+ * Invokes a service method and returns a Deferred that will be resolved with
+ * its return value.
+ * @param {string} func The function name.
+ * @param {!Array.<*>} callArguments The arguments of the function.
+ * @return {!e2e.async.Result} Deferred result.
+ */
+e2e.async.Client.prototype.deferredCall = function(
+    func, callArguments) {
+  var result = new e2e.async.Result();
+  this.call(func, callArguments, goog.bind(result.callback, result),
+      goog.bind(result.errback, result));
+  return result;
 };
 
 

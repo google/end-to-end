@@ -25,11 +25,14 @@ goog.provide('e2e.otr.message.Signature');
 goog.require('e2e.hash.Sha256');
 goog.require('e2e.otr');
 goog.require('e2e.otr.Data');
+goog.require('e2e.otr.Mpi');
 goog.require('e2e.otr.Sig');
 goog.require('e2e.otr.constants');
 goog.require('e2e.otr.constants.MessageType');
-goog.require('e2e.otr.message.Message');
+goog.require('e2e.otr.error.ParseError');
+goog.require('e2e.otr.message.Encoded');
 goog.require('e2e.otr.message.handler');
+goog.require('e2e.otr.pubkey.Dsa');
 goog.require('e2e.otr.util.Iterator');
 goog.require('e2e.otr.util.aes128ctr');
 goog.require('goog.crypt.Hmac');
@@ -125,6 +128,9 @@ e2e.otr.message.Signature.process = function(session, data) {
 
       // TODO(rcc): Make Type.parse accept Iterator to pull appropriate data.
       var pubAType = iter.next(2);
+      if (e2e.otr.shortToNum(pubAType) != 0) {
+        throw new e2e.otr.error.ParseError('Unrecognized public key type.');
+      }
       var pubA = new e2e.otr.pubkey.Dsa({
         p: Array.apply([], e2e.otr.Mpi.parse(iter.nextEncoded()).deconstruct()),
         q: Array.apply([], e2e.otr.Mpi.parse(iter.nextEncoded()).deconstruct()),

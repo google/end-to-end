@@ -24,6 +24,7 @@ goog.provide('e2e.ext.utils.actionTest');
 goog.require('e2e.ext.ExtensionLauncher');
 goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.utils.action');
+goog.require('e2e.openpgp.ContextImpl');
 goog.require('e2e.openpgp.asciiArmor');
 goog.require('e2e.openpgp.block.factory');
 goog.require('goog.testing.MockControl');
@@ -65,6 +66,7 @@ function setUp() {
   e2e.ext.testingstubs.initStubs(stubs);
 
   launcher = new e2e.ext.ExtensionLauncher(
+      new e2e.openpgp.ContextImpl(new goog.testing.storage.FakeMechanism()),
       new goog.testing.storage.FakeMechanism());
   launcher.start();
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
@@ -83,6 +85,7 @@ function tearDown() {
 function testExtractUserIds() {
   var byteData = e2e.openpgp.asciiArmor.parse(PUBLIC_KEY_ASCII).data;
   var key = e2e.openpgp.block.factory.parseByteArrayMulti(byteData)[0];
+  key.processSignatures();
   assertEquals('test 4', utils.extractUserIds([key.toKeyObject()]));
 }
 

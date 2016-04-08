@@ -24,6 +24,9 @@
   goog.require('e2e.ecc.ecdsaTestData');
   goog.require('e2e.ecc.PrimeCurve');
   goog.require('e2e.ecc.Protocol');
+  goog.require('e2e.hash.Md5');
+  goog.require('e2e.hash.Sha1');
+  goog.require('e2e.hash.factory');
   goog.require('e2e.hash.Hash');
 </script>
 <script>
@@ -91,6 +94,25 @@ function testUnlikelyHashValues() {
   sig3 = ecdsa.sign(m3);
   assertTrue(ecdsa.verify(m3, sig3));
   assertTrue(ecdsa.verify(m1, sig3));
+}
+
+
+/**
+ * Make sure that ECDSA will not use weak hashes.
+ */
+function testDisallowedHashAlgo() {
+  var key = e2e.ecc.Protocol.generateKeyPair(
+    e2e.ecc.PrimeCurve.P_256);
+  var ecdsa = new e2e.ecc.Ecdsa(
+    e2e.ecc.PrimeCurve.P_256, key);
+  var md5Hash = e2e.hash.factory.require(e2e.hash.Algorithm.MD5);
+  var sha1Hash = e2e.hash.factory.require(e2e.hash.Algorithm.SHA1);
+  assertThrows(function() {
+    ecdsa.setHash(md5Hash);
+  });
+  assertThrows(function() {
+    ecdsa.setHash(sha1Hash);
+  });
 }
 
 

@@ -1,0 +1,22 @@
+[submodule "lib/zlib.js"]
+	path = lib/zlib.js
+	url = https://github.com/imaya/zlib.js
+	branch = b99bd33d485d63e93310b911a1f8dbf9ceb265d5
+[submodule "lib/closure-compiler"]
+	path = lib/closure-compiler
+	url = https://github.com/google/closure-compiler
+	branch = maven-release-v20150315
+[submodule "lib/closure-library"]
+	path = lib/closure-library
+	url = https://github.com/google/closure-library
+	branch = 35c9311042b95796d7b12f58cd2bec6086052f7e
+[submodule "lib/closure-stylesheets"]
+	path = lib/closure-stylesheets
+	url = https://github.com/google/closure-stylesheets
+	branch = fd1095b9a5e84a9a6a9c00cf24949cabe33478b6
+[submodule "lib/js-dossier"]
+	path = lib/js-dossier
+	url = https://github.com/jleyba/js-dossier
+[submodule "src/javascript/crypto/e2e/compatibility_tests/openpgp-interop"]
+	path = src/javascript/crypto/e2e/compatibility_tests/openpgp-interop
+	url = https://github.com/google/openpgp-interop

@@ -1,0 +1,74 @@
+<!-- Copyright 2016 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Test of e2e.asymmetric.keygenerator</title>
+<script src="../../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.asymmetric.keygenerator');
+  goog.require('goog.testing.AsyncTestCase');
+  goog.require('goog.testing.jsunit');
+</script>
+<script>
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
+function testEcdsa() {
+  var signer = e2e.asymmetric.keygenerator.newEcdsaWithP256();
+  assertEquals(signer.algorithm, 'ECDSA');
+}
+
+function testEcdh() {
+  var cipher = e2e.asymmetric.keygenerator.newEcdhWithP256();
+  assertEquals(cipher.algorithm, 'ECDH');
+}
+
+function testGenerateWebCrypto() {
+  asyncTestCase.waitForAsync('Waiting for webcrypto keygen');
+  e2e.asymmetric.keygenerator.newWebCryptoP256Keys().then(function(pair) {
+    assertEquals(pair.length, 2);
+    asyncTestCase.continueTesting();
+  }, fail);
+}
+
+// Standard case test
+function testEcPubKeyToJwk() {
+  var pubKey = [4,180,214,142,204,108,102,73,194,117,244,51,24,69,122,10,231,254,100,124,172,242,8,
+                134,93,177,191,191,54,81,96,194,204,24,239,101,127,47,24,190,125,89,69,143,117,124,
+                124,246,163,70,26,60,255,11,146,217,192,225,144,117,202,25,73,50,101];
+  var jwkKey = {
+    'kty': 'EC',
+    'crv': 'P-256',
+    'x': 'tNaOzGxmScJ19DMYRXoK5_5kfKzyCIZdsb-_NlFgwsw',
+    'y': 'GO9lfy8Yvn1ZRY91fHz2o0YaPP8LktnA4ZB1yhlJMmU',
+    'ext': true
+  };
+  assertObjectEquals(e2e.asymmetric.keygenerator.ecPubKeyToJwk(pubKey), jwkKey);
+}
+
+// In this case, 'x' has at least 8 leading zero bits, which are stripped, resulting in a 31-byte
+// intermediate representation that must be padded back up to 32 bytes for WebCrypto.
+function testShortEcPubKeyToJwk() {
+  var pubKey = [4,0,10,252,238,172,83,104,182,182,0,125,107,191,208,30,159,235,249,160,124,149,65,
+                137,36,221,241,175,196,114,145,160,150,5,92,218,142,219,78,46,208,45,239,127,15,162,
+                205,242,206,198,129,253,179,121,155,54,240,198,239,139,77,87,71,91,208];
+  var jwkKey = {
+    'kty': 'EC',
+    'crv': 'P-256',
+    'x': 'AAr87qxTaLa2AH1rv9Aen-v5oHyVQYkk3fGvxHKRoJY',  // Note 'AA' at the beginning, meaning 0s.
+    'y': 'BVzajttOLtAt738Pos3yzsaB_bN5mzbwxu-LTVdHW9A',
+    'ext': true
+  };
+  assertObjectEquals(e2e.asymmetric.keygenerator.ecPubKeyToJwk(pubKey), jwkKey);
+}
+</script>

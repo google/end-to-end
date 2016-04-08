@@ -26,7 +26,7 @@
 --jscomp_error=unknownDefines
 --jscomp_error=uselessCode
 --jscomp_error=visibility
---externs=lib/chrome_extensions.js
+--externs=lib/closure-compiler/contrib/externs/chrome_extensions.js
 --only_closure_dependencies
 --manage_closure_dependencies
 --js lib/closure-library/closure/goog/deps.js

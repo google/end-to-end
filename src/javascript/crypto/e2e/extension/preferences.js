@@ -47,7 +47,7 @@ var constants = e2e.ext.constants;
 /**
  * @param {string} key
  * @return {?string}
- * @expose
+ * @export
  */
 e2e.ext.Preferences.prototype.getItem = function(key) {
   return this.storage_.get(key);
@@ -56,7 +56,7 @@ e2e.ext.Preferences.prototype.getItem = function(key) {
 
 /**
  * Initializes the default preferences.
- * @expose
+ * @export
  */
 e2e.ext.Preferences.prototype.initDefaults = function() {
   if (null === this.getItem(
@@ -74,7 +74,7 @@ e2e.ext.Preferences.prototype.initDefaults = function() {
 /**
  * Enables/disables the welcome page.
  * @param {boolean} enable True if the page is to be enabled.
- * @expose
+ * @export
  */
 e2e.ext.Preferences.prototype.setWelcomePageEnabled = function(enable) {
   this.storage_.set(
@@ -85,7 +85,7 @@ e2e.ext.Preferences.prototype.setWelcomePageEnabled = function(enable) {
 /**
  * Indicates whether the welcome page is enabled.
  * @return {boolean} True if the welcome is enabled.
-* @expose
+ * @export
  */
 e2e.ext.Preferences.prototype.isWelcomePageEnabled = function() {
   return 'true' == this.storage_.get(
@@ -96,7 +96,7 @@ e2e.ext.Preferences.prototype.isWelcomePageEnabled = function() {
 /**
  * Enables/disables the looking glass.
  * @param {boolean} enable True if the looking glass is to be enabled.
- * @expose
+ * @export
  */
 e2e.ext.Preferences.prototype.setLookingGlassEnabled = function(enable) {
   this.storage_.set(
@@ -107,7 +107,7 @@ e2e.ext.Preferences.prototype.setLookingGlassEnabled = function(enable) {
 /**
  * Indicates whether the looking glass is enabled.
  * @return {boolean} True if enabled.
- * @expose
+ * @export
  */
 e2e.ext.Preferences.prototype.isLookingGlassEnabled = function() {
   return 'true' == this.storage_.get(

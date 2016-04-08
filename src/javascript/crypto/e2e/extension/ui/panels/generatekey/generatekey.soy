@@ -20,15 +20,18 @@
  * @param sectionTitle The title for the current section.
  * @param emailLabel The label to use when asking for the user's email address.
  * @param actionButtonTitle The title for the submit button.
+ * @param signupCancelButtonTitle The title for the cancel button.
  */
 {template .generateKeyForm}
   {if $sectionTitle}
     <h1>{$sectionTitle}</h1>
   {/if}
   <div>{$emailLabel|changeNewlineToBr}</div>
-  <input type="text" name="{e2e.ext.constants.CssClass.EMAIL}"
+  <input type="text"
+         name="{e2e.ext.constants.CssClass.EMAIL}"
          class="{e2e.ext.constants.CssClass.EMAIL}">
   <button class="{e2e.ext.constants.CssClass.ACTION}">{$actionButtonTitle}</button>
+  <button class="{e2e.ext.constants.CssClass.CANCEL}
+                 {sp}{e2e.ext.constants.CssClass.HIDDEN}">{$signupCancelButtonTitle}
+  </button>
 {/template}
-
-

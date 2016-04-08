@@ -20,6 +20,7 @@
 
 goog.provide('e2e.openpgp.packet.OnePassSignature');
 
+goog.require('e2e.async.Result');
 goog.require('e2e.openpgp.packet.Packet');
 goog.require('e2e.openpgp.packet.factory');
 
@@ -30,7 +31,7 @@ goog.require('e2e.openpgp.packet.factory');
  * @param {number} type
  * @param {number} hashAlgo
  * @param {number} pubkeyAlgo
- * @param {!e2e.ByteArray} keyId
+ * @param {!e2e.openpgp.KeyId} keyId
  * @param {boolean} nested
  * @constructor
  * @extends {e2e.openpgp.packet.Packet}
@@ -81,21 +82,22 @@ e2e.openpgp.packet.OnePassSignature.prototype.serializePacketBody =
  *     signed the data.
  * @param {string=} opt_hashAlgo message digest algorithm declared in the
  *     message.
- * @return {boolean} True if the signature correctly verifies.
+ * @return {!e2e.async.Result<boolean>} True if the signature correctly
+ *     verifies.
  */
 e2e.openpgp.packet.OnePassSignature.prototype.verify = function(
     data, signer, opt_hashAlgo) {
   if (this.signature) {
     return this.signature.verify(data, signer, opt_hashAlgo);
   }
-  return false;
+  return e2e.async.Result.toResult(false);
 };
 
 
 /**
  * Extracts key ID used to place the signature (if possible, forwards the call
  * to the related Signature object, as key ID there might be signed as well.
- * @return {!e2e.ByteArray} signer key ID
+ * @return {!e2e.openpgp.KeyId} signer key ID
  */
 e2e.openpgp.packet.OnePassSignature.prototype.getSignerKeyId = function() {
   if (this.signature) {

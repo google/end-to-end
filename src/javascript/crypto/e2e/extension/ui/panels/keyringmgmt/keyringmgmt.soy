@@ -22,6 +22,7 @@
  * @param exportLabel The label to use for the export link.
  * @param removeLabel The label to use for the remove link.
  * @param noneLabel The label to display when there are no keys.
+ * @param keyFingerprintLabel Text to display as a fingerprint label.
  */
 {template .listKeys}
   <h1>{$sectionTitle}</h1>
@@ -32,6 +33,7 @@
           {param keyMeta: $keyMeta /}
           {param exportLabel: $exportLabel /}
           {param removeLabel: $removeLabel /}
+          {param keyFingerprintLabel: $keyFingerprintLabel /}
         {/call}
       </tr>
     {ifempty}
@@ -55,13 +57,17 @@
  * @param keyMeta The metadata of the key that must be displayed.
  * @param exportLabel The label to use for the export link.
  * @param removeLabel The label to use for the remove link.
+ * @param keyFingerprintLabel Text to display as a fingerprint label.
  */
 {template .keyEntry}
-  <td>
+  <td class="{e2e.ext.constants.CssClass.KEY_INFO}">
     <div class="{e2e.ext.constants.CssClass.KEY_UID}">{$keyMeta.userId}</div>
     {foreach $key in $keyMeta.keys}
       <div class="{e2e.ext.constants.CssClass.KEY_META}">
-        {$key.type} {$key.algorithm} {$key.fingerprint}
+        <span class="{e2e.ext.constants.CssClass.KEY_FINGERPRINT}" title="{$keyFingerprintLabel}">
+          {$key.fingerprint}
+        </span>{sp}(
+        {$key.type} {$key.algorithm})
       </div>
     {/foreach}
   </td>
@@ -76,6 +82,7 @@
 
 /**
  * A form that allows the user to manage the collection of PGP keys stored by the extension.
+ * @param signupPromptLabel The label to use when prompting the user to show the signup form.
  * @param importKeyringLabel The label to use when asking the user to import a keyring.
  * @param exportKeyringLabel The label to use when asking the user to export the existing keyring.
  * @param changePassphraseLabel The label to use when asking the user to change the passphrase to
@@ -118,6 +125,9 @@
     </button>
   </div>
   <div id="{e2e.ext.constants.ElementId.KEYRING_OPTIONS_DIV}">
+    <p id="{e2e.ext.constants.ElementId.SIGNUP_PROMPT}"
+       class="{e2e.ext.constants.CssClass.SIGNUP_PROMPT}
+              {sp}{e2e.ext.constants.CssClass.HIDDEN}">{$signupPromptLabel}</p>
     <button class="{e2e.ext.constants.CssClass.KEYRING_IMPORT}
                    {sp}{e2e.ext.constants.CssClass.CANCEL}">{$importKeyringLabel}</button>
     <button class="{e2e.ext.constants.CssClass.KEYRING_EXPORT}
@@ -127,7 +137,6 @@
     <button class="{e2e.ext.constants.CssClass.KEYRING_BACKUP}{sp}
                    {e2e.ext.constants.CssClass.CANCEL}">{$backupKeyringLabel}</button>
     <button class="{e2e.ext.constants.CssClass.KEYRING_RESTORE}{sp}
-                   {e2e.ext.constants.CssClass.CANCEL}{sp}
-                   {e2e.ext.constants.CssClass.HIDDEN}">{$restoreKeyringLabel}</button>
+                   {e2e.ext.constants.CssClass.CANCEL}">{$restoreKeyringLabel}</button>
   </div>
 {/template}

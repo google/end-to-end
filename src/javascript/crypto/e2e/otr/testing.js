@@ -20,6 +20,7 @@
  * @author rcc@google.com (Ryan Chan)
  */
 
+goog.setTestOnly('e2e.otr.testing');
 goog.provide('e2e.otr.testing');
 
 goog.require('goog.array');

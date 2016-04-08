@@ -41,9 +41,6 @@ e2e.ext.testingstubs.RUNTIME_ID = 'test-runtime-id';
  * @param {goog.testing.PropertyReplacer} replacer
  */
 e2e.ext.testingstubs.initStubs = function(replacer) {
-  replacer.setPath('window.setTimeout', function(callback) {
-    callback();
-  });
   replacer.setPath('window.confirm', function(msg) { return true; });
 
 

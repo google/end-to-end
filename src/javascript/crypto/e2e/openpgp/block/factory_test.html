@@ -19,6 +19,7 @@
 <script>
   goog.require('goog.array');
   goog.require('goog.crypt');
+  goog.require('goog.testing.AsyncTestCase');
   goog.require('goog.testing.jsunit');
   goog.require('e2e.cipher.Aes');
   goog.require('e2e.cipher.Algorithm');
@@ -123,6 +124,8 @@ CyBm//Yrg98qe86NMwdmIhPx9Pnsa5TCPsXea132W4eoWLDKlzhJe65PX2/W1DIk
 </textarea>
 
 <script>
+
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 
 function getBytes(id) {
   return e2e.openpgp.asciiArmor.parse(
@@ -339,7 +342,7 @@ function testSkippedPackets() {
 // Tests that keyrings can be partially loaded on request, even if
 // they contain unsupported keys.
 
-function testPartialKeyringImport() {
+function testPartialKeyringImport_unsupportedKeys() {
   var bytes =
       goog.array.concat(
           getBytes('SmallRSAKeyBlock'),
@@ -348,28 +351,32 @@ function testPartialKeyringImport() {
   var keys =
       e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(bytes, true);
   assertEquals(1, keys.length);
-  keys[0].processSignatures();
-  assertEquals(1, keys[0].userIds.length);
-  assertEquals("rsa-master", keys[0].userIds[0].userId);
+  asyncTestCase.waitForAsync('Waiting for signature processing.');
+  keys[0].processSignatures().then(function() {
+    assertEquals(1, keys[0].userIds.length);
+    assertEquals("rsa-master", keys[0].userIds[0].userId);
 
-  // Should be the same if we reverse the sequence of keys.
-  bytes =
-      goog.array.concat(
-          getBytes('OkRSAKeyBlock'),
-          getBytes('RSASignaturePacket'),
-          getBytes('SmallRSAKeyBlock'));
-  keys =
-      e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(bytes, true);
-  assertEquals(1, keys.length);
-  keys[0].processSignatures();
-  assertEquals(1, keys[0].userIds.length);
-  assertEquals("rsa-master", keys[0].userIds[0].userId);
+    // Should be the same if we reverse the sequence of keys.
+    bytes =
+        goog.array.concat(
+            getBytes('OkRSAKeyBlock'),
+            getBytes('RSASignaturePacket'),
+            getBytes('SmallRSAKeyBlock'));
+    keys =
+        e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(bytes, true);
+    assertEquals(1, keys.length);
+    return keys[0].processSignatures();
+  }).then(function() {
+    assertEquals(1, keys[0].userIds.length);
+    assertEquals("rsa-master", keys[0].userIds[0].userId);
+    asyncTestCase.continueTesting();
+  });
 }
 
 // Tests that keyrings can be partially loaded on request, even if
 // they contain weak signatures.
 
-function testPartialKeyringImport() {
+function testPartialKeyringImport_weakSignatures() {
   var bytes =
       goog.array.concat(
           getBytes('WeakSignatureKeyBlock'),
@@ -379,31 +386,32 @@ function testPartialKeyringImport() {
   var keys =
       e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(bytes);
   assertEquals(2, keys.length);
-  assertEquals(1, keys[0].userIds.length);
-  assertEquals("abc@def.com", keys[0].userIds[0].userId);
-  assertEquals(1, keys[1].userIds.length);
-  assertEquals("rsa-master", keys[1].userIds[0].userId);
-  // We expect that processing signatures on the weak signature key
-  // should throw an error.
-  var mustThrow = assertThrows(function() {
-    keys[0].processSignatures();
-  });
-  assertTrue(mustThrow instanceof e2e.openpgp.error.SignatureError);
+  assertEquals(1, keys[0].unverifiedUserIds_.length);
+  assertEquals("abc@def.com", keys[0].unverifiedUserIds_[0].userId);
+  assertEquals(1, keys[1].unverifiedUserIds_.length);
+  assertEquals("rsa-master", keys[1].unverifiedUserIds_[0].userId);
+  asyncTestCase.waitForAsync('Waiting for signature processing to fail.');
+  keys[0].processSignatures().then(function() {
+    fail('processSignatures must fail');
+  }, function(error) {
+    assertTrue(error instanceof e2e.openpgp.error.SignatureError);
+    asyncTestCase.waitForAsync('Waiting for key extraction to fail.');
+    return e2e.openpgp.block.factory.extractKeys(keys);
+  }).then(function() {
+    fail('extractKeys must fail');
+  }, function(error) {
+    assertTrue(error instanceof e2e.openpgp.error.SignatureError);
 
-  // By default, we expect to see the same error when extracting
-  // keys from the keyring.
-  mustThrow = assertThrows(function() {
-    e2e.openpgp.block.factory.extractKeys(keys);
-  });
-  assertTrue(mustThrow instanceof e2e.openpgp.error.SignatureError);
-
-  // However, we expect to see the key skipped when extracting keys
-  // with opt_skiponerror turned on.
-  var extracted =
-      e2e.openpgp.block.factory.extractKeys(keys, true);
-  assertEquals(1, extracted.length);
-  assertEquals(1, extracted[0].uids.length);
-  assertEquals("rsa-master", extracted[0].uids[0]);
+    asyncTestCase.waitForAsync('Waiting for key extraction to succeed.');
+    // However, we expect to see the key skipped when extracting keys
+    // with opt_skiponerror turned on.
+    return e2e.openpgp.block.factory.extractKeys(keys, true);
+  }).then(function(extracted) {
+    assertEquals(1, extracted.length);
+    assertEquals(1, extracted[0].uids.length);
+    assertEquals("rsa-master", extracted[0].uids[0]);
+    asyncTestCase.continueTesting();
+  }, fail)
 }
 
 

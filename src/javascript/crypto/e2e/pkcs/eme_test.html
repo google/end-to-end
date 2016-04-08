@@ -44,7 +44,7 @@
         0x83, 0xd1, 0xe0, 0x05, 0xc3, 0x4e, 0x7b, 0x78,
         0x03, 0x5f, 0x07, 0x51, 0x01, 0x35, 0xc7, 0xa7,
         0x49, 0xbf, 0x53, 0x46, 0xc5, 0x14, 0x3d, 0x46];
-    var decoded = new e2e.pkcs.eme.Oaep().decodeForTestingOnly(
+    var decoded = new e2e.pkcs.eme.Oaep().decode(
         128, encoded);
     assertArrayEquals('Compatible with OpenSSL', msg, decoded);
   }
@@ -53,8 +53,22 @@
     var data = [1, 3, 37, 88, 250];
     var eme = new e2e.pkcs.eme.Oaep();
     var encoded = eme.encode(128, data);
-    var decoded = eme.decodeForTestingOnly(128, encoded);
+    var decoded = eme.decode(128, encoded);
     assertArrayEquals('Consistency on encoding/decoding.', data, decoded);
+  }
+
+  function testOAEPInvalidEncoding() {
+    var data = [1, 3, 37, 88, 250];
+    var eme = new e2e.pkcs.eme.Oaep();
+    var encoded = eme.encode(128, data);
+    encoded[0] = 0x01;
+    assertEquals('First byte is not zero.', null, eme.decode(128, encoded));
+    encoded = eme.encode(128, data);
+    encoded[1] += 1;
+    assertEquals('Corrupted label hash.', null, eme.decode(128, encoded));
+    encoded = eme.encode(128, data);
+    encoded[25] += 1;
+    assertEquals('Corrupted padded message.', null, eme.decode(128, encoded));
   }
 
   function testPKCS1Encode() {

@@ -56,7 +56,9 @@ actions.DecryptVerify.prototype.execute =
             result.decrypt.data, result.decrypt.options.charset).
             addCallback(/** @param {string} decrypted */ function(decrypted) {
               var successMsgs = [
-                chrome.i18n.getMessage('promptDecryptionSuccessMsg')
+                result.decrypt.wasEncrypted ?
+                    chrome.i18n.getMessage('promptDecryptionSuccessMsg') :
+                    chrome.i18n.getMessage('promptMessageNotEncryptedMsg')
               ];
 
               if (goog.isDef(result.verify)) {

@@ -366,9 +366,35 @@ eGC9JuVC0VK58w==
 -----END PGP PUBLIC KEY BLOCK-----
 </textarea>
 
+<!--
+echo "hello bz2 world" > file.txt
+gpg --armor --compress-algo bzip2 -c file.txt
+
+:symkey enc packet: version 4, cipher 3, s2k 3, hash 2
+  salt 1dea6a58eb6dfdea, count 65536 (96)
+gpg: CAST5 encrypted data
+:encrypted data packet:
+  length: 94
+gpg: encrypted with 1 passphrase
+:compressed packet: algo=3
+:literal data packet:
+  mode b (62), created 1452906719, name="file.txt",
+  raw data: 16 bytes
+-->
+<textarea id="symmetricKeyBzip2">
+-----BEGIN PGP MESSAGE-----
+Version: GnuPG v1
+
+jA0EAwMCHepqWOtt/epgyV5U5XfyScWgyppsiIm45xEgw8PKjwnjDUTZ1RsBWh5X
+1jBLLMnZ+KV2iATxoChh+/jJFqe02caByMpF/A4CkWS2s5ZFEasuPrG99IYIw9Ji
+hwTUHoOwXZYN6egvFLlN
+=rPTG
+-----END PGP MESSAGE-----
+</textarea>
+
 <script>
 var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
-asyncTestCase.stepTimeout = 10000;
+asyncTestCase.stepTimeout = 20000;
 
 var publicKeyAscii = document.getElementById('publicKeyAscii').value;
 var publicKeyAsciiOther = document.getElementById('publicKeyAsciiOther').value;
@@ -385,7 +411,7 @@ var mockControl_;
 function setUp() {
   context = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  context.setKeyRingPassphrase(KEY_PW);
+  e2e.async.Result.getValue(context.initializeKeyRing(''));
   mockControl_ = new goog.testing.MockControl();
 }
 
@@ -400,51 +426,54 @@ function testMojibakeInternally() {
   var krakozyabry = 'кракозя́бры';
   var floodResistantMirrorDrillingMachine = 'Árvíztűrő tükörfúrógép';
   var luanman = '乱码';
-  var syncThisCall = e2e.async.Result.getValue(
-      context.importKey(fail, publicKeyAscii));
+  var enc;
   asyncTestCase.waitForAsync('waiting for importKey.');
-  context.importKey(passphraseCallback, privateKeyAscii).addCallback(function() {
-    context.setArmorHeader('Comment', 'маймуница');
+  context.importKey(fail, publicKeyAscii).then(function() {
+    return context.importKey(passphraseCallback, privateKeyAscii);
+  }, fail).then(function() {
+    syncThisCall = e2e.async.Result.getValue(
+        context.setArmorHeader('Comment', 'маймуница'));
     asyncTestCase.waitForAsync('waiting for encryptSign1.');
-    context.encryptSign(
+    return context.encryptSign(
       mojibake, // plaintext
       {}, // options
       [], // encrypt keys
       [floodResistantMirrorDrillingMachine, krakozyabry] // passphrases
-    ).addCallback(function(enc) {
-        asyncTestCase.waitForAsync('waiting for verifyDecrypt1.');
-        assertContains('Comment: маймуница', enc);
-        return context.verifyDecrypt(
-          function(uid) {
-            return e2e.async.Result.toResult(floodResistantMirrorDrillingMachine);
-          }, enc).addCallback(function(res) {
-            assertEquals(mojibake, e2e.byteArrayToString(res.decrypt.data));
-            return enc;
-          });
-      }).addCallback(function(enc) {
-        asyncTestCase.waitForAsync('waiting for veriDecrypt2.');
-        return context.verifyDecrypt(function(uid) {
-          return e2e.async.Result.toResult(krakozyabry);
-        }, enc);
-      }).addCallback(function(res) {
-        asyncTestCase.waitForAsync('waiting for searchPrivateKey1.');
-        assertEquals(mojibake, e2e.byteArrayToString(res.decrypt.data));
-        return context.searchPrivateKey(USER_ID);
-      }).addCallback(function(res) {
-        asyncTestCase.waitForAsync('waiting for encryptSign2.');
-        assert(res.length > 0);
-        return context.encryptSign(
-          luanman, {}, [], [], res[0]);
-      }).addCallback(function(res) {
-        asyncTestCase.waitForAsync('waiting for verifyClearSign.');
-        assertContains(luanman, res);
-        return context.verifyDecrypt(goog.abstractMethod, res);
-      }).addCallback(function(res) {
-        assert(res.verify.success.length > 0);
-        // por fín!
-        asyncTestCase.continueTesting();
-      }).addErrback(fail);
-  });
+    );
+  }, fail).then(function(e) {
+    enc = e;
+    asyncTestCase.waitForAsync('waiting for verifyDecrypt1.');
+    assertContains('Comment: маймуница', enc);
+    return context.verifyDecrypt(
+      function(uid) {
+        return e2e.async.Result.toResult(floodResistantMirrorDrillingMachine);
+      }, enc);
+  }, fail).then(function(res) {
+    assertEquals(mojibake, e2e.byteArrayToString(res.decrypt.data));
+    return enc;
+  }, fail).then(function(enc) {
+    asyncTestCase.waitForAsync('waiting for veriDecrypt2.');
+    return context.verifyDecrypt(function(uid) {
+      return e2e.async.Result.toResult(krakozyabry);
+    }, enc);
+  }, fail).then(function(res) {
+    asyncTestCase.waitForAsync('waiting for searchPrivateKey1.');
+    assertEquals(mojibake, e2e.byteArrayToString(res.decrypt.data));
+    return context.searchPrivateKey(USER_ID);
+  }, fail).then(function(res) {
+    asyncTestCase.waitForAsync('waiting for encryptSign2.');
+    assert(res.length > 0);
+    return context.encryptSign(
+      luanman, {}, [], [], res[0]);
+  }, fail).then(function(res) {
+    asyncTestCase.waitForAsync('waiting for verifyClearSign.');
+    assertContains(luanman, res);
+    return context.verifyDecrypt(goog.abstractMethod, res);
+  }, fail).then(function(res) {
+    assert(res.verify.success.length > 0);
+    // por fín!
+    asyncTestCase.continueTesting();
+  }, fail);
 }
 
 function encryptAsymmetric_(plaintext) {
@@ -485,6 +514,7 @@ function testEncrypt() {
 
 
 // Test for regression of https://github.com/google/closure-library/pull/356
+// TODO(user): Chrome 48 takes longer to run this test, why?
 function testEncryptLarge() {
   var plaintext = e2e.byteArrayToString(goog.array.repeat(3, 1000000));  // 1M
   encryptAsymmetric_(plaintext);
@@ -524,83 +554,90 @@ function testEncryptByteArray() {
 
 
 function testEncryptSign() {
-  var syncThisCall = e2e.async.Result.getValue(
-      context.importKey(passphraseCallback, publicKeyAscii));
-  var allKeys = new goog.structs.Map(e2e.async.Result.getValue(context.getAllKeys()));
-  var keys = goog.array.flatten(allKeys.getValues());
-  var plaintext = 'hello world from signed message';
+  var keys, privateKey, plaintext = 'hello world from signed message';
   asyncTestCase.waitForAsync('waiting for key import.');
-  context.importKey(passphraseCallback, privateKeyAscii).addCallback(function () {
+  context.importKey(passphraseCallback, publicKeyAscii).then(function() {
+    var allKeys = new goog.structs.Map(e2e.async.Result.getValue(context.getAllKeys()));
+    keys = goog.array.flatten(allKeys.getValues());
+    return context.importKey(passphraseCallback, privateKeyAscii);
+  }, fail).then(function() {
     // Test signing.
     var privateKeys = e2e.async.Result.getValue(context.searchPrivateKey(USER_ID));
-    var privateKey = privateKeys[0]; // Only one key for signing.
+    privateKey = privateKeys[0]; // Only one key for signing.
     asyncTestCase.waitForAsync('waiting for encryption.');
-    context.encryptSign(
+    return context.encryptSign(
         plaintext,
         [], // Options.
         keys, // Keys to encrypt to.
         [], // Passphrases for symmetric ESKs.
         privateKey // Key to sign with.
-      ).addCallback(function(signedEncrypted) {
-        asyncTestCase.waitForAsync('waiting for decryption.');
-        context.verifyDecrypt(passphraseCallback, signedEncrypted).addCallback(function(result) {
-          asyncTestCase.continueTesting();
-          var data = result['decrypt']['data'];
-          var verify = result['verify'];
-          assertEquals(plaintext, e2e.byteArrayToString(data));
-          assertTrue(goog.isDefAndNotNull(verify));
-          assertEquals(0, verify.failure.length);
-          assertEquals(1, verify.success.length);
-          assertArrayEquals(privateKey.key.fingerprint,
-            verify.success[0].key.fingerprint);
-          assertTrue(goog.array.contains(verify.success[0].uids, USER_ID));
-        }).addErrback(function(error) {
-          throw error;
-        });
-      });
-  });
-
+      );
+  }, fail).then(function(signedEncrypted) {
+    asyncTestCase.waitForAsync('waiting for decryption.');
+    return context.verifyDecrypt(passphraseCallback, signedEncrypted);
+  }, fail).then(function(result) {
+    var data = result['decrypt']['data'];
+    var verify = result['verify'];
+    assertEquals(plaintext, e2e.byteArrayToString(data));
+    assertTrue(goog.isDefAndNotNull(verify));
+    assertEquals(0, verify.failure.length);
+    assertEquals(1, verify.success.length);
+    assertTrue(result['decrypt']['wasEncrypted']);
+    assertArrayEquals(privateKey.key.fingerprint,
+      verify.success[0].key.fingerprint);
+    assertTrue(goog.array.contains(verify.success[0].uids, USER_ID));
+    asyncTestCase.continueTesting();
+  }, fail);
 }
 
 
 function testClearSign() {
-  var syncThisCall = e2e.async.Result.getValue(
-      context.importKey(passphraseCallback, publicKeyAscii));
-  var rsaKeys = e2e.async.Result.getValue(context.searchPublicKey(USER_ID));
-  assertEquals(1, rsaKeys.length);
-  syncThisCall = e2e.async.Result.getValue(
-      context.importKey(passphraseCallback, publicKeyAsciiOther));
-  var allKeys = new goog.structs.Map(e2e.async.Result.getValue(context.getAllKeys()));
-  var keys = goog.array.flatten(allKeys.getValues());
-  assertEquals(2, keys.length);
   var plaintext = 'hello world from signed message';
-  asyncTestCase.waitForAsync('waiting for private key import.');
-  context.importKey(passphraseCallback, privateKeyAscii).addCallback(function() {
+  asyncTestCase.waitForAsync('waiting for public key import.');
+  context.importKey(passphraseCallback, publicKeyAscii).then(function() {
+    var rsaKeys = e2e.async.Result.getValue(context.searchPublicKey(USER_ID));
+    assertEquals(1, rsaKeys.length);
+    return context.importKey(passphraseCallback, publicKeyAsciiOther);
+  }, fail).then(function() {
+    var allKeys = new goog.structs.Map(e2e.async.Result.getValue(context.getAllKeys()));
+    var keys = goog.array.flatten(allKeys.getValues());
+    assertEquals(2, keys.length);
+    asyncTestCase.waitForAsync('waiting for private key import.');
+    return context.importKey(passphraseCallback, privateKeyAscii);
+  }, fail).then(function() {
     // Test signing.
     var privateKeys = e2e.async.Result.getValue(context.searchPrivateKey(USER_ID));
     var privateKey = privateKeys[0]; // Only one key for signing.
     // Text clear signed.
     asyncTestCase.waitForAsync('waiting for clear sign.');
-    context.encryptSign(
+    return context.encryptSign(
         plaintext,
         [], // Options.
         [], // Keys to encrypt to.
         [], // Passphrases for symmetric ESKs.
         privateKey  // Key to sign with.
-      ).addCallback(function(clearSigned) {
-        asyncTestCase.waitForAsync('waiting for clear sign verification.');
-        context.verifyDecrypt(goog.abstractMethod, clearSigned
-          ).addCallback(function(result) {
-            assertEquals(plaintext, e2e.byteArrayToString(result.decrypt.data));
-            assertEquals(0, result.verify.failure.length);
-            assertEquals(1, result.verify.success.length);
-            asyncTestCase.continueTesting();
-          }).addErrback(function(error) {
-          fail(error);
-        });
-      });
-  }).addErrback(function() {
-    fail('Failed to import key.')
+      )
+  }, fail).then(function(clearSigned) {
+    asyncTestCase.waitForAsync('waiting for clear sign verification.');
+    return context.verifyDecrypt(goog.abstractMethod, clearSigned);
+  }, fail).then(function(result) {
+    assertEquals(plaintext, e2e.byteArrayToString(result.decrypt.data));
+    assertEquals(0, result.verify.failure.length);
+    assertEquals(1, result.verify.success.length);
+    asyncTestCase.continueTesting();
+  }, fail);
+}
+
+function testDecryptSymmetricBzip2() {
+  var encrypted = document.getElementById('symmetricKeyBzip2').value;
+  var plaintext = 'hello bz2 world\n';
+  asyncTestCase.waitForAsync('waiting for decryption.');
+  context.verifyDecrypt(passphraseCallback, encrypted).addCallback(function(result) {
+    var data = result['decrypt']['data'];
+    assertEquals(plaintext, e2e.byteArrayToString(data));
+    asyncTestCase.continueTesting();
+  }).addErrback(function(error) {
+    throw error;
   });
 }
 
@@ -650,7 +687,7 @@ function testEncryptSymmetricRetry() {
   };
   var contextInc = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  contextInc.setKeyRingPassphrase(KEY_PW);
+  e2e.async.Result.getValue(contextInc.initializeKeyRing(''));
 
   var plaintext = 'plaintext for symmetric';
   var res = contextInc.encryptSign(
@@ -670,40 +707,44 @@ function testEncryptSymmetricRetry() {
 }
 
 function testVerifyClearSign() {
-  context.importKey(passphraseCallback, privateKeyAscii);
-  context.importKey(passphraseCallback, publicKeyAscii);
-  var privateKeys = e2e.async.Result.getValue(context.searchPrivateKey(USER_ID));
-  var privateKey = privateKeys[0]; // Only one key for signing.
+  var privateKey;
+  var clearSigned;
   var plaintext = "cleartext message";
-  asyncTestCase.waitForAsync('waiting for clear sign.');
-  context.encryptSign(
-      plaintext,
-      [], // Options.
-      [], // Keys to encrypt to.
-      [], // Passphrases for symmetric ESKs.
-      privateKey  // Key to sign with.
-    ).addCallback(function(clearSigned) {
-      asyncTestCase.waitForAsync('waiting for clear sign verification.');
-      context.verifyDecrypt(goog.abstractMethod, clearSigned
-        ).addCallback(function(result) {
-          assertEquals(plaintext, e2e.byteArrayToString(result.decrypt.data));
-          assertTrue(result.verify.success.length > 0);
-          assertTrue(result.verify.failure.length == 0);
-        }).addErrback(function(error) {
-        throw error;
-        });
-      // change the message
-      clearSigned = clearSigned.replace('cleartext', 'modified');
-      asyncTestCase.waitForAsync('waiting for clear sign verification.');
-      context.verifyDecrypt(goog.abstractMethod, clearSigned
-        ).addCallback(function(result) {
-          asyncTestCase.continueTesting();
-          assertTrue(result.verify.failure.length > 0);
-          assertTrue(result.verify.success.length == 0);
-        }).addErrback(function(error) {
-          throw error;
-        });
-    });
+
+  asyncTestCase.waitForAsync('waiting for key import.');
+  context.importKey(passphraseCallback, privateKeyAscii)
+  .addCallback(function() {
+    return context.importKey(passphraseCallback, publicKeyAscii);
+  }).addCallback(function() {
+    return context.searchPrivateKey(USER_ID);
+  }).addCallback(function(privateKeys) {
+    privateKey = privateKeys[0]; // Only one key for signing.
+    asyncTestCase.waitForAsync('waiting for clear sign.');
+    return context.encryptSign(
+        plaintext,
+        [], // Options.
+        [], // Keys to encrypt to.
+        [], // Passphrases for symmetric ESKs.
+        privateKey  // Key to sign with.
+    );
+  }).addCallback(function(result) {
+    clearSigned = result;
+    asyncTestCase.waitForAsync('waiting for clear sign verification.');
+    return context.verifyDecrypt(goog.abstractMethod, clearSigned);
+  }).addCallback(function(result) {
+    assertEquals(plaintext, e2e.byteArrayToString(result.decrypt.data));
+    assertTrue(result.verify.success.length > 0);
+    assertTrue(result.verify.failure.length == 0);
+    assertFalse(result.decrypt.wasEncrypted);
+    clearSigned = clearSigned.replace('cleartext', 'modified');
+    asyncTestCase.waitForAsync('waiting for clear sign verification.');
+    // Change the message.
+    return context.verifyDecrypt(goog.abstractMethod, clearSigned);
+  }).addCallbacks(function(result) {
+    assertTrue(result.verify.failure.length > 0);
+    assertTrue(result.verify.success.length == 0);
+    asyncTestCase.continueTesting();
+  }, fail);
 }
 
 function testDecryptNoKey() {
@@ -736,7 +777,7 @@ function testParseErrorsDontAskForPassphrase() {
   };
   var contextInc = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  contextInc.setKeyRingPassphrase(KEY_PW);
+  e2e.async.Result.getValue(contextInc.initializeKeyRing(''));
 
   var plaintext = 'plaintext for symmetric';
   var res = contextInc.encryptSign(
@@ -766,7 +807,7 @@ function testParseErrorsDontAskForPassphrase() {
 function testNestingLimitOnDecryption() {
   var contextInc = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  contextInc.setKeyRingPassphrase(KEY_PW);
+  e2e.async.Result.getValue(contextInc.initializeKeyRing(''));
 
   var plaintext = 'plaintext for symmetric';
   var res = contextInc.encryptSign(
@@ -905,27 +946,37 @@ function testSetPassphraseImportExportImportSecretKey() {
   // Set passphrase, import a key, export it, and try to import it again.
   var context = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  context.setKeyRingPassphrase(KEY_PW);
-  asyncTestCase.waitForAsync('Waiting for first import of key.');
-  context.importKey(passphraseCallback, privateKeyAscii).addCallback(function() {
+  var keyringExport;
+  var counter = 0;
+  var secondContext;
+  context.initializeKeyRing('').
+  addCallback(function() {
+    // Encrypt the keyring.
+    return context.changeKeyRingPassphrase(KEY_PW);
+  }).addCallback(function() {
+    asyncTestCase.waitForAsync('Waiting for first import of key.');
+    return context.importKey(passphraseCallback, privateKeyAscii);
+  }).addCallback(function() {
+    return context.exportKeyring(true);
+  }).addCallback(function(kr) {
+    keyringExport = kr;
+    // Create a new context with any passphrase.
+    secondContext = new e2e.openpgp.ContextImpl(
+        new goog.testing.storage.FakeMechanism());
+    return secondContext.initializeKeyRing('');
+  }).addCallback(function() {
+    asyncTestCase.waitForAsync('Waiting for second import of key.');
+    return secondContext.importKey(function(uid) {
+      if (counter++ > 100) {
+        fail('Failed to decrypt key.');
+      }
+      return e2e.async.Result.toResult(KEY_PW);
+    }, keyringExport);
+  }).addCallback(function(res) {
+    assert(res.length > 0);
+    assertEquals(1, counter);
     asyncTestCase.continueTesting();
-    context.exportKeyring(true).addCallback(function(kr) {
-      var context = new e2e.openpgp.ContextImpl(
-          new goog.testing.storage.FakeMechanism());
-      context.setKeyRingPassphrase(KEY_PW);
-      asyncTestCase.waitForAsync('Waiting for second import of key.');
-      var counter = 0;
-      context.importKey(function(uid) {
-        if (counter++ > 100) {
-          fail('Failed to decrypt key.');
-        }
-        return e2e.async.Result.toResult(KEY_PW);
-      }, kr).addCallback(function(res) {
-        assert(res.length > 0);
-        asyncTestCase.continueTesting();
-      })
-    });
-  });
+  }).addErrback(fail);
 }
 
 
@@ -933,27 +984,39 @@ function testSetPassphraseImportExportChangePassphraseImportSecretKey() {
   // Set passphrase, import a key, export it, change passphrase and try to import it again.
   var context = new e2e.openpgp.ContextImpl(
       new goog.testing.storage.FakeMechanism());
-  context.setKeyRingPassphrase(KEY_PW);
+  var secondContext;
+  var keyringExport;
+  var counter = 0;
+  context.initializeKeyRing('').
+  addCallback(function() {
+    // Encrypt the keyring.
+    return context.changeKeyRingPassphrase(KEY_PW);
+  }).addCallback(function() {
   asyncTestCase.waitForAsync('Waiting for first import of key.');
-  context.importKey(passphraseCallback, privateKeyAscii).addCallback(function() {
+    return context.importKey(passphraseCallback, privateKeyAscii);
+  }).addCallback(function() {
+    return context.exportKeyring(true);
+  }).addCallback(function(kr) {
+    keyringExport = kr;
+    secondContext = new e2e.openpgp.ContextImpl(
+        new goog.testing.storage.FakeMechanism());
+    asyncTestCase.waitForAsync('Waiting for password change.');
+    return secondContext.initializeKeyRing('');
+  }).addCallback(function() {
+    return secondContext.changeKeyRingPassphrase('omg');
+  }).addCallback(function() {
+    asyncTestCase.waitForAsync('Waiting for second import of key.');
+    return context.importKey(function(uid) {
+      if (counter++ < 100) {
+        return e2e.async.Result.toResult('bbq');
+      } else {
+        return e2e.async.Result.toResult('');
+      }
+    }, keyringExport);
+  }).addCallback(function(res) {
+    assertArrayEquals([], res);
+    assertEquals(101, counter);
     asyncTestCase.continueTesting();
-    context.exportKeyring(true).addCallback(function(kr) {
-      var context = new e2e.openpgp.ContextImpl(
-          new goog.testing.storage.FakeMechanism());
-      context.setKeyRingPassphrase('omg');
-      asyncTestCase.waitForAsync('Waiting for second import of key.');
-      var counter;
-      context.importKey(function(uid) {
-        if (counter++ < 100) {
-          return e2e.async.Result.toResult('bbq');
-        } else {
-          return e2e.async.Result.toResult('');
-        }
-      }, kr).addCallback(function(res) {
-        asyncTestCase.continueTesting();
-        assertArrayEquals([], res);
-      });
-    });
   });
 }
 

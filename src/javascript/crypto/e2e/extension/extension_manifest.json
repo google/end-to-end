@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "__MSG_extName__",
   "description": "__MSG_extDescription__",
-  "version": "0.3.1342",
+  "version": "0.31337.1",
   "permissions": ["activeTab", "notifications"],
   "optional_permissions": [],
   "background": {"scripts": ["launcher_binary.js"]},

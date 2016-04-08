@@ -26,6 +26,7 @@ goog.require('e2e.BigNum');
 goog.require('e2e.ecc.PrimeCurve');
 goog.require('e2e.ecc.Protocol');
 goog.require('e2e.error.InvalidArgumentsError');
+goog.require('e2e.hash.Algorithm');
 goog.require('e2e.hash.Sha256');
 goog.require('e2e.hash.Sha384');
 goog.require('e2e.hash.Sha512');
@@ -67,6 +68,18 @@ goog.inherits(e2e.ecc.Ecdsa, e2e.ecc.Protocol);
 
 
 /**
+ * List of Hash algorithms that are allowed to be used for ECDSA.
+ * @type {!Array<!e2e.hash.Algorithm>}
+ * @private
+ */
+e2e.ecc.Ecdsa.ALLOWED_HASHES_ = [
+  e2e.hash.Algorithm.SHA256,
+  e2e.hash.Algorithm.SHA384,
+  e2e.hash.Algorithm.SHA512
+];
+
+
+/**
  * The hash function that should be used. This is selected based on the curve.
  * @private {!e2e.hash.Hash}
  */
@@ -80,13 +93,27 @@ e2e.ecc.Ecdsa.prototype.getHash = function() {
 
 
 /**
+ * Sets the appropriate hash algorithm. Used e.g. during signature verification
+ * in OpenPGP, where the signer specifies which algorithm was used.
+ * @param {!e2e.hash.Hash} hash The hash algorithm.
+ */
+e2e.ecc.Ecdsa.prototype.setHash = function(hash) {
+  if (!goog.array.contains(e2e.ecc.Ecdsa.ALLOWED_HASHES_, hash.algorithm)) {
+    throw new e2e.error.InvalidArgumentsError(
+        'Specified hash algorithm is disallowed for ECDSA: ' + hash.algorithm);
+  }
+  this.hash_ = hash;
+};
+
+
+/**
  * Applies the signing algorithm to the data.
  * @param {!Uint8Array|!e2e.ByteArray|string} message The data to sign.
  * @return {!e2e.signer.signature.Signature}
  */
 e2e.ecc.Ecdsa.prototype.sign = function(message) {
   var sig;
-  var digest = this.hash_.hash(message);
+  var digest = this.hashWithTruncation_(message);
   do {
     var k = this.generatePerMessageNonce_(digest);
     sig = this.signWithNonce_(digest, k);
@@ -176,7 +203,7 @@ e2e.ecc.Ecdsa.prototype.verify = function(message, sig) {
     return false;
   }
   // e = H(m)
-  var e = new e2e.BigNum(this.hash_.hash(message));
+  var e = new e2e.BigNum(this.hashWithTruncation_(message));
   // w = s^{-1} mod n
   var w = N.modInverse(s);
   // u1 = ew mod n
@@ -237,3 +264,26 @@ e2e.ecc.Ecdsa.prototype.generatePerMessageNonce_ = function(digest) {
   } while (nonce.isEqual(e2e.BigNum.ZERO) || nonce.compare(N) >= 0);
   return nonce;
 };
+
+
+/**
+ * Creates a message digest, truncating it to the bit-length of the curve order.
+ * @param {Uint8Array|Array.<number>|string} message The message to hash.
+ * @return {!Array.<number>} The checksum.
+ * @private
+ */
+e2e.ecc.Ecdsa.prototype.hashWithTruncation_ = function(message) {
+  var hash = this.hash_.hash(message);
+
+  var bitLength = this.params.n.getBitLength();
+  // Use 512-bit hashes for P_521 curve.
+  if (bitLength == 521) {
+    bitLength = 512;
+  }
+  if (Math.ceil(bitLength / 8) > hash.length) {
+    throw new e2e.error.InvalidArgumentsError(
+        'Digest algorithm is too short for this curve.');
+  }
+  return goog.array.slice(hash, 0, Math.ceil(bitLength / 8));
+};
+

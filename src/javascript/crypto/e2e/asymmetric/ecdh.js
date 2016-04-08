@@ -147,7 +147,7 @@ e2e.cipher.Ecdh.prototype.encrypt = function(plaintext) {
   var message = this.ecdh_.alice();
   // Wraps the session key with the key-wrapping key derived from the shared
   // secret.
-  var keyWrapper = this.getKeyWrapper_(message['secret']);
+  var keyWrapper = this.getKeyWrapper(message['secret']);
   /** @type {!e2e.cipher.ciphertext.Ecdh} */
   var ciphertext = {
     'u': keyWrapper.wrap(plaintext),
@@ -167,7 +167,7 @@ e2e.cipher.Ecdh.prototype.encrypt = function(plaintext) {
 e2e.cipher.Ecdh.prototype.encryptForTestingOnly = function(m, privKey) {
   var message = this.ecdh_.bob(this.key['pubKey'], privKey);
 
-  var keyWrapper = this.getKeyWrapper_(message['secret']);
+  var keyWrapper = this.getKeyWrapper(message['secret']);
   var ciphertext = {
     'u': keyWrapper.wrap(m),
     'v': /** @type {!Array.<number>}*/ ([])
@@ -185,7 +185,7 @@ e2e.cipher.Ecdh.prototype.decrypt = function(ciphertext) {
   var message = this.ecdh_.bob(ciphertext['v']);
   // Unwraps the session key with the key-encrypting key derived from the shared
   // secret.
-  var keyWrapper = this.getKeyWrapper_(message['secret']);
+  var keyWrapper = this.getKeyWrapper(message['secret']);
   var plaintext = keyWrapper.unwrap(ciphertext['u']);
   return e2e.async.Result.toAsynchronousResult(plaintext);
 };
@@ -195,9 +195,8 @@ e2e.cipher.Ecdh.prototype.decrypt = function(ciphertext) {
  * Returns a key-wrapper that is used to wrap or unwrap the session key.
  * @param {!e2e.ByteArray} secret The ECDH shared secret.
  * @return {!e2e.cipher.AesKeyWrap} The key-wrapper object.
- * @private
  */
-e2e.cipher.Ecdh.prototype.getKeyWrapper_ = function(secret) {
+e2e.cipher.Ecdh.prototype.getKeyWrapper = function(secret) {
   // Constructs the KDF params.
   var kdfParams = goog.array.clone(this.key['curve']);
   goog.array.extend(

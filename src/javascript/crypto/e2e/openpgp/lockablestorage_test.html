@@ -1,0 +1,303 @@
+<!-- Copyright 2015 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.openpgp.LockableStorage</title>
+<script src="../../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('goog.array');
+  goog.require('goog.testing.AsyncTestCase');
+  goog.require('goog.testing.jsunit');
+  goog.require('goog.testing.mockmatchers');
+  goog.require('goog.testing.MethodMock');
+  goog.require('goog.testing.MockControl');
+  goog.require('goog.testing.PropertyReplacer');
+  goog.require('goog.testing.storage.FakeMechanism');
+  goog.require('e2e.async.Result');
+  goog.require('e2e.openpgp.LockableStorage');
+</script>
+<script>
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
+var mockControl;
+var storage;
+var stubs = new goog.testing.PropertyReplacer();
+
+function setUp() {
+  storage = new goog.testing.storage.FakeMechanism();
+  mockControl = new goog.testing.MockControl();
+}
+
+function tearDown() {
+  stubs.reset();
+  mockControl.$tearDown();
+}
+
+function testPlaintext() {
+  var o = {
+    'one': 1,
+    'two': 2
+  };
+  var keyName = 'test';
+  var serialization = e2e.openpgp.LockableStorage.UNENCRYPTED_ +
+      JSON.stringify(o);
+  storage.set(keyName, serialization);
+  var lockable = new e2e.openpgp.LockableStorage(storage, fail, keyName);
+  asyncTestCase.waitForAsync('Waiting for async get.');
+  lockable.get('one').addCallbacks(function(value) {
+    assertEquals(1, value);
+    asyncTestCase.waitForAsync('Waiting for async set.');
+    lockable.set('three', 3).addCallbacks(function(isEncrypted) {
+      assertFalse(isEncrypted);
+      asyncTestCase.waitForAsync('Waiting for async get.');
+      lockable.get('three').addCallbacks(function(value) {
+        assertEquals(3, value);
+        lockable.remove('two').addCallbacks(function(value) {
+          assertEquals(
+              storage.get(keyName),
+              e2e.openpgp.LockableStorage.UNENCRYPTED_ +
+                  JSON.stringify(lockable.decryptedData_));
+          asyncTestCase.continueTesting();
+        }, fail);
+      }, fail);
+    }, fail);
+
+  }, fail);
+}
+
+function testEncrypt() {
+  var passphrase = 'TEST';
+  var key = 'KEY';
+  var value = 'VALUE';
+  var lockable = new e2e.openpgp.LockableStorage(storage, fail);
+  assertEquals(e2e.openpgp.LockableStorage.UNENCRYPTED_,
+    storage.get(e2e.openpgp.LockableStorage.DEFAULT_STORAGE_KEY_).charAt(0));
+  asyncTestCase.waitForAsync('Waiting for isEncrypted');
+  lockable.isEncrypted().then(function(encrypted) {
+    assertFalse(encrypted);
+    return lockable.set(key, value)
+  }, fail).then(function(isEncrypted) {
+    assertFalse(isEncrypted);
+    assertNull(storage.get(e2e.openpgp.LockableStorage.DEFAULT_SALT_KEY_));
+    asyncTestCase.waitForAsync('Waiting for setPassphrase');
+    return lockable.setPassphrase('TEST');
+  }, fail).then(function(isEncrypted) {
+    assertTrue(isEncrypted);
+    asyncTestCase.waitForAsync('Waiting for isEncrypted');
+    return lockable.isEncrypted();
+  }, fail).then(function(encrypted) {
+    assertTrue(encrypted);
+    assertNotNull(storage.get(e2e.openpgp.LockableStorage.DEFAULT_SALT_KEY_));
+    assertEquals(e2e.openpgp.LockableStorage.ENCRYPTED_,
+      storage.get(e2e.openpgp.LockableStorage.DEFAULT_STORAGE_KEY_).charAt(0));
+    asyncTestCase.waitForAsync('Waiting for get from encrypted storage');
+    // We know the passphrase, so the passphrase should not be asked about.
+    return lockable.get(key);
+  }, fail).then(function(ret) {
+    assertEquals(value, ret);
+    asyncTestCase.continueTesting();
+  });
+}
+
+function testLockCallback() {
+  var password = 'TEST';
+  var key = 'KEY';
+  var value = 'VALUE';
+  var shouldAskNow = false;
+  var askedTimes = 0;
+  var pwCallback = function() {
+    if (!shouldAskNow) {
+      fail();
+    }
+    askedTimes++;
+    return e2e.async.Result.toResult(password);
+  };
+  var lockable = new e2e.openpgp.LockableStorage(storage, pwCallback);
+  asyncTestCase.waitForAsync('Waiting for setPassphrase');
+  lockable.setPassphrase(password).then(function() {
+    asyncTestCase.waitForAsync('Waiting for set');
+    return lockable.set(key, value);
+  }, fail).then(function() {
+    asyncTestCase.waitForAsync('Waiting for isEncrypted');
+    return lockable.isEncrypted();
+  }, fail).then(function(isEncrypted) {
+    assertTrue(isEncrypted);
+    asyncTestCase.waitForAsync('Waiting for lock');
+    return lockable.lock();
+  }, fail).then(function() {
+    assertTrue(lockable.isLocked());
+    shouldAskNow = true;
+    asyncTestCase.waitForAsync('Waiting for get from locked');
+    return lockable.get(key);
+  }, fail).then(function(ret) {
+    assertEquals(1, askedTimes);
+    assertEquals(value, ret);
+    assertFalse(lockable.isLocked());
+    asyncTestCase.waitForAsync('Waiting for get from unlocked');
+    return lockable.get(key);
+  }, fail).then(function(ret) {
+    assertEquals(1, askedTimes);
+    assertEquals(value, ret);
+    asyncTestCase.continueTesting();
+  });
+}
+
+function testLockStaticPassphrase() {
+  var password = 'TEST';
+  var key = 'KEY';
+  var value = 'VALUE';
+  var shouldAskNow = false;
+  var askedTimes = 0;
+  var lockable = new e2e.openpgp.LockableStorage(storage);
+  asyncTestCase.waitForAsync('Waiting for setPassphrase');
+  lockable.setPassphrase(password).then(function() {
+    asyncTestCase.waitForAsync('Waiting for set');
+    return lockable.set(key, value);
+  }, fail).then(function() {
+    asyncTestCase.waitForAsync('Waiting for isEncrypted');
+    return lockable.isEncrypted();
+  }, fail).then(function(isEncrypted) {
+    assertTrue(isEncrypted);
+    asyncTestCase.waitForAsync('Waiting for lock');
+    return lockable.lock();
+  }, fail).then(function() {
+    assertTrue(lockable.isLocked());
+    shouldAskNow = true;
+    asyncTestCase.waitForAsync('Waiting for get from locked');
+    return lockable.get(key);
+  }, fail).then(fail, function(error) {
+    // No passphrase callback was given.
+    return lockable.unlockWithPassphrase('invalid');
+  }).then(fail, function(error) {
+    return lockable.unlockWithPassphrase(password);
+  }).then(function() {
+    assertFalse(lockable.isLocked());
+    return lockable.get(key);
+  }, fail).then(function(v) {
+    assertEquals(value, v);
+    // Cannot setPassphrase on a locked storage.
+    lockable.lock();
+    return lockable.setPassphrase('new-pw');
+  }, fail).then(fail, function(err) {
+    assertTrue(err instanceof Error);
+    asyncTestCase.continueTesting();
+  });
+}
+
+function testPassphrases() {
+  var password = 'TEST';
+  var askedTimes = 0;
+  var ERROR_MSG = 'Error message';
+  var pwCallback = function() {
+    var result = new e2e.async.Result();
+    askedTimes++;
+    if (askedTimes == 5) {
+      result.callback(password);
+    } else {
+      result.callback('wrong');
+    }
+    return result;
+  };
+  var IDontKnowThePassphraseCallback = function() {
+    var result = new e2e.async.Result();
+    asyncTestCase.timeout(function() {
+      result.errback(new Error(ERROR_MSG));
+    }, 100);
+    return result;
+  };
+  var lockable = new e2e.openpgp.LockableStorage(storage, pwCallback);
+  asyncTestCase.waitForAsync('Waiting for repeated passphrases...');
+  lockable.setPassphrase(password).
+    then(goog.bind(lockable.lock, lockable), fail).
+    then(goog.bind(lockable.unlock, lockable), fail).
+    then(function() {
+      assertEquals(5, askedTimes);
+      return lockable.lock();
+  }, fail).then(function() {
+    asyncTestCase.waitForAsync('Waiting for wrong passphrases...');
+    lockable.setPassphraseCallback(IDontKnowThePassphraseCallback);
+  }, fail).
+    then(goog.bind(lockable.lock, lockable), fail).
+    then(goog.bind(lockable.unlock, lockable), fail).
+    then(fail, function(e) {
+      assertEquals(ERROR_MSG, e.message);
+      asyncTestCase.continueTesting();
+  });
+};
+
+function testMultiple() {
+  var lockable = new e2e.openpgp.LockableStorage(storage);
+  asyncTestCase.waitForAsync('Waiting for async action');
+  lockable.setMultiple({
+    k1: 'v1',
+    k2: 'v2',
+    k3: 'v3'
+  }).then(function() {
+    return lockable.get('k2');
+  }, fail).then(function(v) {
+    assertEquals('v2', v);
+    return lockable.removeMultiple(['k1', 'k2']);
+  }, fail).then(function() {
+    return lockable.get('k1');
+  }, fail).then(function(v) {
+    assertFalse(goog.isDef(v));
+    return lockable.get('k2');
+  }, fail).then(function(v) {
+    assertFalse(goog.isDef(v));
+    return lockable.get('k3');
+  }, fail).then(function(v) {
+    assertEquals('v3', v);
+    return lockable.getMultiple(['k1', 'k2', 'k3']);
+  }, fail).then(function(obj) {
+    assertEquals(undefined, obj.k1);
+    assertEquals(undefined, obj.k2);
+    assertEquals('v3', obj.k3);
+    asyncTestCase.continueTesting();
+  }, fail);
+
+}
+
+function testPersist() {
+  var password = 'TEST';
+  var key = 'KEY';
+  var value = 'VALUE';
+  var shouldAskNow = false;
+  var askedTimes = 0;
+  var secondLockable;
+  var pwCallback = function() {
+    if (!shouldAskNow) {
+      fail();
+    }
+    askedTimes++;
+    return e2e.async.Result.toResult(password);
+  };
+  var firstLockable = new e2e.openpgp.LockableStorage(storage, fail);
+  asyncTestCase.waitForAsync('Waiting for locking the first storage');
+  firstLockable.setPassphrase(password).then(function() {
+    asyncTestCase.waitForAsync('Waiting for set in the first storage');
+    return firstLockable.set(key, value);
+  }, fail).then(function() {
+    return e2e.openpgp.LockableStorage.launch(storage, pwCallback);
+  }, fail).then(function(secondLockable) {
+    assertTrue(secondLockable.isLocked());
+    shouldAskNow = true;
+    asyncTestCase.waitForAsync('Waiting for get in the second storage');
+    return secondLockable.get(key);
+  }, fail).then(function(ret) {
+    assertEquals(1, askedTimes);
+    assertEquals(value, ret);
+    asyncTestCase.continueTesting();
+  }, fail);
+}
+</script>

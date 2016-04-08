@@ -36,7 +36,7 @@ goog.require('goog.debug.Error');
  * @constructor
  */
 e2e.hash.Error = function(opt_msg) {
-  goog.base(this, opt_msg);
+  e2e.hash.Error.base(this, 'constructor', opt_msg);
 };
 goog.inherits(e2e.hash.Error, goog.debug.Error);
 
@@ -64,7 +64,7 @@ e2e.hash.Algorithm = {
  * @struct
  */
 e2e.hash.Hash = function() {
-  goog.base(this);
+  e2e.hash.Hash.base(this, 'constructor');
 };
 goog.inherits(e2e.hash.Hash, goog.crypt.Hash);
 

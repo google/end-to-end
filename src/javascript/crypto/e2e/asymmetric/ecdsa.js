@@ -65,8 +65,14 @@ e2e.signer.Ecdsa.prototype.getHash = function() {
 
 
 /** @override */
+e2e.signer.Ecdsa.prototype.getHashAlgorithm = function() {
+  return this.ecdsa_.getHash().algorithm;
+};
+
+
+/** @override */
 e2e.signer.Ecdsa.prototype.setHash = function(hash) {
-  this.hash_ = hash;
+  this.ecdsa_.setHash(hash);
 };
 
 

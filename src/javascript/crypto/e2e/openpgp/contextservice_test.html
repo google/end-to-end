@@ -17,47 +17,180 @@
 <script src="../../../../../javascript/closure/base.js"></script>
 <script src="test_js_deps-runfiles.js"></script>
 <script>
+  goog.require('e2e.async.Peer');
+  goog.require('e2e.async.Client');
   goog.require('e2e.openpgp.ContextService');
-  goog.require('goog.testing.MockControl');
+  goog.require('goog.testing.AsyncTestCase');
   goog.require('goog.testing.jsunit');
-  goog.require('goog.testing.messaging.MockMessageChannel');
 </script>
 <script>
-var mockControl = null;
-var stubs = null;
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
+var fakeNetwork;
+var servicePeer;
+var clientPeer;
+var FUNCTION_NAME = 'changeKeyRingPassphrase';
+var SERVICE_NAME = e2e.openpgp.ContextService.NAME;
 
 function setUp() {
-  mockControl = new goog.testing.MockControl();
-  stubs = new goog.testing.PropertyReplacer();
+  // Set up a messaging channel between clientPeer and servicePeer.
+  fakeNetwork = new MessageChannel();
+  servicePeer = new e2e.async.Peer();
+  servicePeer.addPort(fakeNetwork.port1);
+  clientPeer = new e2e.async.Peer();
+  clientPeer.addPort(fakeNetwork.port2);
+  clientPeer.init = servicePeer.init = goog.nullFunction;
 }
 
 
 function tearDown() {
-  stubs.reset();
-  mockControl.$tearDown();
 }
 
-function testService() {
-  var innerChannel = new goog.testing.messaging.MockMessageChannel(mockControl);
-  var pass = 'TEST';
-  var called = 0;
-  stubs.replace(innerChannel, 'send', function(serviceName, payload) {
-    this.receive(serviceName, payload);
+function testFunctionCalled() {
+  var NEW_PASS = 'a new pass';
+  var called = false;
+  var fakeContext = {};
+  fakeContext[FUNCTION_NAME] = function(newPass) {
+      assertEquals(NEW_PASS, newPass);
+      called = true;
+  };
+
+  var contextPromise = new e2e.async.Result.toResult(fakeContext);
+
+  e2e.openpgp.ContextService.launch(servicePeer, contextPromise);
+
+  asyncTestCase.waitForAsync('Waiting for findService()');
+  clientPeer.findService(SERVICE_NAME, {}).addCallback(function(response) {
+    var res = response.response;
+    var port = response.port;
+    assertEquals(res.name, e2e.openpgp.ContextService.NAME);
+    client = new e2e.async.Client(port);
+    asyncTestCase.waitForAsync('Waiting for remote RPC');
+    client.deferredCall(FUNCTION_NAME, [NEW_PASS]).addCallback(function() {
+      assertTrue(called);
+      asyncTestCase.continueTesting();
+    }).addErrback(fail);
   });
-  var service = new e2e.openpgp.ContextService({
-    changeKeyRingPassphrase: function(newPass) {
-      assertEquals(pass, newPass);
-      called++;
-    }
-  }, innerChannel);
-  service.channel_.send(e2e.openpgp.ContextService.SERVICE_NAME, {
-    name: 'changeKeyRingPassphrase',
-    params: [pass]
-  });
-  service.channel_.send(e2e.openpgp.ContextService.SERVICE_NAME, {
-    name: 'invalid',
-    params: [pass]
-  });
-  assertEquals(1, called);
 }
+
+function testFunctionImmediateResult() {
+  var returnValue = [1, 2];
+  var fakeContext = {};
+  fakeContext[FUNCTION_NAME] = function() {
+      return returnValue;
+  };
+
+  var contextPromise = new e2e.async.Result.toResult(fakeContext);
+
+  e2e.openpgp.ContextService.launch(servicePeer, contextPromise);
+
+  asyncTestCase.waitForAsync('Waiting for findService()');
+  clientPeer.findService(SERVICE_NAME, {}).addCallback(function(response) {
+    var res = response.response;
+    var port = response.port;
+    assertEquals(res.name, e2e.openpgp.ContextService.NAME);
+    client = new e2e.async.Client(port);
+    asyncTestCase.waitForAsync('Waiting for remote RPC');
+    client.deferredCall(FUNCTION_NAME, []).addCallback(function(ret) {
+      assertArrayEquals(ret, returnValue);
+      asyncTestCase.continueTesting();
+    }).addErrback(fail);
+  });
+}
+
+function testFunctionDeferredResult() {
+  var returnValue = [1, 2];
+  var fakeContext = {};
+  fakeContext[FUNCTION_NAME] = function() {
+      var result = new e2e.async.Result();
+      asyncTestCase.timeout(function() {
+        result.callback(returnValue);
+      }, 50);
+      return result;
+  };
+  var contextPromise = new e2e.async.Result.toResult(fakeContext);
+  e2e.openpgp.ContextService.launch(servicePeer, contextPromise);
+
+  asyncTestCase.waitForAsync('Waiting for findService()');
+  clientPeer.findService(SERVICE_NAME, {}).addCallback(function(response) {
+    var res = response.response;
+    var port = response.port;
+    assertEquals(res.name, e2e.openpgp.ContextService.NAME);
+    client = new e2e.async.Client(port);
+    asyncTestCase.waitForAsync('Waiting for remote RPC');
+    client.deferredCall(FUNCTION_NAME, []).addCallback(function(ret) {
+      assertArrayEquals(ret, returnValue);
+      asyncTestCase.continueTesting();
+    }).addErrback(fail);
+  });
+}
+
+function testFunctionErrors() {
+  var errorMsg = 'ERROR!';
+  var fakeContext = {};
+  fakeContext[FUNCTION_NAME] = function() {
+      var result = new e2e.async.Result();
+      asyncTestCase.timeout(function() {
+        result.errback(errorMsg);
+      }, 50);
+      return result;
+  };
+  var contextPromise = new e2e.async.Result.toResult(fakeContext);
+  e2e.openpgp.ContextService.launch(servicePeer, contextPromise);
+
+  asyncTestCase.waitForAsync('Waiting for findService()');
+  clientPeer.findService(SERVICE_NAME, {}).addCallback(function(response) {
+    var res = response.response;
+    var port = response.port;
+    assertEquals(res.name, e2e.openpgp.ContextService.NAME);
+    client = new e2e.async.Client(port);
+    asyncTestCase.waitForAsync('Waiting for error in remote RPC');
+    client.deferredCall(FUNCTION_NAME, []).addCallbacks(fail, function(error) {
+      assertEquals(errorMsg, error);
+      fakeContext[FUNCTION_NAME] = function() {
+        throw errorMsg;
+      }
+      asyncTestCase.waitForAsync('Waiting for another error in remote RPC');
+      client.deferredCall(FUNCTION_NAME, []).addCallbacks(fail, function(err) {
+        assertEquals(errorMsg, err);
+        asyncTestCase.waitForAsync(
+            'Waiting for nonexistand function remote RPC');
+        client.deferredCall('nonexisting', []).addCallbacks(fail,
+            function(err) {
+          assertEquals('Tried to call nonexistent method.', err);
+          asyncTestCase.continueTesting();
+        })
+      });
+    });
+  });
+}
+
+
+function testDeferredContextInitialization() {
+  var returnValue = 'a result';
+  var contextResolved = false;
+  var fakeContext = {};
+  fakeContext[FUNCTION_NAME] = function() {
+    return returnValue;
+  };
+  var contextPromise = new e2e.async.Result();
+  e2e.openpgp.ContextService.launch(servicePeer, contextPromise);
+  asyncTestCase.timeout(function() {
+    // Delayed initialization of the context
+    contextResolved = true;
+    contextPromise.callback(fakeContext);
+  }, 500);
+  asyncTestCase.waitForAsync('Waiting for findService()');
+  clientPeer.findService(SERVICE_NAME, {}).addCallback(function(response) {
+    var res = response.response;
+    var port = response.port;
+    assertEquals(res.name, e2e.openpgp.ContextService.NAME);
+    assertTrue(contextResolved);
+    client = new e2e.async.Client(port);
+    asyncTestCase.waitForAsync('Waiting for RPC');
+    client.deferredCall(FUNCTION_NAME, []).addCallbacks(function(result) {
+      assertEquals(returnValue, result);
+      asyncTestCase.continueTesting();
+    }, fail);
+  });
+};
 </script>

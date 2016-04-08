@@ -21,6 +21,7 @@
 
 goog.provide('e2e.openpgp.block.TransferableKey');
 
+goog.require('e2e');
 goog.require('e2e.debug.Console');
 goog.require('e2e.openpgp.block.Block');
 goog.require('e2e.openpgp.error.ParseError');
@@ -33,6 +34,7 @@ goog.require('e2e.openpgp.packet.UserAttribute');
 goog.require('e2e.openpgp.packet.UserId');
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.async.DeferredList');
 
 
 
@@ -69,20 +71,42 @@ e2e.openpgp.block.TransferableKey = function(keyPacketClass) {
    */
   this.keyPacket = null;
   /**
-   * List of user IDs in this block.
+   * List of all user IDs in this block, regardless the validity of their
+   * signatures. Used for the key serialization only.
+   * @private {!Array.<!e2e.openpgp.packet.UserId>}
+   */
+  this.unverifiedUserIds_ = [];
+  /**
+   * List of valid user IDs in this block. Use {@link #processSignatures} to
+   * populate this list.
    * @type {!Array.<!e2e.openpgp.packet.UserId>}
    */
   this.userIds = [];
   /**
-   * List of subkeys on this block.
+   * List of all subkeys in this block, regardless the validity of their
+   * signatures. Used for the key serialization only.
+   * @private {!Array.<!e2e.openpgp.packet.Key>}
+   */
+  this.unverifiedSubKeys_ = [];
+  /**
+   * List of valid subkeys in this block. Use {@link #processSignatures} to
+   * populate this list.
    * @type {!Array.<!e2e.openpgp.packet.Key>}
    */
   this.subKeys = [];
   /**
-   * List of user attributes in this block.
+   * List of all user attributes in this block, regardless the validity of their
+   * signatures. Used for the key serialization only.
+   * @private {!Array.<!e2e.openpgp.packet.UserAttribute>}
+   */
+  this.unverifiedUserAttributes_ = [];
+  /**
+   * List of valid user attributes in this block. Use {@link #processSignatures}
+   * to populate this list.
    * @type {!Array.<!e2e.openpgp.packet.UserAttribute>}
    */
   this.userAttributes = [];
+
   goog.base(this);
 };
 goog.inherits(e2e.openpgp.block.TransferableKey,
@@ -90,6 +114,7 @@ goog.inherits(e2e.openpgp.block.TransferableKey,
 
 
 /**
+ * Returns the verified user IDs.
  * @return {!Array.<string>} The User IDs for this key block.
  */
 e2e.openpgp.block.TransferableKey.prototype.getUserIds = function() {
@@ -128,9 +153,9 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
     while (packet instanceof e2e.openpgp.packet.UserId) {
       // UserAttribute extends UserId
       if (packet instanceof e2e.openpgp.packet.UserAttribute) {
-        this.userAttributes.push(packet);
+        this.unverifiedUserAttributes_.push(packet);
       } else {
-        this.userIds.push(packet);
+        this.unverifiedUserIds_.push(packet);
       }
       var userIdOrAttribute = packet;
       this.packets.push(packets.shift());
@@ -151,13 +176,13 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
       }
     }
   }
-  if (this.userIds.length < 1) {
+  if (this.unverifiedUserIds_.length < 1) {
     throw new e2e.openpgp.error.ParseError('Invalid block. Missing User ID.');
   }
   while (packet instanceof e2e.openpgp.packet.PublicSubkey ||
       packet instanceof e2e.openpgp.packet.SecretSubkey) {
     var subKey = packet;
-    this.subKeys.push(packet);
+    this.unverifiedSubKeys_.push(packet);
     this.packets.push(packets.shift());
     packet = packets[0];
     // RFC4880 requires a signature for subkeys, however some clients, such as
@@ -197,39 +222,58 @@ e2e.openpgp.block.TransferableKey.prototype.parse = function(packets) {
  *     missing signatures. Revoked keys and User IDs are also removed.
  *  This method will throw an error if the resulting TransferableKey has no
  *  user IDs or any signature has been tampered with.
+ *  @return {!e2e.async.Result<undefined>}
  */
 e2e.openpgp.block.TransferableKey.prototype.processSignatures = function() {
   var signingKey = goog.asserts.assertObject(this.keyPacket);
 
-  if (!this.keyPacket.verifySignatures(signingKey)) {
-    // main key is invalid
-    throw new e2e.openpgp.error.SignatureError(
-        'Main key is invalid.');
-  }
-  // Process subkeys
-  var keysToRemove = [];
-  for (var i = this.subKeys.length - 1; i >= 0; i--) {
-    if (!this.subKeys[i].verifySignatures(signingKey)) {
-      // Remove subKey, it's invalid
-      this.subKeys.splice(i, 1);
-    }
-  }
-  // Process user IDs
-  for (i = this.userIds.length - 1; i >= 0; i--) {
-    if (!this.userIds[i].verifySignatures(signingKey)) {
-      e2e.openpgp.block.TransferableKey.console_.warn(
-          'No valid signatures found for ', this.userIds[i].userId);
-      this.userIds.splice(i, 1);
-    }
-  }
-  if (this.userIds.length == 0) {
-    throw new e2e.openpgp.error.SignatureError('No certified user IDs.');
-  }
-  for (i = this.userAttributes.length - 1; i >= 0; i--) {
-    if (!this.userAttributes[i].verifySignatures(signingKey)) {
-      this.userAttributes.splice(i, 1);
-    }
-  }
+  this.subKeys = [];
+  this.userIds = [];
+  this.userAttributes = [];
+
+  return this.keyPacket.verifySignatures(signingKey)
+      .addCallback(function(mainKeyVerified) {
+        if (!mainKeyVerified) {
+          // main key is invalid
+          throw new e2e.openpgp.error.SignatureError(
+             'Main key is invalid.');
+        }
+        var pendingVerifies = [];
+        // Process subkeys
+        this.unverifiedSubKeys_.forEach(function(subKey) {
+          pendingVerifies.push(subKey.verifySignatures(signingKey)
+             .addCallback(function(didVerify) {
+               if (didVerify) {
+                 this.subKeys.push(subKey);
+               }
+             }, this));
+        }, this);
+        // Process user IDs
+        this.unverifiedUserIds_.forEach(function(userId) {
+          pendingVerifies.push(userId.verifySignatures(signingKey)
+             .addCallback(function(didVerify) {
+               if (!didVerify) {
+                 e2e.openpgp.block.TransferableKey.console_.warn(
+                 'No valid signatures found for ', userId.userId);
+               } else {
+                 this.userIds.push(userId);
+               }
+             }, this));
+        }, this);
+        this.unverifiedUserAttributes_.forEach(function(attribute) {
+          pendingVerifies.push(attribute.verifySignatures(signingKey)
+             .addCallback(function(didVerify) {
+               if (didVerify) {
+                 this.userAttributes.push(attribute);
+               }
+             }, this));
+        }, this);
+        return goog.async.DeferredList.gatherResults(pendingVerifies);
+      }, this).addCallback(function(ignored) {
+        if (this.userIds.length == 0) {
+          throw new e2e.openpgp.error.SignatureError('No certified user IDs.');
+        }
+      }, this);
 };
 
 
@@ -275,7 +319,7 @@ e2e.openpgp.block.TransferableKey.prototype.getKeyTo = function(use, type) {
 
 
 /**
- * Chooses a key packet for encryption.
+ * Chooses a public key packet for encryption.
  * @return {e2e.openpgp.packet.PublicKey}
  */
 e2e.openpgp.block.TransferableKey.prototype.getKeyToEncrypt =
@@ -283,7 +327,15 @@ e2e.openpgp.block.TransferableKey.prototype.getKeyToEncrypt =
 
 
 /**
- * Chooses a key packet for signing.
+ * Chooses a secret key packet for decryption.
+ * @return {e2e.openpgp.packet.SecretKey}
+ */
+e2e.openpgp.block.TransferableKey.prototype.getKeyToDecrypt =
+    goog.abstractMethod;
+
+
+/**
+ * Chooses a secret key packet for signing.
  * @return {e2e.openpgp.packet.SecretKey}
  */
 e2e.openpgp.block.TransferableKey.prototype.getKeyToSign =
@@ -299,22 +351,23 @@ e2e.openpgp.block.TransferableKey.prototype.SERIALIZE_IN_KEY_OBJECT = false;
 
 /**
  * Returns a key or one of the subkeys of a given key ID.
- * @param {!e2e.ByteArray} keyId Key ID to find the key by.
+ * @param {!e2e.openpgp.KeyId} keyId Key ID to find the key by.
  * @return {?e2e.openpgp.packet.Key} Found key
  */
 e2e.openpgp.block.TransferableKey.prototype.getKeyById = function(keyId) {
-  if (this.keyPacket.keyId && goog.array.equals(this.keyPacket.keyId, keyId)) {
+  if (this.keyPacket.keyId &&
+      e2e.compareByteArray(this.keyPacket.keyId, keyId)) {
     return this.keyPacket;
   }
   return goog.array.find(this.subKeys, function(key) {
-    return !!key.keyId && goog.array.equals(key.keyId, keyId);
+    return !!key.keyId && e2e.compareByteArray(key.keyId, keyId);
   });
 };
 
 
 /**
  * Checks if a key or one of the subkeys has a given key ID.
- * @param {!e2e.ByteArray} keyId Key ID to find the key by.
+ * @param {!e2e.openpgp.KeyId} keyId Key ID to find the key by.
  * @return {boolean} If true, this TransferableKey has a key with given ID.
  */
 e2e.openpgp.block.TransferableKey.prototype.hasKeyById = function(keyId) {
@@ -325,7 +378,9 @@ e2e.openpgp.block.TransferableKey.prototype.hasKeyById = function(keyId) {
 /** @inheritDoc */
 e2e.openpgp.block.TransferableKey.prototype.serialize = function() {
   return goog.array.flatten(goog.array.map(
-      [this.keyPacket].concat(this.userIds).concat(this.subKeys),
+      [this.keyPacket]
+      .concat(this.unverifiedUserIds_)
+      .concat(this.unverifiedSubKeys_),
       function(packet) {
         return packet.serialize();
       }));
@@ -336,11 +391,15 @@ e2e.openpgp.block.TransferableKey.prototype.serialize = function() {
  * Creates a Key object representing the TransferableKey.
  * @param {boolean=} opt_dontSerialize if true, skip key serialization in
  *     results.
+ * @param {!e2e.openpgp.KeyProviderId=} opt_keyProviderId Key provider ID
+ *     hints for secret key objects will be populated.
  * @return {!e2e.openpgp.Key}
  */
 e2e.openpgp.block.TransferableKey.prototype.toKeyObject = function(
-    opt_dontSerialize) {
-  return {
+    opt_dontSerialize, opt_keyProviderId) {
+  var keyProviderId = /** @type {!e2e.openpgp.KeyProviderId} */ (
+      opt_keyProviderId || 'UnknownProvider');
+  var keyObject = {
     key: this.keyPacket.toKeyPacketInfo(),
     subKeys: goog.array.map(
         this.subKeys, function(subKey) {
@@ -349,8 +408,32 @@ e2e.openpgp.block.TransferableKey.prototype.toKeyObject = function(
     uids: this.getUserIds(),
     serialized: /** @type {!e2e.ByteArray} */(
         (opt_dontSerialize || !this.SERIALIZE_IN_KEY_OBJECT) ?
-        [] : this.serialize())
+        [] : this.serialize()),
+    providerId: keyProviderId,
+    signingKeyId: null,
+    signAlgorithm: null,
+    signHashAlgorithm: null,
+    decryptionKeyId: null,
+    decryptionAlgorithm: null,
   };
+  if (keyObject.key.secret) {
+    // Populate metadata to enable surrogate keys.
+    var keyPacket = this.getKeyToSign();
+    if (keyPacket) {
+      keyObject.signingKeyId = goog.asserts.assertArray(keyPacket.keyId);
+      keyObject.signAlgorithm = /** @type {!e2e.signer.Algorithm} */
+          (goog.asserts.assertString(keyPacket.cipher.algorithm));
+      keyObject.signHashAlgorithm = goog.asserts.assertString(
+          keyPacket.cipher.getHashAlgorithm());
+    }
+    keyPacket = this.getKeyToDecrypt();
+    if (keyPacket) {
+      keyObject.decryptionKeyId = goog.asserts.assertArray(keyPacket.keyId);
+      keyObject.decryptionAlgorithm = /** @type {!e2e.cipher.Algorithm} */
+          (goog.asserts.assertString(keyPacket.cipher.algorithm));
+    }
+  }
+  return keyObject;
 };
 
 
@@ -430,6 +513,28 @@ e2e.openpgp.block.TransferableKey.prototype.getNewestCertifiedUserId_ =
         'No certified User IDs available.');
   }
   return latestUserId;
+};
+
+
+/**
+ * Adds a Sub Key packet to this block. The added packet is not verified yet,
+ * use {@link #processSignatures} to be able to use it.
+ * @param {!e2e.openpgp.packet.Key} subKey the Sub Key packet.
+ */
+e2e.openpgp.block.TransferableKey.prototype.addUnverifiedSubKey = function(
+    subKey) {
+  this.unverifiedSubKeys_.push(subKey);
+};
+
+
+/**
+ * Adds a User ID packet to this block. The added packet is not verified yet,
+ * use {@link #processSignatures} to be able to use it.
+ * @param {!e2e.openpgp.packet.UserId} userId the User ID packet.
+ */
+e2e.openpgp.block.TransferableKey.prototype.addUnverifiedUserId = function(
+    userId) {
+  this.unverifiedUserIds_.push(userId);
 };
 
 

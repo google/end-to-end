@@ -1,0 +1,16 @@
+{
+  "output": "docs/api/",
+  "sources": ["src/javascript/crypto/e2e", "build/templates", "lib/closure-templates-compiler/soyutils_usegoog.js","lib/docs-build/zlib_externs.js"],
+  "externs" : ["lib/closure-compiler/contrib/externs/chrome_extensions.js"],
+  "closureLibraryDir": "lib/closure-library/closure/goog/",
+  "excludes": [
+    "src/**_test.js",
+    "src/javascript/crypto/e2e/compatibility_tests/**"
+  ],
+  "typeFilters": [
+    "^goog",
+    "^soy",
+    "^soydata"
+  ],
+  "readme": "README.md"
+}

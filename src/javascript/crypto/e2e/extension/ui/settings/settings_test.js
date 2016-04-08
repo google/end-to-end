@@ -30,6 +30,7 @@ goog.require('e2e.ext.ui.Settings');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.panels.KeyringMgmtFull');
 goog.require('e2e.ext.utils');
+goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
@@ -46,7 +47,7 @@ var launcher = null;
 var mockControl = null;
 var page = null;
 var stubs = new goog.testing.PropertyReplacer();
-var testCase = goog.testing.AsyncTestCase.createAndInstall();
+var testCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 
 
 var PUBLIC_KEY_ASCII =
@@ -77,6 +78,7 @@ function setUp() {
   mockControl = new goog.testing.MockControl();
   e2e.ext.testingstubs.initStubs(stubs);
   launcher = new e2e.ext.ExtensionLauncher(
+      new e2e.openpgp.ContextImpl(new goog.testing.storage.FakeMechanism()),
       new goog.testing.storage.FakeMechanism());
   launcher.start();
 
@@ -121,9 +123,11 @@ function testGenerateKey() {
 
 
 function testRemoveKey() {
-  stubs.set(launcher.pgpContext_, 'deleteKey',
-      mockControl.createFunctionMock('deleteKey'));
-  launcher.pgpContext_.deleteKey('test@example.com');
+  var called = false;
+  stubs.set(launcher.pgpContext_, 'deleteKey', function() {
+    called = true;
+    return new e2e.async.Result.toResult(undefined);
+  });
 
   stubs.replace(e2e.ext.ui.panels.KeyringMgmtFull.prototype, 'removeKey',
       mockControl.createFunctionMock('removeKey'));
@@ -134,8 +138,10 @@ function testRemoveKey() {
   page.decorate(document.documentElement);
   testCase.waitForAsync('waiting for key to be generated');
   fakeGenerateKey().addCallback(function() {
+    testCase.waitForAsync('waiting for key removal');
     page.removeKey_('test@example.com');
-    window.setTimeout(function() {
+    testCase.timeout(function() {
+      assertTrue(called);
       mockControl.$verifyAll();
       testCase.continueTesting();
     }, 500);
@@ -215,7 +221,7 @@ function importKeyring(keyringContents, userName) {
       child.dialogCallback_('');
     }
   }
-  window.setTimeout(function() {
+  testCase.timeout(function() {
     notificationArg.arg();
 
     mockControl.$verifyAll();
@@ -236,7 +242,7 @@ function testExportKeyring() {
   page.exportKeyring_();
 
   testCase.waitForAsync('waiting for keyring to be exported');
-  window.setTimeout(function() {
+  testCase.timeout(function() {
     testCase.continueTesting();
     // TODO(adhintz) Fix this test and enable this assert.
     // assertTrue('Failed to export keyring', downloadedFile);
@@ -246,9 +252,9 @@ function testExportKeyring() {
 
 function testUpdateKeyringPassphrase() {
   page.decorate(document.documentElement);
-  stubs.set(launcher.pgpContext_, 'changeKeyRingPassphrase',
-      mockControl.createFunctionMock('changeKeyRingPassphrase'));
-  launcher.pgpContext_.changeKeyRingPassphrase('testPass');
+  stubs.set(launcher.pgpContext_, 'changeKeyRingPassphrase', function() {
+    return e2e.async.Result.toResult(undefined);
+  });
 
   stubs.replace(chrome.notifications, 'create',
       mockControl.createFunctionMock('create'));

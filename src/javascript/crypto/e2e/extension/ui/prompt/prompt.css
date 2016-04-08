@@ -329,3 +329,9 @@ textarea:focus {
   right: 0;
   text-align: right;
 }
+
+#popupResizeWorkaround {
+  height: 1px;
+  overflow: hidden;
+  width: 1px;
+}

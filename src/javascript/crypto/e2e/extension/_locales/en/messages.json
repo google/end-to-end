@@ -19,6 +19,10 @@
     "message": "Decryption successful!",
     "description": "Message informing about a successful decryption of a message."
   },
+  "promptMessageNotEncryptedMsg": {
+    "message": "Message was not encrypted.",
+    "description": "Message informing that the message was not encrypted."
+  },
   "promptVerificationSuccessMsg": {
     "message": "Good signature(s) from $1.",
     "description": "Message informing about a successful signature verification."
@@ -76,7 +80,7 @@
     "description": "A verb prompting the user to import an OpenPGP key into End-To-End."
   },
   "promptImportKeyConfirmLabel": {
-    "message": "Do you want to import the following keys?",
+    "message": "Do you want to import the following keys?\n\nYou should verify (e.g. with a phone call) that the key owners displayed below use the same key fingerprints.",
     "description": "A sentence asking the user to confirm the key import."
   },
   "promptImportKeyVerifyLabel": {
@@ -154,6 +158,10 @@
   "keyMgmtNoneLabel": {
     "message": "None",
     "description": "A noun indicating that there are no PGP keys to display."
+  },
+  "keyMgmtSignupPromptLabel": {
+      "message": "Sign up with another email address",
+      "description": "A sentence prompting the user sign up with another email address."
   },
   "keyMgmtImportKeyringLabel": {
     "message": "Import a keyring",
@@ -280,7 +288,7 @@
     "description": "The label to inform the user that he needs a private key to use signing/decryption functionality"
   },
   "promptEncryptionPassphraseMessage": {
-    "message": "Please enter a passphrase for this message.",
+    "message": "Please enter a passphrase for this message.\nAnyone who knows the passphrase will be able to read the message.",
     "description": "A sentence prompting the user to specify a passphrase for symmetric encryption."
   },
   "promptEncryptionPassphraseConfirmMessage": {
@@ -290,6 +298,10 @@
   "promptEncryptionPassphraseLink": {
     "message": "Protect with a passphrase",
     "description": "A sentence notifying the user where to enter passphrases for symmetric encryption."
+  },
+  "promptEncryptionPassphraseLinkTooltip": {
+    "message": "Protect the message with a passhrase. Anyone who knows the passphrase will be able to read the message.",
+    "description": "A sentence notifying the user what passphrase encryption does."
   },
   "promptPassphraseMask": {
     "message": "(passphrase)",
@@ -398,5 +410,9 @@
   "interactionEnabled": {
     "message": "Everything you type is now unencrypted. Tap left Ctrl-key to reenable secure mode.",
     "description": "A sentence explaining that the interaction with the web application is enabled."
+  },
+  "keyFingerprintLabel": {
+    "message": "Key fingerprint",
+    "description": "The OpenPGP key fingerprint"
   }
 }

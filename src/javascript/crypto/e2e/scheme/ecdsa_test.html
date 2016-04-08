@@ -1,0 +1,130 @@
+<!-- Copyright 2016 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<title>Unit Test of e2e.scheme.Ecdsa</title>
+<script src="../../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.asymmetric.keygenerator');
+  goog.require('e2e.scheme.Ecdsa');
+  goog.require('e2e.random');
+  goog.require('goog.testing.AsyncTestCase');
+  goog.require('goog.testing.jsunit');
+</script>
+<script>
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
+
+var LENGTH = 201;  // bytes
+
+/**
+ * Tests that ECDSA is self-consistent.
+ */
+function testConsistency() {
+  var ecdsaSigner = e2e.asymmetric.keygenerator.newEcdsaWithP256();
+  var ecdsa = new e2e.scheme.Ecdsa(ecdsaSigner);
+  var m = e2e.random.getRandomBytes(LENGTH);
+  asyncTestCase.waitForAsync('Waiting for signing.');
+  return ecdsa.signJavaScript(m).then(function(sig) {
+    asyncTestCase.waitForAsync('Waiting for verification.');
+    return ecdsa.verifyJavaScript(m, sig);
+  }).then(function(valid) {
+    assertTrue(valid);
+    asyncTestCase.continueTesting();
+  }, fail);
+}
+
+/**
+ * Tests that ECDSA is self-consistent with web crypto.
+ */
+function testConsistencyWebCrypto() {
+  asyncTestCase.waitForAsync('Waiting for key generation');
+  e2e.asymmetric.keygenerator.newWebCryptoP256Keys().then(function(ciphers) {
+    var ecdsaSigner = ciphers[0];
+    var ecdhCipher = ciphers[1];
+    var ecdsa = new e2e.scheme.Ecdsa(ecdsaSigner);
+    var m = e2e.random.getRandomBytes(LENGTH);
+    asyncTestCase.waitForAsync('Waiting for signing.');
+    return ecdsa.signWebCrypto(m).then(function(sig) {
+      asyncTestCase.waitForAsync('Waiting for verification.');
+      return ecdsa.verifyWebCrypto(m, sig);
+    }).then(function(valid) {
+      assertTrue(valid);
+      asyncTestCase.continueTesting();
+    });
+  }, fail);
+}
+
+/**
+ * Tests that ECDSA is consistent from web crypto to JS.
+ */
+function testConsistencyJsToWebCrypto() {
+  asyncTestCase.waitForAsync('Waiting for key generation');
+  e2e.asymmetric.keygenerator.newWebCryptoP256Keys().then(function(ciphers) {
+    var ecdsaSigner = ciphers[0];
+    var ecdhCipher = ciphers[1];
+    var ecdsa = new e2e.scheme.Ecdsa(ecdsaSigner);
+    var m = e2e.random.getRandomBytes(LENGTH);
+    asyncTestCase.waitForAsync('Waiting for signing.');
+    return ecdsa.signWebCrypto(m).then(function(sig) {
+      asyncTestCase.waitForAsync('Waiting for verification.');
+      return ecdsa.verifyJavaScript(m, sig);
+    }).then(function(valid) {
+      assertTrue(valid);
+      asyncTestCase.continueTesting();
+    });
+  }, fail);
+}
+
+/**
+ * Tests that ECDSA is consistent from web crypto to JS.
+ */
+function testConsistencyWebCryptoToJs() {
+  var ecdsaSigner = e2e.asymmetric.keygenerator.newEcdsaWithP256();
+  var jwkKey = e2e.asymmetric.keygenerator.ecPubKeyToJwk(ecdsaSigner.key.pubKey);
+  asyncTestCase.waitForAsync('Waiting for key import');
+  window.crypto.subtle.importKey('jwk', jwkKey, {'name': 'ECDSA', 'namedCurve': 'P-256'},
+      true /* extractable */, ['verify'] /* usages */).then(function(webKey) {
+    ecdsaSigner.setWebCryptoKey({publicKey: webKey});
+    var ecdsa = new e2e.scheme.Ecdsa(ecdsaSigner);
+    var m = e2e.random.getRandomBytes(LENGTH);
+    asyncTestCase.waitForAsync('Waiting for signing.');
+    return ecdsa.signJavaScript(m).then(function(sig) {
+      asyncTestCase.waitForAsync('Waiting for verification.');
+      return ecdsa.verifyWebCrypto(m, sig);
+    }).then(function(valid) {
+      assertTrue(valid);
+      asyncTestCase.continueTesting();
+    });
+  }, fail);
+}
+
+/**
+ * Tests that ECDSA on JS keys works with WebCrypto.
+ */
+function testJsWithWebCryptoEcdsa() {
+  var ecdsaSigner = e2e.asymmetric.keygenerator.newEcdsaWithP256();
+  var ecdsa = new e2e.scheme.Ecdsa(ecdsaSigner);
+  var m = e2e.random.getRandomBytes(LENGTH);
+  asyncTestCase.waitForAsync('Waiting for signing.');
+  return ecdsa.signJavaScript(m).then(function(sig) {
+    asyncTestCase.waitForAsync('Waiting for verification.');
+    return ecdsa.verifyJavaScriptKeyWithWebCrypto(m, sig);
+  }).then(function(valid) {
+    assertTrue(valid);
+    asyncTestCase.continueTesting();
+  }, fail);
+}
+
+</script>

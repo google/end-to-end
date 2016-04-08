@@ -19,10 +19,12 @@
  * Renders the chip holder.
  * @param recipientsTitle The placeholder text for the recipients field.
  * @param passphraseEncryptionLinkTitle The title for the passphrase encryption link.
+ * @param passphraseEncryptionLinkTooltip The tooltip for the passphrase encryption link.
  */
 {template .renderChipHolder}
   <div id="{e2e.ext.constants.ElementId.KEY_SELECT_FORM}">
-    <div class="{e2e.ext.constants.CssClass.PASSPHRASE_ENCRYPTION_LINK}">
+    <div class="{e2e.ext.constants.CssClass.PASSPHRASE_ENCRYPTION_LINK}"
+      title="{$passphraseEncryptionLinkTooltip}">
       + {$passphraseEncryptionLinkTitle}
     </div>
     <div class="{e2e.ext.constants.CssClass.CHIPS}">

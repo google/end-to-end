@@ -24,7 +24,7 @@
   goog.require('e2e.ecc.Ecdh');
   goog.require('e2e.ecc.PrimeCurve');
   goog.require('e2e.ecc.Protocol');
-  goog.require('e2e.ecc.ecdhTestData.P256Vectors');
+  goog.require('e2e.ecc.ecdhTestData.NistVectors');
 </script>
 <script>
 /**
@@ -44,6 +44,7 @@ function testConsistency() {
   var curveNames = [
     e2e.ecc.PrimeCurve.P_256,
     e2e.ecc.PrimeCurve.P_384,
+    e2e.ecc.PrimeCurve.P_521,
     e2e.ecc.PrimeCurve.CURVE_25519
   ];
   goog.array.forEach(curveNames, function(curveName) {
@@ -66,7 +67,7 @@ function testConsistency() {
  * Tests ECDH's shared secret derivation with public test vectors.
  */
 function testSharedSecretDerivationWithPublicVectors() {
-  goog.array.forEach(e2e.ecc.ecdhTestData.P256Vectors,
+  goog.array.forEach(e2e.ecc.ecdhTestData.NistVectors,
       function(vector) {
          var curve = vector['curve'];
          var key = {
@@ -79,4 +80,5 @@ function testSharedSecretDerivationWithPublicVectors() {
         assertTrue(Z.isEqual(hexToBigNum(vector['Z'])));
   });
 }
+
 </script>

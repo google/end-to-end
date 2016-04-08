@@ -28,6 +28,7 @@ goog.require('e2e.openpgp.block.factory');
 goog.require('e2e.random');
 goog.require('goog.Uri');
 goog.require('goog.array');
+goog.require('goog.async.DeferredList');
 goog.require('goog.crypt');
 goog.require('goog.net.XhrIo');
 
@@ -176,8 +177,7 @@ e2e.openpgp.KeyClient.prototype.importPublicKey = function(key) {
     throw new Error('Invalid user ID for key import.');
   }
   var nonce = goog.crypt.byteArrayToHex(e2e.random.getRandomBytes(16));
-  var serializedKey = e2e.openpgp.asciiArmor.encode(
-      'PUBLIC KEY BLOCK', key.serialize());
+  var serializedKey = e2e.openpgp.asciiArmor.armorBlock(key);
   return this.getOpenIdCredentials_(uids[0], nonce).addCallback(
       goog.bind(this.importKeyWithCredentials_, this, nonce, serializedKey));
 };
@@ -302,12 +302,14 @@ e2e.openpgp.KeyClient.prototype.searchPublicKey = function(email) {
             var receivedPubKeys =
                 e2e.openpgp.block.factory.parseByteArrayAllTransferableKeys(
                     keydata.data, false, keydata.charset);
-            goog.array.forEach(receivedPubKeys, function(key) {
-              key.processSignatures();
-            });
-            // TODO(user): Get the public key blob's proof and verify the
-            // consistency of the proof.
-            resultPubKeys.callback(receivedPubKeys);
+            goog.async.DeferredList.gatherResults(
+                goog.array.map(receivedPubKeys, function(key) {
+              return key.processSignatures();
+            })).addCallback(function(ignored) {
+              // TODO(user): Get the public key blob's proof and verify the
+              // consistency of the proof.
+              resultPubKeys.callback(receivedPubKeys);
+            }).addErrback(function(error) { resultPubKeys.callback([]); });
           } catch (error) {
             resultPubKeys.callback([]);
           }

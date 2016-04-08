@@ -61,11 +61,6 @@
   margin-top: 15px;
 }
 
-#storedKeys tr>td:first-child {
-  padding: 5px;
-  width: 530px;
-}
-
 #storedKeys tr>td {
   vertical-align: top;
 }
@@ -83,10 +78,6 @@
 
 #storedKeys tr:hover img {
   cursor: pointer;
-  opacity: .6;
-}
-
-#storedKeys .key-meta {
   opacity: .6;
 }
 

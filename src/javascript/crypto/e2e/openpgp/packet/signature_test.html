@@ -111,31 +111,36 @@ function testSignDSA() {
   e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
       e2e.openpgp.packet.Signature.SignatureType.TEXT, attributes).addCallback(
     function(sigPacket) {
-      assertTrue('Verify success',
-                 sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
-      assertFalse('Verify should fail', sigPacket.verify(
-          e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
-
       var sigBytes = sigPacket.serializePacketBody();
       var sigParsed = e2e.openpgp.packet.Signature.parse(sigBytes);
-      assertTrue('Verify success',
-                 sigParsed.verify(data, publicKeyBlock.keyPacket.cipher));
-      assertFalse('Verify should fail', sigParsed.verify(
-          e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
-
-      asyncTestCase.signal();
+      sigPacket.verify(data, publicKeyBlock.keyPacket.cipher).addCallback(function(verified) {
+        assertTrue('Verify success', verified);
+        return sigPacket.verify(
+            e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher);
+      }).addCallback(function(verified) {
+        assertFalse('Verify should fail', verified);
+        return sigParsed.verify(data, publicKeyBlock.keyPacket.cipher);
+      }).addCallback(function(verified) {
+        assertTrue('Verify success', verified);
+        return sigParsed.verify(
+            e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher);
+      }).addCallback(function(verified) {
+        assertFalse('Verify should fail', verified);
+        asyncTestCase.signal();
+      }, fail);
   });
 
   var data = [0, 1, 2, 3];
   e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
       e2e.openpgp.packet.Signature.SignatureType.BINARY, attributes).addCallback(
     function(sigPacket) {
-        assertTrue('Verify success',
-            sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
-        assertFalse('Verify should fail',
-            sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher));
-
+      sigPacket.verify(data, publicKeyBlock.keyPacket.cipher).addCallback(function(verified) {
+        assertTrue('Verify success', verified);
+        return sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher);
+      }).addCallback(function(verified) {
+        assertFalse('Verify should fail', verified);
         asyncTestCase.signal();
+      }, fail);
   });
 }
 
@@ -190,31 +195,36 @@ function testSignECDSA() {
   e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
       e2e.openpgp.packet.Signature.SignatureType.TEXT, attributes).addCallback(
     function(sigPacket) {
-      assertTrue('Verify success',
-                 sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
-      assertFalse('Verify should fail', sigPacket.verify(
-          e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
-
       var sigBytes = sigPacket.serializePacketBody();
       var sigParsed = e2e.openpgp.packet.Signature.parse(sigBytes);
-      assertTrue('Verify success',
-                 sigParsed.verify(data, publicKeyBlock.keyPacket.cipher));
-      assertFalse('Verify should fail', sigParsed.verify(
-          e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
-
-      asyncTestCase.signal();
+      sigPacket.verify(data, publicKeyBlock.keyPacket.cipher).addCallback(function(verified) {
+        assertTrue('Verify success', verified);
+        return sigPacket.verify(
+            e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher);
+      }).addCallback(function(verified) {
+        assertFalse('Verify should fail', verified);
+        return sigParsed.verify(data, publicKeyBlock.keyPacket.cipher);
+      }).addCallback(function(verified) {
+        assertTrue('Verify success', verified);
+        return sigParsed.verify(
+            e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher)
+      }).addCallback(function(verified) {
+        assertFalse('Verify should fail', verified);
+        asyncTestCase.signal();
+      }, fail);
   });
 
   var data = [0, 1, 2, 3];
   e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
       e2e.openpgp.packet.Signature.SignatureType.TEXT, attributes).addCallback(
     function(sigPacket) {
-      assertTrue('Verify success',
-                  sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
-      assertFalse('Verify should fail',
-                  sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher));
-
-      asyncTestCase.signal();
+      sigPacket.verify(data, publicKeyBlock.keyPacket.cipher).addCallback(function(verified) {
+        assertTrue('Verify success', verified);
+        return sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher);
+      }).addCallback(function(verified) {
+        assertFalse('Verify should fail', verified);
+        asyncTestCase.signal();
+      }, fail);
   });
 }
 
@@ -237,20 +247,21 @@ function testKeySignatureParsing() {
   var key = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
   assertEquals(0, key.keyPacket.bindingSignatures_.size());
   // Subkey signature for encrypting subkey
-  assertEquals(1, key.subKeys[0].bindingSignatures_.size());
+  assertEquals(1, key.unverifiedSubKeys_[0].bindingSignatures_.size());
   assertEquals(e2e.openpgp.packet.Signature.SignatureType.SUBKEY,
-      key.subKeys[0].bindingSignatures_.get(0).signatureType);
-  assertTrue(Boolean(key.subKeys[0].bindingSignatures_.get(0).attributes.
-      KEY_FLAG_ENCRYPT_COMMUNICATION));
-  assertTrue(Boolean(key.subKeys[0].bindingSignatures_.get(0).attributes.
-      KEY_FLAG_ENCRYPT_STORAGE));
-  assertFalse(Boolean(key.subKeys[0].bindingSignatures_.get(0).attributes.
-      KEY_FLAG_SIGN));
-  assertArrayEquals(key.subKeys[0].bindingSignatures_.get(0).getSignerKeyId(),
+      key.unverifiedSubKeys_[0].bindingSignatures_.get(0).signatureType);
+  assertTrue(Boolean(key.unverifiedSubKeys_[0].bindingSignatures_.get(0)
+      .attributes.KEY_FLAG_ENCRYPT_COMMUNICATION));
+  assertTrue(Boolean(key.unverifiedSubKeys_[0].bindingSignatures_.get(0)
+      .attributes.KEY_FLAG_ENCRYPT_STORAGE));
+  assertFalse(Boolean(key.unverifiedSubKeys_[0].bindingSignatures_.get(0)
+      .attributes.KEY_FLAG_SIGN));
+  assertArrayEquals(
+      key.unverifiedSubKeys_[0].bindingSignatures_.get(0).getSignerKeyId(),
       key.keyPacket.keyId);
 
   // User ID certification signature
-  var certifications = getUidCertifications(key.userIds[0]);
+  var certifications = getUidCertifications(key.unverifiedUserIds_[0]);
   assertEquals(1, certifications.length);
   assertEquals(e2e.openpgp.packet.Signature.SignatureType.POSITIVE_USER_ID,
       certifications[0].signatureType);
@@ -338,31 +349,36 @@ function testSignRSA() {
   e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
       e2e.openpgp.packet.Signature.SignatureType.TEXT, attributes).addCallback(
     function(sigPacket) {
-      assertTrue('Verify success',
-          sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
-      assertFalse('Verify should fail', sigPacket.verify(
-          e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
-
       var sigBytes = sigPacket.serializePacketBody();
       var sigParsed = e2e.openpgp.packet.Signature.parse(sigBytes);
-      assertTrue('Verify success',
-        sigParsed.verify(data, publicKeyBlock.keyPacket.cipher));
-      assertFalse('Verify should fail', sigParsed.verify(
-        e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher));
-
-      asyncTestCase.signal();
+      sigPacket.verify(data, publicKeyBlock.keyPacket.cipher).addCallback(function(verified) {
+        assertTrue('Verify success', verified);
+        return sigPacket.verify(
+            e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher);
+      }).addCallback(function(verified) {
+        assertFalse('Verify should fail', verified);
+        return sigParsed.verify(data, publicKeyBlock.keyPacket.cipher);
+      }).addCallback(function(verified) {
+        assertTrue('Verify success', verified);
+        return sigParsed.verify(
+            e2e.stringToByteArray('foo'), publicKeyBlock.keyPacket.cipher)
+      }).addCallback(function(verified) {
+        assertFalse('Verify should fail', verified);
+        asyncTestCase.signal();
+      }, fail);
   });
 
   var data = [0, 1, 2, 3];
   e2e.openpgp.packet.Signature.construct(privateKeyBlock.keyPacket, data,
       e2e.openpgp.packet.Signature.SignatureType.TEXT, attributes).addCallback(
     function(sigPacket) {
-      assertTrue('Verify success',
-                 sigPacket.verify(data, publicKeyBlock.keyPacket.cipher));
-      assertFalse('Verify should fail',
-                  sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher));
-
-      asyncTestCase.signal();
+      sigPacket.verify(data, publicKeyBlock.keyPacket.cipher).addCallback(function(verified) {
+        assertTrue('Verify success', verified);
+        return sigPacket.verify([0, 1, 2], publicKeyBlock.keyPacket.cipher);
+      }).addCallback(function(verified) {
+        assertFalse('Verify should fail', verified);
+        asyncTestCase.signal();
+      }, fail);
   });
 }
 </script>

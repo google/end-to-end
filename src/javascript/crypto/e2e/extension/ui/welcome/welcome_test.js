@@ -30,6 +30,7 @@ goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.Welcome');
 goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.utils');
+goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.dom');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
@@ -119,7 +120,9 @@ function setUp() {
   preferences = new e2e.ext.Preferences(fakeStorage);
   preferences.setWelcomePageEnabled(false);
 
-  launcher = new e2e.ext.ExtensionLauncher(fakeStorage, preferences);
+  launcher = new e2e.ext.ExtensionLauncher(
+      new e2e.openpgp.ContextImpl(new goog.testing.storage.FakeMechanism()),
+      fakeStorage);
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {
     callback({launcher: launcher});
   });
@@ -246,9 +249,10 @@ function testImportKeyring() {
 
 function testUpdateKeyringPassphrase() {
   page.decorate(document.documentElement);
-  stubs.set(launcher.pgpContext_, 'changeKeyRingPassphrase',
-      mockControl.createFunctionMock('changeKeyRingPassphrase'));
-  launcher.pgpContext_.changeKeyRingPassphrase('testPass');
+  stubs.set(launcher.pgpContext_, 'changeKeyRingPassphrase', function(pass) {
+    assertEquals('testPass', pass);
+    return e2e.async.Result.toResult(undefined);
+  });
 
   stubs.set(
       launcher.pgpContext_, 'isKeyRingEncrypted', function() {

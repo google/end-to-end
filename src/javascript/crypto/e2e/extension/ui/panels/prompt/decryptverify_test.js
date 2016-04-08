@@ -27,6 +27,7 @@ goog.require('e2e.ext.actions.Executor');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.panels.prompt.DecryptVerify');
+goog.require('e2e.openpgp.ContextImpl');
 goog.require('goog.dom');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
@@ -50,6 +51,7 @@ function setUp() {
   e2e.ext.testingstubs.initStubs(stubs);
 
   launcher = new e2e.ext.ExtensionLauncher(
+      new e2e.openpgp.ContextImpl(new goog.testing.storage.FakeMechanism()),
       new goog.testing.storage.FakeMechanism());
   launcher.start();
   stubs.setPath('chrome.runtime.getBackgroundPage', function(callback) {

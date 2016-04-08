@@ -26,7 +26,7 @@ goog.require('e2e');
 goog.require('e2e.otr');
 goog.require('e2e.otr.Mpi');
 goog.require('e2e.otr.constants.PubkeyType');
-goog.require('e2e.otr.error.NotImplementedError');
+goog.require('e2e.otr.error.ParseError');
 goog.require('e2e.otr.pubkey.Pubkey');
 goog.require('e2e.otr.util.Iterator');
 goog.require('goog.array');

@@ -38,7 +38,7 @@ goog.setTestOnly();
 var constants = e2e.ext.constants;
 var panel = null;
 var stubs = new goog.testing.PropertyReplacer();
-var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall();
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 var keys = {};
 
 
@@ -87,6 +87,27 @@ function testRender() {
 }
 
 
+function testRenderWithoutSignupPrompt() {
+  panel = new e2e.ext.ui.panels.KeyringMgmtMini;
+  panel.render(document.body);
+
+  var signupPrompt = goog.dom.getElement(constants.ElementId.SIGNUP_PROMPT);
+  assertTrue(goog.dom.classlist.contains(
+      signupPrompt, constants.CssClass.HIDDEN));
+}
+
+
+function testRenderWithSignupPrompt() {
+  keys = {'test@example.com': []};
+  panel = new e2e.ext.ui.panels.KeyringMgmtMini;
+  panel.render(document.body);
+
+  assertFalse(goog.dom.classlist.contains(
+      panel.getElement(constants.ElementId.SIGNUP_PROMPT),
+      constants.CssClass.HIDDEN));
+}
+
+
 function testRenderWithoutExport() {
   panel = new e2e.ext.ui.panels.KeyringMgmtMini(
       goog.nullFunction, goog.abstractMethod, goog.abstractMethod);
@@ -104,10 +125,15 @@ function testEmptyExport() {
   panel.render(document.body);
 
   asyncTestCase.waitForAsync('Waiting for button to be disabled');
-  window.setTimeout(function() {
-    assertTrue('Export button should be disabled when there are no keys',
-        panel.getElementByClass(constants.CssClass.KEYRING_EXPORT)
-        .hasAttribute('disabled'));
+  asyncTestCase.timeout(function() {
+    assertTrue('Export button should be hidden when there are no keys',
+        goog.dom.classlist.contains(
+        panel.getElementByClass(constants.CssClass.KEYRING_EXPORT),
+        constants.CssClass.HIDDEN));
+    assertTrue('Backup button should be hidden when there are no keys',
+        goog.dom.classlist.contains(
+        panel.getElementByClass(constants.CssClass.KEYRING_BACKUP),
+        constants.CssClass.HIDDEN));
 
     asyncTestCase.continueTesting();
   }, 500);
@@ -121,10 +147,15 @@ function testNonEmptyExport() {
   panel.render(document.body);
 
   asyncTestCase.waitForAsync('Waiting for button to stay enabled');
-  window.setTimeout(function() {
-    assertFalse('Export button should not be disabled when there are keys',
-        panel.getElementByClass(constants.CssClass.KEYRING_EXPORT)
-        .hasAttribute('disabled'));
+  asyncTestCase.timeout(function() {
+    assertFalse('Export button should not be hidden when there are keys',
+        goog.dom.classlist.contains(
+        panel.getElementByClass(constants.CssClass.KEYRING_EXPORT),
+        constants.CssClass.HIDDEN));
+    assertFalse('Backup button should not be hidden when there are keys',
+        goog.dom.classlist.contains(
+        panel.getElementByClass(constants.CssClass.KEYRING_BACKUP),
+        constants.CssClass.HIDDEN));
 
     asyncTestCase.continueTesting();
   }, 500);

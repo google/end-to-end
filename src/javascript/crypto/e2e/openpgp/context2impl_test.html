@@ -1,0 +1,322 @@
+<!-- Copyright 2013 Google Inc. All rights reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//   http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// -->
+<!DOCTYPE html>
+<html>
+<head>
+<title>Unit test of e2e.openpgp.Context2Impl</title>
+<script src="../../../../../javascript/closure/base.js"></script>
+<script src="test_js_deps-runfiles.js"></script>
+<script>
+  goog.require('e2e.openpgp.Context2ImplTest');
+</script>
+</head>
+<body>
+<!--
+Two keyblocks in one ASCII armor
+:public key packet:
+  version 4, algo 19, created 1408720454, expires 0
+  pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
+  pkey[1]: [515 bits]
+  keyid: B2F39422E42C5EA7
+:user ID packet: "<key1>"
+:signature packet: algo 19, keyid B2F39422E42C5EA7
+  version 4, created 1408720454, md5len 0, sigclass 0x10
+  digest algo 8, begin of digest 70 7c
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID B2F39422E42C5EA7)
+  data: [256 bits]
+  data: [254 bits]
+:public sub key packet:
+  version 4, algo 18, created 1408720454, expires 0
+  pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
+  pkey[1]: [515 bits]
+  pkey[2]: [32 bits]
+  keyid: 1E2FB2A7764596A9
+:signature packet: algo 19, keyid B2F39422E42C5EA7
+  version 4, created 1408720454, md5len 0, sigclass 0x18
+  digest algo 8, begin of digest c9 aa
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID B2F39422E42C5EA7)
+  data: [255 bits]
+  data: [256 bits]
+:public key packet:
+  version 4, algo 19, created 1408720457, expires 0
+  pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
+  pkey[1]: [515 bits]
+  keyid: 537B85C172B7F7E2
+:user ID packet: "<key2>"
+:signature packet: algo 19, keyid 537B85C172B7F7E2
+  version 4, created 1408720457, md5len 0, sigclass 0x10
+  digest algo 8, begin of digest 72 b0
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID 537B85C172B7F7E2)
+  data: [255 bits]
+  data: [256 bits]
+:public sub key packet:
+  version 4, algo 18, created 1408720457, expires 0
+  pkey[0]: [72 bits] nistp256 (1.2.840.10045.3.1.7)
+  pkey[1]: [515 bits]
+  pkey[2]: [32 bits]
+  keyid: 739BC5340804414E
+:signature packet: algo 19, keyid 537B85C172B7F7E2
+  version 4, created 1408720457, md5len 0, sigclass 0x18
+  digest algo 8, begin of digest ad de
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID 537B85C172B7F7E2)
+  data: [256 bits]
+  data: [253 bits]
+-->
+<textarea id="twoKeyBlocks">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2
+
+mgAAAFIEU/deRhMIKoZIzj0DAQcCAwR5v5o25a5yQ7KCM5BYD7HTETMkNo046gIk
+3WlqzKkmd6JruWIpk3TpuIthczhebqj3B2dFZMUHdPzJi2bP78mBtAY8a2V5MT6I
+ZgQQEwgAGP8AAAAFglP3Xkb/AAAACZCy85Qi5CxepwAAcHwBANMTS2vteSXEaZc3
+t0QGmBg4LLoxOJD0HEKrXwXKoUE7AP4ongJhDPLiasvl4t7RWKr8nQTnfkPtiPDD
+eoacrmc8hLoAAABWBFP3XkYSCCqGSM49AwEHAgMEsGUid8gCTVUP+1Dswn6JFZ4P
+UtbBbMYr5ez1kOhsnDf+8eg++pI8G6yToM2EVH2VwUhr4QL1dkkKTf78uEaAfQMB
+CAeIZgQYEwgAGP8AAAAFglP3Xkb/AAAACZCy85Qi5CxepwAAyaoA/0gcF7Ev+t4j
+vQhEQAJZES14kVyoctIs0SyQfDk8/tUMAQDOAEt1aDalOvYHnIKVBirJxNtPmga9
+4jRFuyCzt1u5zpoAAABSBFP3XkkTCCqGSM49AwEHAgMEHPrNMdvJCViouD49LarG
+mQvy7aHygnqX0/v/0Tnzn+CwvSUG/bedyQCKu1dLQaCu1uMj+Hf+zNPfAPbWToMt
+9bQGPGtleTI+iGYEEBMIABj/AAAABYJT915J/wAAAAmQU3uFwXK39+IAAHKwAP9d
+9ZRvsX3SNh6dy/35pcSVwtFkazHtj4Vmzg36Bq9jVAEAlB0TjALGW30gIPwO9+SP
+IEjTqXTLYuShXAogMFDTY7e6AAAAVgRT915JEggqhkjOPQMBBwIDBMHOmw0FeP+w
+GoJ5qR9ev7JW2Dn1oVwAxpKyVXodLZ83MLss3ZmCWF0c2QD8tf9WAYAE8d335iQt
+F/8ixELMQ6oDAQgHiGYEGBMIABj/AAAABYJT915J/wAAAAmQU3uFwXK39+IAAK3e
+AQCRn3zu2t/VZBIenq3blEtDgOtA2zAWbg2HmZ9naHWo3gD9HSK58DYJRkXIWYtt
+Lz6REnkw4cB5lruzwwiTO7ZqHZg=
+=WAJG
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<!--
+// ECDSA key, ECDH subkey.
+:public key packet:
+  version 4, algo 19, created 1377714336, expires 0
+  unknown algorithm 19
+:user ID packet: "ecc real name <ecc@example.com>"
+:signature packet: algo 19, keyid EAEB8A76AFE8C867
+  version 4, created 1377714336, md5len 0, sigclass 0x13
+  digest algo 8, begin of digest c6 d7
+  hashed subpkt 2 len 4 (sig created 2013-08-28)
+  hashed subpkt 27 len 1 (key flags: 03)
+  hashed subpkt 11 len 5 (pref-sym-algos: 9 8 7 3 2)
+  hashed subpkt 21 len 5 (pref-hash-algos: 8 2 9 10 11)
+  hashed subpkt 22 len 3 (pref-zip-algos: 2 3 1)
+  hashed subpkt 30 len 1 (features: 01)
+  hashed subpkt 23 len 1 (key server preferences: 80)
+  subpkt 16 len 8 (issuer key ID EAEB8A76AFE8C867)
+  unknown algorithm 19
+:public sub key packet:
+  version 4, algo 18, created 1377714336, expires 0
+  unknown algorithm 18
+:signature packet: algo 19, keyid EAEB8A76AFE8C867
+  version 4, created 1377714336, md5len 0, sigclass 0x18
+  digest algo 8, begin of digest 3a 90
+  hashed subpkt 2 len 4 (sig created 2013-08-28)
+  hashed subpkt 27 len 1 (key flags: 0C)
+  subpkt 16 len 8 (issuer key ID EAEB8A76AFE8C867)
+  unknown algorithm 19
+-->
+<textarea id="gpgPubKeyAscii">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Version: GnuPG v2.1.0-ecc (GNU/Linux)
+
+mFIEUh5AoBMIKoZIzj0DAQcCAwT68182duSEJFXKa+qkBa0Vgeswnv8GP8tKYiU/
+MCZd6dGTvrtf2gSjyAsVkB0V0idW7i8yW1wfh3y2AbGWDr/dtB9lY2MgcmVhbCBu
+YW1lIDxlY2NAZXhhbXBsZS5jb20+iHoEExMIACIFAlIeQKACGwMGCwkIBwMCBhUI
+AgkKCwQWAgMBAh4BAheAAAoJEOrrinav6MhnxtcA/iAteDFo/P5SU5XV/8/4BN9x
+f28SuvwFipnjjyOmvB0eAP4kPM5LAp2EW+QIyG6+CJP1No9uWyZTdLPkTRgLtYhi
+GLhWBFIeQKASCCqGSM49AwEHAgMEgk1dVpgPCM38NBNoBcvehm7mt6aUmK8mDb/M
+SHo2/NlwfTh+BDCoVX5asSetzuW2RbnP6sCBwfsuLSrSWUVauwMBCAeIYQQYEwgA
+CQUCUh5AoAIbDAAKCRDq64p2r+jIZzqQAQCcv0VOQFiNOM6JNdLHTqlCYxeoz09d
+UP3LdgcnLED/YwD9FqcNrkok9BuXJ9+rXTSu+uqdWB7gpMO9mfk65d5IQ+s=
+=xRCj
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<!--
+:secret key packet:
+  version 4, algo 19, created 1408718053, expires 0
+  unknown algorithm 19
+:user ID packet: "<ecctest@example.com>"
+:signature packet: algo 19, keyid 4BDF72D2E4D86E34
+  version 4, created 1408718053, md5len 0, sigclass 0x10
+  digest algo 8, begin of digest aa a7
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID 4BDF72D2E4D86E34)
+  unknown algorithm 19
+:secret sub key packet:
+  version 4, algo 18, created 1408718053, expires 0
+  unknown algorithm 18
+:signature packet: algo 19, keyid 4BDF72D2E4D86E34
+  version 4, created 1408718053, md5len 0, sigclass 0x18
+  digest algo 8, begin of digest 99 10
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID 4BDF72D2E4D86E34)
+  unknown algorithm 19
+:public key packet:
+  version 4, algo 19, created 1408718053, expires 0
+  unknown algorithm 19
+:user ID packet: "<ecctest@example.com>"
+:signature packet: algo 19, keyid 4BDF72D2E4D86E34
+  version 4, created 1408718053, md5len 0, sigclass 0x10
+  digest algo 8, begin of digest aa a7
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID 4BDF72D2E4D86E34)
+  unknown algorithm 19
+:public sub key packet:
+  version 4, algo 18, created 1408718053, expires 0
+  unknown algorithm 18
+:signature packet: algo 19, keyid 4BDF72D2E4D86E34
+  version 4, created 1408718053, md5len 0, sigclass 0x18
+  digest algo 8, begin of digest 99 10
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID 4BDF72D2E4D86E34)
+  unknown algorithm 19
+-->
+<textarea id="e2ePrivKeyAscii">
+-----BEGIN PGP PRIVATE KEY BLOCK-----
+Charset: UTF-8
+Version: End-To-End v0.3.1338
+
+xf8AAAB3BFP3VOUTCCqGSM49AwEHAgMEi2zJp9guT3D3hdhxYRD79vorFtNp+glW
+n/3S9YTCeNTo1zsqx+yrgSvy/rmu5zLT0y0a+75zPhWyPWytvBc7owABALsX81fl
+60ZoiqVdwc8I5/3jFNtKs/uJ3NCxmO9aNlEJEsTN/wAAABU8ZWNjdGVzdEBleGFt
+cGxlLmNvbT7C/wAAAGYEEBMIABj/AAAABYJT91Tl/wAAAAmQS99y0uTYbjQAAKqn
+AQCeFSL3asskorX64itSazuKZJ1mzSE9ZFhbxLNlgDc6bwEAuB8VUAx+cELEeDc0
+tdN0rxxAXM4reVSucta3CYIKCuLH/wAAAHsEU/dU5RIIKoZIzj0DAQcCAwRCb+6d
+udN4Cr1A0f11ZHO3q5sTGwYGl9GaQ08EOOjYuMlouUBWWBU8l4ZvMEGCkBYEArBu
+ASxYJqCcUlPbYKllAwEIBwABAIcc/PAbXU2MRMN2sErdeSdozWdtfFmzj7jYOYOt
+dZhtEGjC/wAAAGYEGBMIABj/AAAABYJT91Tl/wAAAAmQS99y0uTYbjQAAJkQAP47
+EJstCcgLu0+vW1c7ZLHvLLgkLFZdbwaeMPGXwhGNUAEAoAQK+GVHec75QUi3qGTG
+vIXpEJNrVMppeHo25HZk/RLG/wAAAFIEU/dU5RMIKoZIzj0DAQcCAwSLbMmn2C5P
+cPeF2HFhEPv2+isW02n6CVaf/dL1hMJ41OjXOyrH7KuBK/L+ua7nMtPTLRr7vnM+
+FbI9bK28Fzujzf8AAAAVPGVjY3Rlc3RAZXhhbXBsZS5jb20+wv8AAABmBBATCAAY
+/wAAAAWCU/dU5f8AAAAJkEvfctLk2G40AACqpwEAnhUi92rLJKK1+uIrUms7imSd
+Zs0hPWRYW8SzZYA3Om8BALgfFVAMfnBCxHg3NLXTdK8cQFzOK3lUrnLWtwmCCgri
+zv8AAABWBFP3VOUSCCqGSM49AwEHAgMEQm/unbnTeAq9QNH9dWRzt6ubExsGBpfR
+mkNPBDjo2LjJaLlAVlgVPJeGbzBBgpAWBAKwbgEsWCagnFJT22CpZQMBCAfC/wAA
+AGYEGBMIABj/AAAABYJT91Tl/wAAAAmQS99y0uTYbjQAAJkQAP9Cdz7h0dmtgoA/
+3hRweLI8mq7XIZ7dKOdt74kOQOx0WQEAnwt/SyfrpCIyNTbbUI5ZYUg1bjLs6Qoy
+vEIUQ7M7E9w=
+=j/2O
+-----END PGP PRIVATE KEY BLOCK-----
+</textarea>
+<!--
+:public key packet:
+  version 4, algo 19, created 1408718053, expires 0
+  unknown algorithm 19
+:user ID packet: "<ecctest@example.com>"
+:signature packet: algo 19, keyid 4BDF72D2E4D86E34
+  version 4, created 1408718053, md5len 0, sigclass 0x10
+  digest algo 8, begin of digest aa a7
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID 4BDF72D2E4D86E34)
+  unknown algorithm 19
+:public sub key packet:
+  version 4, algo 18, created 1408718053, expires 0
+  unknown algorithm 18
+:signature packet: algo 19, keyid 4BDF72D2E4D86E34
+  version 4, created 1408718053, md5len 0, sigclass 0x18
+  digest algo 8, begin of digest 99 10
+  critical hashed subpkt 2 len 4 (sig created 2014-08-22)
+  critical hashed subpkt 16 len 8 (issuer key ID 4BDF72D2E4D86E34)
+  unknown algorithm 19
+-->
+<textarea id="e2ePubKeyAscii">
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+Charset: UTF-8
+
+xv8AAABSBFP3VOUTCCqGSM49AwEHAgMEi2zJp9guT3D3hdhxYRD79vorFtNp+glW
+n/3S9YTCeNTo1zsqx+yrgSvy/rmu5zLT0y0a+75zPhWyPWytvBc7o83/AAAAFTxl
+Y2N0ZXN0QGV4YW1wbGUuY29tPsL/AAAAZgQQEwgAGP8AAAAFglP3VOX/AAAACZBL
+33LS5NhuNAAAqqcBAJ4VIvdqyySitfriK1JrO4pknWbNIT1kWFvEs2WANzpvAQC4
+HxVQDH5wQsR4NzS103SvHEBczit5VK5y1rcJggoK4s7/AAAAVgRT91TlEggqhkjO
+PQMBBwIDBEJv7p2503gKvUDR/XVkc7ermxMbBgaX0ZpDTwQ46Ni4yWi5QFZYFTyX
+hm8wQYKQFgQCsG4BLFgmoJxSU9tgqWUDAQgHwv8AAABmBBgTCAAY/wAAAAWCU/dU
+5f8AAAAJkEvfctLk2G40AACZEAD/Qnc+4dHZrYKAP94UcHiyPJqu1yGe3Sjnbe+J
+DkDsdFkBAJ8Lf0sn66QiMjU221COWWFINW4y7OkKMrxCFEOzOxPc
+=wzM1
+-----END PGP PUBLIC KEY BLOCK-----
+</textarea>
+<!--
+Clearsign message signed by e2ePrivKeyAscii
+-->
+<textarea id="e2eClearSign">
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA256
+
+hello clearsign
+-----BEGIN PGP SIGNATURE-----
+Version: End-To-End v0.31337.1
+
+wv8AAABmBAETCAAY/wAAAAWCVctfLP8AAAAJkEvfctLk2G40AADUTgD+Khb3JehC
+ONhpoI6LZCWXNWcJLml+1vb5joTBYPAs5WQA/jGmia/nMLGE0q62xT8Q/PrAkzAW
+0H7CGIkOxjU9Z6tU
+=s3pN
+-----END PGP SIGNATURE-----
+</textarea>
+<!-- LiteralMessage block with a signature by e2ePrivKeyAscii -->
+<textarea id="e2eByteSign">
+-----BEGIN PGP MESSAGE-----
+Charset: UTF-8
+
+xP8AAAANAwAIE0vfctLk2G40Acv/AAAAEnQAVdMqs2hlbGxvLiB0ZXN0LsL/AAAA
+ZgQAEwgAGP8AAAAFglXTKrP/AAAACZBL33LS5NhuNAAA/TIA/2NFMdX6agnq69Me
+ARx4p9LciIHZZOVATOSdg4FPuXtKAP9c3TZoQRZIauCpV+ZLHKaIGMxaVl/PFur5
+IFsogoBRGw==
+=kBwV
+-----END PGP MESSAGE-----
+</textarea>
+<!--
+Encrypted message signed by e2ePrivKeyAscii and encrypted to e2ePubKeyAscii
+-->
+<textarea id="e2eEncrypted">
+-----BEGIN PGP MESSAGE-----
+Charset: UTF-8
+Version: End-To-End v0.31337.1
+
+wf8AAAB+AwK8yJp8K7dQEgIDBGnekMN/lO/ynvQXktFrhMZTOuxIaT5Upz2yVI2C
+L2eP3b8unuz97R/lJpEeS2lGmSRvc043M5ejP0JO8jNYYVowL2ygZ5rc7NvbxCI0
+uu1Ylr1Qy68QqefAOok3Yk6iSB7+dkJEkhGu8qHRMvOK/8E10v8AAADlAaFZUNhq
+27N3kjZc+k8FtLlScSx4v1UiOQjLnJeZD2qilGacizHTD1txe9E1tOKNNbWhrEz9
+20DghF9NW5BPvWpCqHmC5kzlG4gJzYvRFx1cXCIEbq39uA8AZAniX+0P5x4UMEL6
+NfoxbTXNkPZUiBkd7TfFMlCmc1v7vLKMGWo1f/Tj9mS/z5elTijV+Mt4YFCKeW7U
+AtIm1Vo27/I8277r9CjqOSIGUnJiA8YyJC+NE4CCToCuAW49Et1f+SzVYOVjGQh6
+mjFUZ/EsoZJ336bUpoCcShm46k8dX/2Hb2BUW2W3jQ==
+=yNPF
+-----END PGP MESSAGE-----
+</textarea>
+<!--
+Message encrypted to e2ePubKeyAscii and a passphrase 'test'. Unsigned.
+-->
+<textarea id="e2ePassphraseEncrypted">
+-----BEGIN PGP MESSAGE-----
+Charset: UTF-8
+Version: End-To-End v0.31337.1
+
+w/8AAAAuBAkDAl4D7HsZyRMcYJ63X0WD8P7CWrbshCgOdxNg3oqtwxCu4MCq/HjW
+luj1OsH/AAAAfgMCvMiafCu3UBICAwT0u9YcoAeEAfioJilhs6i+4deTmNzD7H8D
+GnLgEs0oHQS7DM51W5UCm9Ak1l/yvSZ4xeYH/w0M4c0DoL9WFWUNMLXM2exE1BRv
+BRc4atn/1P6IJLkQ5CSNh8w2e5fCLioql03gzrZXGLmwVv76JbKuvNL/AAAAZQFs
+SNr2gdTgUYgDFt9Yykf0KtLMj1D7l1hM8IkLZJLKJj0xWN3UEkG7jIEBGCb3Ys4m
+W4sbVdV4ndbfznBg43mVq8vN0NSG2DW1TJLBGs9FXwU/rP2dPKVD+kTKiERgoymO
+Mk76
+=doLN
+-----END PGP MESSAGE-----
+</textarea>
+</body>
+</html>

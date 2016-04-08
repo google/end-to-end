@@ -25,6 +25,7 @@ goog.provide('e2e.pkcs.eme.Oaep');
 goog.provide('e2e.pkcs.eme.Pkcs1');
 
 goog.require('e2e');
+goog.require('e2e.fixedtiming');
 goog.require('e2e.hash.Sha1');
 goog.require('e2e.pkcs.Error');
 goog.require('e2e.random');
@@ -51,6 +52,14 @@ e2e.pkcs.eme.Oaep = function() {
     0xda, 0x39, 0xa3, 0xee, 0x5e, 0x6b, 0x4b, 0x0d, 0x32, 0x55,
     0xbf, 0xef, 0x95, 0x60, 0x18, 0x90, 0xaf, 0xd8, 0x07, 0x09];
 };
+
+
+/**
+ * The length of hash output used in OAEP encoding.
+ * @type {number}
+ * @const
+ */
+e2e.pkcs.eme.Oaep.HASH_LENGTH = 20;
 
 
 /**
@@ -87,18 +96,19 @@ e2e.pkcs.eme.Oaep.prototype.encode = function(k, m) {
 /**
  * Decodes the given message according to the OAEP method as defined in
  *     RFC 3447 section 7.1.2 with SHA-1, MGF1 and an empty label.
- *     Note: this function may leak some timing, which could be exploited to
- *     decrypt messages without knowing the private key. As a result, it
- *     must not be used anywhere except for interoperative testing.
+ *     Note: this function does not make length check as length is checked in
+ *     the decryption function as specified in the RFC. Throwing additional
+ *     errors may lead to timing attack. As a result, it must not be used
+ *     anywhere except in the context of RSA-OAEP decryption or interoperative
+ *     testing.
  * @param {number} k The size of the key in bytes.
- * @param {!e2e.ByteArray} c The message to decode.
- * @return {!e2e.ByteArray} The decoded message.
- * @protected
+ * @param {!e2e.ByteArray} em The encoded message.
+ * @return {?e2e.ByteArray} The decoded message or null if decoding has
+ * error.
  */
-e2e.pkcs.eme.Oaep.prototype.decodeForTestingOnly = function(k, c) {
-  var maskedSeed = c.slice(1, this.labelHash_.length + 1);
-  var maskedDb = c.slice(this.labelHash_.length + 1);
-  goog.asserts.assert(maskedDb.length == k - this.labelHash_.length - 1);
+e2e.pkcs.eme.Oaep.prototype.decode = function(k, em) {
+  var maskedSeed = em.slice(1, this.labelHash_.length + 1);
+  var maskedDb = em.slice(this.labelHash_.length + 1);
   var seedMask = this.maskGenerationFunction_(
       maskedDb, this.labelHash_.length);
   var seed = goog.crypt.xorByteArray(maskedSeed, seedMask);
@@ -107,15 +117,31 @@ e2e.pkcs.eme.Oaep.prototype.decodeForTestingOnly = function(k, c) {
   var db = goog.crypt.xorByteArray(maskedDb, dbMask);
   var labelHash = db.slice(0, this.labelHash_.length);
   var paddedMsg = db.slice(this.labelHash_.length);
-  var i = goog.array.indexOf(paddedMsg, 0x01);
-  var error = 0;
-  error |= (c[0] != 0x00);
-  error |= (!e2e.compareByteArray(this.labelHash_, labelHash));
-  error |= (i == -1);
-  if (error) {
-    throw new e2e.pkcs.Error('Decryption error.');
+  // In fixed-timing up to the length of paddedMsg, find the first possition of
+  // 0x1 in paddedMsg and checks that all bytes before it are zero.
+  var foundOne = 0;
+  var indexOne = -1;
+  var allZerosBeforeOne = 1;
+  for (var i = 0; i < paddedMsg.length; i++) {
+    // Best effort fixed-timing number comparisons.
+    var isOne = (paddedMsg[i] === 1) | 0;
+    var isZero = (paddedMsg[i] === 0) | 0;
+    indexOne = e2e.fixedtiming.select(i, indexOne, isOne & (foundOne ^ 1));
+    foundOne |= isOne;
+    allZerosBeforeOne = e2e.fixedtiming.select(0, allZerosBeforeOne,
+        (isZero ^ 1) & (foundOne ^ 1));
   }
-  return paddedMsg.slice(i + 1);
+  // Make sure that the errors are indistinguishable, otherwise it's vulnerable
+  // to timing attack.
+  var error = 0;
+  error |= em[0];
+  error |= (!e2e.compareByteArray(this.labelHash_, labelHash) | 0);
+  error |= (foundOne ^ 1);
+  error |= (allZerosBeforeOne ^ 1);
+  if (error) {
+    return null;
+  }
+  return paddedMsg.slice(indexOne + 1);
 };
 
 
@@ -257,7 +283,7 @@ e2e.pkcs.eme.Pkcs1.decodeStateTransitionsArray = {};
 
 /**
  * Converts a decodeStateTransitions to an Array to accelerate access time.
- * @param {Object.<string|number, e2e.pkcs.eme.Pkcs1.Transition>}
+ * @param {Object.<(string|number), e2e.pkcs.eme.Pkcs1.Transition>}
  *     trans The transitions to set in the Array.
  * @param {e2e.pkcs.eme.Pkcs1.DecodeState} state The state that the
  *     list of transitions refers to.

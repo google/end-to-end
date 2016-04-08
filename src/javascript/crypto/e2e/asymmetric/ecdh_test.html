@@ -50,11 +50,10 @@ function testConsistency() {
       var m = e2e.random.getRandomBytes(16);
       asyncTestCase.waitForAsync('Waiting for encryption.');
       ecdh.encrypt(m).addCallback(function(c) {
-        asyncTestCase.continueTesting();
         asyncTestCase.waitForAsync('Waiting for decryption.');
         ecdh.decrypt(c).addCallback(function(p){
-          asyncTestCase.continueTesting();
           assertArrayEquals(m, p);
+          asyncTestCase.continueTesting();
         });
       });
     })();
@@ -81,5 +80,22 @@ function testInteroperabilityWithGPG() {
 
   assertArrayEquals(c['u'],
       e2e.cipher.ecdhTestData.gpgEccCiphertext);
+}
+
+function testInteroperabilityECDHSecretPadding() {
+  var key = {
+    'curve': e2e.ecc.PrimeCurveOid.P_384,
+    'kdfInfo': e2e.cipher.ecdhTestData.gpgEccKdfInfo2,
+    'privKey': e2e.cipher.ecdhTestData.gpgEccPrivKey2,
+    'fingerprint': e2e.cipher.ecdhTestData.gpgEccPubKeyFingerprint2,
+  };
+  var ecdh = new e2e.cipher.Ecdh(e2e.cipher.Algorithm.ECDH, key);
+  ciphertext = e2e.cipher.ecdhTestData.gpgEccCiphertext2;
+  asyncTestCase.waitForAsync('Waiting for decryption.');
+  ecdh.decrypt(e2e.cipher.ecdhTestData.gpgEccCiphertext2).addCallback(
+      function(plaintext) {
+        assertArrayEquals(e2e.cipher.ecdhTestData.gpgEccMessage2, plaintext);
+        asyncTestCase.continueTesting();
+  });
 }
 </script>

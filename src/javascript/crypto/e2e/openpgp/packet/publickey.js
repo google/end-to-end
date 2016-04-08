@@ -49,8 +49,9 @@ goog.require('goog.asserts');
  * @param {number} timestamp The creation time of the key.
  * @param {!e2e.cipher.Cipher|!e2e.signer.Signer} cipher
  *     An instance of the cipher used.
- * @param {!e2e.ByteArray=} opt_fingerprint The fingerprint of the key.
- * @param {!e2e.ByteArray=} opt_keyId The key ID of the key. Should be
+ * @param {!e2e.openpgp.KeyFingerprint=} opt_fingerprint The fingerprint of the
+ *     key.
+ * @param {!e2e.openpgp.KeyId=} opt_keyId The key ID of the key. Should be
  *     passed in for v3 keys, but not for v4 keys.
  * @extends {e2e.openpgp.packet.Key}
  * @constructor
@@ -235,7 +236,7 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
   }
 
   var fingerprint;
-  var keyId = null;
+  var keyId = undefined;
   // Algorithm to calculate v4 fingerprints per RFC 4880 Section 12.2.
   // fingerprintCopy contains: version + timestamp + algorithm + key data.
   // body.length is the left over data for the next packets, so it is not
@@ -256,13 +257,13 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
 
     // For a V3 key, the eight-octet Key ID consists of the low 64 bits of
     // the public modulus of the RSA key.
-    keyId = keyData['n'].slice(-8);
+    keyId = /** @type {!e2e.openpgp.KeyId} */ (keyData['n'].slice(-8));
 
     // The fingerprint of a V3 key is formed by hashing the body (but not
     // the two-octet length) of the MPIs that form the key material (public
     // modulus n, followed by exponent e) with MD5.
     var md5 = new e2e.hash.Md5();
-    fingerprint = /** @type {!e2e.ByteArray} */ (md5.hash(
+    fingerprint = /** @type {!e2e.openpgp.KeyFingerprint} */ (md5.hash(
         goog.array.concat(keyData['n'], keyData['e'])));
   }
   e2e.openpgp.packet.PublicKey.console_.info(
@@ -277,7 +278,7 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
  * Calculates the v4 fingerprints per RFC 4880 Section 12.2.
  * @param {!e2e.ByteArray} pubKey The public key, which contains
  *     version + timestamp + algorithm + key data.
- * @return {!e2e.ByteArray}
+ * @return {!e2e.openpgp.KeyFingerprint}
  */
 e2e.openpgp.packet.PublicKey.calculateFingerprint = function(pubKey) {
   var fingerprintData = goog.array.concat(
@@ -286,7 +287,8 @@ e2e.openpgp.packet.PublicKey.calculateFingerprint = function(pubKey) {
       pubKey.length % 256,
       pubKey);
   var sha1 = new e2e.hash.Sha1();
-  return /** @type {!e2e.ByteArray} */ (sha1.hash(fingerprintData));
+  return /** @type {!e2e.openpgp.KeyFingerprint} */ (
+      sha1.hash(fingerprintData));
 };
 
 

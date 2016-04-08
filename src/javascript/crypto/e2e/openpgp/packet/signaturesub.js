@@ -23,6 +23,7 @@ goog.provide('e2e.openpgp.packet.SignatureSub');
 
 goog.require('e2e');
 goog.require('e2e.debug.Console');
+goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.parse');
 goog.require('goog.array');
 goog.require('goog.structs.Map');
@@ -57,6 +58,64 @@ e2e.openpgp.packet.SignatureSub.prototype.getLength_ = function() {
   return goog.array.flatten(
       e2e.openpgp.parse.FIVE_BYTE_LENGTH_VAL,
       e2e.dwordArrayToByteArray([this.body.length + 1]));
+};
+
+
+/**
+ * Asserts the provided array is exactly the desired size, and throws
+ * an exception otherwise.
+ * @param {!e2e.ByteArray} data The provided array.
+ * @param {number} size The asserted size.
+ * @private
+ */
+e2e.openpgp.packet.SignatureSub.assertSize_ = function(data, size) {
+  if (data.length !== size) {
+    throw new e2e.openpgp.error.ParseError(
+        'Invalid array length, expected ' + size + ' but got ' + data.length);
+  }
+};
+
+
+/**
+ * Shifts the first byte from the provided array but throws an
+ * exception if the array is empty. The array is also modified
+ * in-place.
+ * @param {!e2e.ByteArray} data The provided array.
+ * @return {number} The first element from the array.
+ * @private
+ */
+e2e.openpgp.packet.SignatureSub.checkedShift_ = function(data) {
+  if (data.length === 0) {
+    throw new e2e.openpgp.error.ParseError('Invalid array length.');
+  }
+  return data.shift();
+};
+
+
+/**
+ * Splices the provided array but throws an exception if the limits do
+ * not fall within the length of the array. The array is also modified
+ * in-place.
+ * @param {!e2e.ByteArray} data The provided array.
+ * @param {number} start The start index for the selection.
+ * @param {number} count The number of elements to splice.
+ * @return {!e2e.ByteArray} The spliced portion of the array
+ * @private
+ */
+e2e.openpgp.packet.SignatureSub.checkedSplice_ = function(data, start, count) {
+  var actual;
+  if (start < 0) {
+    actual = data.length + start;
+  } else {
+    actual = start;
+  }
+
+  if ((count < 0) || ((actual + count) > data.length)) {
+    throw new e2e.openpgp.error.ParseError(
+        'Invalid array splice request (' +
+            data.length + ', ' + start + ', ' + count + ')');
+  }
+  return data.splice(start, count);
 };
 
 
@@ -105,32 +164,34 @@ e2e.openpgp.packet.SignatureSub.parse = function(data) {
     // This format is similar to e2e.openpgp.parse.getBodyNewFormatPacket_
     // with the exception of partial body lengths.
     var packetLengthBytes, packetLength;
-    var firstByte = data.shift();
+    var firstByte = e2e.openpgp.packet.SignatureSub.checkedShift_(data);
     if (firstByte < e2e.openpgp.parse.TWO_BYTE_LENGTH_MIN) {
       // One byte length packet size.
       packetLength = firstByte;
       packetLengthBytes = [firstByte];
     } else if (firstByte < e2e.openpgp.parse.FIVE_BYTE_LENGTH_VAL) {
       // Two bytes length packet size.
-      var secondByte = data.shift();
+      var secondByte = e2e.openpgp.packet.SignatureSub.checkedShift_(data);
       packetLength = (
           (firstByte - e2e.openpgp.parse.TWO_BYTE_LENGTH_MIN) << 8) +
           (secondByte + e2e.openpgp.parse.TWO_BYTE_LENGTH_MIN);
       packetLengthBytes = [firstByte, secondByte];
     } else if (firstByte == e2e.openpgp.parse.FIVE_BYTE_LENGTH_VAL) {
       // Five bytes length packet size.
-      packetLengthBytes = data.splice(0, 4);
+      packetLengthBytes =
+          e2e.openpgp.packet.SignatureSub.checkedSplice_(data, 0, 4);
       packetLength = e2e.byteArrayToDwordArray(
           packetLengthBytes)[0];
       packetLengthBytes.unshift(
           e2e.openpgp.parse.FIVE_BYTE_LENGTH_VAL);
     }
 
-    var type = data.shift();
+    var type = e2e.openpgp.packet.SignatureSub.checkedShift_(data);
     var critical = Boolean(type & 0x80);
     type = /** @type {e2e.openpgp.packet.SignatureSub.Type} */ (
         type & 0x7F);
-    var body = data.splice(0, packetLength - 1);
+    var body = e2e.openpgp.packet.SignatureSub.checkedSplice_(
+        data, 0, packetLength - 1);
     e2e.openpgp.packet.SignatureSub.console_.info(
         '    Sub', type, ' (' + body.length + ') bytes', body);
 
@@ -155,10 +216,12 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
   //   different signature types.
   switch (subpacket.type) {
     case e2e.openpgp.packet.SignatureSub.Type.SIGNATURE_CREATION_TIME:
+      e2e.openpgp.packet.SignatureSub.assertSize_(subpacket.body, 4);
       attributes.SIGNATURE_CREATION_TIME =
           e2e.byteArrayToDwordArray(subpacket.body)[0];
       break;
     case e2e.openpgp.packet.SignatureSub.Type.SIGNATURE_EXPIRATION_TIME:
+      e2e.openpgp.packet.SignatureSub.assertSize_(subpacket.body, 4);
       attributes.SIGNATURE_EXPIRATION_TIME =
           e2e.byteArrayToDwordArray(subpacket.body)[0];
       break;
@@ -166,6 +229,7 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       attributes.REGULAR_EXPRESSION = e2e.byteArrayToString(subpacket.body);
       break;
     case e2e.openpgp.packet.SignatureSub.Type.KEY_EXPIRATION_TIME:
+      e2e.openpgp.packet.SignatureSub.assertSize_(subpacket.body, 4);
       attributes.KEY_EXPIRATION_TIME =
           e2e.byteArrayToDwordArray(subpacket.body)[0];
       break;
@@ -174,6 +238,7 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       attributes.PREFERRED_SYMMETRIC_ALGORITHMS = subpacket.body;
       break;
     case e2e.openpgp.packet.SignatureSub.Type.ISSUER:
+      e2e.openpgp.packet.SignatureSub.assertSize_(subpacket.body, 8);
       attributes.ISSUER = subpacket.body;
       break;
     case e2e.openpgp.packet.SignatureSub.Type.PREFERRED_HASH_ALGORITHMS:
@@ -187,7 +252,8 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
       attributes.KEY_SERVER_PREFERENCES = subpacket.body[0];
       break;
     case e2e.openpgp.packet.SignatureSub.Type.PRIMARY_USER_ID:
-      attributes.PRIMARY_USER_ID = e2e.byteArrayToString(subpacket.body);
+      e2e.openpgp.packet.SignatureSub.assertSize_(subpacket.body, 1);
+      attributes.PRIMARY_USER_ID = subpacket.body[0];
       break;
     case e2e.openpgp.packet.SignatureSub.Type.KEY_FLAGS:
       if (subpacket.body.length == 0) {
@@ -229,7 +295,7 @@ e2e.openpgp.packet.SignatureSub.populateAttribute = function(
     default:
       if (subpacket.critical) {
         // TODO(adhintz): Treat the signature as invalid instead of throwing.
-        throw new Error(
+        throw new e2e.openpgp.error.ParseError(
             'Critical signature subpacket not recognized: ' + subpacket.type);
       }
   }

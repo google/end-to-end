@@ -19,11 +19,14 @@
  */
 goog.provide('e2e.async.util');
 
+goog.require('e2e.async.Result');
+goog.require('goog.async.Deferred');
+
 
 /**
  * Wraps a function within a port.
  * @param {function(...*):*} callback The callback to use.
- * @return {MessagePort} The port that wrapps the callback.
+ * @return {MessagePort} The port that wraps the callback.
  */
 e2e.async.util.wrapFunction = function(callback) {
   var mc = new MessageChannel();
@@ -31,35 +34,82 @@ e2e.async.util.wrapFunction = function(callback) {
     var args = [];
     for (var i = 0; i < event.data.arguments.length; i++) {
       var arg = event.data.arguments[i];
-      if (arg instanceof MessagePort) {
-        args.push(e2e.async.util.unwrapFunction(arg));
+      if (goog.isObject(arg) && goog.isNumber(arg.__port__)) {
+        args.push(e2e.async.util.unwrapFunction(event.ports[arg.__port__]));
       } else {
         args.push(arg);
       }
     }
-    callback.apply(null, args);
+    try {
+      var returnValue = callback.apply(null, args);
+      if (goog.async.Deferred && returnValue instanceof goog.async.Deferred) {
+        returnValue.addCallback(function(ret) {
+          e2e.async.util.return_(event.target, ret, '');
+        }).addErrback(function(err) {
+          e2e.async.util.return_(event.target, undefined, String(err));
+        });
+      } else {
+        e2e.async.util.return_(event.target, returnValue, '');
+      }
+    } catch (e) {
+      if (e instanceof Error) {
+        e2e.async.util.return_(event.target, undefined, String(e.message));
+      } else {
+        e2e.async.util.return_(event.target, undefined, 'Unknown error');
+      }
+    }
   };
   return mc.port2;
 };
 
 
 /**
+ * Sends a return message to the port.
+ * @param {MessagePort} port The port to respond to.
+ * @param {*} returnValue The return value of the function.
+ * @param {string} error The error to send.
+ * @private
+ */
+e2e.async.util.return_ = function(port, returnValue, error) {
+  port.postMessage({
+    'returnValue': returnValue,
+    'error': error
+  });
+};
+
+
+/**
  * Unwraps a function from a port.
  * @param {MessagePort} port The port that is wrapping the function.
- * @return {function(...*):*} A function that calls the wrapped function.
+ * @return {function(...*):!e2e.async.Result} A function that calls the wrapped
+ *    function and returns a deferred result object.
  */
 e2e.async.util.unwrapFunction = function(port) {
   return function() {
+    var result = new e2e.async.Result();
+    port.onmessage = function(event) {
+      if (event.data.error) {
+        result.errback(event.data.error);
+      } else {
+        result.callback(event.data.returnValue);
+      }
+    };
     var args = [];
+    var ports = [];
     for (var i = 0; i < arguments.length; i++) {
       if (typeof arguments[i] == 'function') {
-        args.push(e2e.async.util.wrapFunction(arguments[i]));
+        var wrappedPort = e2e.async.util.wrapFunction(arguments[i]);
+        ports.push(wrappedPort);
+        args.push({
+          '__port__': ports.length - 1
+        });
       } else {
         args.push(arguments[i]);
       }
     }
     port.postMessage({
       'arguments': args
-    });
+    }, ports);
+    return result;
   };
 };

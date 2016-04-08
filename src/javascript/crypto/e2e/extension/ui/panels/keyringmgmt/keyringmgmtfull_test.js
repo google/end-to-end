@@ -24,12 +24,10 @@
 goog.provide('e2e.ext.ui.panels.KeyringMgmtFullTest');
 
 goog.require('e2e.ext.constants');
-goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.panels.KeyringMgmtFull');
 goog.require('e2e.ext.ui.panels.KeyringMgmtMini');
 goog.require('goog.array');
-goog.require('goog.dom.classlist');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
@@ -41,7 +39,7 @@ var constants = e2e.ext.constants;
 var mockControl = null;
 var panel = null;
 var stubs = new goog.testing.PropertyReplacer();
-var testCase = goog.testing.AsyncTestCase.createAndInstall();
+var testCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 
 
 function setUp() {
@@ -121,9 +119,8 @@ function testGetKeysDescription() {
       fingerprint: []
     }]
   }]);
-  assertEquals(2, keys.length);
+  assertEquals(1, keys.length);
   assertEquals('publicKeyDescription', keys[0].type);
-  assertEquals('publicSubKeyDescription', keys[1].type);
 }
 
 
@@ -153,36 +150,8 @@ function testHandleClick() {
         icon.click();
       });
   testCase.waitForAsync('waiting clicks to go through');
-  window.setTimeout(function() {
-    testCase.continueTesting();
+  testCase.timeout(function() {
     mockControl.$verifyAll();
+    testCase.continueTesting();
   }, 500);
-}
-
-
-function testEmptyKeyring() {
-  panel.render(document.body);
-
-  // buttons enabled on key add
-  panel.addNewKey('test@example.com', []);
-  assertFalse(panel.getElementByClass(constants.CssClass.KEYRING_EXPORT)
-      .hasAttribute('disabled'));
-  assertFalse(goog.dom.classlist.contains(
-      panel.getElementByClass(constants.CssClass.KEYRING_BACKUP),
-      e2e.ext.constants.CssClass.HIDDEN));
-  assertTrue(goog.dom.classlist.contains(
-      panel.getElementByClass(constants.CssClass.KEYRING_RESTORE),
-      e2e.ext.constants.CssClass.HIDDEN));
-
-
-  // removing only key disables buttons
-  panel.removeKey('test@example.com');
-  assertTrue(panel.getElementByClass(constants.CssClass.KEYRING_EXPORT)
-      .hasAttribute('disabled'));
-  assertTrue(goog.dom.classlist.contains(
-      panel.getElementByClass(constants.CssClass.KEYRING_BACKUP),
-      e2e.ext.constants.CssClass.HIDDEN));
-  assertFalse(goog.dom.classlist.contains(
-      panel.getElementByClass(constants.CssClass.KEYRING_RESTORE),
-      e2e.ext.constants.CssClass.HIDDEN));
 }

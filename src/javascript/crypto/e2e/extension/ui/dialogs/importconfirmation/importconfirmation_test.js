@@ -24,7 +24,6 @@ goog.provide('e2e.ext.ui.dialogs.ImportConfirmationTest');
 goog.require('e2e.ext.constants');
 goog.require('e2e.ext.testingstubs');
 goog.require('e2e.ext.ui.dialogs.ImportConfirmation');
-goog.require('goog.array');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
@@ -85,44 +84,6 @@ function tearDown() {
 }
 
 
-function testHandleSelectPrimary() {
-  var dialog = new e2e.ext.ui.dialogs.ImportConfirmation(
-      KEYS, goog.nullFunction);
-  parent.addChild(dialog, true);
-
-  document.getElementById('key-0-sub-0').checked = true;
-  var checkbox = document.getElementById('key-0');
-  checkbox.checked = false;
-  dialog.handleSelect_({target: checkbox});
-
-  goog.array.forEach(
-      document.querySelectorAll('input[type=checkbox]'), function(checkbox) {
-        assertFalse(checkbox.checked);
-      });
-}
-
-
-function testHandleSelectSubKey() {
-  var dialog = new e2e.ext.ui.dialogs.ImportConfirmation(
-      KEYS, goog.nullFunction);
-  parent.addChild(dialog, true);
-
-  var checkbox = document.getElementById('key-0-sub-0');
-  checkbox.checked = true;
-  dialog.handleSelect_({target: checkbox});
-
-  var checked = ['key-0', 'key-0-sub-0'];
-  goog.array.forEach(
-      document.querySelectorAll('input[type=checkbox]'), function(checkbox) {
-        if (checked.indexOf(checkbox.id) > -1) {
-          assertTrue(checkbox.checked);
-        } else {
-          assertFalse(checkbox.checked);
-        }
-      });
-}
-
-
 function testAllSelected() {
   var callback = mockControl.createFunctionMock();
   callback('');
@@ -132,7 +93,6 @@ function testAllSelected() {
   mockControl.$replayAll();
 
   parent.addChild(dialog, true);
-  dialog.selectAll_();
   dialog.invokeCallback(false);
 
   mockControl.$verifyAll();
@@ -140,16 +100,15 @@ function testAllSelected() {
 
 
 function testNoneSelected() {
-  stubs.set(window, 'alert', mockControl.createFunctionMock());
-  window.alert('promptImportKeyVerifyLabel');
   var callback = mockControl.createFunctionMock();
+  callback(undefined);
 
   var dialog = new e2e.ext.ui.dialogs.ImportConfirmation(KEYS, callback);
 
   mockControl.$replayAll();
 
   parent.addChild(dialog, true);
-  dialog.invokeCallback(false);
+  dialog.invokeCallback(true);
 
   mockControl.$verifyAll();
 }

@@ -19,11 +19,12 @@
 <script>
   goog.require('goog.array');
   goog.require('goog.testing.jsunit');
-  goog.require('e2e.cipher.Aes');
+  goog.require('e2e.cipher.all');
   goog.require('e2e.openpgp.block.factory');
   goog.require('e2e.openpgp.packet.PublicKey');
   goog.require('e2e.openpgp.packet.PublicSubkey');
   goog.require('e2e.openpgp.parse');
+  goog.require('e2e.signer.all');
 </script>
 <script>
 function testConstructor() {
@@ -68,6 +69,7 @@ function testECC() {
     '=xRCj\n' +
     '-----END PGP PUBLIC KEY BLOCK-----';
   var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(publicKeyAscii);
+  publicKeyBlock.processSignatures();
   var subKeySerialized = publicKeyBlock.subKeys[0].serializePacketBody();
   var subKey = e2e.openpgp.packet.PublicSubkey.parse(subKeySerialized);
   assertArrayEquals(publicKeyBlock.subKeys[0].fingerprint, subKey.fingerprint);

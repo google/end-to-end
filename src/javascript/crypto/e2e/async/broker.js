@@ -24,8 +24,11 @@ goog.provide('e2e.async.Broker');
 
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.async.Bid');
+goog.require('e2e.async.Result');
+goog.require('goog.Timer');
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.require('goog.object');
 
 
 
@@ -89,9 +92,18 @@ e2e.async.Broker.Action = {
 /**
  * Definition of the broker event data.
  * @typedef {{action: e2e.async.Broker.Action, serviceName: string?,
- *     bid: e2e.async.Bid?, response: e2e.async.BidResponse?}}
+ *     bid: e2e.async.Bid?, response: e2e.async.BidResponse?, error:string?}}
  */
 e2e.async.Broker.EventData;
+
+
+/**
+ * Error messages for the broker.
+ * @enum {string}
+ */
+e2e.async.Broker.Error = {
+  'FIND_SERVICE_TIMEOUT': 'FIND_SERVICE_TIMEOUT'
+};
 
 
 /**
@@ -145,6 +157,7 @@ e2e.async.Broker.prototype.messageHandler_ = function(e) {
 
 
 /**
+ * Creates a service and processes the bid response.
  * @param {!MessagePort} responsePort The port created for the service.
  * @param {!e2e.async.Bid} bid The bid sent by the service.
  * @param {function(new:e2e.async.Service, !MessagePort)} service The service
@@ -155,14 +168,20 @@ e2e.async.Broker.prototype.createService_ = function(
     responsePort, bid, service) {
   var mc = new MessageChannel();
   var svc = new service(mc.port1);
-  this.respondBid(responsePort, svc.getResponse(bid), mc.port2);
+  svc.getResponse(bid).addCallbacks(function(bidResponse) {
+    this.respondBid(responsePort, bidResponse, mc.port2);
+  }, function(error) {
+    this.respondBidError(responsePort, error);
+  }, this);
 };
 
 
 /**
- * @param {!MessagePort} responsePort
- * @param {!e2e.async.BidResponse} bidResponse
- * @param {!MessagePort} servicePort
+ * Sends a service bid response.
+ * @param {!MessagePort} responsePort The port to send the response through.
+ * @param {!e2e.async.BidResponse} bidResponse The bid response.
+ * @param {!MessagePort} servicePort The service port to send further requests
+ *    through.
  * @protected
  */
 e2e.async.Broker.prototype.respondBid = function(
@@ -171,6 +190,21 @@ e2e.async.Broker.prototype.respondBid = function(
     'action': e2e.async.Broker.Action.RESPONSE,
     'response': bidResponse
   }, [servicePort]);
+};
+
+
+/**
+ * Sends a service error response.
+ * @param {!MessagePort} responsePort The port to send the response through.
+ * @param {string} errorMessage The error message.
+ * @protected
+ */
+e2e.async.Broker.prototype.respondBidError = function(
+    responsePort, errorMessage) {
+  responsePort.postMessage({
+    'action': e2e.async.Broker.Action.RESPONSE,
+    'error': errorMessage
+  });
 };
 
 
@@ -191,18 +225,65 @@ e2e.async.Broker.prototype.registerService = function(serviceName, service) {
 
 
 /**
- * Finds a service of a specific name and returns it's URL.
+ * Finds all services of a specific name that respond to a given Bid.
  * @param {string} serviceName The name of the service in the format of a URL.
  * @param {!e2e.async.Bid} bid An object that has details specific to the
- *     service.
- * @param {function(!e2e.async.BidResponse, !MessagePort)} callback Callback to
- *     return responses.
+ *    service.
+ * @param {number=} opt_timeout Timeout in ms. After the timeout, errback is
+ *    triggered for all non-resolved results.
+ * @return {!Array.<!e2e.async.ServiceLookupResponseResult>} Asynchronous
+ *    results that get resolved when registered services respond to a bid. Each
+ *    result may trigger an errback on service error or timeout.
+ */
+e2e.async.Broker.prototype.findServices = function(
+    serviceName, bid, opt_timeout) {
+  this.initOnce();
+
+  var results = goog.array.map(this.ports_, goog.bind(
+      this.findServiceInPort_, this, serviceName, bid));
+
+  if (goog.isDef(opt_timeout)) {
+    goog.Timer.callOnce(function() {
+      goog.array.forEach(results, function(result) {
+        if (!result.hasFired()) {
+          result.errback(e2e.async.Broker.Error.FIND_SERVICE_TIMEOUT);
+        }
+      });
+    }, opt_timeout);
+  }
+
+  return results;
+};
+
+
+/**
+ * Finds a first service of a specific name that responded to a given Bid.
+ * @param {string} serviceName The name of the service in the format of a URL.
+ * @param {!e2e.async.Bid} bid An object that has details specific to the
+ *    service.
+ * @param {number=} opt_timeout Timeout in ms. After the timeout, the errback is
+ *    triggered if the service did not yet respond.
+ * @return {!e2e.async.ServiceLookupResponseResult} Result that will be resolved
+ *    with a first service that responded to a Bid.
  */
 e2e.async.Broker.prototype.findService = function(
-    serviceName, bid, callback) {
-  this.initOnce();
-  goog.array.forEach(this.ports_, goog.bind(
-      this.findServiceInPort_, this, serviceName, bid, callback));
+    serviceName, bid, opt_timeout) {
+  var firstResult = new e2e.async.Result();
+  var results = this.findServices(serviceName, bid, opt_timeout);
+  var cancelResult = /** @type {function(e2e.async.Result)} */ (
+      function(result) {
+        result.cancel();
+      });
+  goog.array.forEach(results, function(result) {
+    result.addCallbacks(function(findServiceResponse) {
+      goog.array.forEach(results, cancelResult);
+      firstResult.callback(findServiceResponse);
+    }, function(error) {
+      goog.array.forEach(results, cancelResult);
+      firstResult.errback(error);
+    });
+  });
+  return firstResult;
 };
 
 
@@ -211,35 +292,49 @@ e2e.async.Broker.prototype.findService = function(
  * @param {string} serviceName The name of the service in the format of a URL.
  * @param {!e2e.async.Bid} bid An object that has details specific to the
  *     service.
- * @param {function(!e2e.async.BidResponse, !MessagePort)} callback Callback to
- *     return responses.
  * @param {!MessagePort} port The port to search the service on.
+ * @return {!e2e.async.ServiceLookupResponseResult} Service discovery response.
  * @private
  */
 e2e.async.Broker.prototype.findServiceInPort_ = function(
-    serviceName, bid, callback, port) {
+    serviceName, bid, port) {
+  var result = new e2e.async.Result();
   var mc = new MessageChannel();
   port.postMessage({
     'action': e2e.async.Broker.Action.DISCOVERY,
     'serviceName': serviceName,
     'bid': bid
   }, [mc.port2]);
-  mc.port1.onmessage = goog.bind(this.discoveryMessageHandler_, this, callback);
+  mc.port1.onmessage = goog.bind(this.discoveryMessageHandler_, this, result);
+  return result;
 };
 
 
 /**
- * Handles the response of a message sent for discovery.
- * @param {function(!e2e.async.BidResponse, !MessagePort)} callback Callback to
- *     return responses.
+ * Handles the response of a message sent for discovery. Will throw an error if
+ * the service responded with an error, otherwise a callback will be called.
+ * @param {!e2e.async.ServiceLookupResponseResult} responseResult Result to
+ *     resolve with the response.
  * @param {!MessageEvent.<!e2e.async.Broker.EventData>} e The event sent as
  *     response to the request.
  * @private
  */
-e2e.async.Broker.prototype.discoveryMessageHandler_ = function(callback, e) {
+e2e.async.Broker.prototype.discoveryMessageHandler_ = function(responseResult,
+    e) {
+  if (responseResult.hasFired()) {
+    return;
+  }
   if (e.data.action === e2e.async.Broker.Action.RESPONSE) {
-    var servicePort = goog.asserts.assertObject(e.ports[0]);
-    callback(goog.asserts.assertObject(e.data.response), servicePort);
+    if (goog.object.containsKey(e.data, 'error')) {
+      responseResult.errback(String(e.data.error));
+      return;
+    }
+    var response = /** @type {e2e.async.ServiceLookupResponse} */ ({
+      port: goog.asserts.assertObject(e.ports[0]),
+      response: goog.asserts.assertObject(e.data.response)
+    });
+    responseResult.callback(response);
+    return;
   }
 };
 

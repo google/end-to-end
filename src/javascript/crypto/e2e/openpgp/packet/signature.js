@@ -26,11 +26,11 @@ goog.provide('e2e.openpgp.packet.Signature.SignatureType');
 goog.require('e2e');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
-goog.require('e2e.cipher.Rsa');
 goog.require('e2e.debug.Console');
 /** @suppress {extraRequire} force loading of all hash functions */
 goog.require('e2e.hash.all');
 goog.require('e2e.hash.factory');
+goog.require('e2e.openpgp.KeyProviderCipher');
 goog.require('e2e.openpgp.Mpi');
 goog.require('e2e.openpgp.SignatureDigestAlgorithm');
 goog.require('e2e.openpgp.constants');
@@ -47,7 +47,6 @@ goog.require('e2e.openpgp.packet.factory');
 goog.require('e2e.scheme.Ecdsa');
 goog.require('e2e.scheme.Rsassa');
 goog.require('e2e.signer.Algorithm');
-goog.require('e2e.signer.Ecdsa');
 goog.require('goog.array');
 goog.require('goog.asserts');
 
@@ -67,7 +66,7 @@ goog.require('goog.asserts');
  *     The hashed subpackets of the signature.
  * @param {Array.<e2e.openpgp.packet.SignatureSub>=} opt_unhashedSubpackets
  *     The non hashed subpackets of the signature.
- * @param {!e2e.ByteArray=} opt_signerKeyId The key id of the signer.
+ * @param {!e2e.openpgp.KeyId=} opt_signerKeyId The key id of the signer.
  * @param {number=} opt_creationTime The time the signature was created.
  * @constructor
  * @extends {e2e.openpgp.packet.Packet}
@@ -137,7 +136,7 @@ e2e.openpgp.packet.Signature = function(
     creationTime = opt_creationTime;
     /**
      * ID of the key that generated this signature..
-     * @type {!e2e.ByteArray}
+     * @type {!e2e.openpgp.KeyId}
      */
     this.signerKeyId = opt_signerKeyId;
   } else {
@@ -356,7 +355,7 @@ e2e.openpgp.packet.Signature.parse = function(data) {
 /**
  * Extracts key ID used to place the signature directly from the packet
  *     (for version 3 packets) or from subpackets (for version 4 packets).
- * @return {!e2e.ByteArray} signer key ID
+ * @return {!e2e.openpgp.KeyId} signer key ID
  */
 e2e.openpgp.packet.Signature.prototype.getSignerKeyId = function() {
   if (this.version == 0x03 || this.version == 0x02) {
@@ -364,11 +363,11 @@ e2e.openpgp.packet.Signature.prototype.getSignerKeyId = function() {
   }
   if (this.version == 0x04) {
     if (this.attributes.hasOwnProperty('ISSUER')) {
-      return /** @type {!e2e.ByteArray} */ (this.attributes['ISSUER']);
+      return /** @type {!e2e.openpgp.KeyId} */ (this.attributes['ISSUER']);
     }
     if (this.untrustedAttributes.hasOwnProperty('ISSUER')) {
       // GnuPG puts Key ID in unhashed subpacket.
-      return /** @type {!e2e.ByteArray} */ (
+      return /** @type {!e2e.openpgp.KeyId} */ (
           this.untrustedAttributes['ISSUER']);
     }
   }
@@ -401,49 +400,54 @@ e2e.openpgp.packet.Signature.prototype.constructOnePassSignaturePacket =
  *     signed the data.
  * @param {string=} opt_hashAlgo message digest algorithm declared in the
  *     message.
- * @return {boolean} True if the signature correctly verifies.
+ * @return {!e2e.async.Result<boolean>} True if the signature correctly
+ *     verifies.
  */
 e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
     opt_hashAlgo) {
   if (this.pubKeyAlgorithm != signer.algorithm) {
-    return false;
+    return e2e.async.Result.toResult(false);
   }
 
   // Hash algorithm declared in signature may differ from the one used
   // when instantiating the signer. Use the one declared in signature
   // (if it's allowed).
-  var allowedAlgo = e2e.openpgp.SignatureDigestAlgorithm[
-      this.getHashAlgorithm()];
+  var allowedAlgo = e2e.openpgp.SignatureDigestAlgorithm[this.hashAlgorithm];
   if (!allowedAlgo) {
-    throw new e2e.openpgp.error.UnsupportedError(
-        'Specified hash algorithm is not allowed for signatures.');
+    return e2e.async.Result.toError(new e2e.openpgp.error.UnsupportedError(
+        'Specified hash algorithm is not allowed for signatures.'));
   }
-  if (allowedAlgo !== signer.getHash().algorithm) {
+  if (allowedAlgo !== signer.getHashAlgorithm()) {
     signer.setHash(e2e.hash.factory.require(allowedAlgo));
   }
 
-  if (goog.isDef(opt_hashAlgo) && opt_hashAlgo !== signer.getHash().algorithm) {
+  if (goog.isDef(opt_hashAlgo) && opt_hashAlgo !== signer.getHashAlgorithm()) {
     // Hash algorithm mismatch.
-    return false;
+    return e2e.async.Result.toResult(false);
   }
   if (this.version != 0x04) {
-    throw new e2e.openpgp.error.UnsupportedError(
-        'Verification of old signature packets is not implemented.');
+    return e2e.async.Result.toError(new e2e.openpgp.error.UnsupportedError(
+        'Verification of old signature packets is not implemented.'));
   }
-  var signatureVerified = e2e.async.Result.getValue(
-      signer.verify(e2e.openpgp.packet.Signature.getDataToHash(
-      data,
-      this.signatureType, this.pubKeyAlgorithm,
-      this.hashAlgorithm, this.hashedSubpackets),
-                    this.signature));
-  if (signatureVerified &&
-      this.attributes.SIGNATURE_EXPIRATION_TIME &&
-      this.attributes.SIGNATURE_EXPIRATION_TIME <
-          Math.floor(new Date().getTime() / 1e3)) {
-    throw new e2e.openpgp.error.SignatureExpiredError(
-        'Signature expired.');
+  try {
+    return e2e.openpgp.packet.Signature.getSignatureScheme_(signer).verify(
+        e2e.openpgp.packet.Signature.getDataToHash(
+        data,
+        this.signatureType, this.pubKeyAlgorithm,
+        this.hashAlgorithm, this.hashedSubpackets),
+        this.signature).addCallback(function(signatureVerified) {
+      if (signatureVerified &&
+          this.attributes.SIGNATURE_EXPIRATION_TIME &&
+          this.attributes.SIGNATURE_EXPIRATION_TIME <
+              Math.floor(new Date().getTime() / 1e3)) {
+        throw new e2e.openpgp.error.SignatureExpiredError(
+            'Signature expired.');
+      }
+      return signatureVerified;
+    }, this);
+  } catch (e) {
+    return e2e.async.Result.toError(e);
   }
-  return signatureVerified;
 };
 
 
@@ -465,7 +469,7 @@ e2e.openpgp.packet.Signature.prototype.isCertificationSignature = function() {
 
 /**
  * Signs the data and creates a signature packet.
- * @param {!e2e.openpgp.packet.SecretKey} key Key to sign with.
+ * @param {!e2e.openpgp.packet.SecretKeyInterface} key Key to sign with.
  * @param {!e2e.ByteArray} data Data to sign.
  * @param {!e2e.openpgp.packet.Signature.SignatureType} signatureType
  * @param {!Object.<string, number|!e2e.ByteArray>} attributes
@@ -489,31 +493,24 @@ e2e.openpgp.packet.Signature.construct = function(
   var unhashedSubpackets = opt_untrustedAttributes ?
       e2e.openpgp.packet.SignatureSub.construct(opt_untrustedAttributes) :
       [];
-  var signer = key.cipher;
-  var algorithm = /** @type {!e2e.signer.Algorithm} */ (signer.algorithm);
+  var signer = /** @type {!e2e.signer.Signer} */ (key.cipher);
+  var algorithm =  /** @type {!e2e.signer.Algorithm} */ (signer.algorithm);
   goog.asserts.assert(algorithm in e2e.signer.Algorithm);
 
   var plaintext = e2e.openpgp.packet.Signature.getDataToHash(
       data,
       signatureType,
       algorithm,
-      signer.getHash().algorithm,
+      signer.getHashAlgorithm(),
       hashedSubpackets);
   var resultSig;
-  if (signer instanceof e2e.cipher.Rsa) {
-    resultSig = (new e2e.scheme.Rsassa(signer)).sign(plaintext);
-  } else if (signer instanceof e2e.signer.Ecdsa) {
-    resultSig = (new e2e.scheme.Ecdsa(signer)).sign(plaintext);
-  } else {
-    // DSA, always in JS. TODO(user): make DSA a scheme too.
-    resultSig = signer.sign(plaintext);
-  }
-  return resultSig.addCallback(function(signature) {
+  var scheme = e2e.openpgp.packet.Signature.getSignatureScheme_(signer);
+  return scheme.sign(plaintext).addCallback(function(signature) {
     return new e2e.openpgp.packet.Signature(
         4, // version
         signatureType,
         algorithm,
-        signer.getHash().algorithm,
+        signer.getHashAlgorithm(),
         signature,
         signature['hashValue'].slice(0, 2),
         hashedSubpackets,
@@ -612,6 +609,33 @@ e2e.openpgp.packet.Signature.RevocationReason = {
   'KEY_COMPROMISED': 0x02,
   'KEY_RETIRED': 0x03,
   'USER_ID_INVALID': 0x04
+};
+
+
+/**
+ * Returns a signature scheme for a given Signer.
+ * @param  {e2e.signer.Signer} signer
+ * @return {!e2e.scheme.SignatureScheme|!e2e.signer.Signer}
+ * @private
+ */
+e2e.openpgp.packet.Signature.getSignatureScheme_ = function(signer) {
+  // KeyProviderCipher implements a scheme remotely, return it directly.
+  if (signer instanceof e2e.openpgp.KeyProviderCipher) {
+    return signer;
+  }
+  switch (signer.algorithm) {
+    case e2e.cipher.Algorithm.RSA:
+    case e2e.signer.Algorithm.RSA_SIGN:
+      return new e2e.scheme.Rsassa(signer);
+      break;
+    case e2e.signer.Algorithm.ECDSA:
+      return new e2e.scheme.Ecdsa(signer);
+      break;
+    case e2e.signer.Algorithm.DSA:
+      return signer;
+      break;
+  }
+  throw new e2e.openpgp.error.InvalidArgumentsError('Unsupported signer.');
 };
 
 

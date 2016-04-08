@@ -436,6 +436,12 @@ e2e.openpgp.EncryptedCipher.prototype.getKey = function() {
 
 
 /** @inheritDoc */
+e2e.openpgp.EncryptedCipher.prototype.getWebCryptoKey = function() {
+  return this.cipher_.getWebCryptoKey();
+};
+
+
+/** @inheritDoc */
 e2e.openpgp.EncryptedCipher.prototype.encrypt = function(data) {
   return this.cipher_.encrypt(data);
 };
@@ -482,6 +488,27 @@ e2e.openpgp.EncryptedCipher.prototype.setHash = function(hash) {
  */
 e2e.openpgp.EncryptedCipher.prototype.isLocked = function() {
   return Boolean(this.locked_);
+};
+
+
+/**
+ * Returns the wrapped cipher, throwing error if the cipher is locked.
+ * @return {e2e.cipher.Cipher|e2e.signer.Signer} The cipher.
+ */
+e2e.openpgp.EncryptedCipher.prototype.getWrappedCipher = function() {
+  if (this.locked_) {
+    throw new e2e.openpgp.EncryptedCipher.LockedKeyError(this);
+  }
+  return this.cipher_;
+};
+
+
+/**
+ * Returns the algorithm used by the signature hash function.
+ * @return {e2e.hash.Algorithm}
+ */
+e2e.openpgp.EncryptedCipher.prototype.getHashAlgorithm = function() {
+  return this.cipher_.getHash().algorithm;
 };
 
 

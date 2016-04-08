@@ -48,6 +48,9 @@ function setUp() {
   stubs.setPath('chrome.runtime.getURL', function() {
     return 'chrome-extension://abcd';
   });
+  stubs.setPath('window.setTimeout', function(callback) {
+    callback();
+  });
 }
 
 

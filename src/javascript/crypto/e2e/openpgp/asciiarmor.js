@@ -25,6 +25,7 @@ goog.provide('e2e.openpgp.asciiArmor');
 goog.require('e2e');
 goog.require('e2e.openpgp.ClearSignMessage');
 goog.require('e2e.openpgp.error.ParseError');
+goog.require('e2e.openpgp.error.SerializationError');
 goog.require('goog.array');
 goog.require('goog.crypt');
 goog.require('goog.crypt.base64');
@@ -209,7 +210,7 @@ e2e.openpgp.asciiArmor.parseClearSign = function(text) {
 
 
 /**
- * Canonicalizes data by converting all line endings to <CR><LF> and removing
+ * Canonicalizes data by converting all line endings to CR+LF and removing
  * trailing whitespace.
  * @param {string} data The text to canonicalize.
  * @return {string} The canonicalized text.
@@ -259,25 +260,6 @@ e2e.openpgp.asciiArmor.dashUnescape = function(plaintext) {
 
 
 /**
- * Construct a cleartext signature ASCII Armor.
- * Specified in RFC 4880 Section 7.
- * @param {e2e.openpgp.ClearSignMessage} message The message.
- * @param {!Object.<string>=} opt_headers Extra headers to add to signature.
- * @return {string} The ASCII Armored text.
- */
-e2e.openpgp.asciiArmor.encodeClearSign = function(message, opt_headers) {
-  return ['-----BEGIN PGP SIGNED MESSAGE-----',
-          'Hash: ' + message.getSignature().hashAlgorithm,
-          '',
-          e2e.openpgp.asciiArmor.dashEscape(
-              e2e.openpgp.asciiArmor.convertNewlines(message.getBody())),
-          e2e.openpgp.asciiArmor.encode('SIGNATURE',
-              message.getSignature().serialize(), opt_headers)
-  ].join('\r\n');
-};
-
-
-/**
  * Encode data as ASCII Armor, with a trailing new line characters (\r\n).
  * Specified in RFC 4880 Section 6.2.
  * @param {string} type Descriptive type, such as "MESSAGE".
@@ -317,6 +299,38 @@ e2e.openpgp.asciiArmor.encode = function(type, payload, opt_headers) {
 
 
 /**
+ * ASCII armors the OpenPGP block - supports both regular OpenPGP blocks and
+ * clearsign messages.
+ * @param {!e2e.openpgp.block.Armorable} block The block to armor.
+ * @param {!Object.<string>=} opt_headers Extra headers to add.
+ * @return {string} The ASCII Armored text.
+ */
+e2e.openpgp.asciiArmor.armorBlock = function(block, opt_headers) {
+  if (block.header == 'SIGNED MESSAGE') { // Clearsign - special type
+    var body = block.getArmorBody();
+    var sigs = block.getArmorSignatures();
+    if (sigs.length !== 1) {
+      throw new e2e.openpgp.error.SerializationError(
+          'Clearsign messages need to have one and only one signature.');
+    }
+    var signature = sigs[0];
+    return ['-----BEGIN PGP ' + block.header + '-----',
+            'Hash: ' + signature.hashAlgorithm,
+            '',
+            e2e.openpgp.asciiArmor.dashEscape(
+                e2e.openpgp.asciiArmor.convertNewlines(
+                    e2e.byteArrayToString(body))),
+            e2e.openpgp.asciiArmor.encode('SIGNATURE',
+                signature.serialize(), opt_headers)
+    ].join('\r\n');
+  } else {
+    return e2e.openpgp.asciiArmor.encode(block.header,
+        block.getArmorBody());
+  }
+};
+
+
+/**
  * Extracts the PGP block from the free-text content. If no PGP block exists,
  * returns the original content. If multiple PGP blocks are present, only the
  * first one is returned.
@@ -326,11 +340,12 @@ e2e.openpgp.asciiArmor.encode = function(type, payload, opt_headers) {
  */
 e2e.openpgp.asciiArmor.extractPgpBlock = function(content) {
   var extractRe =
-      /-----BEGIN\sPGP\s([\w\s]+)-----[\s\S.]*(?:MESSAGE|BLOCK|SIGNATURE)-----/;
+      /(.*)-----BEGIN\sPGP\s([\w\s]+)-----[\s\S.]*(?:MESSAGE|BLOCK|SIGNATURE)-----/;
   var result = extractRe.exec(content);
   if (result) {
     var pgpBlock = result[0];
-    var firstPrefixType = result[1];
+    var linePrefix = result[1];
+    var firstPrefixType = result[2];
     var expectedSuffixType = firstPrefixType;
     if (firstPrefixType == 'SIGNED MESSAGE') {
       expectedSuffixType = 'SIGNATURE';
@@ -342,6 +357,15 @@ e2e.openpgp.asciiArmor.extractPgpBlock = function(content) {
           '(-----END\\sPGP\\s' + expectedSuffixType + '-----)([\\s\\S.]*)$',
           'g'),
           '$1');
+    }
+    if (linePrefix.length > 0) {
+      // Make trailing spaces optional in the line prefix.
+      // They get removed for otherwise empty lines.
+      pgpBlock = pgpBlock.replace(new RegExp(
+          '^' + goog.string.regExpEscape(goog.string.trimRight(linePrefix)) +
+              '[\\t ]*',
+          'gm'),
+          '');
     }
     return pgpBlock;
   } else {

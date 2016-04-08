@@ -1,11 +1,20 @@
+sudo: false
+
+env:
+  global:
+    - NODEJS_VERSION=0.10
+    - NODEJS_CMD=node
+
 install:
-  - sudo pip install svn+https://closure-linter.googlecode.com/svn/trunk#egg=gjslint
+  - export PATH=$HOME/.local/bin:$PATH
+  - pip install --user $USER git+https://github.com/google/closure-linter.git
+  - nvm install ${NODEJS_VERSION} && nvm alias default ${NODEJS_VERSION}
   - ./do.sh install_deps
 
 script:
+  - ./do.sh lint
   - ./do.sh build_app debug
+  - ./do.sh test_compat_e2e
+  - ./do.sh test_compat_bc
   - ./do.sh clean
   - ./do.sh build_extension debug
-
-after_script:
-  - ./do.sh lint

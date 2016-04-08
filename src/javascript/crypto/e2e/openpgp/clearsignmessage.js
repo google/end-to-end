@@ -23,8 +23,8 @@
 goog.provide('e2e.openpgp.ClearSignMessage');
 
 goog.require('e2e');
+goog.require('e2e.openpgp.block.Armorable');
 goog.require('e2e.openpgp.block.LiteralMessage');
-goog.require('e2e.openpgp.error.InvalidArgumentsError');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.openpgp.parse');
@@ -38,6 +38,7 @@ goog.require('goog.string');
  * @param {!e2e.ByteArray} signatureBytes The serialized signature
  * @param {string=} opt_hash Hash algorithm declared in the message
  * @constructor
+ * @implements {e2e.openpgp.block.Armorable}
  */
 e2e.openpgp.ClearSignMessage = function(body, signatureBytes, opt_hash) {
   this.literal_ = e2e.openpgp.block.LiteralMessage.construct(body);
@@ -54,8 +55,12 @@ e2e.openpgp.ClearSignMessage = function(body, signatureBytes, opt_hash) {
 };
 
 
+/** @override */
+e2e.openpgp.ClearSignMessage.prototype.header = 'SIGNED MESSAGE';
+
+
 /**
- * Canonicalizes data by converting all line endings to <CR><LF> and removing
+ * Canonicalizes data by converting all line endings to CR+LF and removing
  * trailing whitespace.
  * @param {string} data The text to canonicalize.
  * @return {string} The canonicalized text.
@@ -83,22 +88,16 @@ e2e.openpgp.ClearSignMessage.prototype.literal_;
 /**
  * Creates a new cleartext message, signed using the specified key.
  * @param  {string} plaintext Message to sign.
- * @param  {e2e.openpgp.block.TransferableKey} key Signer key.
+ * @param  {!e2e.openpgp.packet.SecretKeyInterface} key Signer key.
  *   Will throw {e2e.openpgp.error.InvalidArgumentsError} if the key has no
  *   signing capability.
  * @return {!e2e.async.Result.<!e2e.openpgp.ClearSignMessage>} Created message.
  */
 e2e.openpgp.ClearSignMessage.construct = function(plaintext, key) {
   plaintext = e2e.openpgp.ClearSignMessage.canonicalize(plaintext);
-  var keyPacket = key && key.getKeyToSign();
-  if (!keyPacket) {
-    // No provided key can sign.
-    throw new e2e.openpgp.error.InvalidArgumentsError(
-        'Provided key does not have a signing capability.');
-  }
   var message = e2e.openpgp.block.LiteralMessage.construct(plaintext);
   var sigRes = message.sign(
-      keyPacket, e2e.openpgp.packet.Signature.SignatureType.TEXT);
+      key, e2e.openpgp.packet.Signature.SignatureType.TEXT);
   return sigRes.addCallback(
       function() {
         return new e2e.openpgp.ClearSignMessage(plaintext,
@@ -118,20 +117,28 @@ e2e.openpgp.ClearSignMessage.prototype.toLiteralMessage = function() {
 
 
 /**
- * Returns clearsigned text as a string.
- * @return {string}
- */
-e2e.openpgp.ClearSignMessage.prototype.getBody = function() {
-  return e2e.byteArrayToString(this.literal_.getData(),
-      this.literal_.getCharset());
-};
-
-
-/**
  * Returns signature packet.
  * @return {!e2e.openpgp.packet.Signature}
  */
 e2e.openpgp.ClearSignMessage.prototype.getSignature = function() {
   return /** @type {!e2e.openpgp.packet.Signature} */ (
       this.literal_.signatures[0]);
+};
+
+
+/** @override */
+e2e.openpgp.ClearSignMessage.prototype.getArmorSignatures = function() {
+  return this.literal_.signatures;
+};
+
+
+/** @override */
+e2e.openpgp.ClearSignMessage.prototype.getArmorBody = function() {
+  return this.literal_.getData();
+};
+
+
+/** @override */
+e2e.openpgp.ClearSignMessage.prototype.serialize = function() {
+  return this.literal_.serialize();
 };
