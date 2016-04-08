@@ -123,6 +123,10 @@ e2e_build_closure_lib_() {
     SRC_DIRS+=("$3")
   fi
   jscompile_e2e="$JSCOMPILE_CMD"
+  # Don't compile compatibility tests. They are a node.js and independent of this.
+  jscompile_e2e+=" --js='!src/javascript/crypto/e2e/compatibility_tests/**.js'"
+  # Don't compile the gmonkeystub.js. It is injected uncompiled by the extension.
+  jscompile_e2e+=" --js='!src/javascript/crypto/e2e/extension/helper/gmonkeystub.js'"
   for var in "${SRC_DIRS[@]}"
   do
     jscompile_e2e+=" --js='$var/**.js' --js='!$var/**_test.js' --js='!$var/**_perf.js'"
