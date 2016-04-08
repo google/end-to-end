@@ -85,6 +85,7 @@ fi
 # lib/closure-templates-compiler/soyutils_usegoog.js:1762: ERROR - element JS_STR_CHARS does not exist on this enum
 cd closure-templates-compiler
 curl https://raw.githubusercontent.com/google/closure-templates/0cbc8543c34d3f7727dd83a2d1938672f16d5c20/javascript/soyutils_usegoog.js -O
+mv soyutils.js soyutils.js.notused
 cd ..
 
 cd ..
