@@ -21,6 +21,7 @@
  */
 
 (function() {
+  var gmonkey = self.gmonkey;
   var gmonkeyApi;
   // TODO(koto): Remove closure, add unit tests and make that a compiled script.
 
