@@ -150,6 +150,8 @@ e2e.openpgp.Context.prototype.importKey;
  * @param {string} comment A comment to note the key with.
  * @param {string} email The email to associate the key to.
  * @param {number} expirationDate Timestamp in seconds to expire the key.
+ * @param {!e2e.algorithm.KeyLocations=} opt_keyLocation Where should the key be
+ *     stored? (default to JS)
  * @return {!e2e.openpgp.GenerateKeyResult} The generated key.
  * @export
  */

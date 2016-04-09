@@ -144,11 +144,11 @@ e2e.openpgp.WorkerContextImpl.prototype.importKey = function(
 /** @inheritDoc */
 e2e.openpgp.WorkerContextImpl.prototype.generateKey = function(
     keyAlgo, keyLength, subkeyAlgo, subkeyLength,
-    name, comment, email, expirationDate) {
+    name, comment, email, expirationDate, opt_keyLocation) {
   return /** @type {!e2e.openpgp.GenerateKeyResult} */ (
       this.deferredCall('generateKey', [
         keyAlgo, keyLength, subkeyAlgo, subkeyLength,
-        name, comment, email, expirationDate]));
+        name, comment, email, expirationDate, opt_keyLocation]));
 };
 
 
