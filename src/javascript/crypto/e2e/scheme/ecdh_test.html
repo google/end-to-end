@@ -100,7 +100,7 @@ function testConsistencyWebCryptoToJs() {
   // Fake a key fingerprint, since it isn't meaningful at this layer (e.g. no email address).
   ecdhCipher.key.fingerprint = e2e.random.getRandomBytes(20);
   var jwkKey = e2e.asymmetric.keygenerator.ecPubKeyToJwk(ecdhCipher.key.pubKey);
-  window.crypto.subtle.importKey('jwk', jwkKey, {'name': 'ECDH', 'namedCurve': 'P-256'},
+  goog.global.crypto.subtle.importKey('jwk', jwkKey, {'name': 'ECDH', 'namedCurve': 'P-256'},
                                  true /* extractable */, [] /* usages */).then(function(webKey) {
     ecdhCipher.setWebCryptoKey(webKey);
     var ecdh = new e2e.scheme.Ecdh(ecdhCipher);

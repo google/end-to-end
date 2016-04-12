@@ -58,7 +58,7 @@ e2e.scheme.Ecdsa.prototype.verifyWebCrypto = function(m, sig) {
   s.set(sig.s);
 
   var result = new e2e.async.Result();
-  window.crypto.subtle.verify(
+  goog.global.crypto.subtle.verify(
       this.algorithmIdentifier,
       key,
       sigBuf,
@@ -76,10 +76,10 @@ e2e.scheme.Ecdsa.prototype.signWebCrypto = function(data) {
   // Note: This effectively computes the digest twice.  This appears to be
   // unavoidable, because e2e needs to know the hash value, but
   // crypto.subtle.sign does not expose it.
-  var hashValuePromise = window.crypto.subtle.digest(
+  var hashValuePromise = goog.global.crypto.subtle.digest(
       this.algorithmIdentifier['hash'], dataArray);
 
-  var sigBufPromise = window.crypto.subtle.sign(
+  var sigBufPromise = goog.global.crypto.subtle.sign(
       this.algorithmIdentifier, key, dataArray);
 
   var result = new e2e.async.Result();

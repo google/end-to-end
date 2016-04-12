@@ -108,10 +108,10 @@ e2e.asymmetric.keygenerator.newWebCryptoP256Keys = function() {
  */
 e2e.asymmetric.keygenerator.populateWebCrypto_ = function(algorithm, aid,
     usages) {
-  return window.crypto.subtle.generateKey(aid, true, usages)
+  return goog.global.crypto.subtle.generateKey(aid, true, usages)
       .then(function(keyPair) {
         algorithm.setWebCryptoKey(keyPair);
-        return window.crypto.subtle.exportKey('jwk', keyPair.publicKey);
+        return goog.global.crypto.subtle.exportKey('jwk', keyPair.publicKey);
       }).then(function(jwkKey) {
         var ecKey = e2e.asymmetric.keygenerator.jwkToEc(jwkKey);
         algorithm.setKey(ecKey);
@@ -220,6 +220,6 @@ e2e.asymmetric.keygenerator.ecPubKeyToJwk = function(pubKey) {
 e2e.asymmetric.keygenerator.importWebCryptoKey = function(v, aid, opt_usages) {
   var jwkKey = e2e.asymmetric.keygenerator.ecPubKeyToJwk(v);
   // Performance note: importKey sometimes takes 1ms, and sometimes takes >50ms.
-  return window.crypto.subtle.importKey('jwk', jwkKey, aid,
+  return goog.global.crypto.subtle.importKey('jwk', jwkKey, aid,
       true /* extractable */, opt_usages || []);
 };

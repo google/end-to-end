@@ -76,7 +76,7 @@ e2e.scheme.Ecdh.WebCryptoKeyPair_;
  * @private
  */
 e2e.scheme.Ecdh.prototype.webCryptoGenerateEphemeralKey_ = function() {
-  return window.crypto.subtle.generateKey(this.algorithmIdentifier, true,
+  return goog.global.crypto.subtle.generateKey(this.algorithmIdentifier, true,
       ['deriveBits']);
 };
 
@@ -98,7 +98,7 @@ e2e.scheme.Ecdh.WrapInputs_;
 e2e.scheme.Ecdh.prototype.webCryptoDeriveBitsAlice_ = function(ephemeralKey) {
   var ecdhParams = goog.object.clone(this.algorithmIdentifier);
   ecdhParams['public'] = this.cipher.getWebCryptoKey().publicKey;
-  return window.crypto.subtle.deriveBits(
+  return goog.global.crypto.subtle.deriveBits(
       ecdhParams, ephemeralKey.privateKey, 256).then(function(derivedBits) {
     goog.asserts.assert(derivedBits.byteLength == 32);
     return {
@@ -122,7 +122,7 @@ e2e.scheme.Ecdh.prototype.webCryptoExportAndWrap_ = function(plaintext,
   var keyWrapper =
       this.cipher.getKeyWrapper(new Uint8Array(derivedBits));
   var u = keyWrapper.wrap(plaintext);
-  return window.crypto.subtle.exportKey('jwk', ephemeralPubKey)
+  return goog.global.crypto.subtle.exportKey('jwk', ephemeralPubKey)
       .then(function(jwkKey) {
         var ecKey = e2e.asymmetric.keygenerator.jwkToEc(jwkKey);
         return {
@@ -152,7 +152,7 @@ e2e.scheme.Ecdh.prototype.webCryptoDeriveBitsBob_ = function(ephemeralPubKey) {
   var ecdhParams = goog.object.clone(this.algorithmIdentifier);
   ecdhParams['public'] = ephemeralPubKey;
   var myPrivateKey = this.cipher.getWebCryptoKey().privateKey;
-  return window.crypto.subtle.deriveBits(ecdhParams, myPrivateKey, 256);
+  return goog.global.crypto.subtle.deriveBits(ecdhParams, myPrivateKey, 256);
 };
 
 

@@ -94,7 +94,7 @@ function testConsistencyWebCryptoToJs() {
   var ecdsaSigner = e2e.asymmetric.keygenerator.newEcdsaWithP256();
   var jwkKey = e2e.asymmetric.keygenerator.ecPubKeyToJwk(ecdsaSigner.key.pubKey);
   asyncTestCase.waitForAsync('Waiting for key import');
-  window.crypto.subtle.importKey('jwk', jwkKey, {'name': 'ECDSA', 'namedCurve': 'P-256'},
+  goog.global.crypto.subtle.importKey('jwk', jwkKey, {'name': 'ECDSA', 'namedCurve': 'P-256'},
       true /* extractable */, ['verify'] /* usages */).then(function(webKey) {
     ecdsaSigner.setWebCryptoKey({publicKey: webKey});
     var ecdsa = new e2e.scheme.Ecdsa(ecdsaSigner);
