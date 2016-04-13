@@ -53,7 +53,7 @@ function testEcPubKeyToJwk() {
     'y': 'GO9lfy8Yvn1ZRY91fHz2o0YaPP8LktnA4ZB1yhlJMmU',
     'ext': true
   };
-  assertObjectEquals(e2e.asymmetric.keygenerator.ecPubKeyToJwk(pubKey), jwkKey);
+  assertObjectEquals(e2e.asymmetric.keygenerator.ecToJwk(pubKey), jwkKey);
 }
 
 // In this case, 'x' has at least 8 leading zero bits, which are stripped, resulting in a 31-byte
@@ -69,6 +69,23 @@ function testShortEcPubKeyToJwk() {
     'y': 'BVzajttOLtAt738Pos3yzsaB_bN5mzbwxu-LTVdHW9A',
     'ext': true
   };
-  assertObjectEquals(e2e.asymmetric.keygenerator.ecPubKeyToJwk(pubKey), jwkKey);
+  assertObjectEquals(e2e.asymmetric.keygenerator.ecToJwk(pubKey), jwkKey);
+}
+
+function testEcKeypairToJwk() {
+  var pubKey = [4,39,35,145,100,24,235,142,250,246,166,151,22,158,220,168,133,185,30,123,94,121,242,
+                8,93,178,224,62,38,114,121,78,161,87,169,59,216,68,118,89,1,51,205,226,91,68,153,
+                236,62,23,100,99,71,220,162,14,153,162,185,9,17,6,4,41,77];
+  var privKey = [178,207,49,227,74,155,0,52,9,17,70,110,15,254,164,1,43,112,47,175,97,178,149,13,
+                 168,51,136,89,219,14,26,167];
+  var jwkKey = {
+    'kty': 'EC',
+    'crv': 'P-256',
+    'x': 'JyORZBjrjvr2ppcWntyohbkee1558ghdsuA-JnJ5TqE',
+    'y': 'V6k72ER2WQEzzeJbRJnsPhdkY0fcog6ZorkJEQYEKU0',
+    'd': 'ss8x40qbADQJEUZuD_6kAStwL69hspUNqDOIWdsOGqc',
+    'ext': true
+  };
+  assertObjectEquals(e2e.asymmetric.keygenerator.ecToJwk(pubKey, privKey), jwkKey);
 }
 </script>

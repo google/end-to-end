@@ -27,7 +27,6 @@ goog.provide('e2e.openpgp.EncryptedCipher.LockedKeyError');
 
 goog.require('e2e');
 goog.require('e2e.AlgorithmImpl');
-goog.require('e2e.algorithm.KeyLocations');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.cipher.AsymmetricCipher');
@@ -421,8 +420,7 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey_ = function(keyBytes) {
           'Unknown cipher algorithm', this.cipher_.algorithm);
       throw new e2e.openpgp.error.InvalidArgumentsError('Unknown algorithm');
   }
-  // TODO(user): Figure out what loc this is once multiple locs are supported.
-  keyData.loc = e2e.algorithm.KeyLocations.JAVASCRIPT;
+  // TODO(user): Figure out whether loc needs to be set to JS in some case here.
   this.cipher_.setKey(keyData);
   this.locked_ = false;
   this.keyBytes_ = keyBytes;
@@ -438,6 +436,12 @@ e2e.openpgp.EncryptedCipher.prototype.getKey = function() {
 /** @inheritDoc */
 e2e.openpgp.EncryptedCipher.prototype.getWebCryptoKey = function() {
   return this.cipher_.getWebCryptoKey();
+};
+
+
+/** @inheritDoc */
+e2e.openpgp.EncryptedCipher.prototype.setWebCryptoKey = function(webCryptoKey) {
+  return this.cipher_.setWebCryptoKey(webCryptoKey);
 };
 
 

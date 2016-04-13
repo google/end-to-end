@@ -251,16 +251,21 @@ e2e.openpgp.KeyRing.prototype.generateKey = function(uid,
                                                      opt_keyLocation) {
   return this.keyGenerator_.generateKey(uid, keyAlgo, keyLength, subkeyAlgo,
       subkeyLength, opt_keyLocation).addCallback(function(keys) {
-    goog.array.forEach(keys, function(key) {
-      if (key instanceof e2e.openpgp.block.TransferableSecretKey) {
-        this.importKey_(uid, key, this.privKeyRing_);
-      } else if (key instanceof e2e.openpgp.block.TransferablePublicKey) {
-        this.importKey_(uid, key, this.pubKeyRing_);
-        if (this.keyClient_ !== null) {
-          this.keyClient_.importPublicKey(key);
-        }
-      }
-    }, this);
+    return goog.async.DeferredList.gatherResults(goog.array.map(keys,
+        function(key) {
+          if (key instanceof e2e.openpgp.block.TransferableSecretKey) {
+            return this.importKey_(uid, key, this.privKeyRing_);
+          } else if (key instanceof e2e.openpgp.block.TransferablePublicKey) {
+            return this.importKey_(uid, key, this.pubKeyRing_)
+                .addCallback(function() {
+                  if (this.keyClient_ !== null) {
+                    return this.keyClient_.importPublicKey(
+                        /** @type {!e2e.openpgp.block.TransferablePublicKey} */
+                        (key));
+                  }
+                }, this);
+          }
+        }, this)).addCallback(function(voids) { return keys; });
   }, this);
 };
 

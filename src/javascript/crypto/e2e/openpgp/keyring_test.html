@@ -609,7 +609,45 @@ function testGeneratePersist() {
   asyncTestCase.waitForAsync('Waiting for keyRing1');
   e2e.openpgp.KeyRing.launch(lockableStorage).then(function(keyRing1) {
     return keyRing1.generateECKey('<ecc@example.com>');
+  }).then(function(keys) {
+    assertEquals(2, keys.length);
+    return e2e.openpgp.KeyRing.launch(lockableStorage);
+  }).then(function(kr2) {
+    keyRing2 = kr2;
+    var pubKeyRing = keyRing2.getAllKeys();
+    assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+    assertEquals(1, pubKeyRing.getCount());
+    var pubKeys = pubKeyRing.get('<ecc@example.com>');
+    assertEquals(2, pubKeys.length);
+    var privKeyRing = keyRing2.getAllKeys(e2e.openpgp.KeyRing.Type.PRIVATE);
+    assertTrue(privKeyRing.containsKey('<ecc@example.com>'));
+    assertEquals(1, privKeyRing.getCount());
+    var privKeys = privKeyRing.get('<ecc@example.com>');
+    assertEquals(1, privKeys.length);
+    var publicKeyBlock = e2e.openpgp.block.factory.parseAscii(
+      document.getElementById('pubKeyAscii').value);
+    return keyRing2.importKey(publicKeyBlock);
   }).then(function() {
+    pubKeyRing = keyRing2.getAllKeys();
+    assertTrue(pubKeyRing.containsKey('<ecc@example.com>'));
+    assertEquals(1, pubKeyRing.getCount());
+    pubKeys = pubKeyRing.get('<ecc@example.com>');
+    assertEquals(3, pubKeys.length);
+    asyncTestCase.continueTesting();
+  });
+}
+
+
+function testWebCryptoPersist() {
+  var keyRing2;
+  asyncTestCase.waitForAsync('Waiting for keyRing1');
+  e2e.openpgp.KeyRing.launch(lockableStorage).then(function(keyRing1) {
+    return keyRing1.generateKey(
+        '<ecc@example.com>',
+        e2e.signer.Algorithm.ECDSA, 256,
+        e2e.cipher.Algorithm.ECDH, 256, e2e.algorithm.KeyLocations.WEB_CRYPTO);
+  }).then(function(keys) {
+    assertEquals(2, keys.length);
     return e2e.openpgp.KeyRing.launch(lockableStorage);
   }).then(function(kr2) {
     keyRing2 = kr2;

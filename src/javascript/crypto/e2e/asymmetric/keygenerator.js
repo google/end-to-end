@@ -38,6 +38,7 @@ goog.require('e2e.hash.Algorithm');
 goog.require('e2e.openpgp.constants');
 goog.require('e2e.signer.Algorithm');
 goog.require('e2e.signer.Ecdsa');
+goog.require('goog.asserts');
 goog.require('goog.crypt.base64');
 goog.require('goog.string');
 
@@ -111,7 +112,7 @@ e2e.asymmetric.keygenerator.populateWebCrypto_ = function(algorithm, aid,
   return goog.global.crypto.subtle.generateKey(aid, true, usages)
       .then(function(keyPair) {
         algorithm.setWebCryptoKey(keyPair);
-        return goog.global.crypto.subtle.exportKey('jwk', keyPair.publicKey);
+        return goog.global.crypto.subtle.exportKey('jwk', keyPair.privateKey);
       }).then(function(jwkKey) {
         var ecKey = e2e.asymmetric.keygenerator.jwkToEc(jwkKey);
         algorithm.setKey(ecKey);
@@ -135,6 +136,18 @@ e2e.asymmetric.keygenerator.decodeP256Element_ = function(q, jwkElement) {
 
 
 /**
+ * @param {!e2e.ByteArray|Uint8Array} bytes A byte array to encode.
+ * @return {string} The byte array encoded in WebCrypto-compatible base64.
+ * @private
+ */
+e2e.asymmetric.keygenerator.encodeBase64ForWebCrypto_ = function(bytes) {
+  var str = goog.crypt.base64.encodeByteArray(bytes, true /* websafe */);
+  // goog.crypt.base64 produces padded base64, but WebCrypto demands unpadded.
+  return goog.string.removeAll(str, '.');
+};
+
+
+/**
  * Converts a field element (x or y) Element object to JWK string format.
  * @param {!e2e.ecc.Element} element
  * @return {string}
@@ -145,14 +158,12 @@ e2e.asymmetric.keygenerator.encodeP256Element_ = function(element) {
   var trimmedBytes = bigNum.toByteArray();  // Leading zeros are trimmed.
   var bytes = new Uint8Array(32);
   bytes.set(trimmedBytes, 32 - trimmedBytes.length);  // Re-add leading zeros.
-  var str = goog.crypt.base64.encodeByteArray(bytes, true /* websafe */);
-  // goog.crypt.base64 produces padded base64, but WebCrypto demands unpadded.
-  return goog.string.removeAll(str, '.');
+  return e2e.asymmetric.keygenerator.encodeBase64ForWebCrypto_(bytes);
 };
 
 
 /**
- * Given a JWK-formatted ECDH or ECDSA public key, return a key in e2e format.
+ * Given a JWK-formatted ECDH or ECDSA key, return a key in e2e format.
  * @param {webCrypto.JsonWebKey} jwkKey
  * @return {e2e.cipher.key.Ecdh|e2e.signer.key.Ecdsa}
  */
@@ -179,11 +190,14 @@ e2e.asymmetric.keygenerator.jwkToEc = function(jwkKey) {
   var curveObj = new e2e.ecc.curve.Nist(q, b);
   var point = new e2e.ecc.point.Nist(curveObj, xElement, yElement);
 
+  var privKey = jwkKey.d ? goog.crypt.base64.decodeStringToByteArray(jwkKey.d) :
+      null;
+
   return {
     'curve': curve,
     'kdfInfo': kdfInfo,
     'pubKey': point.toByteArray(),
-    'privKey': null,
+    'privKey': privKey,
     'loc': e2e.algorithm.KeyLocations.WEB_CRYPTO
   };
 };
@@ -192,34 +206,50 @@ e2e.asymmetric.keygenerator.jwkToEc = function(jwkKey) {
 /**
  * @param {!e2e.ByteArray} pubKey An MPI-serialized P256 curve point, as in
  *     e2e.cipher.key.Ecdh.pubKey.
+ * @param {!e2e.ByteArray=} opt_privKey An MPI-serialized P256 private key, as
+ *     in e2e.cipher.key.Ecdh.privKey.
  * @return {!webCrypto.JsonWebKey} A representation of this public key as JWK.
  */
-e2e.asymmetric.keygenerator.ecPubKeyToJwk = function(pubKey) {
+e2e.asymmetric.keygenerator.ecToJwk = function(pubKey, opt_privKey) {
   var q = new e2e.BigPrimeNum(e2e.ecc.constant.P_256.Q);
   var b = new e2e.BigPrimeNum(e2e.ecc.constant.P_256.B);
   var curve = new e2e.ecc.curve.Nist(q, b);
   var point = curve.pointFromByteArray(pubKey);
   var xString = e2e.asymmetric.keygenerator.encodeP256Element_(point.x);
   var yString = e2e.asymmetric.keygenerator.encodeP256Element_(point.y);
-  return /** @type {!webCrypto.JsonWebKey} */({
+
+  var jwk = /** @type {!webCrypto.JsonWebKey} */({
     kty: 'EC',
     crv: 'P-256',
     x: xString,
     y: yString,
     ext: true
   });
+  if (opt_privKey) {
+    goog.asserts.assert(opt_privKey.length == 32);
+    jwk.d = e2e.asymmetric.keygenerator.encodeBase64ForWebCrypto_(opt_privKey);
+  }
+
+  return jwk;
 };
 
 
 /**
  * @param {!e2e.ByteArray} v The public key to import.
- * @param {{name: string}} aid Algorithm identifier.
+ * @param {webCrypto.AlgorithmIdentifier} aid Algorithm identifier.
  * @param {Array<string>=} opt_usages The allowed usages of the key.
- * @return {!Promise<webCrypto.CryptoKey>}
+ * @param {!e2e.ByteArray=} opt_privKey The private key to import.
+ * @return {!goog.Thenable<webCrypto.CryptoKey>}
  */
-e2e.asymmetric.keygenerator.importWebCryptoKey = function(v, aid, opt_usages) {
-  var jwkKey = e2e.asymmetric.keygenerator.ecPubKeyToJwk(v);
-  // Performance note: importKey sometimes takes 1ms, and sometimes takes >50ms.
+e2e.asymmetric.keygenerator.importWebCryptoKey = function(v, aid,
+    opt_usages, opt_privKey) {
+  if (aid.name != 'ECDSA' && aid.name != 'ECDH') {
+    throw new Error('Algorithm name must be ECDSA or ECDH, not ' + aid.name);
+  }
+  if (aid.namedCurve != 'P-256') {
+    throw new Error('Only P-256 keys are supported, not ' + aid.namedCurve);
+  }
+  var jwkKey = e2e.asymmetric.keygenerator.ecToJwk(v, opt_privKey);
   return goog.global.crypto.subtle.importKey('jwk', jwkKey, aid,
       true /* extractable */, opt_usages || []);
 };

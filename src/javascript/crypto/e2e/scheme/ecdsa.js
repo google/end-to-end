@@ -19,12 +19,11 @@
  * sign with ecdsa.
  */
 
-goog.require('e2e.asymmetric.keygenerator');
+goog.provide('e2e.scheme.Ecdsa');
+
 goog.require('e2e.async.Result');
 goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.scheme.SignatureScheme');
-
-goog.provide('e2e.scheme.Ecdsa');
 
 
 
@@ -90,7 +89,7 @@ e2e.scheme.Ecdsa.prototype.signWebCrypto = function(data) {
       result.callback({
         r: new Uint8Array(sigBuf, 0, 32),
         s: new Uint8Array(sigBuf, 32, 32),
-        hashValue: hashValue
+        hashValue: new Uint8Array(hashValue)
       });
     });
   }).catch(goog.bind(result.errback, result));
@@ -119,17 +118,15 @@ e2e.scheme.Ecdsa.prototype.signHardware = function(data) {
 
 /** @override */
 e2e.scheme.Ecdsa.prototype.verifyJavaScriptKeyWithWebCrypto = function(m, sig) {
-  if (!this.signer.hasWebCryptoKey()) {
-    return e2e.async.Result.fromPromise(
-        e2e.asymmetric.keygenerator.importWebCryptoKey(
-            this.cipher.getKey()['pubKey'],
-            this.algorithmIdentifier,
-            ['verify'])
-        .then(goog.bind(function(webCryptoKey) {
-          this.signer.setWebCryptoKey({'publicKey': webCryptoKey});
-          return this.verifyWebCrypto(m, sig);
-        }, this)));
-  } else {
-    return this.verifyWebCrypto(m, sig);
-  }
+  return this.ensureWebCryptoImport(this.algorithmIdentifier,
+      ['verify'], ['sign']).addCallback(
+      goog.bind(this.verifyWebCrypto, this, m, sig));
+};
+
+
+/** @override */
+e2e.scheme.Ecdsa.prototype.signJavaScriptKeyWithWebCrypto = function(data) {
+  return this.ensureWebCryptoImport(this.algorithmIdentifier,
+      ['verify'], ['sign']).addCallback(
+      goog.bind(this.signWebCrypto, this, data));
 };

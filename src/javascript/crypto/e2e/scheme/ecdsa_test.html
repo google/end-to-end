@@ -67,7 +67,7 @@ function testConsistencyWebCrypto() {
 }
 
 /**
- * Tests that ECDSA is consistent from web crypto to JS.
+ * Tests that ECDSA is consistent from JS to web crypto.
  */
 function testConsistencyJsToWebCrypto() {
   asyncTestCase.waitForAsync('Waiting for key generation');
@@ -92,7 +92,7 @@ function testConsistencyJsToWebCrypto() {
  */
 function testConsistencyWebCryptoToJs() {
   var ecdsaSigner = e2e.asymmetric.keygenerator.newEcdsaWithP256();
-  var jwkKey = e2e.asymmetric.keygenerator.ecPubKeyToJwk(ecdsaSigner.key.pubKey);
+  var jwkKey = e2e.asymmetric.keygenerator.ecToJwk(ecdsaSigner.key.pubKey);
   asyncTestCase.waitForAsync('Waiting for key import');
   goog.global.crypto.subtle.importKey('jwk', jwkKey, {'name': 'ECDSA', 'namedCurve': 'P-256'},
       true /* extractable */, ['verify'] /* usages */).then(function(webKey) {
@@ -111,9 +111,9 @@ function testConsistencyWebCryptoToJs() {
 }
 
 /**
- * Tests that ECDSA on JS keys works with WebCrypto.
+ * Tests that ECDSA verification on JS keys works with WebCrypto.
  */
-function testJsWithWebCryptoEcdsa() {
+function testJsVerifyWithWebCryptoEcdsa() {
   var ecdsaSigner = e2e.asymmetric.keygenerator.newEcdsaWithP256();
   var ecdsa = new e2e.scheme.Ecdsa(ecdsaSigner);
   var m = e2e.random.getRandomBytes(LENGTH);
@@ -124,6 +124,49 @@ function testJsWithWebCryptoEcdsa() {
   }).then(function(valid) {
     assertTrue(valid);
     asyncTestCase.continueTesting();
+  }, fail);
+}
+
+/**
+ * Tests that ECDSA signing on JS keys works with WebCrypto.
+ */
+function testJsSignWithWebCryptoEcdsa() {
+  var ecdsaSigner = e2e.asymmetric.keygenerator.newEcdsaWithP256();
+  var ecdsa = new e2e.scheme.Ecdsa(ecdsaSigner);
+  var m = e2e.random.getRandomBytes(LENGTH);
+  asyncTestCase.waitForAsync('Waiting for signing.');
+  return ecdsa.signJavaScriptKeyWithWebCrypto(m).then(function(sig) {
+    asyncTestCase.waitForAsync('Waiting for verification.');
+    return ecdsa.verifyJavaScript(m, sig);
+  }).then(function(valid) {
+    assertTrue(valid);
+    asyncTestCase.continueTesting();
+  }, fail);
+}
+
+
+/**
+ * Tests that Web Crypto returns the expected signature type.
+ * This is a regression test.
+ */
+function testSignFormatWebCrypto() {
+  asyncTestCase.waitForAsync('Waiting for key generation');
+  e2e.asymmetric.keygenerator.newWebCryptoP256Keys().then(function(ciphers) {
+    var ecdsaSigner = ciphers[0];
+    var ecdhCipher = ciphers[1];
+    var ecdsa = new e2e.scheme.Ecdsa(ecdsaSigner);
+    var m = e2e.random.getRandomBytes(LENGTH);
+    asyncTestCase.waitForAsync('Waiting for signing.');
+    return ecdsa.signWebCrypto(m).then(function(sig) {
+      assertTrue(sig.r instanceof Uint8Array);
+      assertEquals(32, sig.r.length);
+      assertTrue(sig.s instanceof Uint8Array);
+      assertEquals(32, sig.s.length);
+      assertTrue(sig.hashValue instanceof Uint8Array);
+      assertEquals(32, sig.hashValue.length);
+
+      asyncTestCase.continueTesting();
+    });
   }, fail);
 }
 

@@ -50,7 +50,9 @@ goog.inherits(e2e.scheme.Ecdh, e2e.scheme.EncryptionScheme);
 e2e.scheme.Ecdh.prototype.encryptWebCrypto = function(plaintext) {
   // Together, generateKey and deriveBits should be equivalent to the Alice
   // operation.
-  return e2e.async.Result.fromPromise(this.webCryptoGenerateEphemeralKey_()
+  return e2e.async.Result.fromPromise(
+      /** @type {!goog.Thenable<e2e.cipher.ciphertext.CipherText>} */(
+      this.webCryptoGenerateEphemeralKey_()
       .then(goog.bind(this.webCryptoDeriveBitsAlice_, this))
       // WebCrypto includes built-in support for AES key wrapping ('AES-KW').
       // Unfortunately, subtle.wrapKey requires the key to be in raw, pkcs8, or
@@ -58,7 +60,7 @@ e2e.scheme.Ecdh.prototype.encryptWebCrypto = function(plaintext) {
       // Therefore, we have to implement AES key wrapping ourselves by calling
       // deriveBits.  We also have to do AES in javascript, because WebCrypto
       // only supports AES-derived stream ciphers.
-      .then(goog.bind(this.webCryptoExportAndWrap_, this, plaintext)));
+      .then(goog.bind(this.webCryptoExportAndWrap_, this, plaintext))));
 };
 
 
@@ -192,16 +194,16 @@ e2e.scheme.Ecdh.prototype.decryptHardware = function(ciphertext) {
 /** @override */
 e2e.scheme.Ecdh.prototype.encryptJavaScriptKeyWithWebCrypto = function(
     plaintext) {
-  if (!this.cipher.hasWebCryptoKey()) {
-    return e2e.async.Result.fromPromise(
-        e2e.asymmetric.keygenerator.importWebCryptoKey(
-            this.cipher.getKey()['pubKey'],
-            this.algorithmIdentifier)
-        .then(goog.bind(function(webCryptoKey) {
-          this.cipher.setWebCryptoKey({'publicKey': webCryptoKey});
-          return this.encryptWebCrypto(plaintext);
-        }, this)));
-  } else {
-    return this.encryptWebCrypto(plaintext);
-  }
+  return this.ensureWebCryptoImport(this.algorithmIdentifier,
+      [], ['deriveBits']).addCallback(
+      goog.bind(this.encryptWebCrypto, this, plaintext));
+};
+
+
+/** @override */
+e2e.scheme.Ecdh.prototype.decryptJavaScriptKeyWithWebCrypto = function(
+    ciphertext) {
+  return this.ensureWebCryptoImport(this.algorithmIdentifier,
+      [], ['deriveBits']).addCallback(
+      goog.bind(this.decryptWebCrypto, this, ciphertext));
 };

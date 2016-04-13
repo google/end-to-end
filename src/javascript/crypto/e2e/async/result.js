@@ -92,7 +92,7 @@ e2e.async.Result.toResult = function(value) {
 
 /**
  * Converts a Promise to a result.
- * @param {!Promise<T>} promise The Promise to wrap as a result.
+ * @param {!goog.Thenable<T>} promise The Promise to wrap as a result.
  * @return {!e2e.async.Result.<T>} The corresponding result.
  * @template T
  */

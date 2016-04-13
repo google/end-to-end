@@ -99,10 +99,10 @@ function testConsistencyWebCryptoToJs() {
   var ecdhCipher = e2e.asymmetric.keygenerator.newEcdhWithP256();
   // Fake a key fingerprint, since it isn't meaningful at this layer (e.g. no email address).
   ecdhCipher.key.fingerprint = e2e.random.getRandomBytes(20);
-  var jwkKey = e2e.asymmetric.keygenerator.ecPubKeyToJwk(ecdhCipher.key.pubKey);
+  var jwkKey = e2e.asymmetric.keygenerator.ecToJwk(ecdhCipher.key.pubKey);
   goog.global.crypto.subtle.importKey('jwk', jwkKey, {'name': 'ECDH', 'namedCurve': 'P-256'},
                                  true /* extractable */, [] /* usages */).then(function(webKey) {
-    ecdhCipher.setWebCryptoKey(webKey);
+    ecdhCipher.setWebCryptoKey({publicKey: webKey});
     var ecdh = new e2e.scheme.Ecdh(ecdhCipher);
     var m = e2e.random.getRandomBytes(16);
     asyncTestCase.waitForAsync('Waiting for encryption.');
@@ -117,9 +117,9 @@ function testConsistencyWebCryptoToJs() {
 }
 
 /**
- * Tests that ECDH on JS keys works with WebCrypto.
+ * Tests that ECDH encryption on JS keys works with WebCrypto.
  */
-function testJsWithWebCryptoEcdh() {
+function testJsEncryptWithWebCryptoEcdh() {
   asyncTestCase.waitForAsync('Waiting for key generation');
   var ecdhCipher = e2e.asymmetric.keygenerator.newEcdhWithP256();
   // Fake a key fingerprint, since it isn't meaningful at this layer (e.g. no email address).
@@ -130,6 +130,26 @@ function testJsWithWebCryptoEcdh() {
   ecdh.encryptJavaScriptKeyWithWebCrypto(m).then(function(c) {
     asyncTestCase.waitForAsync('Waiting for decryption.');
     return ecdh.decryptJavaScript(c);
+  }).then(function(p){
+    assertArrayEquals(m, p);
+    asyncTestCase.continueTesting();
+  }, fail);
+}
+
+/**
+ * Tests that ECDH decryption on JS keys works with WebCrypto.
+ */
+function testJsDecryptWithWebCryptoEcdh() {
+  asyncTestCase.waitForAsync('Waiting for key generation');
+  var ecdhCipher = e2e.asymmetric.keygenerator.newEcdhWithP256();
+  // Fake a key fingerprint, since it isn't meaningful at this layer (e.g. no email address).
+  ecdhCipher.key.fingerprint = e2e.random.getRandomBytes(20);
+  var ecdh = new e2e.scheme.Ecdh(ecdhCipher);
+  var m = e2e.random.getRandomBytes(16);
+  asyncTestCase.waitForAsync('Waiting for encryption.');
+  ecdh.encryptJavaScript(m).then(function(c) {
+    asyncTestCase.waitForAsync('Waiting for decryption.');
+    return ecdh.decryptJavaScriptKeyWithWebCrypto(c);
   }).then(function(p){
     assertArrayEquals(m, p);
     asyncTestCase.continueTesting();
