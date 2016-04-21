@@ -22,6 +22,7 @@
   goog.require('e2e');
   goog.require('e2e.error.InvalidArgumentsError');
   goog.require('goog.math.Long');
+  goog.require('goog.testing.asserts');
 </script>
 <script>
       var asyncTest = goog.testing.AsyncTestCase.createAndInstall(document.title);
@@ -272,6 +273,22 @@
         assertArrayEquals([0, 0, 0, 0], e2e.incrementByteArray(x));
         assertArrayEquals([0, 0, 0, 0], x);
       }
+
+      function assertTypedArrayEquals(a, b, opt_c) {
+        assertArrayEquals.apply(null, goog.array.map(arguments, function(e) {
+          return e instanceof Uint8Array ? goog.array.clone(e) : e;
+            }));
+      };
+
+      function testIncrementByteArrayWithUint8Array() {
+        var x = new Uint8Array([1, 2, 3]);
+        assertTypedArrayEquals([1, 2, 4], e2e.incrementByteArray(x));
+        x = new Uint8Array([1, 2, 3, 4, 255]);
+        assertTypedArrayEquals([1, 2, 3, 5, 0], e2e.incrementByteArray(x));
+        x = new Uint8Array([9, 255, 255, 255]);
+        assertTypedArrayEquals([10, 0, 0, 0], e2e.incrementByteArray(x));
+      }
+
 
       function testImmutableArray() {
 

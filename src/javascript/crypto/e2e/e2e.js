@@ -381,9 +381,10 @@ e2e.incrementByteArray = function(n) {
   var fn = function(n) {
     var carry = 1;  // initial increment
     for (var i = n.length - 1; i >= 0; --i) {
-      n[i] += carry;
-      carry = (n[i] & 0x100) >>> 8;
-      n[i] &= 0xff;
+      // We can't assign n[i] += carry here as it will overflow.
+      var y = n[i] + carry;
+      n[i] = (y & 0xff);
+      carry = (y & 0x100) >>> 8;
     }
     return n;
   };
