@@ -121,3 +121,23 @@ function testInvalidChecksum() {
     assertEquals(err.message, 'Backup data has invalid checksum');
   });
 }
+
+
+function testE2emailVersion1() {
+  var ctx = {
+    restoreKeyring: function(d) {
+      assertArrayEquals(d.seed, [1, 2, 3, 4, 5]);
+      assertEquals(d.count, 2);
+    }
+  };
+
+  new e2e.ext.actions.RestoreKeyringData().execute(ctx, {
+    action: constants.Actions.RESTORE_KEYRING_DATA,
+    content: {
+      data: goog.crypt.base64.encodeByteArray([1, 1, 2, 3, 4, 5, 0x3b, 0x58]),
+      email: 'Ryan Chan <rcc@google.com>'
+    }
+  }, ui, function(email) {
+    assertEquals(email, 'Ryan Chan <rcc@google.com>');
+  });
+}
