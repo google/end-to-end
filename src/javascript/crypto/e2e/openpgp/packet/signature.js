@@ -425,28 +425,38 @@ e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
     // Hash algorithm mismatch.
     return e2e.async.Result.toResult(false);
   }
-  if (this.version != 0x04) {
-    return e2e.async.Result.toError(new e2e.openpgp.error.UnsupportedError(
-        'Verification of old signature packets is not implemented.'));
-  }
-  try {
+  if (this.version == 0x03) {
     return e2e.openpgp.packet.Signature.getSignatureScheme_(signer).verify(
-        e2e.openpgp.packet.Signature.getDataToHash(
-        data,
-        this.signatureType, this.pubKeyAlgorithm,
-        this.hashAlgorithm, this.hashedSubpackets),
-        this.signature).addCallback(function(signatureVerified) {
-      if (signatureVerified &&
-          this.attributes.SIGNATURE_EXPIRATION_TIME &&
-          this.attributes.SIGNATURE_EXPIRATION_TIME <
-              Math.floor(new Date().getTime() / 1e3)) {
-        throw new e2e.openpgp.error.SignatureExpiredError(
-            'Signature expired.');
-      }
-      return signatureVerified;
-    }, this);
-  } catch (e) {
-    return e2e.async.Result.toError(e);
+        goog.array.concat(
+            data,
+            [this.signatureType],
+            e2e.dwordArrayToByteArray([this.creationTime])),
+        this.signature);
+  } else if (this.version == 0x04) {
+    try {
+      return e2e.openpgp.packet.Signature.getSignatureScheme_(signer).verify(
+          e2e.openpgp.packet.Signature.getDataToHash(
+              data,
+              this.signatureType,
+              this.pubKeyAlgorithm,
+              this.hashAlgorithm,
+              this.hashedSubpackets),
+          this.signature).addCallback(function(signatureVerified) {
+        if (signatureVerified &&
+            this.attributes.SIGNATURE_EXPIRATION_TIME &&
+            this.attributes.SIGNATURE_EXPIRATION_TIME <
+                Math.floor(new Date().getTime() / 1e3)) {
+          throw new e2e.openpgp.error.SignatureExpiredError(
+              'Signature expired.');
+        }
+        return signatureVerified;
+      }, this);
+    } catch (e) {
+      return e2e.async.Result.toError(e);
+    }
+  } else {
+    return e2e.async.Result.toError(new e2e.openpgp.error.UnsupportedError(
+        'Verification for this signature version is not implemented.'));
   }
 };
 
