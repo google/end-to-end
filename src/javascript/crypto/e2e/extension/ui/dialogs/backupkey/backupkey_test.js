@@ -73,12 +73,11 @@ function tearDown() {
 
 
 function testOutputVersion() {
-  /* Version must be 1.
-   * Currently marks assumption that ECDSA + ECDH keys are always generated in
-   * pairs by the application */
+  /* Version bit must be zero, marks assumption that ECDSA + ECDH keys are
+   * are always generated in pairs by the application */
   asyncTestCase.waitForAsync('Waiting for dialog to be populated with key');
   dialog.getBackupCode_().addCallback(function(code) {
-    assertEquals(goog.crypt.base64.decodeStringToByteArray(code)[0], 1);
+    assertEquals(goog.crypt.base64.decodeStringToByteArray(code)[0] & 0x80, 0);
     asyncTestCase.continueTesting();
   });
 }
@@ -88,7 +87,7 @@ function testGetKeyCode() {
   asyncTestCase.waitForAsync('Waiting for dialog to be populated with key');
   dialog.getBackupCode_().addCallback(function(code) {
     assertEquals(code, goog.crypt.base64.encodeByteArray(
-        [1, 1, 1, 2, 3, 4, 5, 0x8D, 0x87]));
+        [1, 1, 2, 3, 4, 5]));
     asyncTestCase.continueTesting();
   });
 }

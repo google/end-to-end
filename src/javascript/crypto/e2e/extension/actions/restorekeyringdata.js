@@ -20,11 +20,9 @@
 
 goog.provide('e2e.ext.actions.RestoreKeyringData');
 
-goog.require('e2e');
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('e2e.ext.actions.Action');
 goog.require('e2e.openpgp.KeyGenerator');
-goog.require('goog.crypt.Sha1');
 goog.require('goog.crypt.base64');
 
 goog.scope(function() {
@@ -46,36 +44,23 @@ actions.RestoreKeyringData.prototype.execute =
     function(ctx, request, requestor, callback, errorCallback) {
   var data = goog.crypt.base64.decodeStringToByteArray(request.content.data);
 
-  // Switch on code version.
-  switch (data[0]) {
-    case 1:
-      if (data.length != e2e.openpgp.KeyGenerator.ECC_SEED_SIZE + 4) {
-        errorCallback(new e2e.error.InvalidArgumentsError(
-            'Backup data has invalid length'));
-        return;
-      }
-
-      var sha1 = new goog.crypt.Sha1();
-      sha1.update(data.slice(0, -2));
-      var checksum = sha1.digest().slice(0, 2);
-
-      if (!e2e.compareByteArray(checksum, data.slice(-2))) {
-        errorCallback(new e2e.error.InvalidArgumentsError(
-            'Backup data has invalid checksum'));
-        return;
-      }
-
-      ctx.restoreKeyring({
-        seed: data.slice(2, -2),
-        count: data[1] * 2 /* x2 since we store # of key PAIRS */
-      }, request.content.email);
-      callback(request.content.email);
-      break;
-
-    default:
-      errorCallback(new e2e.error.InvalidArgumentsError('Invalid version'));
-      return;
+  if (data[0] & 0x80) {
+    errorCallback(new e2e.error.InvalidArgumentsError('Invalid version bit'));
+    return;
   }
+
+  if (data.length != e2e.openpgp.KeyGenerator.ECC_SEED_SIZE + 1) {
+    errorCallback(
+        new e2e.error.InvalidArgumentsError('Backup data has invalid length'));
+    return;
+  }
+
+  ctx.restoreKeyring({
+    seed: data.slice(1),
+    count: (data[0] & 0x7F) * 2 /* x2 since we store # of key PAIRS */
+  }, request.content.email);
+
+  callback(request.content.email);
 };
 
 });  // goog.scope

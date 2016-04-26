@@ -226,10 +226,3 @@ e2e.ext.constants.BackupCode = {
  * @const
  */
 e2e.ext.constants.BACKUP_CODE_LENGTH = 24;
-
-
-/**
- * The version of the backup codes generated.
- * @const
- */
-e2e.ext.constants.BACKUP_CODE_VERSION = 1;
