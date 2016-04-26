@@ -72,6 +72,12 @@ goog.inherits(e2e.openpgp.packet.PublicKey,
 e2e.openpgp.packet.PublicKey.FINGERPRINT_PREFIX = 0x99;
 
 
+/**
+ * @define {boolean} Whether to parse old (v2, v3) key packets.
+ */
+e2e.openpgp.packet.PublicKey.PARSE_OLD_KEYS = true;
+
+
 /** @inheritDoc */
 e2e.openpgp.packet.PublicKey.prototype.tag = 6;
 
@@ -253,7 +259,9 @@ e2e.openpgp.packet.PublicKey.parse = function(body) {
     }
   } else {
     // We threw an exception earlier if it wasn't 2, 3, or 4
-    goog.asserts.assert(version == 3 || version == 2);
+    goog.asserts.assert(
+        e2e.openpgp.packet.PublicKey.PARSE_OLD_KEYS &&
+        (version == 3 || version == 2));
 
     // For a V3 key, the eight-octet Key ID consists of the low 64 bits of
     // the public modulus of the RSA key.
