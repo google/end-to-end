@@ -92,18 +92,18 @@ dialogs.BackupKey.prototype.getBackupCode_ = function() {
       throw new e2e.error.UnsupportedError('Too many keys');
     }
 
-    var data = goog.array.concat(
+    var backup = goog.array.concat(
         constants.BACKUP_CODE_VERSION,
         // count / 2 since we store the number of key PAIRS
         [data.count / 2],
         data.seed);
 
     var sha1 = new goog.crypt.Sha1();
-    sha1.update(data);
+    sha1.update(backup);
     var checksum = sha1.digest().slice(0, 2);
 
     result.callback(goog.crypt.base64.encodeByteArray(
-        goog.array.concat(data, checksum)));
+        goog.array.concat(backup, checksum)));
   });
   return result;
 };
