@@ -22,11 +22,14 @@ goog.provide('e2e.ext.ui.dialogs.BackupKey');
 
 goog.require('e2e.async.Result');
 goog.require('e2e.error.InvalidArgumentsError');
+goog.require('e2e.error.UnsupportedError');
 goog.require('e2e.ext.actions.Executor');
+goog.require('e2e.ext.constants');
 goog.require('e2e.ext.constants.Actions');
 goog.require('e2e.ext.ui.dialogs.Overlay');
 goog.require('e2e.ext.ui.templates.dialogs.backupkey');
 goog.require('goog.array');
+goog.require('goog.crypt.Sha1');
 goog.require('goog.crypt.base64');
 goog.require('soy');
 
@@ -83,9 +86,24 @@ dialogs.BackupKey.prototype.getBackupCode_ = function() {
     if (data.count % 2) {
       throw new e2e.error.InvalidArgumentsError('Odd number of keys');
     }
-    result.callback(goog.crypt.base64.encodeByteArray(
+
+    // Limit of 256 key pairs since count is encoded as a single byte.
+    if (data.count > 512) {
+      throw new e2e.error.UnsupportedError('Too many keys');
+    }
+
+    var data = goog.array.concat(
+        constants.BACKUP_CODE_VERSION,
         // count / 2 since we store the number of key PAIRS
-        goog.array.concat([data.count / 2 & 0x7F], data.seed)));
+        [data.count / 2],
+        data.seed);
+
+    var sha1 = new goog.crypt.Sha1();
+    sha1.update(data);
+    var checksum = sha1.digest().slice(0, 2);
+
+    result.callback(goog.crypt.base64.encodeByteArray(
+        goog.array.concat(data, checksum)));
   });
   return result;
 };
