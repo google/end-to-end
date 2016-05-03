@@ -143,7 +143,7 @@ e2e.openpgp.packet.SymmetricKey.construct =
       e2e.hash.Algorithm.SHA1);
   var s2k = new e2e.openpgp.IteratedS2K(hash,
       e2e.random.getRandomBytes(8),  // salt
-      96);  // The default encodedCount for GnuPG is 96 (decodes to 65536).
+      150);  // See https://github.com/google/end-to-end/issues/139 for rationale.
   var cipher = /** @type {e2e.cipher.SymmetricCipher} */ (
       e2e.openpgp.constants.getInstance(
       e2e.openpgp.constants.Type.SYMMETRIC_KEY,
