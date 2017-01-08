@@ -86,6 +86,14 @@ e2e_build_templates() {
 }
 
 e2e_assert_templates() {
+  # Rebuild the SOY templates if they've been modified
+  for filename in `git diff --name-only master`; do
+    if [[ "$filename" =~ ^.*\.soy$ ]]; then
+        e2e_build_templates
+        break
+    fi
+  done
+
   if [ ! -d $BUILD_TPL_DIR ]; then
     e2e_build_templates
   else
