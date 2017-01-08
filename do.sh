@@ -218,7 +218,8 @@ e2e_build_extension() {
   e2e_assert_dependencies
   set -e
   e2e_assert_jsdeps
-  e2e_assert_templates
+  # always rebuild the SOY templates
+  e2e_build_templates
 
   BUILD_EXT_DIR="$BUILD_DIR/extension"
   echo "Building End-To-End extension to $BUILD_EXT_DIR"
