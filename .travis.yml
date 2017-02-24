@@ -7,7 +7,7 @@ env:
 
 install:
   - export PATH=$HOME/.local/bin:$PATH
-  - pip install git+https://github.com/google/closure-linter.git
+  - pip install --user git+https://github.com/google/closure-linter.git
   - nvm install ${NODEJS_VERSION} && nvm alias default ${NODEJS_VERSION}
   - ./do.sh install_deps
 
