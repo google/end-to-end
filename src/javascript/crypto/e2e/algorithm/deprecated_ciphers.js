@@ -27,4 +27,6 @@ goog.require('e2e.cipher.Cast5');
 /** @suppress {extraRequire} intentional import */
 goog.require('e2e.cipher.Des');
 /** @suppress {extraRequire} intentional import */
+goog.require('e2e.cipher.Idea');
+/** @suppress {extraRequire} intentional import */
 goog.require('e2e.cipher.TripleDes');
