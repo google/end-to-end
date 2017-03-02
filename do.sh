@@ -111,6 +111,7 @@ e2e_build_closure_lib_() {
   # $2 - Filename
   # $3 - Additional source dir
   # $4 - [debug|optimized]
+  # $5 - [webcrypto]
   ENTRY_POINT=$1
   FNAME=$2
   SRC_DIRS=( \
@@ -136,6 +137,10 @@ e2e_build_closure_lib_() {
      jscompile_e2e+=" --debug --formatting=PRETTY_PRINT -O WHITESPACE_ONLY"
   elif [ "$4" == "optimized" ]; then
      jscompile_e2e+=" -O ADVANCED"
+  fi
+  if [ "$5" == "webcrypto" ]; then
+     jscompile_e2e+=" --define=\"e2e.scheme.SignatureScheme.WEBCRYPTO_ALGORITHMS='ECDSA'\""
+     jscompile_e2e+=" --define=\"e2e.scheme.EncryptionScheme.WEBCRYPTO_ALGORITHMS='ECDH'\""
   fi
   echo -n "."
   $jscompile_e2e --closure_entry_point "$ENTRY_POINT" --js_output_file "$FNAME"
@@ -176,6 +181,20 @@ e2e_build_library_ctx1() {
   e2e_build_library_prepare
   e2e_build_closure_lib_ "e2e.openpgp.ContextImpl" "$BUILD_EXT_DIR/end-to-end-ctx1.compiled.js"
   e2e_build_closure_lib_ "e2e.openpgp.ContextImpl" "$BUILD_EXT_DIR/end-to-end-ctx1.debug.js" "" "debug"
+  echo -e "\nDone."
+}
+
+e2e_build_library_webcrypto() {
+  e2e_build_library_prepare
+  e2e_build_closure_lib_ "e2e.openpgp.Context2Impl" "$BUILD_EXT_DIR/end-to-end-webcrypto.compiled.js" "" "" "webcrypto"
+  # Debug mode seems to ignore the defines required to enable WebCrypto, so only compiled mode is supported.
+  echo -e "\nDone."
+}
+
+e2e_build_library_ctx1_webcrypto() {
+  e2e_build_library_prepare
+  e2e_build_closure_lib_ "e2e.openpgp.ContextImpl" "$BUILD_EXT_DIR/end-to-end-ctx1-webcrypto.compiled.js" "" "" "webcrypto"
+  # Debug mode seems to ignore the defines required to enable WebCrypto, so only compiled mode is supported.
   echo -e "\nDone."
 }
 
@@ -405,6 +424,12 @@ case "$CMD" in
   build_library_all)
     e2e_build_library_all;
     ;;
+  build_library_webcrypto)
+    e2e_build_library_webcrypto;
+    ;;
+  build_library_ctx1_webcrypto)
+    e2e_build_library_ctx1_webcrypto;
+    ;;
   test_compat_e2e)
     e2e_test_compat_e2e;
     ;;
@@ -436,7 +461,7 @@ case "$CMD" in
     e2e_generate_deps;
     ;;
   *)
-    echo "Usage: $0 {build_app|build_extension|build_library|build_library_ctx1|build_library_all|build_templates|build_docs|clean|check_deps|clean_deps|install_deps|testserver|test_compat_e2e|test_compat_bc|lint} [debug]"
+    echo "Usage: $0 {build_app|build_extension|build_library|build_library_ctx1|build_library_all|build_library_webcrypto|build_library_ctx1_webcrypto|build_templates|build_docs|clean|check_deps|clean_deps|install_deps|testserver|test_compat_e2e|test_compat_bc|lint} [debug]"
     RETVAL=1
 esac
 
