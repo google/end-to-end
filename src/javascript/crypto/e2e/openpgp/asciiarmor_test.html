@@ -108,12 +108,21 @@
         'vBSFjNSiVHsuAA==\n' +
         '=njUN\xa0\n' +
         '-----END PGP MESSAGE-----\n';
+    var nn = '-----BEGIN PGP MESSAGE-----\n\n' +
+        'Version: Something\n\n' +
+        '\n\n' +
+        'yDgBO22WxBHv7O8X7O/jygAEzol56iUKiXmV+XmpCtmpqQUKiQrFqclFqUDBovzS\n\n' +
+        'vBSFjNSiVHsuAA==\n\n' +
+        '=njUN\n\n' +
+        '-----END PGP MESSAGE-----';  
     var data1 = e2e.openpgp.asciiArmor.parse(rn).data;
     var data2 = e2e.openpgp.asciiArmor.parse(a0).data;
     var data3 = e2e.openpgp.asciiArmor.parse(t).data;
+    var data4 = e2e.openpgp.asciiArmor.parse(nn).data;
     assertEquals('Data length correct', 58, data1.length);
     assertEquals('Data length correct', 58, data2.length);
     assertEquals('Data length correct', 58, data3.length);
+    assertEquals('Data length correct', 58, data4.length);
   }
 
 

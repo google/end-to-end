@@ -87,7 +87,7 @@ e2e.openpgp.asciiArmor.crc24_ = function(data) {
  * @const {string}
  * @private
  */
-e2e.openpgp.asciiArmor.NEW_LINE_ = '[\\t\\u00a0 ]?\\r?\\n';
+e2e.openpgp.asciiArmor.NEW_LINE_ = '[\\t\\u00a0 ]?[\\r\\n]?\\n';
 
 
 /**
