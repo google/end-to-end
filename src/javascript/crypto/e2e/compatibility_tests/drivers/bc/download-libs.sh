@@ -53,8 +53,8 @@ if [ ! -d lib ]; then
 fi
 
 bclibs=(\
-bcpg-jdk15on-153.jar:06203927820108eb33bd1a78b07dfd3bfc265b89 \
-bcprov-jdk15on-153.jar:9d3def2fa5a0d2ed0c1146e9945df10d29eb4ccb)
+bcpg-jdk15on-161.jar:422656435514ab8a28752b117d5d2646660a0ace \
+bcprov-jdk15on-161.jar:00df4b474e71be02c1349c3292d98886f888d1f7)
 
 for lib in "${bclibs[@]}"; do
   ensure "http://www.bouncycastle.org/download" $lib
