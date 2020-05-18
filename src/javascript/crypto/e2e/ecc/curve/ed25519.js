@@ -123,11 +123,7 @@ goog.inherits(e2e.ecc.curve.Ed25519, e2e.ecc.curve.Curve);
 
 /** @override */
 e2e.ecc.curve.Ed25519.prototype.pointFromByteArray = function(p) {
-  goog.asserts.assert(p.length == 33, 'Point length must be 32+1 bytes');
-  // https://tools.ietf.org/html/draft-koch-eddsa-for-openpgp-04#appendix-B
-  if (p.shift() != 0x40) {
-    throw new e2e.error.InvalidArgumentsError('Bad argument');
-  }
+  goog.asserts.assert(p.length == 32, 'Point length must be 32 bytes');
   // Comes in little endian.  Reverse it to be big endian
   p = p.slice(0).reverse();
   // Bit 255 is actually the parity bit, and not part of the point
