@@ -95,13 +95,11 @@ e2e.openpgp.KeyGenerator.prototype.getGeneratorState = function() {
  * @param {e2e.openpgp.KeyringBackupInfo} backupInfo
  */
 e2e.openpgp.KeyGenerator.prototype.setGeneratorState = function(backupInfo) {
-  if (goog.isDefAndNotNull(backupInfo) && backupInfo.count % 2) {
+  if (backupInfo != null && backupInfo.count % 2) {
     throw new e2e.error.InvalidArgumentsError('Keys must be restored in pairs');
   }
-  this.eccSeed_ = goog.isDefAndNotNull(backupInfo) ? (backupInfo.seed ||
-      null) : null;
-  this.eccCount_ = goog.isDefAndNotNull(backupInfo) ? (backupInfo.count ||
-      null) : null;
+  this.eccSeed_ = backupInfo != null ? (backupInfo.seed || null) : null;
+  this.eccCount_ = backupInfo != null ? (backupInfo.count || null) : null;
 };
 
 
@@ -117,7 +115,7 @@ e2e.openpgp.KeyGenerator.prototype.setGeneratorState = function(backupInfo) {
  * @param {number} subkeyLength Length in bits of the subkey.
  * @param {!e2e.algorithm.KeyLocations=} opt_keyLocation Where should the key be
  *     stored? (default to JS)
- * @return {e2e.async.Result.<!Array.<!e2e.openpgp.block.TransferableKey>>}
+ * @return {!e2e.async.Result.<!Array.<!e2e.openpgp.block.TransferableKey>>}
  * The generated public key and secret key in an array.
  */
 e2e.openpgp.KeyGenerator.prototype.generateKey = function(email,
@@ -130,7 +128,7 @@ e2e.openpgp.KeyGenerator.prototype.generateKey = function(email,
     'pubKey': new Array(),
     'privKey': new Array()
   };
-  if (!goog.isDef(opt_keyLocation)) {
+  if (opt_keyLocation === undefined) {
     opt_keyLocation = e2e.algorithm.KeyLocations.JAVASCRIPT;
   }
 

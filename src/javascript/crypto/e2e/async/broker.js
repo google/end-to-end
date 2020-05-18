@@ -242,7 +242,7 @@ e2e.async.Broker.prototype.findServices = function(
   var results = goog.array.map(this.ports_, goog.bind(
       this.findServiceInPort_, this, serviceName, bid));
 
-  if (goog.isDef(opt_timeout)) {
+  if (opt_timeout !== undefined) {
     goog.Timer.callOnce(function() {
       goog.array.forEach(results, function(result) {
         if (!result.hasFired()) {

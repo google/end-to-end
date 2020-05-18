@@ -35,7 +35,7 @@ goog.require('goog.debug.Error');
  * @constructor
  */
 e2e.compression.Error = function(opt_msg) {
-  goog.base(this, opt_msg);
+  e2e.compression.Error.base(this, 'constructor', opt_msg);
 };
 goog.inherits(e2e.compression.Error, goog.debug.Error);
 

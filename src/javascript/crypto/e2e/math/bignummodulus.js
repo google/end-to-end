@@ -23,6 +23,7 @@
 goog.provide('e2e.BigNumModulus');
 
 goog.require('e2e.BigNum');
+goog.require('e2e.FastModulus');
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('goog.asserts');
 
@@ -47,7 +48,7 @@ e2e.BigNumModulus = function(modulus, opt_RR) {
   this.dropLeadingZeros();
   // Modulus specific initialization.
   this.inverseModulus_ = this.computeInverseModulus_();
-  if (goog.isDef(opt_RR)) {
+  if (opt_RR !== undefined) {
     this.rr_ = new e2e.BigNum(opt_RR);
   } else {
     this.rr_ = this.computeRR_();

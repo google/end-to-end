@@ -126,4 +126,17 @@ function testRandomData() {
     assertFalse(ecdsa.verify(message, signature));
   }
 }
+
+function testEd25519Order() {
+  // Check that the base point, params.g mult
+  var params = e2e.ecc.DomainParam.fromCurve(
+      e2e.ecc.PrimeCurve.ED_25519);
+  var base = params.g;
+  var order = params.n;
+
+  assertTrue(base.multiply(order).isIdentity());
+  assertTrue(base.multiply(order).isOnCurve());
+  assertFalse(base.multiply(order.subtract(e2e.BigNum.ONE)).isIdentity());
+}
+
 </script>

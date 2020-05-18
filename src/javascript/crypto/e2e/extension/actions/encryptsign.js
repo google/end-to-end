@@ -21,6 +21,8 @@
 
 goog.provide('e2e.ext.actions.EncryptSign');
 
+goog.requireType('e2e.openpgp.ContextImpl');
+goog.requireType('e2e.openpgp.Key');
 goog.require('e2e.ext.actions.Action');
 goog.require('e2e.ext.utils.Error');
 goog.require('goog.array');
@@ -89,9 +91,9 @@ actions.EncryptSign.prototype.execute =
  * @param {!e2e.openpgp.ContextImpl} ctx A PGP context that can be used to
  *     complete the action.
  * @param {!Array.<string>} recipients A list of recipients to get keys for.
- * @param {!function(!Array.<!e2e.openpgp.Key>)} callback The callback where the
+ * @param {function(!Array.<!e2e.openpgp.Key>)} callback The callback where the
  *      resulting array of key objects is to be passed.
- * @param {!function(Error)} errorCallback A callback where errors will be
+ * @param {function(Error)} errorCallback A callback where errors will be
  *     passed to.
  * @private
  */

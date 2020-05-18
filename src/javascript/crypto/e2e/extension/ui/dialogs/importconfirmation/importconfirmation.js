@@ -31,38 +31,35 @@ var dialogs = e2e.ext.ui.dialogs;
 var templates = e2e.ext.ui.templates.dialogs.importconfirmation;
 
 
-
 /**
  * Constructor for the import confirmation dialog.
- * @param {!e2e.openpgp.Keys} keys The keys to import.
- * @param {!function(string=)} callback The callback where the user's
- *     input must be passed.
- * @constructor
- * @extends {dialogs.Generic}
  */
-dialogs.ImportConfirmation = function(keys, callback) {
-  goog.base(
-      this,
-      templates.importKeyConfirm({
-        promptImportKeyConfirmLabel: chrome.i18n.getMessage(
-            'promptImportKeyConfirmLabel'),
-        keys: keys,
-        secretKeyDescription: chrome.i18n.getMessage('secretKeyDescription'),
-        publicKeyDescription: chrome.i18n.getMessage('publicKeyDescription'),
-        keyFingerprintLabel: chrome.i18n.getMessage('keyFingerprintLabel')
-      }),
-      callback,
-      dialogs.InputType.NONE,
-      '',
-      chrome.i18n.getMessage('promptOkActionLabel'),
-      chrome.i18n.getMessage('actionCancelPgpAction'));
-};
-goog.inherits(dialogs.ImportConfirmation, dialogs.Generic);
+dialogs.ImportConfirmation = class extends dialogs.Generic {
+  /**
+   * @param {!e2e.openpgp.Keys} keys The keys to import.
+   * @param {!function(string=)} callback The callback where the user's
+   *     input must be passed.
+   */
+  constructor(keys, callback) {
+    super(
+        templates.importKeyConfirm({
+          promptImportKeyConfirmLabel:
+              chrome.i18n.getMessage('promptImportKeyConfirmLabel'),
+          keys: keys,
+          secretKeyDescription: chrome.i18n.getMessage('secretKeyDescription'),
+          publicKeyDescription: chrome.i18n.getMessage('publicKeyDescription'),
+          keyFingerprintLabel: chrome.i18n.getMessage('keyFingerprintLabel')
+        }),
+        callback, dialogs.InputType.NONE, '',
+        chrome.i18n.getMessage('promptOkActionLabel'),
+        chrome.i18n.getMessage('actionCancelPgpAction'));
+  }
 
-
-/** @override */
-dialogs.ImportConfirmation.prototype.enterDocument = function() {
-  goog.base(this, 'enterDocument');
+  /** @override */
+  enterDocument() {
+    super.enterDocument();
+  }
 };
+
 
 });  // goog.scope

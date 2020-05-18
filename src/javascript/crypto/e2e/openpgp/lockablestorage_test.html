@@ -251,10 +251,10 @@ function testMultiple() {
   }, fail).then(function() {
     return lockable.get('k1');
   }, fail).then(function(v) {
-    assertFalse(goog.isDef(v));
+    assertFalse(v !== undefined);
     return lockable.get('k2');
   }, fail).then(function(v) {
-    assertFalse(goog.isDef(v));
+    assertFalse(v !== undefined);
     return lockable.get('k3');
   }, fail).then(function(v) {
     assertEquals('v3', v);

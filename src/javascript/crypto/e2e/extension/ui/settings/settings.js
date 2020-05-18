@@ -20,6 +20,8 @@
 
 goog.provide('e2e.ext.ui.Settings');
 
+goog.requireType('e2e.ext.Preferences');
+goog.requireType('e2e.openpgp.Context');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
 goog.require('e2e.ext.actions.Executor');
@@ -44,8 +46,9 @@ goog.require('goog.crypt');
 goog.require('goog.dom');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
+goog.require('goog.soy');
 goog.require('goog.ui.Component');
-goog.require('soy');
+goog.requireType('goog.async.Deferred');
 
 goog.scope(function() {
 var ext = e2e.ext;
@@ -65,7 +68,7 @@ var utils = e2e.ext.utils;
  * @extends {goog.ui.Component}
  */
 ui.Settings = function() {
-  goog.base(this);
+  e2e.ext.ui.Settings.base(this, 'constructor');
 
   /**
    * Executor for the End-to-End actions.
@@ -80,7 +83,7 @@ goog.inherits(ui.Settings, goog.ui.Component);
 
 /**
  * The PGP context used by the extension.
- * @type {e2e.openpgp.Context}
+ * @type {?e2e.openpgp.Context}
  * @private
  */
 ui.Settings.prototype.pgpContext_ = null;
@@ -88,7 +91,7 @@ ui.Settings.prototype.pgpContext_ = null;
 
 /**
  * User preferences.
- * @type {e2e.ext.Preferences}
+ * @type {?e2e.ext.Preferences}
  * @private
  */
 ui.Settings.prototype.preferences_ = null;
@@ -96,7 +99,7 @@ ui.Settings.prototype.preferences_ = null;
 
 /**
  * The panel to list and manage all stored PGP keys.
- * @type {panels.KeyringMgmtFull}
+ * @type {?panels.KeyringMgmtFull}
  * @private
  */
 ui.Settings.prototype.keyringMgmtPanel_ = null;
@@ -142,7 +145,7 @@ ui.Settings.prototype.decorateInternal = function(elem) {
 ui.Settings.prototype.renderTemplate_ = function(pgpKeys) {
   var elem = this.getElement();
 
-  soy.renderElement(elem, templates.settings, {
+  goog.soy.renderElement(elem, templates.settings, {
     pageTitle: chrome.i18n.getMessage('settingsTitle')
   });
 
@@ -223,7 +226,7 @@ ui.Settings.prototype.renderPanels_ = function() {
  * @param {string} comments The comments to use.
  * @param {number} expDate The expiration date to use.
  * @private
- * @return {goog.async.Deferred}
+ * @return {!goog.async.Deferred}
  */
 ui.Settings.prototype.generateKey_ =
     function(panel, name, email, comments, expDate) {
@@ -415,8 +418,9 @@ ui.Settings.prototype.updateKeyringPassphrase_ = function(passphrase) {
  */
 ui.Settings.prototype.displayFailure_ = function(error) {
   var errorDiv = goog.dom.getElement(constants.ElementId.ERROR_DIV);
-  var errorMsg = goog.isDef(error.messageId) ?
-      chrome.i18n.getMessage(error.messageId) : error.message;
+  var errorMsg = error.messageId !== undefined ?
+      chrome.i18n.getMessage(error.messageId) :
+      error.message;
   utils.errorHandler(error);
   errorDiv.textContent = errorMsg;
 };

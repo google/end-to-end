@@ -79,7 +79,7 @@ e2e.hash.factory.getAvailable = function() {
  */
 e2e.hash.factory.require = function(algorithm) {
   var ret = e2e.hash.factory.get(algorithm);
-  if (goog.isNull(ret)) {
+  if (ret === null) {
     throw new e2e.hash.Error('Required algorithm not available.');
   }
   return ret;

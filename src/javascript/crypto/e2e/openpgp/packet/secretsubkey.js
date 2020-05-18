@@ -40,7 +40,7 @@ goog.require('e2e.openpgp.packet.factory');
  */
 e2e.openpgp.packet.SecretSubkey = function(
     version, timestamp, cipher, opt_fingerprint) {
-  goog.base(this, version, timestamp, cipher, opt_fingerprint);
+  e2e.openpgp.packet.SecretSubkey.base(this, 'constructor', version, timestamp, cipher, opt_fingerprint);
 };
 goog.inherits(e2e.openpgp.packet.SecretSubkey,
               e2e.openpgp.packet.SecretKey);

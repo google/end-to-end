@@ -45,7 +45,7 @@ goog.require('goog.structs');
  */
 e2e.openpgp.packet.LiteralData = function(
     format, filename, timestamp, data) {
-  goog.base(this);
+  e2e.openpgp.packet.LiteralData.base(this, 'constructor');
 
   /**
    * Defines what type of content is contained in data.
@@ -112,9 +112,9 @@ e2e.openpgp.packet.LiteralData.Format = {
 /**
  * Parses and extracts the data from the body. It will consume all data from the
  * array.
- * Throws a {@code e2e.openpgp.error.ParseError} if malformed.
+ * Throws a `e2e.openpgp.error.ParseError` if malformed.
  * @param {!e2e.ByteArray} body The data to parse.
- * @return {e2e.openpgp.packet.LiteralData} A Literal Data Packet.
+ * @return {!e2e.openpgp.packet.LiteralData} A Literal Data Packet.
  */
 e2e.openpgp.packet.LiteralData.parse = function(body) {
   var format_chr = e2e.byteArrayToString([body.shift()]);

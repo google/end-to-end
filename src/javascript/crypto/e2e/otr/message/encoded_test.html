@@ -36,7 +36,7 @@ var error = e2e.otr.error;
 
 
 var msgImpl = function(session, content) {
-  goog.base(this, session);
+  msgImpl.base(this, 'constructor', session);
   this.content_ = content;
 };
 goog.inherits(msgImpl, e2e.otr.message.Encoded);

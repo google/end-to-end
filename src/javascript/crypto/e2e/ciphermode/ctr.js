@@ -41,7 +41,7 @@ goog.require('goog.crypt');
  * @final
  */
 e2e.ciphermode.Ctr = function(cipher) {
-  goog.base(this, cipher);
+  e2e.ciphermode.Ctr.base(this, 'constructor', cipher);
 };
 goog.inherits(e2e.ciphermode.Ctr, e2e.ciphermode.CipherMode);
 

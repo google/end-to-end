@@ -296,9 +296,9 @@ function testSaveDraftIntoPage() {
 
   stubs.replace(helperProxy, 'updateSelectedContent',
       mockControl.createFunctionMock('updateSelectedContent'));
-  var contentArg = new goog.testing.mockmatchers.SaveArgument(goog.isString);
+  var contentArg = new goog.testing.mockmatchers.SaveArgument(x => typeof x === 'string');
   var subjectArg = new goog.testing.mockmatchers.SaveArgument(function(a) {
-    return (!goog.isDef(a) || goog.isString(a));
+    return (a === undefined || typeof a === 'string');
   });
   helperProxy.updateSelectedContent(contentArg, [], ORIGIN, false,
       goog.testing.mockmatchers.ignoreArgument,

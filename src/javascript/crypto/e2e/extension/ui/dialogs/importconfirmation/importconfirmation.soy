@@ -12,27 +12,27 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-{namespace e2e.ext.ui.templates.dialogs.importconfirmation autoescape="strict"}
+{namespace e2e.ext.ui.templates.dialogs.importconfirmation}
 
 /**
  * Renders the text for key import confirmation dialog.
- * @param promptImportKeyConfirmLabel A sentence asking the user to confirm
- *     the key import.
- * @param keys Array of keys (e2e.openpgp.Keys).
- * @param secretKeyDescription Text describing a secret key.
- * @param publicKeyDescription Text describing a public key.
- * @param keyFingerprintLabel Text to display as a fingerprint label.
  */
 {template .importKeyConfirm}
+  {@param promptImportKeyConfirmLabel: ?}  /** A sentence asking the user to confirm the key import.
+      */
+  {@param keys: ?}  /** Array of keys (e2e.openpgp.Keys). */
+  {@param secretKeyDescription: ?}  /** Text describing a secret key. */
+  {@param publicKeyDescription: ?}  /** Text describing a public key. */
+  {@param keyFingerprintLabel: ?}  /** Text to display as a fingerprint label. */
   <p>{$promptImportKeyConfirmLabel}
   </p>
-  {foreach $key in $keys}
+  {for $key in $keys}
     <div class="{e2e.ext.constants.CssClass.KEY_INFO}">
-      {foreach $uid in $key.uids}
+      {for $uid in $key.uids}
       <div class="{e2e.ext.constants.CssClass.KEY_UID}">
         {$uid}
       </div>
-      {/foreach}
+      {/for}
       <div>
         {call .keyPacketInfo}
           {param keyPacketInfo: $key.key /}
@@ -42,18 +42,18 @@
         {/call}
       </div>
     </div>
-  {/foreach}
+  {/for}
 {/template}
 
 
 /**
  * Renders information about a single key packet.
- * @param keyPacketInfo Single packet key info (e2e.openpgp.KeyPacketInfo).
- * @param secretKeyDescription Text to display if the key is secret.
- * @param publicKeyDescription Text to display if the key is public.
- * @param keyFingerprintLabel Text to display as a fingerprint label.
  */
 {template .keyPacketInfo}
+  {@param keyPacketInfo: ?}  /** Single packet key info (e2e.openpgp.KeyPacketInfo). */
+  {@param secretKeyDescription: ?}  /** Text to display if the key is secret. */
+  {@param publicKeyDescription: ?}  /** Text to display if the key is public. */
+  {@param keyFingerprintLabel: ?}  /** Text to display as a fingerprint label. */
   <div class="{e2e.ext.constants.CssClass.KEY_META}">
     <span class="{e2e.ext.constants.CssClass.KEY_FINGERPRINT}" title="{$keyFingerprintLabel}">
       {$keyPacketInfo.fingerprintHex}

@@ -85,7 +85,7 @@ e2e.Hkdf.prototype.getHKDF = function(ikm, info, extract_len,
                       'Invalid extract len.');
   // Extract
   var salt = opt_salt;
-  if (!goog.isDefAndNotNull(opt_salt) || salt === undefined) {
+  if (opt_salt == null || salt === undefined) {
     salt = goog.array.repeat(0x00, hashLength);
   }
   var hmacer = new goog.crypt.Hmac(this.hash_, salt,

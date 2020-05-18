@@ -39,7 +39,7 @@ goog.provide('e2e.ecc.constant.ed_25519.G_FAST_MULTIPLY_TABLE');
  *
  * Each non-identity point is represented as [Y - X, Y + X, 2dXY], where each
  * bignum is represented as a base 2**24 array of integers in little-endian
- * order.  The identity is represented by {@code null}.
+ * order.  The identity is represented by `null`.
  *
  * @type {!Array.<!Array.<Array.<!Array.<!number>>>>}
  */

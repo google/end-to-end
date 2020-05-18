@@ -178,7 +178,7 @@ e2e.ext.utils.HelperProxy.prototype.sendMessageImpl = goog.abstractMethod;
  */
 e2e.ext.utils.TabsHelperProxy = function(isLookingGlassEnabled,
     opt_tabId) {
-  goog.base(this, isLookingGlassEnabled);
+  e2e.ext.utils.TabsHelperProxy.base(this, 'constructor', isLookingGlassEnabled);
   /**
    * @type {number|undefined} Tab ID to connect to.
    * @private
@@ -191,7 +191,7 @@ goog.inherits(e2e.ext.utils.TabsHelperProxy, e2e.ext.utils.HelperProxy);
 /** @override */
 e2e.ext.utils.TabsHelperProxy.prototype.setupConnection = function(
     callback, errorCallback) {
-  if (goog.isDefAndNotNull(this.tabId_)) {
+  if (this.tabId_ != null) {
     this.connectToHelper_(callback, errorCallback);
   } else {
     // Query active tab.
@@ -246,7 +246,7 @@ e2e.ext.utils.TabsHelperProxy.prototype.connectToHelper_ = function(
           if (chrome.runtime.lastError) {
             errorCallback(new Error(chrome.runtime.lastError.message));
             return;
-          } else if (!goog.isDef(results)) {
+          } else if (results === undefined) {
             errorCallback(new Error('Content script injection failed.'));
             return;
           }
@@ -286,7 +286,7 @@ e2e.ext.utils.TabsHelperProxy.prototype.getHelperId = function() {
  */
 e2e.ext.utils.WebviewHelperProxy = function(isLookingGlassEnabled,
     webview) {
-  goog.base(this, isLookingGlassEnabled);
+  e2e.ext.utils.WebviewHelperProxy.base(this, 'constructor', isLookingGlassEnabled);
   /**
    * The Webview element to communicate with.
    * @type {!Webview}
@@ -320,7 +320,7 @@ goog.inherits(e2e.ext.utils.WebviewHelperProxy, e2e.ext.utils.HelperProxy);
 /** @override */
 e2e.ext.utils.WebviewHelperProxy.prototype.setupConnection = function(
     callback, errorCallback) {
-  if (goog.isDefAndNotNull(this.webview_)) {
+  if (this.webview_ != null) {
     this.connectToHelper_(callback);
   }
 };

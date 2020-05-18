@@ -25,7 +25,7 @@ goog.require('e2e.ext.constants.CssClass');
 goog.require('e2e.ext.ui.panels.prompt.PanelBase');
 goog.require('e2e.ext.ui.templates.panels.prompt');
 goog.require('goog.events.EventType');
-goog.require('soy');
+goog.require('goog.soy');
 
 
 goog.scope(function() {
@@ -35,67 +35,68 @@ var promptPanels = e2e.ext.ui.panels.prompt;
 var templates = e2e.ext.ui.templates.panels.prompt;
 
 
-
 /**
  * Constructor for the decryption panel.
- * @param {!e2e.ext.actions.Executor} actionExecutor Executor for the
- *     End-to-End actions.
- * @param {!messages.BridgeMessageRequest} content The content that the user
- *     wants to decrypt.
- * @param {!function(Error)} errorCallback A callback where errors will be
- *     passed to.
- * @constructor
- * @extends {promptPanels.PanelBase}
  */
-promptPanels.DecryptVerify = function(actionExecutor, content, errorCallback) {
-  goog.base(this, chrome.i18n.getMessage('promptDecryptVerifyTitle'),
-      content, errorCallback);
+promptPanels.DecryptVerify = class extends promptPanels.PanelBase {
+  /**
+   * @param {!e2e.ext.actions.Executor} actionExecutor Executor for the
+   *     End-to-End actions.
+   * @param {!messages.BridgeMessageRequest} content The content that the user
+   *     wants to decrypt.
+   * @param {!function(Error)} errorCallback A callback where errors will be
+   *     passed to.
+   */
+  constructor(actionExecutor, content, errorCallback) {
+    super(
+        chrome.i18n.getMessage('promptDecryptVerifyTitle'), content,
+        errorCallback);
 
-  this.actionExecutor_ = actionExecutor;
+    this.actionExecutor_ = actionExecutor;
+  }
+
+  /** @override */
+  decorateInternal(elem) {
+    super.decorateInternal(elem);
+
+    goog.soy.renderElement(elem, templates.renderGenericForm, {
+      textAreaPlaceholder:
+          chrome.i18n.getMessage('promptDecryptVerifyPlaceholder'),
+      actionButtonTitle:
+          chrome.i18n.getMessage('promptDecryptVerifyActionLabel'),
+      cancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction')
+    });
+  }
+
+  /** @override */
+  enterDocument() {
+    super.enterDocument();
+
+    this.getHandler().listen(
+        this.getElementByClass(constants.CssClass.ACTION),
+        goog.events.EventType.CLICK, goog.bind(this.decryptVerify_, this));
+  }
+
+  /**
+   * Executes the DECRYPT_VERIFY action.
+   * @private
+   */
+  decryptVerify_() {
+    var textArea = /** @type {HTMLTextAreaElement} */
+        (this.getElement().querySelector('textarea'));
+
+    this.actionExecutor_.execute(
+        /** @type {!messages.ApiRequest} */ ({
+          action: constants.Actions.DECRYPT_VERIFY,
+          content: textArea.value,
+          passphraseCallback: goog.bind(this.renderPassphraseDialog, this)
+        }),
+        this, goog.bind(function(decrypted) {
+          textArea.value = decrypted;
+          this.renderDismiss();
+        }, this));
+  }
 };
-goog.inherits(promptPanels.DecryptVerify, promptPanels.PanelBase);
 
-
-/** @override */
-promptPanels.DecryptVerify.prototype.decorateInternal = function(elem) {
-  goog.base(this, 'decorateInternal', elem);
-
-  soy.renderElement(elem, templates.renderGenericForm, {
-    textAreaPlaceholder: chrome.i18n.getMessage(
-        'promptDecryptVerifyPlaceholder'),
-    actionButtonTitle: chrome.i18n.getMessage('promptDecryptVerifyActionLabel'),
-    cancelButtonTitle: chrome.i18n.getMessage('actionCancelPgpAction')
-  });
-};
-
-
-/** @override */
-promptPanels.DecryptVerify.prototype.enterDocument = function() {
-  goog.base(this, 'enterDocument');
-
-  this.getHandler().listen(
-      this.getElementByClass(constants.CssClass.ACTION),
-      goog.events.EventType.CLICK,
-      goog.bind(this.decryptVerify_, this));
-};
-
-
-/**
- * Executes the DECRYPT_VERIFY action.
- * @private
- */
-promptPanels.DecryptVerify.prototype.decryptVerify_ = function() {
-  var textArea = /** @type {HTMLTextAreaElement} */
-      (this.getElement().querySelector('textarea'));
-
-  this.actionExecutor_.execute(/** @type {!messages.ApiRequest} */ ({
-    action: constants.Actions.DECRYPT_VERIFY,
-    content: textArea.value,
-    passphraseCallback: goog.bind(this.renderPassphraseDialog, this)
-  }), this, goog.bind(function(decrypted) {
-    textArea.value = decrypted;
-    this.renderDismiss();
-  }, this));
-};
 
 });  // goog.scope

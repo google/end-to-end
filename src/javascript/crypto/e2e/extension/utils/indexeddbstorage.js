@@ -26,46 +26,102 @@ goog.require('goog.storage.mechanism.IterableMechanism');
 goog.require('goog.structs.Map');
 
 
-
 /**
  * Creates an iterable mechanism that uses IndexedDB for persistence.
- * @param {string} key Key in the database to use for persisting data.
- * @param {function(!e2e.ext.utils.IndexedDbStorage)=} opt_callback Callback
- *     function to call once storage mechanism has been initialized.
- * @constructor
- * @extends {goog.storage.mechanism.IterableMechanism}
+ *
  * @final
  */
-e2e.ext.utils.IndexedDbStorage = function(key, opt_callback) {
+e2e.ext.utils.IndexedDbStorage =
+    class extends goog.storage.mechanism.IterableMechanism {
   /**
-   * Internal storage object.
-   * @type {Object}
-   * @private
+   * @param {string} key Key in the database to use for persisting data.
+   * @param {function(!e2e.ext.utils.IndexedDbStorage)=} opt_callback Callback
+   *     function to call once storage mechanism has been initialized.
    */
-  this.storage_ = {};
-  /**
-   * @type {!goog.db.IndexedDb}
-   * @private
-   */
-  this.db_;
-  /**
-   * @type {string}
-   * @private
-   */
-  this.storageKey_ = key;
+  constructor(key, opt_callback) {
+    super();
+    /**
+     * Internal storage object.
+     * @type {Object}
+     * @private
+     */
+    this.storage_ = {};
+    /**
+     * @type {!goog.db.IndexedDb}
+     * @private
+     */
+    this.db_;
+    /**
+     * @type {string}
+     * @private
+     */
+    this.storageKey_ = key;
 
-  goog.db.openDatabase(
-      e2e.ext.utils.IndexedDbStorage.DB_NAME_,
-      e2e.ext.utils.IndexedDbStorage.DB_VERSION_,
-      function(ev, db, tx) {
-        db.createObjectStore(e2e.ext.utils.IndexedDbStorage.OBJECTSTORE_NAME_);
-      }).addCallback(function(db) {
-    this.db_ = db;
-    this.load_(opt_callback);
-  }, this);
+    goog.db
+        .openDatabase(
+            e2e.ext.utils.IndexedDbStorage.DB_NAME_,
+            e2e.ext.utils.IndexedDbStorage.DB_VERSION_,
+            function(ev, db, tx) {
+              db.createObjectStore(
+                  e2e.ext.utils.IndexedDbStorage.OBJECTSTORE_NAME_);
+            })
+        .addCallback(function(db) {
+          this.db_ = db;
+          this.load_(opt_callback);
+        }, this);
+  }
+
+  /**
+   * Initializes internal storage with the data in IndexedDB.
+   * @param {function(!e2e.ext.utils.IndexedDbStorage)=} opt_callback
+   * @private
+   */
+  load_(opt_callback) {
+    var getTx = this.db_.createTransaction(
+        [e2e.ext.utils.IndexedDbStorage.OBJECTSTORE_NAME_]);
+    var request =
+        getTx.objectStore(e2e.ext.utils.IndexedDbStorage.OBJECTSTORE_NAME_)
+            .get(this.storageKey_);
+    request.addCallback(function(result) {
+      this.storage_ = result || {};
+      opt_callback && opt_callback(this);
+    }, this);
+  }
+
+  /**
+   * Persists the data in internal storage into IndexedDB.
+   * @private
+   */
+  persist_() {
+    var putTx = this.db_.createTransaction(
+        [e2e.ext.utils.IndexedDbStorage.OBJECTSTORE_NAME_],
+        goog.db.Transaction.TransactionMode.READ_WRITE);
+    putTx.objectStore(e2e.ext.utils.IndexedDbStorage.OBJECTSTORE_NAME_)
+        .put(this.storage_, this.storageKey_);
+  }
+
+  /** @override */
+  set(key, value) {
+    this.storage_[key] = value;
+    this.persist_();
+  }
+
+  /** @override */
+  get(key) {
+    return this.storage_[key];
+  }
+
+  /** @override */
+  remove(key) {
+    delete this.storage_[key];
+    this.persist_();
+  }
+
+  /** @override */
+  __iterator__(opt_keys) {
+    return new goog.structs.Map(this.storage_).__iterator__(opt_keys);
+  }
 };
-goog.inherits(e2e.ext.utils.IndexedDbStorage,
-    goog.storage.mechanism.IterableMechanism);
 
 
 /**
@@ -90,62 +146,3 @@ e2e.ext.utils.IndexedDbStorage.DB_NAME_ = 'e2e.ext.utils.IndexedDbStorage';
  * @const {number}
  */
 e2e.ext.utils.IndexedDbStorage.DB_VERSION_ = 1;
-
-
-/**
- * Initializes internal storage with the data in IndexedDB.
- * @param {function(!e2e.ext.utils.IndexedDbStorage)=} opt_callback
- * @private
- */
-e2e.ext.utils.IndexedDbStorage.prototype.load_ = function(
-    opt_callback) {
-  var getTx = this.db_.createTransaction(
-      [e2e.ext.utils.IndexedDbStorage.OBJECTSTORE_NAME_]);
-  var request = getTx.
-      objectStore(e2e.ext.utils.IndexedDbStorage.OBJECTSTORE_NAME_).
-      get(this.storageKey_);
-  request.addCallback(function(result) {
-    this.storage_ = result || {};
-    opt_callback && opt_callback(this);
-  }, this);
-};
-
-
-/**
- * Persists the data in internal storage into IndexedDB.
- * @private
- */
-e2e.ext.utils.IndexedDbStorage.prototype.persist_ = function() {
-  var putTx = this.db_.createTransaction(
-      [e2e.ext.utils.IndexedDbStorage.OBJECTSTORE_NAME_],
-      goog.db.Transaction.TransactionMode.READ_WRITE);
-  putTx.
-      objectStore(e2e.ext.utils.IndexedDbStorage.OBJECTSTORE_NAME_).
-      put(this.storage_, this.storageKey_);
-};
-
-
-/** @override */
-e2e.ext.utils.IndexedDbStorage.prototype.set = function(key, value) {
-  this.storage_[key] = value;
-  this.persist_();
-};
-
-
-/** @override */
-e2e.ext.utils.IndexedDbStorage.prototype.get = function(key) {
-  return this.storage_[key];
-};
-
-
-/** @override */
-e2e.ext.utils.IndexedDbStorage.prototype.remove = function(key) {
-  delete this.storage_[key];
-  this.persist_();
-};
-
-
-/** @override */
-e2e.ext.utils.IndexedDbStorage.prototype.__iterator__ = function(opt_keys) {
-  return new goog.structs.Map(this.storage_).__iterator__(opt_keys);
-};

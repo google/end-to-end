@@ -29,7 +29,7 @@ goog.require('goog.testing.jsunit');
 var stubs = null;
 
 var pkImpl = function(data) {
-  goog.base(this);
+  pkImpl.base(this, 'constructor');
   this.data_ = data;
 };
 goog.inherits(pkImpl, e2e.otr.pubkey.Pubkey);

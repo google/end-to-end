@@ -53,7 +53,7 @@ var AUTHSTATE = constants.AUTHSTATE;
  * @param {!e2e.otr.Session} session The enclosing session.
  */
 e2e.otr.message.RevealSignature = function(session) {
-  goog.base(this, session);
+  e2e.otr.message.RevealSignature.base(this, 'constructor', session);
 };
 goog.inherits(e2e.otr.message.RevealSignature, e2e.otr.message.Encoded);
 
@@ -69,7 +69,7 @@ e2e.otr.message.RevealSignature.MESSAGE_TYPE =
 /** @inheritDoc */
 e2e.otr.message.RevealSignature.prototype.prepareSend = function() {
   this.session_.authData.revealsignature = this;
-  return goog.base(this, 'prepareSend');
+  return e2e.otr.message.RevealSignature.base(this, 'prepareSend');
 };
 
 

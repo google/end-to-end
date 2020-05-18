@@ -93,7 +93,7 @@ e2e.openpgp.asciiArmor.NEW_LINE_ = '[\\t\\u00a0 ]?[\\r\\n]?\\n';
 /**
  * Parses the first ASCII Armor in a string.
  * Specified in RFC 4880 Section 6.2.
- * Throws a {@code e2e.openpgp.error.ParseError} if the Armor is invalid.
+ * Throws a `e2e.openpgp.error.ParseError` if the Armor is invalid.
  * @param {string} text The text to parse as ASCII Armor.
  * @return {!e2e.openpgp.ArmoredMessage} The parsed message.
  */
@@ -109,7 +109,7 @@ e2e.openpgp.asciiArmor.parse = function(text) {
 /**
  * Parses all ASCII Armors present in a string.
  * Specified in RFC 4880 Section 6.2.
- * Throws a {@code e2e.openpgp.error.ParseError} if the Armor is invalid.
+ * Throws a `e2e.openpgp.error.ParseError` if the Armor is invalid.
  * @param {string} text The text to parse as ASCII Armor.
  * @param {number=} opt_limit Stop parsing once opt_limit armors have been
  *     parsed.
@@ -140,8 +140,8 @@ e2e.openpgp.asciiArmor.parseAll = function(text, opt_limit) {
       '(?:' + newLine + ')*-----END PGP \\2-----($|' + newLine + ')', 'gm');
   var validArmors = [], payload, checksum, calculatedChecksum, prefixNewline,
       suffixNewline, charset, charsetMatch;
-  while ((!goog.isDef(opt_limit) || opt_limit > 0) &&
-         goog.isDefAndNotNull(armor = armorRe.exec(text))) {
+  while ((opt_limit === undefined || opt_limit > 0) &&
+         (armor = armorRe.exec(text)) != null) {
     prefixNewline = armor[1];
     suffixNewline = armor[6];
     payload = e2e.openpgp.asciiArmor.decodeRadix64_(armor[4]);
@@ -165,7 +165,7 @@ e2e.openpgp.asciiArmor.parseAll = function(text, opt_limit) {
       'type': armor[2],
       'startOffset': armor.index + prefixNewline.length,
       'endOffset': armorRe.lastIndex - suffixNewline.length});
-    if (goog.isDef(opt_limit)) {
+    if (opt_limit !== undefined) {
       opt_limit--;
     }
   }
@@ -176,7 +176,7 @@ e2e.openpgp.asciiArmor.parseAll = function(text, opt_limit) {
 /**
  * Parses ASCII Armor ClearSign messages.
  * Specified in RFC 4880 Section 6.2.
- * Throws a {@code e2e.openpgp.error.ParseError} if the Armor is invalid.
+ * Throws a `e2e.openpgp.error.ParseError` if the Armor is invalid.
  * @param {string} text The text to parse as ASCII Armor.
  * @return {!e2e.openpgp.ClearSignMessage} Parsed message parameters
  *   and the signature ByteArray.

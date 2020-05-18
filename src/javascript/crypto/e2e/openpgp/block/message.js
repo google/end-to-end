@@ -21,6 +21,9 @@
 
 goog.provide('e2e.openpgp.block.Message');
 
+goog.forwardDeclare('e2e.openpgp.block.LiteralMessage');
+goog.requireType('e2e.openpgp.block.TransferableKey');
+goog.requireType('e2e.openpgp.packet.SecretKeyInterface');
 goog.require('e2e');
 goog.require('e2e.async.Result');
 goog.require('e2e.openpgp.block.Block');
@@ -31,6 +34,10 @@ goog.require('e2e.openpgp.types');
 goog.require('goog.array');
 goog.require('goog.asserts');
 goog.require('goog.async.DeferredList');
+goog.requireType('e2e.ByteArray');
+goog.requireType('e2e.openpgp.KeyId');
+goog.requireType('e2e.openpgp.packet.Packet');
+goog.requireType('e2e.signer.Signer');
 
 
 
@@ -65,7 +72,7 @@ goog.require('goog.async.DeferredList');
  * @constructor
  */
 e2e.openpgp.block.Message = function(opt_signatures) {
-  goog.base(this);
+  e2e.openpgp.block.Message.base(this, 'constructor');
 
   /**
    * @type {!Array.<!e2e.openpgp.packet.Signature|

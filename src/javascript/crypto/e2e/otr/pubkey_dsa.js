@@ -40,7 +40,7 @@ goog.require('goog.array');
  * @param {!e2e.signer.key.DsaPublicKey} key DSA public key object.
  */
 e2e.otr.pubkey.Dsa = function(key) {
-  goog.base(this);
+  e2e.otr.pubkey.Dsa.base(this, 'constructor');
   this.p_ = goog.array.clone(key.p);
   this.q_ = goog.array.clone(key.q);
   this.g_ = goog.array.clone(key.g);

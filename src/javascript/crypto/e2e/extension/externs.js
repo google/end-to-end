@@ -107,11 +107,11 @@ chrome.NewWindowEvent.prototype.window;
 function WebviewWebRequest() {}
 
 
-/** @type {WebRequestEvent} */
+/** @type {WebRequestOptionallySynchronousEvent} */
 WebviewWebRequest.prototype.onBeforeSendHeaders;
 
 
-/** @type {WebRequestEvent} */
+/** @type {WebRequestOptionallySynchronousEvent} */
 WebviewWebRequest.prototype.onBeforeRequest;
 
 

@@ -195,7 +195,7 @@ e2e.openpgp.KeyClient.prototype.getOpenIdCredentials_ = function(
     email, nonce) {
   var result = new e2e.async.Result();
   var doc = goog.global.document;
-  if (goog.isDef(doc)) {
+  if (doc !== undefined) {
     var url = this.getRegistrationUrl_(email, nonce);
     var iframe = doc.createElement('iframe');
     doc.documentElement.appendChild(iframe);

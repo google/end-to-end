@@ -71,7 +71,7 @@ goog.inherits(e2e.ecc.Ecdh, e2e.ecc.Protocol);
 e2e.ecc.Ecdh.prototype.alice = function(opt_bobPubKey) {
   goog.asserts.assertObject(this.params, 'Domain params should be defined.');
   var publicKey;
-  if (goog.isDefAndNotNull(opt_bobPubKey)) {
+  if (opt_bobPubKey != null) {
     publicKey = this.params.curve.pointFromByteArray(opt_bobPubKey);
   } else {
     publicKey = this.getPublicKeyAsPoint();

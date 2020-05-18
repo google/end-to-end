@@ -476,7 +476,7 @@ e2e.openpgp.block.factory.extractKeys = function(blocks, opt_skiponerror) {
       }
     });
   })).addCallback(function(keys) {
-    result.callback(keys.filter(goog.isDefAndNotNull));
+    result.callback(keys.filter(x => x != null));
   }).addErrback(result.errback, result);
   return result;
 };

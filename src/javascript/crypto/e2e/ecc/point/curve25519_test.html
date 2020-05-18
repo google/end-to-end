@@ -73,6 +73,10 @@ function testCurve25519Order() {
 
   assertTrue(base.multiply(order).isInfinity());
   assertFalse(base.multiply(order.subtract(e2e.BigNum.ONE)).isInfinity());
+  var infinity = params.INFINITY;
+  assertThrows('Cannot obtain the affine coordinate of the point at infinity', function() {
+    infinity.toByteArray();
+  });
 }
 
 

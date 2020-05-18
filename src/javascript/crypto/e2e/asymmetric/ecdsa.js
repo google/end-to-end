@@ -45,7 +45,7 @@ goog.require('goog.asserts');
 e2e.signer.Ecdsa = function(algorithm, opt_key) {
   goog.asserts.assert(algorithm == e2e.signer.Algorithm.ECDSA,
       'Algorithm must be ECDSA.');
-  goog.base(this, e2e.signer.Algorithm.ECDSA, opt_key);
+  e2e.signer.Ecdsa.base(this, 'constructor', e2e.signer.Algorithm.ECDSA, opt_key);
 };
 goog.inherits(e2e.signer.Ecdsa, e2e.AlgorithmImpl);
 
@@ -89,7 +89,7 @@ e2e.signer.Ecdsa.prototype.setKey = function(key, opt_keySize) {
         'privKey': key['privKey']
       });
   // Save key material to serialize later the key.
-  goog.base(this, 'setKey', key);
+  e2e.signer.Ecdsa.base(this, 'setKey', key);
 };
 
 

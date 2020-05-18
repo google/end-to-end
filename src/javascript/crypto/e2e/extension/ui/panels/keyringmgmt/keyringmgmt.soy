@@ -12,22 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-{namespace e2e.ext.ui.templates.panels.keyringmgmt autoescape="strict"}
+{namespace e2e.ext.ui.templates.panels.keyringmgmt}
 
 
 /**
  * Lists the PGP keys that are stored within the extension.
- * @param storedKeys The metadata of the keys that are stored within the extension.
- * @param sectionTitle The title of the current section.
- * @param exportLabel The label to use for the export link.
- * @param removeLabel The label to use for the remove link.
- * @param noneLabel The label to display when there are no keys.
- * @param keyFingerprintLabel Text to display as a fingerprint label.
  */
 {template .listKeys}
+  {@param storedKeys: ?}  /** The metadata of the keys that are stored within the extension. */
+  {@param sectionTitle: ?}  /** The title of the current section. */
+  {@param exportLabel: ?}  /** The label to use for the export link. */
+  {@param removeLabel: ?}  /** The label to use for the remove link. */
+  {@param noneLabel: ?}  /** The label to display when there are no keys. */
+  {@param keyFingerprintLabel: ?}  /** Text to display as a fingerprint label. */
   <h1>{$sectionTitle}</h1>
   <table>
-    {foreach $keyMeta in $storedKeys}
+    {for $keyMeta in $storedKeys}
       <tr data-user-id="{$keyMeta.userId}">
         {call .keyEntry}
           {param keyMeta: $keyMeta /}
@@ -38,38 +38,38 @@
       </tr>
     {ifempty}
       {call .noneEntry data="all"}{/call}
-    {/foreach}
+    {/for}
   </table>
 {/template}
 
 
 /**
  * Displays "None" for when no PGP keys are present
- * @param noneLabel The label to display when there are no keys.
  */
 {template .noneEntry}
+  {@param noneLabel: ?}  /** The label to display when there are no keys. */
   <tr><td><i>{$noneLabel}</i></td></tr>
 {/template}
 
 
 /**
  * Displays a single PGP key.
- * @param keyMeta The metadata of the key that must be displayed.
- * @param exportLabel The label to use for the export link.
- * @param removeLabel The label to use for the remove link.
- * @param keyFingerprintLabel Text to display as a fingerprint label.
  */
 {template .keyEntry}
+  {@param keyMeta: ?}  /** The metadata of the key that must be displayed. */
+  {@param exportLabel: ?}  /** The label to use for the export link. */
+  {@param removeLabel: ?}  /** The label to use for the remove link. */
+  {@param keyFingerprintLabel: ?}  /** Text to display as a fingerprint label. */
   <td class="{e2e.ext.constants.CssClass.KEY_INFO}">
     <div class="{e2e.ext.constants.CssClass.KEY_UID}">{$keyMeta.userId}</div>
-    {foreach $key in $keyMeta.keys}
+    {for $key in $keyMeta.keys}
       <div class="{e2e.ext.constants.CssClass.KEY_META}">
         <span class="{e2e.ext.constants.CssClass.KEY_FINGERPRINT}" title="{$keyFingerprintLabel}">
           {$key.fingerprint}
         </span>{sp}(
         {$key.type} {$key.algorithm})
       </div>
-    {/foreach}
+    {/for}
   </td>
   <td>
     <img class="{e2e.ext.constants.CssClass.EXPORT}"
@@ -82,21 +82,28 @@
 
 /**
  * A form that allows the user to manage the collection of PGP keys stored by the extension.
- * @param signupPromptLabel The label to use when prompting the user to show the signup form.
- * @param importKeyringLabel The label to use when asking the user to import a keyring.
- * @param exportKeyringLabel The label to use when asking the user to export the existing keyring.
- * @param changePassphraseLabel The label to use when asking the user to change the passphrase to
- *     the keyring.
- * @param backupKeyringLabel The label for creating a backup code.
- * @param restoreKeyringLabel The label for restoring from a backup code.
- * @param importCancelButtonTitle The title for the import cancel button.
- * @param changePassphrasePlaceholder The placeholder for the passphrase change input field.
- * @param confirmPassphrasePlaceholder The placeholder for the passphrase confirm input field.
- * @param passphraseChangeActionButtonTitle The title for the passphrase change submit button.
- * @param passphraseConfirmActionButtonTitle The title for the passphrase confirm submit button.
- * @param passphraseChangeCancelButtonTitle The title for the passphrase change cancel button.
  */
 {template .manageKeyring}
+  {@param signupPromptLabel: ?}  /** The label to use when prompting the user to show the signup
+      form. */
+  {@param importKeyringLabel: ?}  /** The label to use when asking the user to import a keyring. */
+  {@param exportKeyringLabel: ?}  /** The label to use when asking the user to export the existing
+      keyring. */
+  {@param changePassphraseLabel: ?}  /** The label to use when asking the user to change the
+      passphrase to the keyring. */
+  {@param backupKeyringLabel: ?}  /** The label for creating a backup code. */
+  {@param restoreKeyringLabel: ?}  /** The label for restoring from a backup code. */
+  {@param importCancelButtonTitle: ?}  /** The title for the import cancel button. */
+  {@param changePassphrasePlaceholder: ?}  /** The placeholder for the passphrase change input
+      field. */
+  {@param confirmPassphrasePlaceholder: ?}  /** The placeholder for the passphrase confirm input
+      field. */
+  {@param passphraseChangeActionButtonTitle: ?}  /** The title for the passphrase change submit
+      button. */
+  {@param passphraseConfirmActionButtonTitle: ?}  /** The title for the passphrase confirm submit
+      button. */
+  {@param passphraseChangeCancelButtonTitle: ?}  /** The title for the passphrase change cancel
+      button. */
   <div id="{e2e.ext.constants.ElementId.KEYRING_IMPORT_DIV}"
        class="{e2e.ext.constants.CssClass.HIDDEN}">
     <input type="file" class="{e2e.ext.constants.CssClass.ACTION}"/>

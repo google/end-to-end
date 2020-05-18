@@ -38,7 +38,7 @@ goog.require('e2e.openpgp.Context');
  * @extends {e2e.async.Client}
  */
 e2e.openpgp.WorkerContextImpl = function(port) {
-  goog.base(this, port);
+  e2e.openpgp.WorkerContextImpl.base(this, 'constructor', port);
 };
 goog.inherits(e2e.openpgp.WorkerContextImpl, e2e.async.Client);
 
@@ -91,7 +91,10 @@ e2e.openpgp.WorkerContextImpl.prototype.setArmorHeader = function(name, value) {
 };
 
 
-/** @override */
+/**
+ * @override
+ * @suppress {checkTypes} overridden interface property is non-null.
+ */
 e2e.openpgp.WorkerContextImpl.prototype.keyServerUrl = null;
 
 

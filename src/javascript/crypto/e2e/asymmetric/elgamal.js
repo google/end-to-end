@@ -44,7 +44,7 @@ goog.require('goog.asserts');
  * @extends {e2e.AlgorithmImpl}
  */
 e2e.cipher.ElGamal = function(algorithm, opt_key) {
-  goog.base(this, e2e.cipher.Algorithm.ELGAMAL, opt_key);
+  e2e.cipher.ElGamal.base(this, 'constructor', e2e.cipher.Algorithm.ELGAMAL, opt_key);
 };
 goog.inherits(e2e.cipher.ElGamal, e2e.AlgorithmImpl);
 
@@ -59,16 +59,15 @@ e2e.cipher.ElGamal.prototype.modulus;
 e2e.cipher.ElGamal.prototype.setKey = function(key) {
   goog.asserts.assertArray(key['p'], 'Modulus should be defined.');
   this.modulus = new e2e.BigPrimeNum(key['p']);
-  goog.base(this, 'setKey', key, Math.ceil(this.modulus.getBitLength() / 8));
+  e2e.cipher.ElGamal.base(this, 'setKey', key, Math.ceil(this.modulus.getBitLength() / 8));
 };
 
 
 /** @inheritDoc */
 e2e.cipher.ElGamal.prototype.encrypt = function(plaintext) {
-  goog.asserts.assertArray(this.key['y'],
-      'Public key value should be defined.');
-  goog.asserts.assertArray(this.key['g'],
-      'Generator should be defined.');
+  goog.asserts.assertArray(
+      this.key['y'], 'Public key value should be defined.');
+  goog.asserts.assertArray(this.key['g'], 'Generator should be defined.');
   goog.asserts.assert(
       this.modulus.compare(new e2e.BigNum(plaintext)) > 0,
       'The plaintext value should be less than the modulus.');
@@ -79,8 +78,8 @@ e2e.cipher.ElGamal.prototype.encrypt = function(plaintext) {
     var k = e2e.random.getRandomBytes(oneTimeKeyLength);
     ciphertext['u'] = this.modulus.pow(this.key['g'], k);
   } while (e2e.compareByteArray(ciphertext['u'], [1]));
-  ciphertext['v'] = this.modulus.mul(plaintext,
-      this.modulus.pow(this.key['y'], k));
+  ciphertext['v'] =
+      this.modulus.mul(plaintext, this.modulus.pow(this.key['y'], k));
   goog.array.forEach(k, function(v, i) {
     // Clear memory.
     k[i] = Math.random();
@@ -91,17 +90,27 @@ e2e.cipher.ElGamal.prototype.encrypt = function(plaintext) {
 
 /** @inheritDoc */
 e2e.cipher.ElGamal.prototype.decrypt = function(ciphertext) {
-  goog.asserts.assertArray(this.key['x'],
-      'Private key value should be defined.');
-  goog.asserts.assertArray(ciphertext['v'],
-      'ElGamal v value should be defined.');
-  goog.asserts.assertArray(ciphertext['u'],
-      'ElGamal u value should be defined.');
+  goog.asserts.assertArray(
+      this.key['x'], 'Private key value should be defined.');
+  goog.asserts.assertArray(
+      ciphertext['v'], 'ElGamal v value should be defined.');
+  goog.asserts.assertArray(
+      ciphertext['u'], 'ElGamal u value should be defined.');
   var v = ciphertext['v'];  // v == c2 == m * y**k mod p
   var u = ciphertext['u'];  // u == c1 == g**k mod p
-  var result = this.modulus.mul(
-      v, this.modulus.pow(
-          u, this.modulus.negateExponent(this.key['x'])));
+  var random = new e2e.BigNum(e2e.random.getRandomBytes(8));
+  // We have:
+  //   m = v.u^(-x) mod p
+  // By Fermat theorem:
+  //   u^(p - 1) = 1 (mod p)
+  //   u^(-x + random * (p - 1)) = u^(-x).(u^(p - 1))^random = u^(-x) (mod p)
+  // Therefore, instead of compute -x, we'll compute -x + random * (p - 1).
+  var blindedExponent =
+      random.multiply(new e2e.BigNum(this.key['p']))
+          .subtract(random)
+          .add(new e2e.BigNum(this.modulus.negateExponent(this.key['x'])))
+          .toByteArray();
+  var result = this.modulus.mul(v, this.modulus.pow(u, blindedExponent));
   return e2e.async.Result.toResult(result);
 };
 

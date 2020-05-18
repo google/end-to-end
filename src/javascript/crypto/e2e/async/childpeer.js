@@ -32,14 +32,14 @@ goog.require('e2e.async.Peer');
  * @constructor
  */
 e2e.async.ChildPeer = function() {
-  goog.base(this);
+  e2e.async.ChildPeer.base(this, 'constructor');
 };
 goog.inherits(e2e.async.ChildPeer, e2e.async.Peer);
 
 
 /**
  * Create a new port.
- * @return {MessagePort}
+ * @return {!MessagePort}
  */
 e2e.async.ChildPeer.prototype.createPort = function() {
   var mc = new MessageChannel();

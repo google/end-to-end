@@ -110,7 +110,7 @@ e2e.openpgp.S2k.prototype.serialize = function() {
  * Parses (and extracts) an S2K object from the given ByteArray.
  * Throws e2e.openpgp.error.Error if it fails.
  * @param {!e2e.ByteArray} bytes The ByteArray to extract the S2K from.
- * @return {e2e.openpgp.S2k} The generated S2K instance.
+ * @return {!e2e.openpgp.S2k} The generated S2K instance.
  */
 e2e.openpgp.S2k.parse = function(bytes) {
   var type = bytes.shift();
@@ -189,7 +189,7 @@ e2e.openpgp.DummyS2k = function(hash, header, mode) {
   } else {
     throw new e2e.openpgp.error.ParseError('Invalid dummy S2k header!');
   }
-  goog.base(this, hash);
+  e2e.openpgp.DummyS2k.base(this, 'constructor', hash);
 };
 goog.inherits(e2e.openpgp.DummyS2k, e2e.openpgp.S2k);
 
@@ -256,7 +256,7 @@ e2e.openpgp.DummyS2k.E2E_HEADER = [0x45, 0x32, 0x45]; // 'E2E'
 /** @inheritDoc */
 e2e.openpgp.DummyS2k.prototype.serialize = function() {
   return goog.array.concat(
-      goog.base(this, 'serialize'),
+      e2e.openpgp.DummyS2k.base(this, 'serialize'),
       this.is_e2e_ ? e2e.openpgp.DummyS2k.E2E_HEADER :
       e2e.openpgp.DummyS2k.GPG_HEADER,
       this.mode);
@@ -271,7 +271,7 @@ e2e.openpgp.DummyS2k.prototype.serialize = function() {
  * @extends {e2e.openpgp.S2k}
  */
 e2e.openpgp.SimpleS2K = function(hash) {
-  goog.base(this, hash);
+  e2e.openpgp.SimpleS2K.base(this, 'constructor', hash);
 };
 goog.inherits(e2e.openpgp.SimpleS2K, e2e.openpgp.S2k);
 
@@ -304,7 +304,7 @@ e2e.openpgp.SimpleS2K.prototype.getKey = function(passphrase, length) {
  * @extends {e2e.openpgp.SimpleS2K}
  */
 e2e.openpgp.SaltedS2K = function(hash, salt) {
-  goog.base(this, hash);
+  e2e.openpgp.SaltedS2K.base(this, 'constructor', hash);
   if (salt.length != 8 || !e2e.isByteArray(salt)) {
     throw new e2e.openpgp.error.InvalidArgumentsError('Invalid salt.');
   }
@@ -325,14 +325,14 @@ e2e.openpgp.SaltedS2K.prototype.type = e2e.openpgp.S2k.Type.SALTED;
 /** @inheritDoc */
 e2e.openpgp.SaltedS2K.prototype.getKey = function(passphrase, length) {
   var salted_passphrase = this.salt_.concat(passphrase);
-  return goog.base(this, 'getKey', salted_passphrase, length);
+  return e2e.openpgp.SaltedS2K.base(this, 'getKey', salted_passphrase, length);
 };
 
 
 /** @inheritDoc */
 e2e.openpgp.SaltedS2K.prototype.serialize = function() {
   return goog.array.concat(
-      goog.base(this, 'serialize'),
+      e2e.openpgp.SaltedS2K.base(this, 'serialize'),
       this.salt_);
 };
 
@@ -348,7 +348,7 @@ e2e.openpgp.SaltedS2K.prototype.serialize = function() {
  * @extends {e2e.openpgp.SimpleS2K}
  */
 e2e.openpgp.IteratedS2K = function(hash, salt, encodedCount) {
-  goog.base(this, hash);
+  e2e.openpgp.IteratedS2K.base(this, 'constructor', hash);
   if (salt.length != 8 || !e2e.isByteArray(salt)) {
     throw new e2e.openpgp.error.InvalidArgumentsError('Invalid salt.');
   }
@@ -441,7 +441,7 @@ e2e.openpgp.IteratedS2K.prototype.getKey = function(passphrase, length) {
 /** @inheritDoc */
 e2e.openpgp.IteratedS2K.prototype.serialize = function() {
   return goog.array.concat(
-      goog.base(this, 'serialize'),
+      e2e.openpgp.IteratedS2K.base(this, 'serialize'),
       this.salt_,
       this.encodedCount_);
 };

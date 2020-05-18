@@ -329,7 +329,7 @@ e2e.ecc.DomainParam.NIST.prototype.generateKeyPair = function(
   var expectedKeyLength = Math.ceil(this.curve.keySizeInBits() / 8);
   var count = 0;
   do {
-    if (goog.isDefAndNotNull(opt_privateKey)) {
+    if (opt_privateKey != null) {
       if (count++ != 0) {
         throw new e2e.error.InvalidArgumentsError(
             'Bad private key');
@@ -420,7 +420,7 @@ e2e.ecc.DomainParam.Curve25519.prototype.generateKeyPair = function(
     opt_privateKey) {
   // A private key is any sequence of 32 bytes
   var privateKey;
-  if (goog.isDefAndNotNull(opt_privateKey)) {
+  if (opt_privateKey != null) {
     goog.asserts.assert(opt_privateKey.length == 32,
         'Private key length must be 32 bytes');
     privateKey = opt_privateKey;
@@ -503,7 +503,7 @@ e2e.ecc.DomainParam.Ed25519.fromCurve = function(curveName) {
 e2e.ecc.DomainParam.Ed25519.prototype.generateKeyPair = function(
     opt_privateKey) {
   var privateKey;
-  if (goog.isDefAndNotNull(opt_privateKey)) {
+  if (opt_privateKey != null) {
     goog.asserts.assert(opt_privateKey.length == 32,
         'Private key length must be 32 bytes');
     privateKey = opt_privateKey;

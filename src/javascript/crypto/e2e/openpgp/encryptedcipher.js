@@ -21,6 +21,15 @@
  * @author evn@google.com (Eduardo Vela)
  */
 
+
+// TODO(b/130421259): We're trying to migrate all ES5 subclasses of Closure
+// Library to ES6. In ES6 this cannot be referenced before super is called. This
+// file has at least one this before a super call (in ES5) and cannot be
+// automatically upgraded to ES6 as a result. Please fix this if you have a
+// chance. Note: This can sometimes be caused by not calling the super
+// constructor at all. You can run the conversion tool yourself to see what it
+// does on this file: blaze run //javascript/refactoring/es6_classes:convert.
+
 goog.provide('e2e.openpgp.EncryptedCipher');
 goog.provide('e2e.openpgp.EncryptedCipher.KeyDerivationType');
 goog.provide('e2e.openpgp.EncryptedCipher.LockedKeyError');
@@ -92,7 +101,7 @@ e2e.openpgp.EncryptedCipher = function(
   switch (this.keyDerivation_) {
     case e2e.openpgp.EncryptedCipher.KeyDerivationType.S2K_SHA1:
     case e2e.openpgp.EncryptedCipher.KeyDerivationType.S2K_CHECKSUM:
-      if (!goog.isDefAndNotNull(opt_s2k)) {
+      if (opt_s2k == null) {
         throw new e2e.openpgp.error.InvalidArgumentsError(
             'Invalid S2K in encrypted cipher.');
       }
@@ -104,9 +113,7 @@ e2e.openpgp.EncryptedCipher = function(
       this.s2k_ = opt_s2k;
       // Falling through, no break;
     case e2e.openpgp.EncryptedCipher.KeyDerivationType.MD5:
-      if (!goog.isDefAndNotNull(opt_iv) ||
-          !e2e.isByteArray(opt_iv) ||
-          !goog.isDefAndNotNull(opt_algorithm)) {
+      if (opt_iv == null || !e2e.isByteArray(opt_iv) || opt_algorithm == null) {
         throw new e2e.openpgp.error.InvalidArgumentsError(
             'Invalid IV for encrypted cipher');
       }
@@ -144,7 +151,7 @@ e2e.openpgp.EncryptedCipher = function(
       throw new e2e.openpgp.error.InvalidArgumentsError(
           'Invalid Key Derivation Type.');
   }
-  goog.base(this, cipher.algorithm);
+  e2e.openpgp.EncryptedCipher.base(this, 'constructor', cipher.algorithm);
 };
 goog.inherits(e2e.openpgp.EncryptedCipher, e2e.AlgorithmImpl);
 
@@ -217,7 +224,7 @@ e2e.openpgp.EncryptedCipher.prototype.lockKey = function(
   if (this.locked_) {
     throw new e2e.openpgp.EncryptedCipher.LockedKeyError(this);
   }
-  if (!goog.isDef(opt_passphrase)) {
+  if (opt_passphrase === undefined) {
     this.keyDerivation_ =
         e2e.openpgp.EncryptedCipher.KeyDerivationType.PLAINTEXT;
     this.iv_ = [];
@@ -309,7 +316,7 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey = function(
     // Plaintext key derivation type uses numeric checksum.
     this.unlockAndVerifyKey_(this.encryptedKeyData);
     return;
-  } else if (!goog.isDef(this.iv_) || !goog.isDef(this.symmetricAlgorithm_)) {
+  } else if (this.iv_ === undefined || this.symmetricAlgorithm_ === undefined) {
     throw new e2e.openpgp.error.DecryptError(
         'Missing encrypted key metadata.');
   }
@@ -324,7 +331,7 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey = function(
     case e2e.openpgp.EncryptedCipher.KeyDerivationType.S2K_SHA1:
     case e2e.openpgp.EncryptedCipher.KeyDerivationType.S2K_CHECKSUM:
       // For SHA1 and numeric checksum a passphrase is required.
-      if (!goog.isDef(opt_passphrase)) {
+      if (opt_passphrase === undefined) {
         throw new e2e.openpgp.error.MissingPassphraseError();
       }
       key = this.s2k_.getKey(opt_passphrase, symCipher.keySize);
@@ -332,7 +339,7 @@ e2e.openpgp.EncryptedCipher.prototype.unlockKey = function(
     case e2e.openpgp.EncryptedCipher.KeyDerivationType.MD5:
       // For MD5 there's no S2K, and the key is simply the MD5 of the secret.
       var md5 = new e2e.hash.Md5;
-      if (!goog.isDef(opt_passphrase)) {
+      if (opt_passphrase === undefined) {
         throw new e2e.openpgp.error.MissingPassphraseError();
       }
       key = md5.hash(opt_passphrase);
@@ -542,7 +549,7 @@ e2e.openpgp.EncryptedCipher.LockedKeyError = function(cipher) {
    * @type {e2e.openpgp.EncryptedCipher}
    */
   this.cipher = cipher;
-  goog.base(this, 'Operation not allowed on locked key. Unlock key first.');
+  e2e.openpgp.EncryptedCipher.LockedKeyError.base(this, 'constructor', 'Operation not allowed on locked key. Unlock key first.');
 };
 goog.inherits(e2e.openpgp.EncryptedCipher.LockedKeyError,
               e2e.openpgp.error.Error);

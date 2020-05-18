@@ -38,7 +38,7 @@ goog.require('e2e.openpgp.packet.factory');
  */
 e2e.openpgp.packet.OnePassSignature = function(
     version, type, hashAlgo, pubkeyAlgo, keyId, nested) {
-  goog.base(this);
+  e2e.openpgp.packet.OnePassSignature.base(this, 'constructor');
   this.version = version;
 
   this.type = type;

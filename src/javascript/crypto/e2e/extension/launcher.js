@@ -124,7 +124,7 @@ ext.Launcher.prototype.completeStart_ = function() {
 
 /**
  * Returns the PGP context used within the extension.
- * @return {e2e.openpgp.Context} The PGP context.
+ * @return {!e2e.openpgp.Context} The PGP context.
  * @export
  */
 ext.Launcher.prototype.getContext = function() {
@@ -134,7 +134,7 @@ ext.Launcher.prototype.getContext = function() {
 
 /**
  * Returns the Preferences object used within the extension.
- * @return {e2e.ext.Preferences} The Preferences object.
+ * @return {!e2e.ext.Preferences} The Preferences object.
  * @export
  */
 ext.Launcher.prototype.getPreferences = function() {

@@ -37,39 +37,120 @@ var constants = e2e.ext.constants;
 var messages = e2e.ext.messages;
 
 
-
 /**
  * Constructor for the context API.
- * @constructor
- * @extends {goog.ui.Component}
  */
-api.Api = function() {
-  goog.base(this);
+api.Api = class extends goog.ui.Component {
+  constructor() {
+    super();
+
+    /**
+     * The handler to process incoming requests from other parts of the
+     * extension.
+     * @type {!function(Port)}
+     * @private
+     */
+    this.requestHandler_ = goog.bind(this.openPort_, this);
+
+    /**
+     * A request throttle for incoming decrypt requests.
+     * @type {!api.RequestThrottle}
+     * @private
+     */
+    this.requestThrottle_ = new api.RequestThrottle(api.Api.REQUEST_THRESHOLD_);
+
+    /**
+     * Executor for the End-to-End actions.
+     * @type {!e2e.ext.actions.Executor}
+     * @private
+     */
+    this.actionExecutor_ = new e2e.ext.actions.Executor();
+  }
+
+  /** @override */
+  disposeInternal() {
+    this.removeApi();
+
+    super.disposeInternal();
+  }
 
   /**
-   * The handler to process incoming requests from other parts of the extension.
-   * @type {!function(Port)}
-   * @private
+   * Installs the API.
    */
-  this.requestHandler_ = goog.bind(this.openPort_, this);
+  installApi() {
+    chrome.runtime.onConnect.addListener(this.requestHandler_);
+  }
 
   /**
-   * A request throttle for incoming decrypt requests.
-   * @type {!api.RequestThrottle}
-   * @private
+   * Removes the API.
    */
-  this.requestThrottle_ = new api.RequestThrottle(
-      api.Api.REQUEST_THRESHOLD_);
+  removeApi() {
+    chrome.runtime.onConnect.removeListener(this.requestHandler_);
+  }
 
   /**
-   * Executor for the End-to-End actions.
-   * @type {!e2e.ext.actions.Executor}
+   * Opens a port with the connecting counterpart.
+   * @param {Port} port The port through which communication should carried with
+   *     the counterpart.
    * @private
    */
-  this.actionExecutor_ = new e2e.ext.actions.Executor();
+  openPort_(port) {
+    port.onMessage.addListener(goog.bind(
+        this.executeAction_, this, goog.bind(port.postMessage, port)));
+  }
 
+  /**
+   * Executes the PGP action and passed the result to the provided callback.
+   * @param {function(*)} callback A callback to pass the result of the action
+   *     to.
+   * @param {*} req The execution request.
+   * @private
+   */
+  executeAction_(callback, req) {
+    var incoming = /** @type {!messages.ApiRequest.<string>} */ (req);
+    var outgoing = {completedAction: incoming.action};
+
+    // Ensure that only certain actions are exposed via the API.
+    switch (incoming.action) {
+      case constants.Actions.ENCRYPT_SIGN:
+      case constants.Actions.DECRYPT_VERIFY:
+        // Propagate the decryptPassphrase if needed.
+        incoming.passphraseCallback = function(uid) {
+          // Note: The passphrase needs to be known when calling executeAction_.
+          return e2e.async.Result.toResult(incoming.decryptPassphrase || '');
+        };
+        break;
+      default:
+        outgoing.error = chrome.i18n.getMessage('errorUnsupportedAction');
+        callback(outgoing);
+        return;
+    }
+
+    if (window.launcher && !window.launcher.hasPassphrase()) {
+      callback({error: chrome.i18n.getMessage('glassKeyringLockedError')});
+      return;
+    }
+
+    if (!this.requestThrottle_.canProceed()) {
+      outgoing.error = chrome.i18n.getMessage('throttleErrorMsg');
+      callback(outgoing);
+      return;
+    }
+
+    this.actionExecutor_.execute(
+        incoming, this,
+        function(resp) {
+          outgoing.content = resp;
+          callback(outgoing);
+        },
+        function(error) {
+          outgoing.error = error.messageId !== undefined ?
+              chrome.i18n.getMessage(error.messageId) :
+              error.message;
+          callback(outgoing);
+        });
+  }
 };
-goog.inherits(api.Api, goog.ui.Component);
 
 
 /**
@@ -80,92 +161,5 @@ goog.inherits(api.Api, goog.ui.Component);
  */
 api.Api.REQUEST_THRESHOLD_ = 500;
 
-
-/** @override */
-api.Api.prototype.disposeInternal = function() {
-  this.removeApi();
-
-  goog.base(this, 'disposeInternal');
-};
-
-
-/**
- * Installs the API.
- */
-api.Api.prototype.installApi = function() {
-  chrome.runtime.onConnect.addListener(this.requestHandler_);
-};
-
-
-/**
- * Removes the API.
- */
-api.Api.prototype.removeApi = function() {
-  chrome.runtime.onConnect.removeListener(this.requestHandler_);
-};
-
-
-/**
- * Opens a port with the connecting counterpart.
- * @param {Port} port The port through which communication should carried with
- *     the counterpart.
- * @private
- */
-api.Api.prototype.openPort_ = function(port) {
-  port.onMessage.addListener(
-      goog.bind(this.executeAction_, this, goog.bind(port.postMessage, port)));
-};
-
-
-/**
- * Executes the PGP action and passed the result to the provided callback.
- * @param {function(*)} callback A callback to pass the result of the action to.
- * @param {*} req The execution request.
- * @private
- */
-api.Api.prototype.executeAction_ = function(callback, req) {
-  var incoming = /** @type {!messages.ApiRequest.<string>} */ (req);
-  var outgoing = {
-    completedAction: incoming.action
-  };
-
-  // Ensure that only certain actions are exposed via the API.
-  switch (incoming.action) {
-    case constants.Actions.ENCRYPT_SIGN:
-    case constants.Actions.DECRYPT_VERIFY:
-      // Propagate the decryptPassphrase if needed.
-      incoming.passphraseCallback = function(uid) {
-        // Note: The passphrase needs to be known when calling executeAction_.
-        return e2e.async.Result.toResult(incoming.decryptPassphrase || '');
-      };
-      break;
-    default:
-      outgoing.error = chrome.i18n.getMessage('errorUnsupportedAction');
-      callback(outgoing);
-      return;
-  }
-
-  if (window.launcher && !window.launcher.hasPassphrase()) {
-    callback({
-      error: chrome.i18n.getMessage('glassKeyringLockedError')
-    });
-    return;
-  }
-
-  if (!this.requestThrottle_.canProceed()) {
-    outgoing.error = chrome.i18n.getMessage('throttleErrorMsg');
-    callback(outgoing);
-    return;
-  }
-
-  this.actionExecutor_.execute(incoming, this, function(resp) {
-    outgoing.content = resp;
-    callback(outgoing);
-  }, function(error) {
-    outgoing.error = goog.isDef(error.messageId) ?
-        chrome.i18n.getMessage(error.messageId) : error.message;
-    callback(outgoing);
-  });
-};
 
 });  // goog.scope

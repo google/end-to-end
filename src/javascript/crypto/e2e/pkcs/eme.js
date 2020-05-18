@@ -313,7 +313,7 @@ e2e.pkcs.eme.Pkcs1.prototype.decode = function(
   var error = 0;
   var msg = [];
   var em2 = em.splice(0);
-  if (goog.isDef(opt_messageLength) && goog.isDef(opt_keySize)) {
+  if (opt_messageLength !== undefined && opt_keySize !== undefined) {
     if (opt_keySize == em.length + 1) {
       // Some implementations remove leading 0's, so we add them back.
       em.unshift(0);

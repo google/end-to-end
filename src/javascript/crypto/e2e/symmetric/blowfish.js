@@ -54,7 +54,7 @@ e2e.cipher.Blowfish = function(algorithm, opt_keyObj) {
    */
   this.p_ = [];  // 18 uint32 values.
   this.keySize = 16;
-  goog.base(this, algorithm, opt_keyObj);
+  e2e.cipher.Blowfish.base(this, 'constructor', algorithm, opt_keyObj);
 };
 goog.inherits(e2e.cipher.Blowfish, e2e.AlgorithmImpl);
 
@@ -65,7 +65,7 @@ e2e.cipher.Blowfish.prototype.blockSize = 8; // 64 bits.
 
 /** @inheritDoc */
 e2e.cipher.Blowfish.prototype.setKey = function(keyObj) {
-  goog.base(this, 'setKey', keyObj, keyObj.key.length);
+  e2e.cipher.Blowfish.base(this, 'setKey', keyObj, keyObj.key.length);
   this.keyExpansion_();
 };
 

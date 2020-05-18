@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-{namespace e2e.ext.ui.templates.welcome autoescape="strict"}
+{namespace e2e.ext.ui.templates.welcome}
 
 
 /**
  * The base layout for the welcome page.
- * @param headerText The header of the page.
- * @param basicsSection The basics section.
- * @param noviceSection The novice section.
- * @param advancedSection The advanced section.
- * @param preferenceLabel The label to apply to the welcome page preference checkbox.
- * @param actionButtonTitle The title of the submit button.
  */
 {template .welcome}
+  {@param headerText: ?}  /** The header of the page. */
+  {@param basicsSection: ?}  /** The basics section. */
+  {@param noviceSection: ?}  /** The novice section. */
+  {@param advancedSection: ?}  /** The advanced section. */
+  {@param preferenceLabel: ?}  /** The label to apply to the welcome page preference checkbox. */
+  {@param actionButtonTitle: ?}  /** The title of the submit button. */
 <html>
   <head>
     <title>{$headerText}</title>
@@ -66,20 +66,21 @@
 
 /**
  * Displays a section of the welcome page.
- * @param sectionText A structure with the section's title and contents.
- * @param headerId The HTML ID of the section header.
- * @param contentId The HTML ID of the section content.
  */
 {template .welcomeSection}
+  {@param sectionText: ?}  /** A structure with the section's title and contents. */
+  {@param headerId: ?}  /** The HTML ID of the section header. */
+  {@param contentId: ?}  /** The HTML ID of the section content. */
   <div id="{$headerId}">
     <fieldset>
       <legend>
         {$sectionText.title}
       </legend>
       <div id="{$contentId}">
-        {foreach $subsection in $sectionText.subsections}
-          {if $subsection.iframe}
-            <iframe src="{$subsection.iframe.src}" width="{$subsection.iframe.width}"
+        {for $subsection in $sectionText.subsections}
+          {if $subsection.iframe?.src}
+            <iframe src="{$subsection.iframe.src}"
+                    width="{$subsection.iframe.width}"
                     height="{$subsection.iframe.height}"></iframe>
           {else}
             <p {if $subsection.header}
@@ -88,7 +89,7 @@
                {$subsection.text}
             </p>
           {/if}
-        {/foreach}
+        {/for}
       </div>
     </fieldset>
   </div>

@@ -37,7 +37,7 @@ goog.require('goog.structs');
  * @constructor
  */
 e2e.HmacPRF = function(opt_hash) {
-  if (goog.isDefAndNotNull(opt_hash)) {
+  if (opt_hash != null) {
     goog.asserts.assert(goog.structs.contains(e2e.hash.Algorithm,
                                               opt_hash.algorithm),
                         'Invalid hash function.');

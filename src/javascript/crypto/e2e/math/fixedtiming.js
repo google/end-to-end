@@ -15,7 +15,7 @@
  */
 
 /**
- * @fileoverview Fixed-timing utility functions.
+ * @fileoverview Best-effort fixed-timing utility functions.
  * @author thaidn@google.com (Thai Duong).
  */
 
@@ -47,4 +47,13 @@ e2e.fixedtiming.select = function(a, b, bit) {
  */
 e2e.fixedtiming.max = function(a, b) {
   return e2e.fixedtiming.select(a, b, (a > b) | 0);
+};
+
+/**
+ * Returns a if a >= 0; otherwise -a.
+ * @param {number} a
+ * @return {number}
+ */
+e2e.fixedtiming.abs = function(a) {
+  return e2e.fixedtiming.select(a, -a, (a >= 0) | 0);
 };

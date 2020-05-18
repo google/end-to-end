@@ -90,9 +90,9 @@ e2e.openpgp.packet.EncryptedSessionKey.prototype.decryptSessionKeyWithCipher =
 
 /**
  * Obtains the decrypted session keyObj if available.
- * Throws {@code Error} if the session key does not exist. This happens if
+ * Throws `Error` if the session key does not exist. This happens if
  *     decryptSessionKey() has not yet been called.
- * @return {e2e.cipher.key.Key} The decrypted session key as a keyObj.
+ * @return {!e2e.cipher.key.Key} The decrypted session key as a keyObj.
  */
 e2e.openpgp.packet.EncryptedSessionKey.prototype.getSessionKey =
     function() {

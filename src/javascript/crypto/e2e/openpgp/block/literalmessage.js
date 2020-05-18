@@ -35,7 +35,7 @@ goog.require('goog.array');
  * @extends {e2e.openpgp.block.Message}
  */
 e2e.openpgp.block.LiteralMessage = function(opt_signatures) {
-  goog.base(this, opt_signatures);
+  e2e.openpgp.block.LiteralMessage.base(this, 'constructor', opt_signatures);
 };
 goog.inherits(e2e.openpgp.block.LiteralMessage,
     e2e.openpgp.block.Message);
@@ -124,8 +124,8 @@ e2e.openpgp.block.LiteralMessage.construct = function(plaintext, opt_filename) {
   var literal = new e2e.openpgp.packet.LiteralData(
       e2e.openpgp.packet.LiteralData.Format.TEXT,
       e2e.stringToByteArray(
-      goog.isDefAndNotNull(opt_filename) ? opt_filename : ''), // file name
-      Math.floor(new Date().getTime() / 1000), // time in seconds since 1970
+          opt_filename != null ? opt_filename : ''),  // file name
+      Math.floor(new Date().getTime() / 1000),  // time in seconds since 1970
       plaintext);
   var message = new e2e.openpgp.block.LiteralMessage();
   message.parse([literal]);

@@ -38,7 +38,7 @@ goog.require('goog.array');
  * @constructor
  */
 e2e.openpgp.ContextService = function(contextPromise, port) {
-  goog.base(this, port);
+  e2e.openpgp.ContextService.base(this, 'constructor', port);
   /**
    * Bid response, resolved when the context is ready.
    * @private {!e2e.async.Result.<!e2e.async.BidResponse>}

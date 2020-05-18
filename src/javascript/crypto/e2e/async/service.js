@@ -34,7 +34,7 @@ goog.require('goog.async.Deferred');
  * @constructor
  */
 e2e.async.Service = function(opt_port) {
-  if (goog.isDef(opt_port)) {
+  if (opt_port !== undefined) {
     this.setPort(opt_port);
   }
 };
@@ -88,7 +88,7 @@ e2e.async.Service.prototype.handleMessage_ = function(event) {
       var args = event.data.arguments;
       if (event.data.arguments instanceof Array) {
         for (var i = 0; i < args.length; i++) {
-          if (goog.isObject(args[i]) && goog.isNumber(args[i].__port__)) {
+          if (goog.isObject(args[i]) && typeof args[i].__port__ === 'number') {
             args[i] = e2e.async.util.unwrapFunction(
                 event.ports[args[i].__port__]);
           }

@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-{namespace e2e.ext.ui.templates.glass autoescape="strict"}
+{namespace e2e.ext.ui.templates.glass}
 
 /**
  * Renders the frame where decrypted PGP content will be displayed.
- * @param label The label for the decrypted content.
- * @param content The content to display to the user.
- * @param error The error message (if any) to display to the user.
  */
 {template .contentFrame}
+  {@param label: ?}  /** The label for the decrypted content. */
+  {@param content: ?}  /** The content to display to the user. */
+  {@param error: ?}  /** The error message (if any) to display to the user. */
 <html>
   <head>
     <link rel="stylesheet"/>

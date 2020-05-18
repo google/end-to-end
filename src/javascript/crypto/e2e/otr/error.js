@@ -38,7 +38,7 @@ goog.require('goog.debug.Error');
  * @extends {goog.debug.Error}
  */
 e2e.otr.error.Error = function(opt_msg) {
-  goog.base(this, opt_msg);
+  e2e.otr.error.Error.base(this, 'constructor', opt_msg);
 };
 goog.inherits(e2e.otr.error.Error, goog.debug.Error);
 
@@ -51,7 +51,7 @@ goog.inherits(e2e.otr.error.Error, goog.debug.Error);
  * @extends {e2e.otr.error.Error}
  */
 e2e.otr.error.InvalidArgumentsError = function(message) {
-  goog.base(this, message);
+  e2e.otr.error.InvalidArgumentsError.base(this, 'constructor', message);
 };
 goog.inherits(e2e.otr.error.InvalidArgumentsError, e2e.otr.error.Error);
 
@@ -64,7 +64,7 @@ goog.inherits(e2e.otr.error.InvalidArgumentsError, e2e.otr.error.Error);
  * @extends {e2e.otr.error.Error}
  */
 e2e.otr.error.NotImplementedError = function(message) {
-  goog.base(this, message);
+  e2e.otr.error.NotImplementedError.base(this, 'constructor', message);
 };
 goog.inherits(e2e.otr.error.NotImplementedError, e2e.otr.error.Error);
 
@@ -77,7 +77,7 @@ goog.inherits(e2e.otr.error.NotImplementedError, e2e.otr.error.Error);
  * @extends {e2e.otr.error.Error}
  */
 e2e.otr.error.ParseError = function(message) {
-  goog.base(this, message);
+  e2e.otr.error.ParseError.base(this, 'constructor', message);
 };
 goog.inherits(e2e.otr.error.ParseError, e2e.otr.error.Error);
 
@@ -90,6 +90,6 @@ goog.inherits(e2e.otr.error.ParseError, e2e.otr.error.Error);
  * @extends {e2e.otr.error.Error}
  */
 e2e.otr.error.IllegalStateError = function(message) {
-  goog.base(this, message);
+  e2e.otr.error.IllegalStateError.base(this, 'constructor', message);
 };
 goog.inherits(e2e.otr.error.IllegalStateError, e2e.otr.error.Error);

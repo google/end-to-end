@@ -51,7 +51,7 @@ var promptPanels = e2e.ext.ui.panels.prompt;
  * @extends {goog.ui.Component}
  */
 promptPanels.PanelBase = function(title, content, opt_errorCallback) {
-  goog.base(this);
+  e2e.ext.ui.panels.prompt.PanelBase.base(this, 'constructor');
 
   this.title_ = goog.asserts.assertString(title);
   this.content_ = goog.asserts.assert(content);
@@ -62,14 +62,14 @@ goog.inherits(promptPanels.PanelBase, goog.ui.Component);
 
 /** @override */
 promptPanels.PanelBase.prototype.createDom = function() {
-  goog.base(this, 'createDom');
+  e2e.ext.ui.panels.prompt.PanelBase.base(this, 'createDom');
   this.decorateInternal(this.getElement());
 };
 
 
 /** @override */
 promptPanels.PanelBase.prototype.enterDocument = function() {
-  goog.base(this, 'enterDocument');
+  e2e.ext.ui.panels.prompt.PanelBase.base(this, 'enterDocument');
 
   var formText = this.getElement().querySelector('textarea');
   if (formText) {

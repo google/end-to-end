@@ -41,7 +41,7 @@ goog.require('goog.array');
  * @constructor
  */
 e2e.compression.Bzip2 = function() {
-  goog.base(this, e2e.compression.Algorithm.BZIP2);
+  e2e.compression.Bzip2.base(this, 'constructor', e2e.compression.Algorithm.BZIP2);
 
   /**
    * Block size of uncompressed data.

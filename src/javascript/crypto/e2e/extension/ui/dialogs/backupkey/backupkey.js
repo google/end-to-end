@@ -31,7 +31,7 @@ goog.require('e2e.ext.ui.templates.dialogs.backupkey');
 goog.require('goog.array');
 goog.require('goog.crypt.Sha1');
 goog.require('goog.crypt.base64');
-goog.require('soy');
+goog.require('goog.soy');
 
 goog.scope(function() {
 var constants = e2e.ext.constants;
@@ -40,71 +40,69 @@ var messages = e2e.ext.messages;
 var templates = e2e.ext.ui.templates.dialogs.backupkey;
 
 
-
 /**
  * Constructor for the full version of the keyring management UI.
- * @constructor
- * @extends {e2e.ext.ui.dialogs.Overlay}
  */
-dialogs.BackupKey = function() {
-  goog.base(this);
+dialogs.BackupKey = class extends dialogs.Overlay {
+  constructor() {
+    super();
+  }
+
+  /** @override */
+  createDom() {
+    super.createDom();
+    this.decorateInternal(this.getElement());
+  }
+
+  /** @override */
+  decorateInternal(elem) {
+    super.decorateInternal(elem);
+    this.setTitle(chrome.i18n.getMessage('keyMgmtBackupKeyringLabel'));
+    this.getBackupCode_().addCallback(goog.bind(function(key) {
+      goog.soy.renderElement(this.getContentElement(), templates.backupKey, {
+        key: key,
+        caseSensitiveText:
+            chrome.i18n.getMessage('keyMgmtBackupKeyringCaseSensitive')
+      });
+    }, this));
+  }
+
+  /**
+   * Returns the backup code to display in the UI.
+   * @private
+   * @return {!e2e.async.Result.<string>} Base64 encoded backup code to display.
+   */
+  getBackupCode_() {
+    var result = new e2e.async.Result();
+    new e2e.ext.actions.Executor().execute(
+        /** @type {!messages.ApiRequest} */ (
+            {action: constants.Actions.GET_KEYRING_BACKUP_DATA}),
+        this,
+        /** @param {e2e.openpgp.KeyringBackupInfo} data */ function(data) {
+          if (data.count % 2) {
+            throw new e2e.error.InvalidArgumentsError('Odd number of keys');
+          }
+
+          // Limit of 256 key pairs since count is encoded as a single byte.
+          if (data.count > 512) {
+            throw new e2e.error.UnsupportedError('Too many keys');
+          }
+
+          var backup = goog.array.concat(
+              constants.BACKUP_CODE_VERSION,
+              // count / 2 since we store the number of key PAIRS
+              [data.count / 2], data.seed);
+
+          var sha1 = new goog.crypt.Sha1();
+          sha1.update(backup);
+          var checksum = sha1.digest().slice(0, 2);
+
+          result.callback(goog.crypt.base64.encodeByteArray(
+              goog.array.concat(backup, checksum)));
+        });
+    return result;
+  }
 };
-goog.inherits(dialogs.BackupKey, dialogs.Overlay);
 
 
-/** @override */
-dialogs.BackupKey.prototype.createDom = function() {
-  goog.base(this, 'createDom');
-  this.decorateInternal(this.getElement());
-};
-
-
-/** @override */
-dialogs.BackupKey.prototype.decorateInternal = function(elem) {
-  goog.base(this, 'decorateInternal', elem);
-  this.setTitle(chrome.i18n.getMessage('keyMgmtBackupKeyringLabel'));
-  this.getBackupCode_().addCallback(goog.bind(function(key) {
-    soy.renderElement(this.getContentElement(), templates.backupKey, {
-      key: key,
-      caseSensitiveText:
-          chrome.i18n.getMessage('keyMgmtBackupKeyringCaseSensitive')
-    });
-  }, this));
-};
-
-
-/**
- * Returns the backup code to display in the UI.
- * @private
- * @return {e2e.async.Result.<string>} Base64 encoded backup code to display.
- */
-dialogs.BackupKey.prototype.getBackupCode_ = function() {
-  var result = new e2e.async.Result();
-  new e2e.ext.actions.Executor().execute(/** @type {!messages.ApiRequest} */ ({
-    action: constants.Actions.GET_KEYRING_BACKUP_DATA
-  }), this, /** @param {e2e.openpgp.KeyringBackupInfo} data */ function(data) {
-    if (data.count % 2) {
-      throw new e2e.error.InvalidArgumentsError('Odd number of keys');
-    }
-
-    // Limit of 256 key pairs since count is encoded as a single byte.
-    if (data.count > 512) {
-      throw new e2e.error.UnsupportedError('Too many keys');
-    }
-
-    var backup = goog.array.concat(
-        constants.BACKUP_CODE_VERSION,
-        // count / 2 since we store the number of key PAIRS
-        [data.count / 2],
-        data.seed);
-
-    var sha1 = new goog.crypt.Sha1();
-    sha1.update(backup);
-    var checksum = sha1.digest().slice(0, 2);
-
-    result.callback(goog.crypt.base64.encodeByteArray(
-        goog.array.concat(backup, checksum)));
-  });
-  return result;
-};
 });  // goog.scope

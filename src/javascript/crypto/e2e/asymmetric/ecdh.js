@@ -53,7 +53,7 @@ goog.require('goog.asserts');
 e2e.cipher.Ecdh = function(algorithm, opt_key) {
   goog.asserts.assert(algorithm == e2e.cipher.Algorithm.ECDH,
       'Algorithm must be ECDH.');
-  goog.base(this, e2e.cipher.Algorithm.ECDH, opt_key);
+  e2e.cipher.Ecdh.base(this, 'constructor', e2e.cipher.Algorithm.ECDH, opt_key);
 };
 goog.inherits(e2e.cipher.Ecdh, e2e.AlgorithmImpl);
 
@@ -117,14 +117,13 @@ e2e.cipher.Ecdh.prototype.setKey = function(keyArg) {
       e2e.cipher.Ecdh.ALLOWED_KEYWRAPPING_ALGORITHMS_,
       keyWrappingAlgo), 'KDF: invalid key wrapping algorithm.');
 
-  if (!goog.isDefAndNotNull(key['pubKey']) &&
-      !goog.isDefAndNotNull(key['privKey'])) {
+  if (key['pubKey'] == null && key['privKey'] == null) {
     goog.asserts.fail('Either public key or private key should be defined.');
   }
   // Pubkey's fingerprint should be in the right size if available.
   // Note: the fingerprint may be absent if this class is used to calculate the
   // fingerprint of a new generated key. See newECDHWithP256.
-  if (goog.isDefAndNotNull(key['fingerprint'])) {
+  if (key['fingerprint'] != null) {
     goog.asserts.assert(key['fingerprint'].length == 20,
         'Public key fingerprint should be 20 bytes.');
   }
@@ -137,7 +136,7 @@ e2e.cipher.Ecdh.prototype.setKey = function(keyArg) {
         'pubKey': key['pubKey']
       });
   // Save other key material.
-  goog.base(this, 'setKey', key);
+  e2e.cipher.Ecdh.base(this, 'setKey', key);
 };
 
 

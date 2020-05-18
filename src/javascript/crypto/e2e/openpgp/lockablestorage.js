@@ -210,7 +210,8 @@ e2e.openpgp.LockableStorage.prototype.setPassphraseCallback = function(
  */
 e2e.openpgp.LockableStorage.prototype.isEncrypted = function() {
   var serialized = this.storage_.get(this.storageKey_);
-  return e2e.async.Result.toResult(goog.isString(serialized) &&
+  return e2e.async.Result.toResult(
+      typeof serialized === 'string' &&
       this.isSerializationEncrypted_(serialized));
 };
 
@@ -229,7 +230,7 @@ e2e.openpgp.LockableStorage.prototype.isSerializationEncrypted_ = function(
 
 /**
  * Internal implementation of readPersisted.
- * @return {boolean|e2e.async.Result<boolean>} True iff the persistent storage
+ * @return {boolean|!e2e.async.Result<boolean>} True iff the persistent storage
  *     is encrypted.
  * @private
  */
@@ -239,7 +240,7 @@ e2e.openpgp.LockableStorage.prototype.readPersistedInternal_ = function() {
   var serialized = this.storage_.get(this.storageKey_);
   // Mark the storage as locked (deserialize will unlock it).
   this.decryptedData_ = null;
-  if (!goog.isString(serialized)) {
+  if (typeof serialized !== 'string') {
     // No serialized data was found. This is the first use for the given
     // backend, initialize with an empty object.
     this.decryptedData_ = {};
@@ -281,7 +282,7 @@ e2e.openpgp.LockableStorage.prototype.readPersisted_ = function() {
  * @return {boolean}
  */
 e2e.openpgp.LockableStorage.prototype.isLocked = function() {
-  return goog.isNull(this.decryptedData_);
+  return this.decryptedData_ === null;
 };
 
 
@@ -553,7 +554,7 @@ e2e.openpgp.LockableStorage.prototype.setMultiple = function(values) {
  */
 e2e.openpgp.LockableStorage.prototype.unlock = function() {
   // Data not yet read from the storage.
-  if (!goog.isDef(this.decryptedData_)) {
+  if (this.decryptedData_ === undefined) {
     return this.readPersisted_().addCallback(this.unlock, this);
   }
   return this.tryPassphrase_(this.passphrase_);

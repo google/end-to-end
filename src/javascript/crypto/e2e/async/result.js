@@ -27,7 +27,7 @@ goog.require('goog.async.Deferred');
 /**
  * @param {Function=} opt_onCancelFunction A function that will be called if the
  *     Deferred is cancelled. If provided, this function runs before the
- *     Deferred is fired with a {@code CancelledError}.
+ *     Deferred is fired with a `CancelledError`.
  * @param {Object=} opt_defaultScope The default object context to call
  *     callbacks and errbacks in.
  * @constructor

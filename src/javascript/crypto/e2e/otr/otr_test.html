@@ -43,7 +43,7 @@ function setUp() {
    * @param {Array.<number>} data
    */
   SerializableArrayImpl = function(data) {
-    goog.base(this);
+    SerializableArrayImpl.base(this, 'constructor');
     goog.array.extend(this, data);
   };
   goog.inherits(SerializableArrayImpl, Array);

@@ -32,7 +32,7 @@ goog.require('e2e.async.ForeignPeer');
  * @constructor
  */
 e2e.async.WorkerSelf = function() {
-  goog.base(this, self);
+  e2e.async.WorkerSelf.base(this, 'constructor', self);
 };
 goog.inherits(e2e.async.WorkerSelf, e2e.async.ForeignPeer);
 

@@ -44,7 +44,7 @@ var versions = constants.Version;
  * @extends {e2e.otr.message.Message}
  */
 e2e.otr.message.Query = function(session, version) {
-  goog.base(this, session);
+  e2e.otr.message.Query.base(this, 'constructor', session);
   this.version_ = version;
 };
 goog.inherits(e2e.otr.message.Query, e2e.otr.message.Message);

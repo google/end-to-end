@@ -57,7 +57,7 @@ e2e.cipher.Aes = function(algorithm, opt_keyObj) {
     default:
       throw new e2e.cipher.Error('Invalid algorithm.');
   }
-  goog.base(this, algorithm, opt_keyObj);
+  e2e.cipher.Aes.base(this, 'constructor', algorithm, opt_keyObj);
 };
 goog.inherits(e2e.cipher.Aes, e2e.AlgorithmImpl);
 
@@ -74,7 +74,7 @@ e2e.cipher.Aes.prototype.setKey = function(keyObj) {
   }
 
   // Superclass setKey sets the key to this.key and keySize.
-  goog.base(this, 'setKey', keyObj, keyObj.key.length);
+  e2e.cipher.Aes.base(this, 'setKey', keyObj, keyObj.key.length);
 
   /**
    * Size of the key (in 4 byte words).
@@ -111,6 +111,14 @@ e2e.cipher.Aes.prototype.setKey = function(keyObj) {
    * @private
    */
   this.temp_ = [[], [], [], []];
+
+  /**
+   * Create the key schedule (this.w_) from the
+   * initial key as specified in FIPS 197 Section 5.2.
+   * @type {Array.<number>}
+   * @private
+   */
+  this.w_ = new Array(this.Nb_ * (this.Nr_ + 1));
 
   this.keyExpansion_();
 };
@@ -424,7 +432,7 @@ e2e.cipher.Aes.prototype.keyExpansion_ = function() {
  * an S-box to each of the four bytes to produce an output word.
  * As specified by FIPS 197 Section 5.2. and Section 5.1.1.
  * @param {Array.<number>} w An array to substitute with the SBOX.
- * @return {Array.<number>} The substituted word.
+ * @return {!Array.<number>} The substituted word.
  * @private
  */
 e2e.cipher.Aes.prototype.subWord_ = function(w) {
@@ -441,7 +449,7 @@ e2e.cipher.Aes.prototype.subWord_ = function(w) {
  * AES's RotWord procedure that takes a four-byte word and performs a
  * cyclic permutation. As specified in FIPS 197 Section 5.2.
  * @param {Array.<number>} w The word to be rotated.
- * @return {Array.<number>} The rotated word.
+ * @return {!Array.<number>} The rotated word.
  * @private
  */
 e2e.cipher.Aes.prototype.rotWord_ = function(w) {

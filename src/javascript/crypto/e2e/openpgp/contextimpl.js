@@ -69,6 +69,7 @@ e2e.openpgp.ContextImpl = function(opt_keyRingStorageMechanism) {
    */
   this.armorHeaders_ = {};
 
+  /** @suppress {checkTypes} overridden interface property is non-undefined. */
   this.keyServerUrl = e2e.openpgp.ContextImpl.KEY_SERVER_URL || undefined;
 
   var backendStorage = opt_keyRingStorageMechanism ||
@@ -177,7 +178,7 @@ e2e.openpgp.ContextImpl.prototype.changeKeyRingPassphrase = function(
 /** @inheritDoc */
 e2e.openpgp.ContextImpl.prototype.hasPassphrase = function() {
   return e2e.async.Result.toResult(
-      goog.isDefAndNotNull(this.keyRing_) && this.keyRing_.hasPassphrase());
+      this.keyRing_ != null && this.keyRing_.hasPassphrase());
 };
 
 
@@ -265,8 +266,9 @@ e2e.openpgp.ContextImpl.prototype.tryToImportKey_ = function(
   // Result is the outer-most async result that's passed around in recursive
   // calls.
   var result = opt_result || new e2e.async.Result();
-  var passphrase = goog.isDef(opt_passphrase) ?
-      e2e.stringToByteArray(opt_passphrase) : undefined;
+  var passphrase = opt_passphrase !== undefined ?
+      e2e.stringToByteArray(opt_passphrase) :
+      undefined;
   this.keyRing_.importKey(block, passphrase)
       .addCallback(
       // Null as a return value only indicates duplicate keys already exist
@@ -451,7 +453,7 @@ e2e.openpgp.ContextImpl.prototype.verifyMessage_ = function(
         return this.keyRing_.getKeyBlockById(keyId);
       }, this)).addCallback(function(keyBlocks) {
     // Verify not empty key blocks only
-    return message.verify(goog.array.filter(keyBlocks, goog.isDefAndNotNull));
+    return message.verify(goog.array.filter(keyBlocks, x => x != null));
   }).addCallback(function(verifyResult) {
     result.callback({
       success: goog.array.map(verifyResult.success, function(key) {
@@ -546,7 +548,7 @@ e2e.openpgp.ContextImpl.prototype.byteSignInternal = function(
     plaintext, key) {
   var msg = e2e.openpgp.block.LiteralMessage.construct(plaintext);
   var sigKey = key.getKeyToSign();
-  if (goog.isDefAndNotNull(sigKey)) {
+  if (sigKey != null) {
     return msg.signWithOnePass(sigKey).addCallback(function() {
       var data = msg.serialize();
       if (this.armorOutput) {

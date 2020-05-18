@@ -50,7 +50,7 @@ goog.require('goog.array');
  */
 e2e.openpgp.packet.SymmetricallyEncrypted = function(
     encryptedData) {
-  goog.base(this, encryptedData);
+  e2e.openpgp.packet.SymmetricallyEncrypted.base(this, 'constructor', encryptedData);
 };
 goog.inherits(e2e.openpgp.packet.SymmetricallyEncrypted,
     e2e.openpgp.packet.EncryptedData);
@@ -85,9 +85,9 @@ e2e.openpgp.packet.SymmetricallyEncrypted.prototype.serializePacketBody =
 
 /**
  * Parses and extracts the data from the body.
- * Throws a {@code e2e.openpgp.error.ParseError} if malformed.
+ * Throws a `e2e.openpgp.error.ParseError` if malformed.
  * @param {!e2e.ByteArray} body The data to parse.
- * @return {e2e.openpgp.packet.SymmetricallyEncrypted} packet.
+ * @return {!e2e.openpgp.packet.SymmetricallyEncrypted} packet.
  */
 e2e.openpgp.packet.SymmetricallyEncrypted.parse =
     function(body) {
@@ -108,7 +108,7 @@ e2e.openpgp.packet.factory.add(
  */
 e2e.openpgp.packet.SymmetricallyEncryptedIntegrity = function(
     encryptedData) {
-  goog.base(this, encryptedData);
+  e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.base(this, 'constructor', encryptedData);
 };
 goog.inherits(e2e.openpgp.packet.SymmetricallyEncryptedIntegrity,
     e2e.openpgp.packet.SymmetricallyEncrypted);
@@ -162,7 +162,7 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.construct = function(
  * @param {!e2e.ByteArray} innerPacket The unencrypted inner packet.
  * @param {!e2e.cipher.SymmetricCipher} cipher The cipher to use for encryption.
  * @param {!e2e.ByteArray} prefix The random prefix.
- * @return {e2e.openpgp.packet.SymmetricallyEncryptedIntegrity}
+ * @return {!e2e.openpgp.packet.SymmetricallyEncryptedIntegrity}
  * @private
  */
 e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.constructWithPrefix_ =
@@ -195,9 +195,9 @@ e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.prototype.
 
 /**
  * Parses and extracts the data from the body.
- * Throws a {@code e2e.openpgp.error.ParseError} if malformed.
+ * Throws a `e2e.openpgp.error.ParseError` if malformed.
  * @param {!e2e.ByteArray} body The data to parse.
- * @return {e2e.openpgp.packet.SymmetricallyEncryptedIntegrity} packet.
+ * @return {!e2e.openpgp.packet.SymmetricallyEncryptedIntegrity} packet.
  */
 e2e.openpgp.packet.SymmetricallyEncryptedIntegrity.parse =
     function(body) {

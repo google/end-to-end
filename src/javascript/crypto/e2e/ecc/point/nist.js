@@ -110,8 +110,8 @@ e2e.ecc.point.Nist.prototype.getX = function() {
   goog.asserts.assert(!this.isInfinity(),
       'Cannot obtain the affine coordinate of the point at infinity.');
   var affine = this.getAffine_();
-  goog.asserts.assert(goog.isDefAndNotNull(affine.x),
-      'Element X of affine must not be null.');
+  goog.asserts.assert(
+      affine.x != null, 'Element X of affine must not be null.');
   return affine.x;
 };
 
@@ -122,8 +122,8 @@ e2e.ecc.point.Nist.prototype.getY = function() {
   goog.asserts.assert(!this.isInfinity(),
       'Cannot obtain the affine coordinate of the point at infinity.');
   var affine = this.getAffine_();
-  goog.asserts.assert(goog.isDefAndNotNull(affine.y),
-      'Element Y of affine must not be null.');
+  goog.asserts.assert(
+      affine.y != null, 'Element Y of affine must not be null.');
   return affine.y;
 };
 
@@ -220,10 +220,11 @@ e2e.ecc.point.Nist.prototype.toByteArray = function(opt_compressed) {
  * operation.
  * Note that this function leaks timing side-channel. We use it only to
  * calculate public points.
- * @param {!e2e.ecc.point.Nist} that The point to add.
+ * @param {!e2e.ecc.point.Point} that The point to add.
  * @return {!e2e.ecc.point.Nist}
  */
 e2e.ecc.point.Nist.prototype.add = function(that) {
+  that = /** @type {!e2e.ecc.point.Nist} */ (that);
   goog.asserts.assertObject(that, 'Point should be defined.');
   goog.asserts.assert(that.curve.isEqual(this.curve),
       'Cannot add points from different curves.');
@@ -613,10 +614,8 @@ e2e.ecc.point.Nist.prototype.addAffine_ = function(that) {
       'Point should have affine coordinate.');
   goog.asserts.assert(that.z.isEqual(this.curve.ONE),
       'Point should have affine coordinate.');
-  goog.asserts.assert(goog.isDefAndNotNull(this.x),
-      'Element X should not be null.');
-  goog.asserts.assert(goog.isDefAndNotNull(this.y),
-      'Element Y should not be null.');
+  goog.asserts.assert(this.x != null, 'Element X should not be null.');
+  goog.asserts.assert(this.y != null, 'Element Y should not be null.');
   // Cost: 4M + 2S.
   var H = that.x.subtract(this.x);
   var HH = H.square();
@@ -642,10 +641,8 @@ e2e.ecc.point.Nist.prototype.addAffine_ = function(that) {
 e2e.ecc.point.Nist.prototype.addSameZ_ = function(that) {
   goog.asserts.assert(this.z.isEqual(that.z),
       'Both points should have the same z.');
-  goog.asserts.assert(goog.isDefAndNotNull(this.x),
-      'Element X should not be null.');
-  goog.asserts.assert(goog.isDefAndNotNull(this.y),
-      'Element Y should not be null.');
+  goog.asserts.assert(this.x != null, 'Element X should not be null.');
+  goog.asserts.assert(this.y != null, 'Element Y should not be null.');
   // Cost: 5M + 2S.
   var A = that.x.subtract(this.x).square();
   var B = this.x.multiply(A);
@@ -668,10 +665,8 @@ e2e.ecc.point.Nist.prototype.addSameZ_ = function(that) {
  * @private
  */
 e2e.ecc.point.Nist.prototype.addMixed_ = function(that) {
-  goog.asserts.assert(goog.isDefAndNotNull(this.x),
-      'Element X should not be null.');
-  goog.asserts.assert(goog.isDefAndNotNull(this.y),
-      'Element Y should not be null.');
+  goog.asserts.assert(this.x != null, 'Element X should not be null.');
+  goog.asserts.assert(this.y != null, 'Element Y should not be null.');
 
   // Cost: 7M + 4S.
   var Z1Z1 = this.z.square();

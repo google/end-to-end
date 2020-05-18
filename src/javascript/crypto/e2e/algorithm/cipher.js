@@ -59,18 +59,17 @@ e2e.cipher.Algorithm = {
 };
 
 
-
 /**
  * Error class used to represent errors in the ciphers.
- * @param {*=} opt_msg Optional message to send.
- * @extends {goog.debug.Error}
- * @constructor
  */
-e2e.cipher.Error = function(opt_msg) {
-  goog.base(this, opt_msg);
+e2e.cipher.Error = class extends goog.debug.Error {
+  /**
+   * @param {*=} opt_msg Optional message to send.
+   */
+  constructor(opt_msg) {
+    super(opt_msg);
+  }
 };
-goog.inherits(e2e.cipher.Error, goog.debug.Error);
-
 
 
 /**
@@ -78,7 +77,6 @@ goog.inherits(e2e.cipher.Error, goog.debug.Error);
  * @extends {e2e.Algorithm}
  */
 e2e.cipher.Cipher = function() {};
-
 
 
 /**
@@ -118,7 +116,6 @@ e2e.cipher.SymmetricCipher.prototype.blockSize;
  *     decryption.
  */
 e2e.cipher.SymmetricCipher.prototype.decrypt = goog.abstractMethod;
-
 
 
 /**
@@ -180,7 +177,7 @@ e2e.cipher.factory.ciphers_ = {};
 e2e.cipher.factory.add = function(cipher, opt_algorithm) {
   var algorithm = opt_algorithm || cipher.prototype.algorithm;
   var current = e2e.cipher.factory.ciphers_[algorithm];
-  if (!goog.isDef(current)) {
+  if (current === undefined) {
     e2e.cipher.factory.ciphers_[algorithm] = cipher;
   }
 };
@@ -232,7 +229,7 @@ e2e.cipher.factory.getAvailable = function() {
  */
 e2e.cipher.factory.require = function(algorithm, opt_keyData) {
   var ret = e2e.cipher.factory.get(algorithm, opt_keyData);
-  if (goog.isNull(ret)) {
+  if (ret === null) {
     throw new e2e.cipher.Error('Required algorithm not available: ' +
         algorithm);
   }

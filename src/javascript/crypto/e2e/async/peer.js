@@ -33,7 +33,7 @@ goog.require('e2e.async.Broker');
  * @constructor
  */
 e2e.async.Peer = function() {
-  goog.base(this, []);
+  e2e.async.Peer.base(this, 'constructor', []);
 };
 goog.inherits(e2e.async.Peer, e2e.async.Broker);
 

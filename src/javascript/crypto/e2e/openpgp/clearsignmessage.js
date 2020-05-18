@@ -22,6 +22,7 @@
 
 goog.provide('e2e.openpgp.ClearSignMessage');
 
+goog.requireType('e2e.openpgp.packet.SecretKeyInterface');
 goog.require('e2e');
 goog.require('e2e.openpgp.block.Armorable');
 goog.require('e2e.openpgp.block.LiteralMessage');
@@ -29,6 +30,8 @@ goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.Signature');
 goog.require('e2e.openpgp.parse');
 goog.require('goog.string');
+goog.requireType('e2e.ByteArray');
+goog.requireType('e2e.async.Result');
 
 
 

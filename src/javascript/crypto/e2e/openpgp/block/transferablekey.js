@@ -107,7 +107,7 @@ e2e.openpgp.block.TransferableKey = function(keyPacketClass) {
    */
   this.userAttributes = [];
 
-  goog.base(this);
+  e2e.openpgp.block.TransferableKey.base(this, 'constructor');
 };
 goog.inherits(e2e.openpgp.block.TransferableKey,
     e2e.openpgp.block.Block);
@@ -290,7 +290,7 @@ e2e.openpgp.block.TransferableKey.prototype.getKeyTo = function(use, type) {
   // the newest if we have multiple viable subkeys.
   var subkey = this.getNewestCertifiedSubkeyTo_(use, type);
 
-  if (!goog.isNull(subkey)) {
+  if (subkey !== null) {
     return subkey;
   }
 
@@ -457,7 +457,7 @@ e2e.openpgp.block.TransferableKey.prototype.getNewestCertifiedSubkeyTo_ =
   var latestTimestamp = -1;
 
   var mainKey = this.keyPacket;
-  if (!goog.isDefAndNotNull(mainKey)) {
+  if (mainKey == null) {
     throw new e2e.openpgp.error.SignatureError(
         'Main key has not been initialized.');
   }
@@ -495,7 +495,7 @@ e2e.openpgp.block.TransferableKey.prototype.getNewestCertifiedUserId_ =
   var latestTimestamp = -1;
 
   var mainKey = this.keyPacket;
-  if (!goog.isDefAndNotNull(mainKey)) {
+  if (mainKey == null) {
     throw new e2e.openpgp.error.SignatureError(
         'Main key has not been initialized.');
   }
@@ -508,7 +508,7 @@ e2e.openpgp.block.TransferableKey.prototype.getNewestCertifiedUserId_ =
       latestUserId = userId;
     }
   }, this);
-  if (!goog.isDefAndNotNull(latestUserId)) {
+  if (latestUserId == null) {
     throw new e2e.openpgp.error.SignatureError(
         'No certified User IDs available.');
   }

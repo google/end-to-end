@@ -97,14 +97,15 @@ providers.KeyringKeyProvider.launch = function(keyRingPromise) {
 /** @override */
 providers.KeyringKeyProvider.prototype.configure = function(config) {
   var configObj = config || {};
-  var passphrase = goog.isString(configObj['passphrase']) ?
-      configObj['passphrase'] : undefined;
+  var passphrase = typeof configObj['passphrase'] === 'string' ?
+      configObj['passphrase'] :
+      undefined;
 
   // Keyring initialization (no-op if the keyring was already initialized).
   return this.keyring_.initialize(passphrase)
       .then(function() {
         // Optionally, change the passphrase.
-        if (goog.isString(configObj['newPassphrase'])) {
+        if (typeof configObj['newPassphrase'] === 'string') {
           return this.keyring_.changePassphrase(configObj['newPassphrase'])
               .then(function() {
                 return this.getState();
@@ -445,7 +446,7 @@ providers.KeyringKeyProvider.prototype.serializeAllKeyBlocks_ = function(
     keyringType, asciiArmor, opt_passphrase) {
   var isSecret = (keyringType == e2e.openpgp.KeyRingType.SECRET);
   var passphraseBytes = null;
-  if (goog.isString(opt_passphrase) && opt_passphrase !== '') {
+  if (typeof opt_passphrase === 'string' && opt_passphrase !== '') {
     if (!isSecret) {
       throw new e2e.openpgp.error.InvalidArgumentsError(
           'Cannot use passphrase during a public keyring export.');
@@ -505,8 +506,9 @@ providers.KeyringKeyProvider.prototype.serializeKey_ = function(
     // Protect with passphrase
     matchingKeyPromise = key.processSignatures().then(goog.bind(function() {
       key.unlock();
-      key.lock(goog.isNull(passphraseBytes) ? undefined :
-          goog.asserts.assertArray(passphraseBytes));
+      key.lock(
+          passphraseBytes === null ? undefined :
+                                     goog.asserts.assertArray(passphraseBytes));
       // Also add the public key block for this secret key.
       return this.keyring_.getPublicKeyBlockByFingerprint(
           key.keyPacket.fingerprint);
@@ -578,7 +580,7 @@ providers.KeyringKeyProvider.prototype.importKeys = function(serializedKeys,
     }, this));
   }, null, this).then(function(keysOrNull) {
     return providers.KeyringKeyProvider.keysToKeyObjects_(
-        goog.array.filter(keysOrNull, goog.isDefAndNotNull));
+        goog.array.filter(keysOrNull, x => x != null));
   });
 };
 
@@ -744,11 +746,11 @@ providers.KeyringKeyProvider.prototype.generateKeyPair = function(userId,
 providers.KeyringKeyProvider.prototype.validateGenerateOptions_ = function(
     generateOptions) {
   return new goog.Promise(function(resolve, reject) {
-    if (!goog.isNumber(generateOptions['keyLength']) ||
+    if (typeof generateOptions['keyLength'] !== 'number' ||
         generateOptions['keyLength'] <= 0) {
       throw new e2e.openpgp.error.InvalidArgumentsError('Invalid keyLength');
     }
-    if (!goog.isNumber(generateOptions['subkeyLength']) ||
+    if (typeof generateOptions['subkeyLength'] !== 'number' ||
         generateOptions['subkeyLength'] <= 0) {
       throw new e2e.openpgp.error.InvalidArgumentsError(
           'Invalid subkeyLength');

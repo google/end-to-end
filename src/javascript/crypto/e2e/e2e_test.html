@@ -225,6 +225,29 @@
         assertFalse(e2e.isByte((1<<31)*2));
       }
 
+      function testIsUint32() {
+        assert(e2e.isUint32(0));
+        assert(e2e.isUint32(1));
+        assert(e2e.isUint32(256));
+        assert(e2e.isUint32(10000000));
+        assert(e2e.isUint32(0xffffffff));
+        assert(e2e.isUint32(0xabcdef01));
+        assert(e2e.isUint32(0xf0f0f0f0));
+        assertFalse(e2e.isUint32(-1));
+        assertFalse(e2e.isUint32(undefined));
+        assertFalse(e2e.isUint32(1.1));
+        assertFalse(e2e.isUint32(-0.1));
+        assertFalse(e2e.isUint32(Infinity));
+        assertFalse(e2e.isUint32(-Infinity));
+        assertFalse(e2e.isUint32(NaN));
+        assertFalse(e2e.isUint32(null));
+        assertFalse(e2e.isUint32(undefined));
+        assertFalse(e2e.isUint32(true));
+        assertFalse(e2e.isUint32(false));
+        assertFalse(e2e.isUint32(new Number(1)));
+        assertFalse(e2e.isUint32((1<<31)*2));
+      }
+
       function testCompareByteArray() {
         assert(e2e.compareByteArray([1, 2, 3], [1, 2, 3]));
         assertFalse(e2e.compareByteArray([true, 2, 3], [1, 2, 3]));
@@ -301,7 +324,7 @@
             fail('Should not be called.');
           });
 
-        // Check we can intialize with arrays and safearrays.
+        // Check we can initialize with arrays and safearrays.
         safe = new e2e.ImmutableArray([1, 2, 3]);
         assertEquals(3, safe.size());
         var safe2 = new e2e.ImmutableArray(safe);

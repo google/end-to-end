@@ -36,7 +36,7 @@ goog.require('goog.array');
  * @extends {e2e.scheme.Ecdh}
  */
 e2e.openpgp.scheme.Ecdh = function(cipher) {
-  goog.base(this, cipher);
+  e2e.openpgp.scheme.Ecdh.base(this, 'constructor', cipher);
 };
 goog.inherits(e2e.openpgp.scheme.Ecdh, e2e.scheme.Ecdh);
 
@@ -60,13 +60,13 @@ e2e.openpgp.scheme.Ecdh.prototype.decryptJavaScript = function(ciphertext) {
 e2e.openpgp.scheme.Ecdh.prototype.encryptWebCrypto = function(plaintext) {
   var paddingSize = 40 - plaintext.length;
   goog.array.extend(plaintext, goog.array.repeat(paddingSize, paddingSize));
-  return goog.base(this, 'encryptWebCrypto', plaintext);
+  return e2e.openpgp.scheme.Ecdh.base(this, 'encryptWebCrypto', plaintext);
 };
 
 
 /** @override */
 e2e.openpgp.scheme.Ecdh.prototype.decryptWebCrypto = function(ciphertext) {
-  return goog.base(this, 'decryptWebCrypto', ciphertext)
+  return e2e.openpgp.scheme.Ecdh.base(this, 'decryptWebCrypto', ciphertext)
       .addCallback(this.removeEccPadding_, this);
 };
 

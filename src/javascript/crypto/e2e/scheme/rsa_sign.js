@@ -37,7 +37,7 @@ goog.provide('e2e.scheme.Rsassa');
  */
 e2e.scheme.Rsassa = function(signer) {
   this.signer = signer;
-  goog.base(this, signer);
+  e2e.scheme.Rsassa.base(this, 'constructor', signer);
   if (this.useWebCrypto) {
     this.algorithmIdentifier = {
       'name': 'RSASSA-PKCS1-v1_5',
@@ -70,7 +70,8 @@ e2e.scheme.Rsassa.prototype.verifyWebCrypto = function(m, sig) {
   var result = new e2e.async.Result;
   /** @type {!ArrayBuffer} */
   var webcrypto_sig = new Uint8Array(sig['s']).buffer;
-  this.crypto.verify(this.algorithmIdentifier, this.key.publicKey,
+  this.crypto.verify(this.algorithmIdentifier,
+      goog.asserts.assert(this.key.publicKey),
       webcrypto_sig, new Uint8Array(m)
   ).then(
       goog.bind(result.callback, result),
@@ -87,11 +88,13 @@ e2e.scheme.Rsassa.prototype.signWebCrypto = function(data) {
    */
   goog.asserts.assert('sign' in this.crypto, 'No WebCrypto sign()!');
   var result = new e2e.async.Result;
-  this.crypto.sign(this.algorithmIdentifier, this.key.privateKey,
-      new Uint8Array(data)
-  ).then(
-      goog.bind(result.callback, result),
-      goog.bind(result.errback, result));
+  this.crypto
+      .sign(
+          this.algorithmIdentifier, goog.asserts.assert(this.key.privateKey),
+          new Uint8Array(data))
+      .then(
+          goog.bind(result.callback, result),
+          goog.bind(result.errback, result));
   return result.addCallback(function(sig) {
     return {'s': [].slice.call(new Uint8Array(sig))};
   });

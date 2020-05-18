@@ -38,7 +38,7 @@ var dialogs = e2e.ext.ui.dialogs;
  * @extends {goog.ui.Dialog}
  */
 dialogs.Overlay = function() {
-  goog.base(this);
+  e2e.ext.ui.dialogs.Overlay.base(this, 'constructor');
   this.setDisposeOnHide(true);
 };
 goog.inherits(dialogs.Overlay, goog.ui.Dialog);
@@ -46,7 +46,7 @@ goog.inherits(dialogs.Overlay, goog.ui.Dialog);
 
 /** @override */
 dialogs.Overlay.prototype.decorateInternal = function(elem) {
-  goog.base(this, 'decorateInternal', elem);
+  e2e.ext.ui.dialogs.Overlay.base(this, 'decorateInternal', elem);
   this.setButtonSet(goog.ui.Dialog.ButtonSet.createOk());
   goog.dom.classlist.add(this.getElement(), 'overlayDialog');
   goog.style.setElementShown(
@@ -69,7 +69,7 @@ dialogs.Overlay.prototype.decorateInternal = function(elem) {
 
 /** @override */
 dialogs.Overlay.prototype.enterDocument = function() {
-  goog.base(this, 'enterDocument');
+  e2e.ext.ui.dialogs.Overlay.base(this, 'enterDocument');
   this.getHandler().listen(
       this.getBackgroundElement(), goog.events.EventType.CLICK,
       goog.partial(this.setVisible, false));

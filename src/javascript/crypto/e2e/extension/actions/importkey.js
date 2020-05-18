@@ -51,9 +51,9 @@ actions.ImportKey.prototype.execute =
     return;
   }
 
-  new actions.GetKeyDescription().
-      execute(ctx, request, requestor, function(result) {
-        if (goog.isDef(result)) {
+  new actions.GetKeyDescription().execute(
+      ctx, request, requestor, function(result) {
+        if (result !== undefined) {
           var dialogContainer = goog.dom.getElement(
               constants.ElementId.CALLBACK_DIALOG);
 

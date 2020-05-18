@@ -27,13 +27,13 @@ goog.require('e2e.ext.ui.dialogs.Generic');
 goog.require('e2e.ext.ui.panels.prompt.PanelBase');
 goog.require('e2e.ext.ui.templates.panels.prompt');
 goog.require('goog.dom.classlist');
+goog.require('goog.soy');
 goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.MockControl');
 goog.require('goog.testing.PropertyReplacer');
 goog.require('goog.testing.asserts');
 goog.require('goog.testing.jsunit');
 goog.require('goog.testing.mockmatchers');
-goog.require('soy');
 
 goog.setTestOnly();
 
@@ -59,11 +59,13 @@ function setUp() {
     document.body.appendChild(callbackDialog);
   }
 
+  var oldDecorateInternal =
+      e2e.ext.ui.panels.prompt.PanelBase.prototype.decorateInternal;
   stubs.set(
       e2e.ext.ui.panels.prompt.PanelBase.prototype, 'decorateInternal',
       function(elem) {
-        goog.base(this, 'decorateInternal', elem);
-        soy.renderElement(elem, templates.renderGenericForm, {});
+        oldDecorateInternal.call(this, elem);
+        goog.soy.renderElement(elem, templates.renderGenericForm, {});
       });
 
   panel = new e2e.ext.ui.panels.prompt.PanelBase(panelTitle, panelContent);

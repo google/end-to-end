@@ -666,24 +666,30 @@ e2e.openpgp.Context2Impl.prototype.verifyMessage_ = function(
     message, opt_verificationKeys) {
   var keyBlocksPromise;
 
-  if (goog.isDefAndNotNull(opt_verificationKeys)) {
+  if (opt_verificationKeys != null) {
     // We know the keys upfront.
     keyBlocksPromise = goog.Promise.all(
         goog.array.map(opt_verificationKeys, this.requirePublicKey_, this));
   } else {
     // Get keys matching key IDs declared in signatures.
-    keyBlocksPromise = goog.Promise.all(
-        goog.array.map(message.getSignatureKeyIds(), goog.bind(function(keyId) {
-          return this.keyManager_.getKeysByKeyId(
-              e2e.openpgp.KeyPurposeType.VERIFICATION, keyId);
-        }, this))).then(function(keyHandles) {
-          var foundKeys = goog.array.flatten(goog.array.filter(
-              keyHandles, function(keyHandle) {
-                return !goog.isNull(keyHandle);
-              }));
-          return goog.Promise.all(
-              goog.array.map(foundKeys, this.requirePublicKey_, this));
-        }, null, this);
+    keyBlocksPromise =
+        goog.Promise
+            .all(goog.array.map(
+                message.getSignatureKeyIds(),
+                goog.bind(
+                    function(keyId) {
+                      return this.keyManager_.getKeysByKeyId(
+                          e2e.openpgp.KeyPurposeType.VERIFICATION, keyId);
+                    },
+                    this)))
+            .then(function(keyHandles) {
+              var foundKeys = goog.array.flatten(
+                  goog.array.filter(keyHandles, function(keyHandle) {
+                    return keyHandle !== null;
+                  }));
+              return goog.Promise.all(
+                  goog.array.map(foundKeys, this.requirePublicKey_, this));
+            }, null, this);
   }
 
   return keyBlocksPromise.then(function(verificationKeys) {

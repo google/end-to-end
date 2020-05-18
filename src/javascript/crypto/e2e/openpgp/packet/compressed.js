@@ -41,7 +41,7 @@ goog.require('goog.array');
  * @constructor
  */
 e2e.openpgp.packet.Compressed = function(algorithm, compressedData) {
-  goog.base(this);
+  e2e.openpgp.packet.Compressed.base(this, 'constructor');
   /**
    * The data compression algorithm.
    * @type {e2e.compression.Algorithm}
@@ -79,7 +79,7 @@ e2e.openpgp.packet.Compressed.prototype.decompress = function() {
  * Makes a compressed packet starting with uncompressed data, typically a
  * serialized literal data packet.
  * @param {!e2e.ByteArray} data The data to compress.
- * @return {e2e.openpgp.packet.Compressed} packet.
+ * @return {!e2e.openpgp.packet.Compressed} packet.
  */
 e2e.openpgp.packet.Compressed.construct = function(data) {
   // TODO(adhintz) Add optional parameter specifying the compression algorithm.
@@ -101,9 +101,9 @@ e2e.openpgp.packet.Compressed.prototype.serializePacketBody = function() {
 
 /**
  * Parses and extracts the data from the body.
- * Throws a {@code e2e.openpgp.error.ParseError} if malformed.
+ * Throws a `e2e.openpgp.error.ParseError` if malformed.
  * @param {!e2e.ByteArray} body The data to parse.
- * @return {e2e.openpgp.packet.Compressed} packet.
+ * @return {!e2e.openpgp.packet.Compressed} packet.
  */
 e2e.openpgp.packet.Compressed.parse = function(body) {
   var algorithm = /** @type {e2e.compression.Algorithm} */ (

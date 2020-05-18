@@ -30,7 +30,7 @@ goog.require('e2e.openpgp.packet.factory');
  * @extends {e2e.openpgp.packet.Packet}
  */
 e2e.openpgp.packet.Marker = function() {
-  goog.base(this);
+  e2e.openpgp.packet.Marker.base(this, 'constructor');
 };
 goog.inherits(e2e.openpgp.packet.Marker,
               e2e.openpgp.packet.Packet);
@@ -48,7 +48,7 @@ e2e.openpgp.packet.Marker.prototype.serializePacketBody = function() {
 
 /**
  * @param {!e2e.ByteArray} body
- * @return {e2e.openpgp.packet.Marker}
+ * @return {!e2e.openpgp.packet.Marker}
  */
 e2e.openpgp.packet.Marker.parse = function(body) {
   return new e2e.openpgp.packet.Marker;

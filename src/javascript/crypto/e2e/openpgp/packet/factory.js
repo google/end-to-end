@@ -39,6 +39,7 @@ e2e.openpgp.packet.factory.parsers_ = {};
  * Registers a Packet as the default parser for a tag.
  * @param {function(new:e2e.openpgp.packet.Packet, ...)} packet The
  *     constructor of the packet.
+ * @suppress {missingProperties} go/missingfnprops
  */
 e2e.openpgp.packet.factory.add = function(packet) {
   e2e.openpgp.packet.factory.parsers_[packet.prototype.tag] =
@@ -48,7 +49,7 @@ e2e.openpgp.packet.factory.add = function(packet) {
 
 /**
  * Parses a packet of the given tag and returns it.
- * Throws a {@code e2e.openpgp.error.ParseError} for nonexistent packets.
+ * Throws a `e2e.openpgp.error.ParseError` for nonexistent packets.
  * @param {number} tag The tag to generate a packet for.
  * @param {!e2e.ByteArray} body The body of the packet.
  * @return {!e2e.openpgp.packet.Packet} The packet.

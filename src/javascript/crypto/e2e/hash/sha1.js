@@ -28,18 +28,16 @@ goog.require('e2e.hash.factory');
 goog.require('goog.crypt.Sha1');
 
 
-
 /**
  * Wrapper around the goog.crypt.Sha1 implementation.
- * @extends {e2e.hash.Hash}
- * @constructor
  */
-e2e.hash.Sha1 = function() {
-  goog.base(this);
-  this.inst_ = new goog.crypt.Sha1();
-  this.blockSize = this.inst_.blockSize;
+e2e.hash.Sha1 = class extends e2e.hash.Hash {
+  constructor() {
+    super();
+    this.inst_ = new goog.crypt.Sha1();
+    this.blockSize = this.inst_.blockSize;
+  }
 };
-goog.inherits(e2e.hash.Sha1, e2e.hash.Hash);
 
 
 /** @inheritDoc */

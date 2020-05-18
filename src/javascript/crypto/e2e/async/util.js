@@ -26,7 +26,7 @@ goog.require('goog.async.Deferred');
 /**
  * Wraps a function within a port.
  * @param {function(...*):*} callback The callback to use.
- * @return {MessagePort} The port that wraps the callback.
+ * @return {!MessagePort} The port that wraps the callback.
  */
 e2e.async.util.wrapFunction = function(callback) {
   var mc = new MessageChannel();
@@ -34,7 +34,7 @@ e2e.async.util.wrapFunction = function(callback) {
     var args = [];
     for (var i = 0; i < event.data.arguments.length; i++) {
       var arg = event.data.arguments[i];
-      if (goog.isObject(arg) && goog.isNumber(arg.__port__)) {
+      if (goog.isObject(arg) && typeof arg.__port__ === 'number') {
         args.push(e2e.async.util.unwrapFunction(event.ports[arg.__port__]));
       } else {
         args.push(arg);

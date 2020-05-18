@@ -21,6 +21,8 @@
 
 goog.provide('e2e.openpgp.pgpmime.testingstubs');
 
+goog.require('goog.testing.PropertyReplacer');
+
 
 /**
  * Stubbed out Tab ID.

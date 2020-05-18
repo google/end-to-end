@@ -39,7 +39,7 @@ goog.provide('e2e.ecc.constant.p_256.G_FAST_MULTIPLY_TABLE');
  *
  * Each non-infinite point is represented as [X, Y], where X and Y
  * each represent a bignum as a base 2**24 array of integers in little-endian
- * order.  The point at infinity is represented by {@code null}.
+ * order.  The point at infinity is represented by `null`.
  *
  * @type {!Array.<!Array.<Array.<!Array.<!number>>>>}
  */

@@ -56,7 +56,7 @@ e2e.openpgp.packet.SecretKey = function(
     version, timestamp, cipher, opt_fingerprint, opt_keyId) {
   goog.asserts.assert(cipher instanceof e2e.openpgp.EncryptedCipher,
       'The cipher for a secret key packet should be encrypted.');
-  goog.base(this, version, timestamp, cipher, opt_fingerprint, opt_keyId);
+  e2e.openpgp.packet.SecretKey.base(this, 'constructor', version, timestamp, cipher, opt_fingerprint, opt_keyId);
 };
 goog.inherits(e2e.openpgp.packet.SecretKey,
               e2e.openpgp.packet.Key);
@@ -91,7 +91,7 @@ e2e.openpgp.packet.SecretKey.prototype.serializePacketBody = function() {
     var s2k = this.cipher.getKeyDerivationS2k(),
         iv = this.cipher.getKeyDerivationIv(),
         kda = this.cipher.getKeyDerivationAlgorithm();
-    if (!goog.isDef(s2k) || !goog.isDef(iv) || !goog.isDef(kda)) {
+    if (s2k === undefined || iv === undefined || kda === undefined) {
       throw new e2e.openpgp.error.SerializationError(
           'Missing key metadata.');
     }

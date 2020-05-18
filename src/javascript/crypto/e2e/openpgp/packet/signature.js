@@ -23,6 +23,8 @@ goog.provide('e2e.openpgp.packet.Signature');
 goog.provide('e2e.openpgp.packet.Signature.RevocationReason');
 goog.provide('e2e.openpgp.packet.Signature.SignatureType');
 
+goog.requireType('e2e.openpgp.KeyId');
+goog.requireType('e2e.openpgp.packet.SecretKeyInterface');
 goog.require('e2e');
 goog.require('e2e.async.Result');
 goog.require('e2e.cipher.Algorithm');
@@ -49,6 +51,10 @@ goog.require('e2e.scheme.Rsassa');
 goog.require('e2e.signer.Algorithm');
 goog.require('goog.array');
 goog.require('goog.asserts');
+goog.requireType('e2e.ByteArray');
+goog.requireType('e2e.hash.Algorithm');
+goog.requireType('e2e.signer.Signer');
+goog.requireType('e2e.signer.signature.Signature');
 
 
 
@@ -77,7 +83,7 @@ e2e.openpgp.packet.Signature = function(
     signature, leftTwoBytes,
     opt_hashedSubpackets, opt_unhashedSubpackets,
     opt_signerKeyId, opt_creationTime) {
-  goog.base(this);
+  e2e.openpgp.packet.Signature.base(this, 'constructor');
 
   var creationTime;
   if (version == 0x04) {
@@ -118,7 +124,7 @@ e2e.openpgp.packet.Signature = function(
     }, this);
     /**
      * Embedded signature.
-     * @type {e2e.openpgp.packet.Signature}
+     * @type {?e2e.openpgp.packet.Signature}
      */
     this.embeddedSignature = null;
     var sigBytes = this.attributes.EMBEDDED_SIGNATURE ||
@@ -128,8 +134,7 @@ e2e.openpgp.packet.Signature = function(
           goog.array.clone(sigBytes));
     }
   } else if (version == 0x03 || version == 0x02) {
-    if (!goog.isDef(opt_signerKeyId) ||
-        !goog.isDef(opt_creationTime)) {
+    if (opt_signerKeyId === undefined || opt_creationTime === undefined) {
       throw new e2e.openpgp.error.InvalidArgumentsError(
           'Missing key data.');
     }
@@ -262,7 +267,10 @@ e2e.openpgp.packet.Signature.prototype.getHashAlgorithm = function() {
 };
 
 
-/** @inheritDoc */
+/**
+ * @param {!e2e.ByteArray} data
+ * @return {?e2e.openpgp.packet.Signature}
+ */
 e2e.openpgp.packet.Signature.parse = function(data) {
   var version = data.shift();
   e2e.openpgp.packet.Signature.console_.info(
@@ -421,7 +429,8 @@ e2e.openpgp.packet.Signature.prototype.verify = function(data, signer,
     signer.setHash(e2e.hash.factory.require(allowedAlgo));
   }
 
-  if (goog.isDef(opt_hashAlgo) && opt_hashAlgo !== signer.getHashAlgorithm()) {
+  if (opt_hashAlgo !== undefined &&
+      opt_hashAlgo !== signer.getHashAlgorithm()) {
     // Hash algorithm mismatch.
     return e2e.async.Result.toResult(false);
   }

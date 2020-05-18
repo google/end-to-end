@@ -35,7 +35,7 @@ goog.require('goog.array');
  * @extends {e2e.openpgp.block.TransferableKey}
  */
 e2e.openpgp.block.TransferableSecretKey = function() {
-  goog.base(this, e2e.openpgp.packet.SecretKey);
+  e2e.openpgp.block.TransferableSecretKey.base(this, 'constructor', e2e.openpgp.packet.SecretKey);
 };
 goog.inherits(e2e.openpgp.block.TransferableSecretKey,
     e2e.openpgp.block.TransferableKey);

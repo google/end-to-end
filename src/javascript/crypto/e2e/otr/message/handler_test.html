@@ -37,7 +37,7 @@ var processFn = function() {};
  * @param {!e2e.otr.Session} session The enclosing session.
  */
 var TestMessage = function(session) {
-  goog.base(this, session);
+  TestMessage.base(this, 'constructor', session);
 };
 goog.inherits(TestMessage, e2e.otr.message.Encoded);
 

@@ -20,6 +20,8 @@
 
 goog.provide('e2e.ext.actions.Action');
 
+goog.requireType('e2e.openpgp.ContextImpl');
+goog.requireType('goog.ui.Component');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.ext.messages.ApiRequest');
 
@@ -44,9 +46,9 @@ actions.Action = function() {};
  *     with which the action is to be executed.
  * @param {!goog.ui.Component} requestor The UI component through which the
  *     action was invoked.
- * @param {!function(RESPONSE_CONTENT)} callback A callback where successful
+ * @param {function(RESPONSE_CONTENT)} callback A callback where successful
  *     results will be passed to.
- * @param {!function(Error)} errorCallback A callback where errors will be
+ * @param {function(Error)} errorCallback A callback where errors will be
  *     passed to.
  */
 actions.Action.prototype.execute;

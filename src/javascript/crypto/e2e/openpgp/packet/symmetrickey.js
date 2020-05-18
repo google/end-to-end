@@ -51,7 +51,7 @@ goog.require('goog.array');
  */
 e2e.openpgp.packet.SymmetricKey = function(
     version, algorithm, encryptedKey, s2k) {
-  goog.base(this, version, algorithm, encryptedKey);
+  e2e.openpgp.packet.SymmetricKey.base(this, 'constructor', version, algorithm, encryptedKey);
   /**
    * String-to-key object to use with passphrase.
    * @type {e2e.openpgp.S2k}
@@ -135,7 +135,7 @@ e2e.openpgp.packet.SymmetricKey.prototype.serializePacketBody = function() {
  * @param {!e2e.ByteArray} passphrase Symmetrically encrypt session key
  *   with this passphrase.
  * @param {!e2e.ByteArray} sessionKey Unencrypted session key.
- * @return {e2e.openpgp.packet.SymmetricKey}
+ * @return {!e2e.openpgp.packet.SymmetricKey}
  */
 e2e.openpgp.packet.SymmetricKey.construct =
     function(passphrase, sessionKey) {
@@ -166,7 +166,10 @@ e2e.openpgp.packet.SymmetricKey.construct =
 };
 
 
-/** @override */
+/**
+ * @param {!e2e.ByteArray} body
+ * @return {!e2e.openpgp.packet.SymmetricKey} The parsed packet.
+ */
 e2e.openpgp.packet.SymmetricKey.parse = function(body) {
   var version = body.shift();
   if (version != 4) {

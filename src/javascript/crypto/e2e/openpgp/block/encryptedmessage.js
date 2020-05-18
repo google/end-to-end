@@ -72,7 +72,7 @@ e2e.openpgp.block.EncryptedMessage = function(opt_eskPackets,
    * @type {e2e.openpgp.packet.EncryptedData}
  */
   this.encryptedData = opt_encryptedData || null;
-  goog.base(this, opt_signatures);
+  e2e.openpgp.block.EncryptedMessage.base(this, 'constructor', opt_signatures);
 };
 goog.inherits(e2e.openpgp.block.EncryptedMessage,
     e2e.openpgp.block.Message);
@@ -110,7 +110,7 @@ e2e.openpgp.block.EncryptedMessage.prototype.decrypt = function(
                 !goog.async.Deferred.<!e2e.openpgp.block.Message>>} */ (
             goog.array.filter(
                 goog.array.map(foundSecretKeys, this.decryptWithCipher_, this),
-                goog.isDefAndNotNull));
+                x => x != null));
 
         var res;
         if (decryptResults.length == 0) {
@@ -300,7 +300,7 @@ e2e.openpgp.block.EncryptedMessage.prototype.testPassphraseKey_ = function(
  */
 e2e.openpgp.block.EncryptedMessage.prototype.decryptMessage_ = function(
     eskPacket) {
-  if (!goog.isDef(eskPacket.symmetricAlgorithm)) {
+  if (eskPacket.symmetricAlgorithm === undefined) {
     throw new e2e.openpgp.error.DecryptError('Invalid session key packet.');
   }
   this.encryptedData.decrypt(
@@ -377,7 +377,7 @@ e2e.openpgp.block.EncryptedMessage.construct = function(
       publicKeys,
       function(keyBlock) {
         return keyBlock.getKeyToEncrypt();
-      }), goog.isDefAndNotNull);
+      }), x => x != null);
   if (publicKeys.length == 0 && passphrases.length == 0) {
     throw new e2e.openpgp.error.InvalidArgumentsError(
         'No public key nor passphrase was provided, encryption is impossible.');

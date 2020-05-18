@@ -61,7 +61,7 @@ actions.DecryptVerify.prototype.execute =
                     chrome.i18n.getMessage('promptMessageNotEncryptedMsg')
               ];
 
-              if (goog.isDef(result.verify)) {
+              if (result.verify !== undefined) {
                 if (result.verify.failure.length > 0) {
                   errorCallback(new Error(chrome.i18n.getMessage(
                       'promptVerificationFailureMsg',

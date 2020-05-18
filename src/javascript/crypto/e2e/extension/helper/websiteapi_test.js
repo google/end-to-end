@@ -33,7 +33,7 @@ var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall(document.title);
 var draft = null;
 var e2eapi = null;
 var stubs = new goog.testing.PropertyReplacer();
-var RECIPIENTS = ['test@example.com' , 't2@example.com', 'cc@example.com'];
+var RECIPIENTS = ['test@example.com', 't2@example.com', 'cc@example.com'];
 var TEST_CONTENT = 'TEST';
 var TEST_SUBJECT = 'TEST SUBJECT';
 
@@ -44,32 +44,64 @@ function setUp() {
   });
   document.documentElement.id = 'test_id\\"with"quo\\tes';
   draft = {
-    to: [{address: 'test@example.com'},
+    to: [
+      {address: 'test@example.com'},
       {name: 'we <ird>>\'>, <a@a.com>, n<ess', address: 't2@example.com'},
       {name: 'inv\"<alid <invalid@example.com>'},
-      {address: 'fails#e2e.regexp.vali@dation.com'}],
+      {address: 'fails#e2e.regexp.vali@dation.com'}
+    ],
     cc: [{address: 'cc@example.com'}],
     subject: TEST_SUBJECT,
     wasSent: false,
 
     body: 'some text<br>with new<br>lines',
-    getToEmails: function() { return this.to; },
-    setToEmails: function(value) { this.to = value; },
-    getCcEmails: function() { return this.cc; },
-    setCcEmails: function(value) { this.cc = value; },
-    getPlainTextBody: function() { return this.body.replace(/\<br\>/g, '\n'); },
-    setBody: function(value) { this.body = value; },
-    getSubject: function() { return this.subject; },
-    setSubject: function(value) { this.subject = value; },
-    send: function() { this.wasSent = true; }
+    getToEmails: function() {
+      return this.to;
+    },
+    setToEmails: function(value) {
+      this.to = value;
+    },
+    getCcEmails: function() {
+      return this.cc;
+    },
+    setCcEmails: function(value) {
+      this.cc = value;
+    },
+    getPlainTextBody: function() {
+      return this.body.replace(/\<br\>/g, '\n');
+    },
+    setBody: function(value) {
+      this.body = value;
+    },
+    getSubject: function() {
+      return this.subject;
+    },
+    setSubject: function(value) {
+      this.subject = value;
+    },
+    send: function() {
+      this.wasSent = true;
+    }
   };
   api = {
-    getContentElement: function() { return document.documentElement; },
-    getPlainTextContent: function() { return TEST_CONTENT; },
-    getCurrentMessage: function() { return api; },
-    getMainWindow: function() { return api; },
-    getOpenDraftMessages: function() { return [draft]; },
-    getActiveMessage: function() { return api; },
+    getContentElement: function() {
+      return document.documentElement;
+    },
+    getPlainTextContent: function() {
+      return TEST_CONTENT;
+    },
+    getCurrentMessage: function() {
+      return api;
+    },
+    getMainWindow: function() {
+      return api;
+    },
+    getOpenDraftMessages: function() {
+      return [draft];
+    },
+    getActiveMessage: function() {
+      return api;
+    },
     SUBJECTS_ENABLED_FOR_TESTS_ONLY: true
   };
   stubs.setPath('gmonkey.load', function(version, callback) {
@@ -82,7 +114,9 @@ function tearDown() {
 }
 
 function testIsAvailableOnGmail() {
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return true;
+  });
 
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
 
@@ -94,9 +128,10 @@ function testIsAvailableOnGmail() {
 
 function testIsAvailableWithoutStub() {
   stubs.replace(e2e.ext.WebsiteApi.prototype, 'supportsApi_', function() {
-    return true;});
-  stubs.replace(e2e.ext.WebsiteApi.prototype, 'bootstrapChannel_', function(
-      callback) {
+    return true;
+  });
+  stubs.replace(
+      e2e.ext.WebsiteApi.prototype, 'bootstrapChannel_', function(callback) {
         e2eapi.apiAvailable_ = true;
         callback(e2eapi.apiAvailable_);
       });
@@ -111,14 +146,11 @@ function testIsAvailableWithoutStub() {
 
 function testBootstrap() {
   stubs.replace(e2e.ext.WebsiteApi.prototype, 'supportsApi_', function() {
-    return true;});
+    return true;
+  });
   stubs.replace(e2e.ext.WebsiteApi.prototype, 'sendBootstrap_', function(port) {
     // Reply to bootstrap.
-    port.postMessage({
-      api: 'e2e-init',
-      version: 1,
-      available: true
-    });
+    port.postMessage({api: 'e2e-init', version: 1, available: true});
   });
 
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
@@ -129,7 +161,9 @@ function testBootstrap() {
 }
 
 function testStubNotInjectedTwice() {
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return true;
+  });
   var calls = 0;
   var orig = document.documentElement.appendChild;
   stubs.replace(document.documentElement, 'appendChild', function() {
@@ -149,14 +183,11 @@ function testStubNotInjectedTwice() {
 
 function testBootstrapWithNotAvailableResponse() {
   stubs.replace(e2e.ext.WebsiteApi.prototype, 'supportsApi_', function() {
-    return true;});
+    return true;
+  });
   stubs.replace(e2e.ext.WebsiteApi.prototype, 'sendBootstrap_', function(port) {
     // Reply to bootstrap.
-    port.postMessage({
-      api: 'e2e-init',
-      version: 1,
-      available: false
-    });
+    port.postMessage({api: 'e2e-init', version: 1, available: false});
   });
 
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
@@ -168,10 +199,11 @@ function testBootstrapWithNotAvailableResponse() {
 
 function testBootstrapTimeout() {
   stubs.replace(e2e.ext.WebsiteApi.prototype, 'supportsApi_', function() {
-    return true;});
+    return true;
+  });
   // Do not even send the bootstrap message to trigger the timeout.
-  stubs.replace(e2e.ext.WebsiteApi.prototype, 'sendBootstrap_',
-      goog.nullFunction);
+  stubs.replace(
+      e2e.ext.WebsiteApi.prototype, 'sendBootstrap_', goog.nullFunction);
 
   asyncTestCase.stepTimeout = e2e.ext.WebsiteApi.BOOTSTRAP_TIMEOUT + 10;
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
@@ -194,16 +226,13 @@ function testRequestResponseFlow() {
       assertEquals('foo', request.call);
       assertEquals('bar', request.args);
       requestId = request.id;
-      assertEquals(handleResponseFunction,
+      assertEquals(
+          handleResponseFunction,
           e2eapi.pendingCallbacks_.get(requestId).callback);
       assertEquals(fail, e2eapi.pendingCallbacks_.get(requestId).errback);
       // Simulate response
-      assertTrue(e2eapi.processWebsiteMessage_({
-        data: {
-          requestId: requestId,
-          result: 'booboo'
-        }
-      }));
+      assertTrue(e2eapi.processWebsiteMessage_(
+          {data: {requestId: requestId, result: 'booboo'}}));
     }
   };
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
@@ -225,15 +254,11 @@ function testRequestResponseError() {
       assertEquals('bar', request.args);
       requestId = request.id;
       assertEquals(fail, e2eapi.pendingCallbacks_.get(requestId).callback);
-      assertEquals(handleErrorFunction,
-          e2eapi.pendingCallbacks_.get(requestId).errback);
+      assertEquals(
+          handleErrorFunction, e2eapi.pendingCallbacks_.get(requestId).errback);
       // Simulate response
-      assertTrue(e2eapi.processWebsiteMessage_({
-        data: {
-          requestId: requestId,
-          error: 'booboo'
-        }
-      }));
+      assertTrue(e2eapi.processWebsiteMessage_(
+          {data: {requestId: requestId, error: 'booboo'}}));
     }
   };
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
@@ -244,8 +269,8 @@ function testRequestResponseTimeout() {
   var requestId;
   var handleErrorFunction = function(error) {
     assertTrue(error instanceof Error);
-    assertEquals('Timeout occurred while processing the request.',
-        error.message);
+    assertEquals(
+        'Timeout occurred while processing the request.', error.message);
     assertFalse(e2eapi.pendingCallbacks_.containsKey(requestId));
     asyncTestCase.continueTesting();
   };
@@ -257,8 +282,8 @@ function testRequestResponseTimeout() {
       assertEquals('bar', request.args);
       requestId = request.id;
       assertEquals(fail, e2eapi.pendingCallbacks_.get(requestId).callback);
-      assertEquals(handleErrorFunction,
-          e2eapi.pendingCallbacks_.get(requestId).errback);
+      assertEquals(
+          handleErrorFunction, e2eapi.pendingCallbacks_.get(requestId).errback);
     }
   };
   asyncTestCase.stepTimeout = e2e.ext.WebsiteApi.REQUEST_TIMEOUT + 10;
@@ -272,7 +297,9 @@ function testIgnoreUnrelatedResponses() {
 
 
 function testStubInjectedOnGmail() {
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return true;
+  });
   assertFalse(e2eapi.stubInjected_);
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
 
@@ -283,7 +310,9 @@ function testStubInjectedOnGmail() {
 }
 
 function testIsNotAvailableOutsideGmail() {
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return false;});
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return false;
+  });
 
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
 
@@ -294,40 +323,56 @@ function testIsNotAvailableOutsideGmail() {
 }
 
 function testGetCurrentMessageGmail() {
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return true;
+  });
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
-    e2eapi.getCurrentMessage(function(selector, content) {
-      assertEquals(document.documentElement, document.querySelector(selector));
-      assertEquals(TEST_CONTENT, content);
-      asyncTestCase.continueTesting();
-    }, function() {fail('Should not call errback.')});
+    e2eapi.getCurrentMessage(
+        function(selector, content) {
+          assertEquals(
+              document.documentElement, document.querySelector(selector));
+          assertEquals(TEST_CONTENT, content);
+          asyncTestCase.continueTesting();
+        },
+        function() {
+          fail('Should not call errback.');
+        });
   });
 }
 
 function testGetCurrentMessageDom() {
-  e2eapi.isAvailable_ = false; // Use DOM api.
+  e2eapi.isAvailable_ = false;  // Use DOM api.
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   // getCurrentMessage is unavailable in DOM api.
-  e2eapi.getCurrentMessage(function(id, content) {
-    assertEquals(undefined, id);
-    assertEquals(undefined, content);
-    asyncTestCase.continueTesting();
-  }, function() {fail('Should not call errback.')});
+  e2eapi.getCurrentMessage(
+      function(id, content) {
+        assertEquals(undefined, id);
+        assertEquals(undefined, content);
+        asyncTestCase.continueTesting();
+      },
+      function() {
+        fail('Should not call errback.');
+      });
 }
 
 function testNoPortTriggersErrback() {
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
-  e2eapi.sendEndToEndRequest_('irrelevant', function() {
-    fail('Should not call this function.');
-  }, function(msg) {
-    asyncTestCase.continueTesting();
-  });
+  e2eapi.sendEndToEndRequest_(
+      'irrelevant',
+      function() {
+        fail('Should not call this function.');
+      },
+      function(msg) {
+        asyncTestCase.continueTesting();
+      });
 }
 
 function testUnknownWebsiteApiCall() {
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return true;
+  });
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
@@ -341,7 +386,9 @@ function testUnknownWebsiteApiCall() {
 
 function testGmonkeyNotAvailable() {
   delete gmonkey;
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return true;
+  });
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.isApiAvailable_(function(available) {
     assertFalse(available);
@@ -350,43 +397,54 @@ function testGmonkeyNotAvailable() {
 }
 
 function testGetActiveDraft() {
-  var recipients = null;
-  var body = null;
 
   stubs.set(api, 'getContentElement', function() {
     return {innerText: draft.body};
   });
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return true;
+  });
 
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
 
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
-    e2eapi.getActiveDraft_(function(recipients, body) {
-      assertArrayEquals(RECIPIENTS, recipients);
-      assertEquals(draft.body.replace(/\<br\>/g, '\n'), body);
-      asyncTestCase.continueTesting();
-    }, function(msg) {fail(msg)});
+    e2eapi.getActiveDraft_(
+        function(recipients, body) {
+          assertArrayEquals(RECIPIENTS, recipients);
+          assertEquals(draft.body.replace(/\<br\>/g, '\n'), body);
+          asyncTestCase.continueTesting();
+        },
+        function(msg) {
+          fail(msg);
+        });
   });
 }
 
 function testSetActiveDraft() {
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return true;
+  });
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
-    e2eapi.setActiveDraft_(['foo@example.com', 'noemail', '<a@>',
-      'first,"""last <bar@example.com>'], 'secret message', true,
-    function(success) {
-      assertArrayEquals([
-        {address: 'foo@example.com', name: undefined},
-        {address: 'bar@example.com', name: undefined}
-      ], draft.to);
-      assertEquals('secret message', draft.body);
-      assertTrue(draft.wasSent);
-      assertTrue(success);
-      asyncTestCase.continueTesting();
-    }, fail);
+    e2eapi.setActiveDraft_(
+        [
+          'foo@example.com', 'noemail', '<a@>',
+          'first,"""last <bar@example.com>'
+        ],
+        'secret message', true, function(success) {
+          assertArrayEquals(
+              [
+                {address: 'foo@example.com', name: undefined},
+                {address: 'bar@example.com', name: undefined}
+              ],
+              draft.to);
+          assertEquals('secret message', draft.body);
+          assertTrue(draft.wasSent);
+          assertTrue(success);
+          asyncTestCase.continueTesting();
+        }, fail);
   });
 }
 
@@ -401,7 +459,8 @@ function testContentEditableIsEditable() {
 }
 
 function testGetActiveElement() {
-  assertEquals('Failed to get active element', document.body,
+  assertEquals(
+      'Failed to get active element', document.body,
       e2eapi.getActiveElement_());
 }
 
@@ -414,13 +473,15 @@ function testGetActiveSelection() {
   document.body.appendChild(el);
   range.selectNodeContents(el);
   sel.addRange(range);
-  assertEquals('Incorrect selection', el.textContent,
-      e2eapi.getActiveSelection_());
+  assertEquals(
+      'Incorrect selection', el.textContent, e2eapi.getActiveSelection_());
   document.body.removeChild(el);
 }
 
 function testGetSelectedContentPriority() {
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return true;
+  });
   stubs.replace(e2eapi, 'getSelectedContentWebsite_', function() {
     asyncTestCase.continueTesting();
   });
@@ -433,9 +494,12 @@ function testGetSelectedContentPriority() {
 }
 
 function testUpdateSelectedContentPriority() {
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
-  stubs.replace(e2eapi, 'setActiveDraft_', function(recipients, value,
-      shouldSend, callback, errback, subject) {
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return true;
+  });
+  stubs.replace(
+      e2eapi, 'setActiveDraft_',
+      function(recipients, value, shouldSend, callback, errback, subject) {
         assertArrayEquals(RECIPIENTS, recipients);
         assertEquals('foo', value);
         assertEquals('bar', subject);
@@ -446,13 +510,15 @@ function testUpdateSelectedContentPriority() {
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
-    e2eapi.updateSelectedContent(RECIPIENTS, 'foo', true, goog.nullFunction,
-        goog.nullFunction, 'bar');
+    e2eapi.updateSelectedContent(
+        RECIPIENTS, 'foo', true, goog.nullFunction, goog.nullFunction, 'bar');
   });
 }
 
 function testUpdateSelectedContentWebsite() {
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return true;
+  });
   stubs.replace(e2eapi, 'updateSelectedContentDom_', fail);
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.isApiAvailable_(function(available) {
@@ -467,26 +533,31 @@ function testUpdateSelectedContentWebsite() {
 }
 
 function testGetSelectedContentWebsite() {
-  var text = 'some content';
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return true;
+  });
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
-    e2eapi.getSelectedContentWebsite_(function(recipients, content, canInject,
-        subject) {
+    e2eapi.getSelectedContentWebsite_(
+        function(recipients, content, canInject, subject) {
           assertArrayEquals(RECIPIENTS, recipients);
           assertEquals(draft.body.replace(/\<br\>/g, '\n'), content);
           assertEquals(true, canInject);
           assertEquals(TEST_SUBJECT, subject);
           asyncTestCase.continueTesting();
-        }, fail);
+        },
+        fail);
   });
 }
 
 function testGetSelectedContentWithNoDraft() {
-  api.getOpenDraftMessages = function() { return [] }; // No active drafts.
-  var text = 'some content';
-  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {return true;});
+  api.getOpenDraftMessages = function() {
+    return [];
+  };  // No active drafts.
+  stubs.setPath('e2e.ext.utils.text.isGmailOrigin', function() {
+    return true;
+  });
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.isApiAvailable_(function(available) {
     assertTrue(available);
@@ -555,12 +626,14 @@ function testGetSelectedContentDomStatic() {
 
 function testUpdateSelectedContentDomDiv() {
   var testDiv = document.createElement('div');
-  stubs.replace(e2eapi, 'getActiveElement_', function() { return testDiv });
+  stubs.replace(e2eapi, 'getActiveElement_', function() {
+    return testDiv;
+  });
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.updateSelectedContentDom_('boo', fail, function(error) {
     // No element was active, should call errback.
     assertTrue(error instanceof Error);
-    e2eapi.getSelectedContentDom_(function(_, _, canInject) {
+    e2eapi.getSelectedContentDom_(function(ignored1, ignored2, canInject) {
       assertFalse(canInject);
       e2eapi.updateSelectedContentDom_('boo2', function(success) {
         assertTrue(success);
@@ -573,12 +646,14 @@ function testUpdateSelectedContentDomDiv() {
 
 function testUpdateSelectedContentDomTextarea() {
   var testEl = document.createElement('textarea');
-  stubs.replace(e2eapi, 'getActiveElement_', function() { return testEl; });
+  stubs.replace(e2eapi, 'getActiveElement_', function() {
+    return testEl;
+  });
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
   e2eapi.updateSelectedContentDom_('boo', fail, function(error) {
     // No element was active, should call errback.
     assertTrue(error instanceof Error);
-    e2eapi.getSelectedContentDom_(function(_, _, canInject) {
+    e2eapi.getSelectedContentDom_(function(ignored1, ignored2, canInject) {
       assertTrue(canInject);
       e2eapi.updateSelectedContentDom_('boo2', function(success) {
         assertTrue(success);
@@ -594,20 +669,16 @@ function testDisabledWebsiteInitiatedRequest() {
     postMessage: function(response) {
       assertEquals(null, response.result);
       assertEquals('foo', response.requestId);
-      assertEquals('Web application originating requests are not supported.',
+      assertEquals(
+          'Web application originating requests are not supported.',
           response.error);
       asyncTestCase.continueTesting();
     }
   };
   e2eapi.port_ = port_;
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
-  e2eapi.processWebsiteMessage_({
-    target: port_,
-    data: {
-      id: 'foo',
-      call: 'unsupported'
-    }
-  });
+  e2eapi.processWebsiteMessage_(
+      {target: port_, data: {id: 'foo', call: 'unsupported'}});
 }
 
 function testInvalidWebsiteInitiatedRequest() {
@@ -615,21 +686,15 @@ function testInvalidWebsiteInitiatedRequest() {
     postMessage: function(response) {
       assertEquals(null, response.result);
       assertEquals('foo', response.requestId);
-      assertEquals('Invalid request.',
-          response.error);
+      assertEquals('Invalid request.', response.error);
       asyncTestCase.continueTesting();
     }
   };
   e2eapi.setWebsiteRequestForwarder(fail);
   e2eapi.port_ = port_;
   asyncTestCase.waitForAsync('Waiting for the call to api to complete.');
-  e2eapi.processWebsiteMessage_({
-    target: port_,
-    data: {
-      id: 'foo',
-      call: 'unsupported'
-    }
-  });
+  e2eapi.processWebsiteMessage_(
+      {target: port_, data: {id: 'foo', call: 'unsupported'}});
 }
 
 

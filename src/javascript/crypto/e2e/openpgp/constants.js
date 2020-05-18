@@ -267,8 +267,8 @@ e2e.openpgp.constants.getAlgorithm = function(type, id) {
  * @param {number|e2e.openpgp.constants.Algorithm} id The numeric id or
  *     Algorithm of the object to get.
  * @param {e2e.cipher.key.Key=} opt_key The key to use for ciphers.
- * @return {!e2e.hash.Hash|e2e.cipher.Cipher|
- *     e2e.compression.Compression|e2e.signer.Signer} An
+ * @return {!e2e.hash.Hash|!e2e.cipher.Cipher|
+ *     !e2e.compression.Compression|!e2e.signer.Signer} An
  *     instance of the requested algorithm.
  */
 e2e.openpgp.constants.getInstance = function(type, id, opt_key) {

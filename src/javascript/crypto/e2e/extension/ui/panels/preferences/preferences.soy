@@ -12,24 +12,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-{namespace e2e.ext.ui.templates.panels.preferences autoescape="strict"}
+{namespace e2e.ext.ui.templates.panels.preferences}
 
 /**
  * Enables the user to set preferences.
- * @param sectionTitle The title for the current section.
  */
 {template .listPreferences}
+  {@param sectionTitle: ?}  /** The title for the current section. */
   <h1>{$sectionTitle}</h1>
 {/template}
 
 
 /**
  * Renders an individual preference that the user has set.
- * @param name The name of the preference.
- * @param description The description of the preference.
- * @param checked True if the preference is set. Otherwise false.
  */
 {template .preferenceEntry}
+  {@param name: ?}  /** The name of the preference. */
+  {@param description: ?}  /** The description of the preference. */
+  {@param checked: ?}  /** True if the preference is set. Otherwise false. */
   <div  class="{e2e.ext.constants.CssClass.PREFERENCE_DIV}">
      <input type="checkbox" id="preference-{$name}" {if $checked}checked{/if} />
      <label for="preference-{$name}">{$description}</label>

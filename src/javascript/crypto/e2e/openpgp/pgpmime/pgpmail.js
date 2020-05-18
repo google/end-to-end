@@ -57,19 +57,19 @@ e2e.openpgp.pgpmime.PgpMail = function(content, opt_preamble) {
  *     that have already been defined
  * @return {!Array<!Object<string, string>>}
  */
-e2e.openpgp.pgpmime.PgpMail.prototype.addOptionalHeaders =
-    function(optionalHeaders) {
-  if (goog.isDefAndNotNull(this.content.subject)) {
+e2e.openpgp.pgpmime.PgpMail.prototype.addOptionalHeaders = function(
+    optionalHeaders) {
+  if (this.content.subject != null) {
     optionalHeaders.push({name: constants.Mime.SUBJECT,
       value: this.content.subject});
   }
-  if (goog.isDefAndNotNull(this.content.from)) {
+  if (this.content.from != null) {
     optionalHeaders.push({name: constants.Mime.FROM, value: this.content.from});
   }
-  if (goog.isDefAndNotNull(this.content.to)) {
+  if (this.content.to != null) {
     optionalHeaders.push({name: constants.Mime.TO, value: this.content.to});
   }
-  if (goog.isDefAndNotNull(this.content.inReplyTo)) {
+  if (this.content.inReplyTo != null) {
     optionalHeaders.push({name: constants.Mime.IN_REPLY_TO,
       value: this.content.inReplyTo});
   }
@@ -123,10 +123,10 @@ e2e.openpgp.pgpmime.PgpMail.prototype.buildMimeTree = function() {
       // Implicit content-transfer-encoding is 7bit (RFC 2045).
       var contentTransferEncoding = constants.Mime.SEVEN_BIT;
 
-      if (goog.isDefAndNotNull(attachment.type)) {
+      if (attachment.type != null) {
         contentType = attachment.type;
       }
-      if (goog.isDefAndNotNull(attachment.encoding)) {
+      if (attachment.encoding != null) {
         contentTransferEncoding = attachment.encoding;
       }
 

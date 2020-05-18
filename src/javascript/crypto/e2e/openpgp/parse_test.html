@@ -33,7 +33,7 @@
    * @constructor
    */
   var FakePacket = function(size, firstByte) {
-      goog.base(this);
+      FakePacket.base(this, 'constructor');
       this.works = true;
       this.size = size;
       this.firstByte = firstByte;

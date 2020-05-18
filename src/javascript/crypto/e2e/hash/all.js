@@ -17,7 +17,6 @@
 /**
  * @fileoverview Requires all blocks to load them into the factory.
  */
-/** @suppress {extraProvide} this aggregation needs a namespace */
 goog.provide('e2e.hash.all');
 
 /** @suppress {extraRequire} intentional import */

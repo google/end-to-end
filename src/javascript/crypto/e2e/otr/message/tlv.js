@@ -50,7 +50,7 @@ e2e.otr.message.Tlv = function(session) {
   assert(this.constructor != e2e.otr.message.Tlv);
   assert(goog.isFunction(this.constructor.process));
 
-  assert(goog.isDefAndNotNull(this.constructor.TLV_TYPE));
+  assert(this.constructor.TLV_TYPE != null);
   assert(TLV_TYPE_VALUES.indexOf(
       e2e.otr.shortToNum(this.constructor.TLV_TYPE)) != -1);
 

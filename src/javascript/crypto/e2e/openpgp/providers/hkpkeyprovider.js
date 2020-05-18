@@ -115,9 +115,8 @@ HkpKeyProvider.prototype.getId = function() {
  * @override
  */
 HkpKeyProvider.prototype.configure = function(config) {
-  if (goog.isDefAndNotNull(config) &&
-      goog.isString(
-          config[HkpKeyProvider.HKP_ROOT_KEY])) {
+  if (config != null &&
+      typeof config[HkpKeyProvider.HKP_ROOT_KEY] === 'string') {
     this.hkpRoot_ = config[HkpKeyProvider.HKP_ROOT_KEY];
   }
   return this.getState();
@@ -193,7 +192,7 @@ HkpKeyProvider.prototype.importKeys = function(
 
   return goog.Promise.all(pendingValidations).then(
       goog.bind(function(validations) {
-        var validatedKeys = validations.filter(goog.isDefAndNotNull);
+        var validatedKeys = validations.filter(x => x != null);
         // 2. Convert to keyobjects for the return value.
         var result = goog.array.map(validatedKeys, function(key) {
           return key.toKeyObject(true, HkpKeyProvider.PROVIDER_ID);
@@ -272,7 +271,7 @@ HkpKeyProvider.prototype.getPublicKeyByFingerprint = function(fingerprint) {
  * @private
  */
 HkpKeyProvider.deArmor_ = function(ascii) {
-  if (goog.isDefAndNotNull(ascii)) {
+  if (ascii != null) {
     return [e2e.openpgp.asciiArmor.parse(ascii).data];
   } else {
     return [];

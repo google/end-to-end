@@ -531,9 +531,9 @@ function testContentInsertedOnEncrypt() {
       });
   stubs.set(prompt.getHelperProxy(), 'updateSelectedContent',
       mockControl.createFunctionMock('updateSelectedContent'));
-  var encryptedMsg = new goog.testing.mockmatchers.SaveArgument(goog.isString);
+  var encryptedMsg = new goog.testing.mockmatchers.SaveArgument(x => typeof x === 'string');
   var subjectMsg = new goog.testing.mockmatchers.SaveArgument(function(a) {
-    return (!goog.isDef(a) || goog.isString(a));
+    return (a === undefined || typeof a === 'string');
   });
   prompt.getHelperProxy().updateSelectedContent(encryptedMsg, [USER_ID], origin,
       false, goog.testing.mockmatchers.ignoreArgument,

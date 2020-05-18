@@ -408,7 +408,7 @@ e2e.ext.WebsiteApi.prototype.validateOpenCompose_ = function(request) {
   validatedRequest.id = request.id;
   validatedRequest.call = request.call;
   validatedRequest.args = {};
-  if (!goog.isDefAndNotNull(request.args)) {
+  if (request.args == null) {
     request.args = {};
   }
   var recipients = [];
@@ -490,7 +490,7 @@ e2e.ext.WebsiteApi.getEmailsFromAddressDescriptors_ = function(descriptors) {
             return descriptor['address'] || '';
           }),
           e2e.ext.utils.text.extractValidEmail),
-      goog.isDefAndNotNull);
+      x => x != null);
 };
 
 
@@ -594,7 +594,7 @@ e2e.ext.WebsiteApi.prototype.setActiveDraft_ = function(recipients, msgBody,
     body: msgBody,
     send: shouldSend
   };
-  if (goog.isDef(opt_subject)) {
+  if (opt_subject !== undefined) {
     message.subject = opt_subject;
   }
   this.sendEndToEndRequest_('setActiveDraft', callback, errback, message);
@@ -637,7 +637,7 @@ e2e.ext.WebsiteApi.prototype.getSelectedContentWebsite_ = function(callback,
       this.getCurrentMessage(goog.bind(function(messageElemId, messageBody) {
         var messageElem = document.getElementById(messageElemId);
         if (messageElem) {
-          if (goog.isDef(messageElem.lookingGlass)) {
+          if (messageElem.lookingGlass !== undefined) {
             messageBody = messageElem.lookingGlass.getOriginalContent();
           }
         } else if (!messageBody) {
@@ -757,7 +757,7 @@ e2e.ext.WebsiteApi.prototype.getActiveSelection_ = function() {
  * @private
  */
 e2e.ext.WebsiteApi.prototype.isEditable_ = function(elem) {
-  return goog.isDef(elem.value) || elem.contentEditable == 'true';
+  return elem.value !== undefined || elem.contentEditable == 'true';
 };
 
 

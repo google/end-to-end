@@ -68,10 +68,9 @@ e2e.openpgp.packet.SurrogateSecretKey = function(keyId, algorithm,
  *     The signing callback.
  * @return {e2e.openpgp.packet.SurrogateSecretKey}
  */
-e2e.openpgp.packet.SurrogateSecretKey.constructSigningKey = function(key,
-    signCallback) {
-  if (!goog.isFunction(signCallback) ||
-      !goog.isDefAndNotNull(key.signingKeyId)) {
+e2e.openpgp.packet.SurrogateSecretKey.constructSigningKey = function(
+    key, signCallback) {
+  if (!goog.isFunction(signCallback) || key.signingKeyId == null) {
     return null;
   }
   goog.asserts.assertString(key.signAlgorithm);

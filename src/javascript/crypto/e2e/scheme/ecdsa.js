@@ -24,6 +24,7 @@ goog.provide('e2e.scheme.Ecdsa');
 goog.require('e2e.async.Result');
 goog.require('e2e.openpgp.error.UnsupportedError');
 goog.require('e2e.scheme.SignatureScheme');
+goog.require('goog.asserts');
 
 
 
@@ -40,14 +41,14 @@ e2e.scheme.Ecdsa = function(signer) {
     'namedCurve': 'P-256',
     'hash': { 'name' : 'SHA-256' }
   };
-  goog.base(this, signer);
+  e2e.scheme.Ecdsa.base(this, 'constructor', signer);
 };
 goog.inherits(e2e.scheme.Ecdsa, e2e.scheme.SignatureScheme);
 
 
 /** @override */
 e2e.scheme.Ecdsa.prototype.verifyWebCrypto = function(m, sig) {
-  var key = this.signer.getWebCryptoKey().publicKey;
+  var key = goog.asserts.assert(this.signer.getWebCryptoKey().publicKey);
   var sigBuf = new ArrayBuffer(64);
   // sig.r and sig.s are 32-byte arrays, but leading zeros may have been
   // stripped.
@@ -69,7 +70,7 @@ e2e.scheme.Ecdsa.prototype.verifyWebCrypto = function(m, sig) {
 
 /** @override */
 e2e.scheme.Ecdsa.prototype.signWebCrypto = function(data) {
-  var key = this.signer.getWebCryptoKey().privateKey;
+  var key = goog.asserts.assert(this.signer.getWebCryptoKey().privateKey);
   var dataArray = new Uint8Array(data);
 
   // Note: This effectively computes the digest twice.  This appears to be
@@ -84,15 +85,20 @@ e2e.scheme.Ecdsa.prototype.signWebCrypto = function(data) {
   var result = new e2e.async.Result();
   // This construction effectively waits for both computations to complete in
   // parallel.  However, the browser probably won't actually parallelize them.
-  hashValuePromise.then(function(hashValue) {
-    return sigBufPromise.then(function(sigBuf) {
-      result.callback({
-        r: new Uint8Array(sigBuf, 0, 32),
-        s: new Uint8Array(sigBuf, 32, 32),
-        hashValue: new Uint8Array(hashValue)
-      });
-    });
-  }).catch(goog.bind(result.errback, result));
+  hashValuePromise
+      .then(
+          function(hashValue) {
+            return sigBufPromise.then(function(sigBuf) {
+              var typedSigBuf = /** @type {!ArrayBuffer} */ (sigBuf);
+              result.callback({
+                r: new Uint8Array(typedSigBuf, 0, 32),
+                s: new Uint8Array(typedSigBuf, 32, 32),
+                hashValue:
+                    new Uint8Array(/** @type {!ArrayBuffer} */ (hashValue))
+              });
+            });
+          })
+      .catch(goog.bind(result.errback, result));
   return result;
 };
 

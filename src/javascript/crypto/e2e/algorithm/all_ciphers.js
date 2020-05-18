@@ -17,7 +17,6 @@
 /**
  * @fileoverview Requires all ciphers to load them all into the factory.
  */
-/** @suppress {extraProvide} this aggregation needs a namespace */
 goog.provide('e2e.cipher.all');
 
 /** @suppress {extraRequire} intentional import */

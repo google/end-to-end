@@ -51,7 +51,7 @@ goog.require('goog.asserts');
 e2e.signer.Dsa = function(algorithm, opt_key) {
   goog.asserts.assert(algorithm == e2e.signer.Algorithm.DSA,
       'Algorithm must be DSA.');
-  goog.base(this, e2e.signer.Algorithm.DSA, opt_key);
+  e2e.signer.Dsa.base(this, 'constructor', e2e.signer.Algorithm.DSA, opt_key);
 };
 goog.inherits(e2e.signer.Dsa, e2e.AlgorithmImpl);
 
@@ -218,12 +218,11 @@ e2e.signer.Dsa.prototype.setKey = function(keyArg, opt_keySize) {
         'Invalid generator.');
   }
 
-  if (!goog.isDefAndNotNull(key['x']) &&
-      !goog.isDefAndNotNull(key['y'])) {
+  if (key['x'] == null && key['y'] == null) {
     goog.asserts.fail('Either public key or private key should be defined.');
   }
 
-  if (goog.isDefAndNotNull(key['x'])) {
+  if (key['x'] != null) {
     this.x_ = new e2e.BigNum(key['x']);
     if (!this.x_.isBetween(e2e.BigNum.ZERO, this.q_)) {
       throw new e2e.openpgp.error.InvalidArgumentsError(
@@ -231,7 +230,7 @@ e2e.signer.Dsa.prototype.setKey = function(keyArg, opt_keySize) {
     }
   }
 
-  if (goog.isDefAndNotNull(key['y'])) {
+  if (key['y'] != null) {
     this.y_ = new e2e.BigNum(key['y']);
     // NIST SP 800-89 checks for DSA.
     // 1 < y < p-1
@@ -244,7 +243,7 @@ e2e.signer.Dsa.prototype.setKey = function(keyArg, opt_keySize) {
       throw new e2e.openpgp.error.InvalidArgumentsError(
           'Invalid public key.');
     }
-    if (goog.isDefAndNotNull(key['x'])) {
+    if (key['x'] != null) {
       // y == g^x (mod p).
       if (!this.p_.modPower(this.g_, key['x']).isEqual(this.y_)) {
         throw new e2e.openpgp.error.InvalidArgumentsError(
@@ -254,7 +253,7 @@ e2e.signer.Dsa.prototype.setKey = function(keyArg, opt_keySize) {
   }
 
   // Save key material to serialize later the key.
-  goog.base(this, 'setKey', key);
+  e2e.signer.Dsa.base(this, 'setKey', key);
 };
 
 

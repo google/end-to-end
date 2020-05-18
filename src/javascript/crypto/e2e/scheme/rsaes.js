@@ -38,7 +38,7 @@ e2e.scheme.Rsaes = function(cipher) {
     'modulusLength': cipher.keySize,
     'publicExponent': new Uint8Array(cipher.getKey()['e'])
   };
-  goog.base(this, cipher);
+  e2e.scheme.Rsaes.base(this, 'constructor', cipher);
 };
 goog.inherits(e2e.scheme.Rsaes, e2e.scheme.Eme);
 
@@ -48,7 +48,9 @@ e2e.scheme.Rsaes.prototype.encryptWebCrypto = function(plaintext) {
   var result = new e2e.async.Result;
   this.crypto.encrypt(
       this.algorithmIdentifier,
-      this.key,
+      // TODO(evn): this doesn't seem right. this.key has type CryptoKeyPair
+      // but encrypt expects CryptoKey, not CryptoKeyPair
+      /** @type {!webCrypto.CryptoKey} */ (this.key),
       new Uint8Array(plaintext)
   ).then(
       goog.bind(result.callback, result)
@@ -65,7 +67,9 @@ e2e.scheme.Rsaes.prototype.decryptWebCrypto = function(ciphertext) {
   var result = new e2e.async.Result;
   this.crypto.decrypt(
       this.algorithmIdentifier,
-      this.key,
+      // TODO(evn): this doesn't seem right. this.key has type CryptoKeyPair
+      // but decrypt expects CryptoKey, not CryptoKeyPair
+      /** @type {!webCrypto.CryptoKey} */ (this.key),
       new Uint8Array(ciphertext['c'])
   ).then(
       goog.bind(result.callback, result)).catch(

@@ -51,7 +51,7 @@ e2e.otr.pubkey.Pubkey = function() {
   //TODO(rcc): Remove when closure compiler issue #104 (@abstract) is resolved.
   assert(this.constructor != e2e.otr.pubkey.Pubkey);
 
-  assert(goog.isDefAndNotNull(this.constructor.PUBKEY_TYPE));
+  assert(this.constructor.PUBKEY_TYPE != null);
   assert(PUBKEY_TYPE_VALUES.indexOf(
       e2e.otr.shortToNum(this.constructor.PUBKEY_TYPE)) != -1);
 

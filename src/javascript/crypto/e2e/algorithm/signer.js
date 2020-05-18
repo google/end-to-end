@@ -49,18 +49,17 @@ e2e.signer.Algorithm = {
 };
 
 
-
 /**
  * Error class used to represent errors in the digital signature algorithms.
- * @param {*=} opt_msg Optional message to send.
- * @extends {goog.debug.Error}
- * @constructor
  */
-e2e.signer.Error = function(opt_msg) {
-  goog.base(this, opt_msg);
+e2e.signer.Error = class extends goog.debug.Error {
+  /**
+   * @param {*=} opt_msg Optional message to send.
+   */
+  constructor(opt_msg) {
+    super(opt_msg);
+  }
 };
-goog.inherits(e2e.signer.Error, goog.debug.Error);
-
 
 
 /**
@@ -171,7 +170,7 @@ e2e.signer.factory.get = function(algorithm, opt_keyData) {
  */
 e2e.signer.factory.require = function(algorithm, opt_keyData) {
   var ret = e2e.signer.factory.get(algorithm, opt_keyData);
-  if (goog.isNull(ret)) {
+  if (ret === null) {
     throw new e2e.signer.Error('Required algorithm not available.');
   }
   return ret;

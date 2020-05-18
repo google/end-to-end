@@ -40,7 +40,7 @@ e2e.openpgp.packet.UserAttribute = function(data) {
    * @type {!e2e.ByteArray}
    */
   this.data = data;
-  goog.base(this, '');
+  e2e.openpgp.packet.UserAttribute.base(this, 'constructor', '');
 };
 goog.inherits(e2e.openpgp.packet.UserAttribute,
               e2e.openpgp.packet.UserId);
@@ -68,7 +68,7 @@ e2e.openpgp.packet.UserAttribute.prototype.getBytesToSign = function() {
 
 /**
  * @param {!e2e.ByteArray} data data to parse
- * @return {e2e.openpgp.packet.UserAttribute}
+ * @return {!e2e.openpgp.packet.UserAttribute}
  */
 e2e.openpgp.packet.UserAttribute.parse = function(data) {
   //TODO: implement subpacket parsing

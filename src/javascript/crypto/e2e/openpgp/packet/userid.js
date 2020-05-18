@@ -66,7 +66,7 @@ e2e.openpgp.packet.UserIdCertificationState_ = {
  * @extends {e2e.openpgp.packet.Packet}
  */
 e2e.openpgp.packet.UserId = function(userId) {
-  goog.base(this);
+  e2e.openpgp.packet.UserId.base(this, 'constructor');
   /**
    * UTF-8 text representing the name and email address of the key holder.
    * @type {string}
@@ -95,7 +95,7 @@ e2e.openpgp.packet.UserId.prototype.tag = 13;
  * Parses and extracts the data from the body. It will consume all data from the
  * array.
  * @param {!e2e.ByteArray} data The data to parse.
- * @return {e2e.openpgp.packet.UserId} A user ID Packet.
+ * @return {!e2e.openpgp.packet.UserId} A user ID Packet.
  */
 e2e.openpgp.packet.UserId.parse = function(data) {
   var userId = e2e.byteArrayToString(data);
@@ -119,7 +119,7 @@ e2e.openpgp.packet.UserId.parse = function(data) {
  */
 e2e.openpgp.packet.UserId.prototype.isCertifiedTo = function(key, use) {
   var sig = this.getVerifiedCertification_(key);
-  if (goog.isNull(sig)) {
+  if (sig === null) {
     throw new e2e.openpgp.error.SignatureError(
         'User ID is not certified by the provided key');
   }
@@ -151,7 +151,7 @@ e2e.openpgp.packet.UserId.prototype.isCertifiedTo = function(key, use) {
  */
 e2e.openpgp.packet.UserId.prototype.getCertifiedTime = function(key) {
   var sig = this.getVerifiedCertification_(key);
-  if (goog.isNull(sig)) {
+  if (sig === null) {
     throw new e2e.openpgp.error.SignatureError('This key is not verified');
   }
   return sig.creationTime;
@@ -166,7 +166,7 @@ e2e.openpgp.packet.UserId.prototype.serializePacketBody = function() {
 
 /** @override */
 e2e.openpgp.packet.UserId.prototype.serialize = function() {
-  var serialized = goog.base(this, 'serialize');
+  var serialized = e2e.openpgp.packet.UserId.base(this, 'serialize');
 
   // Append the serialization of every signature in our map.
   this.forEachSignature_(function(sig) {
@@ -296,7 +296,7 @@ e2e.openpgp.packet.UserId.prototype.verifySignatureInternal_ = function(
  */
 e2e.openpgp.packet.UserId.prototype.verifySignatures = function(verifyingKey) {
   // 0. Only permit verification by keys with a Key ID.
-  if (!goog.isDef(verifyingKey.keyId)) {
+  if (verifyingKey.keyId === undefined) {
     e2e.openpgp.packet.UserId.console_.warn('No Key ID in verifying key');
     return e2e.async.Result.toResult(false);
   }
@@ -304,7 +304,7 @@ e2e.openpgp.packet.UserId.prototype.verifySignatures = function(verifyingKey) {
   // 1. Check if we have any signatures by the verifying Key ID.
   var kid = e2e.openpgp.packet.UserId.keyIdToString_(verifyingKey.keyId);
   var signatures = this.keyIdSignatureMap_[kid];
-  if (!goog.isDefAndNotNull(signatures)) {
+  if (signatures == null) {
     e2e.openpgp.packet.UserId.console_.warn('No signatures made by ', kid);
     return e2e.async.Result.toResult(false);
   }
@@ -337,26 +337,26 @@ e2e.openpgp.packet.UserId.prototype.verifySignatures = function(verifyingKey) {
   // and only the latest (valid) signature is stored in the
   // ImmutableArray.
 
-  return this.findNewestValidSignature_(
-      signatures, verifyingKey).addCallback(function(newestSignature) {
-    if (goog.isNull(newestSignature)) {
-      e2e.openpgp.packet.UserId.console_.warn(
-          'No usable signatures from ', kid);
-      return false;
-    }
+  return this.findNewestValidSignature_(signatures, verifyingKey)
+      .addCallback(function(newestSignature) {
+        if (newestSignature === null) {
+          e2e.openpgp.packet.UserId.console_.warn(
+              'No usable signatures from ', kid);
+          return false;
+        }
 
-    // Reject unless the most recent signature is a certification signature.
-    if (!newestSignature.isCertificationSignature()) {
-      return false;
-    }
+        // Reject unless the most recent signature is a certification signature.
+        if (!newestSignature.isCertificationSignature()) {
+          return false;
+        }
 
-    // 3. Now we clear the ImmutableArray of everything except
-    // the one valid signature, and mark it as verified.
-    this.keyIdSignatureMap_[kid] = new e2e.ImmutableArray(
-        [newestSignature],
-        e2e.openpgp.packet.UserIdCertificationState_.VERIFIED);
-    return true;
-  }, this);
+        // 3. Now we clear the ImmutableArray of everything except
+        // the one valid signature, and mark it as verified.
+        this.keyIdSignatureMap_[kid] = new e2e.ImmutableArray(
+            [newestSignature],
+            e2e.openpgp.packet.UserIdCertificationState_.VERIFIED);
+        return true;
+      }, this);
 };
 
 
@@ -412,7 +412,7 @@ e2e.openpgp.packet.UserId.prototype.findNewestValidSignature_ = function(
  */
 e2e.openpgp.packet.UserId.prototype.getVerifiedCertification_ = function(key) {
   // 0. Only allow keys with Key IDs.
-  if (!goog.isDef(key.keyId)) {
+  if (key.keyId === undefined) {
     return null;
   }
 
@@ -420,13 +420,13 @@ e2e.openpgp.packet.UserId.prototype.getVerifiedCertification_ = function(key) {
   // this Key ID.
   var kid = e2e.openpgp.packet.UserId.keyIdToString_(key.keyId);
   var array = this.keyIdSignatureMap_[kid];
-  if (!goog.isDef(array)) {
+  if (array === undefined) {
     return null;
   }
 
   // 2. Check whether we've assigned a certification state for this
   // array.
-  if (!goog.isDef(array.getState())) {
+  if (array.getState() === undefined) {
     return null;
   }
 

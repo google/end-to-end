@@ -40,5 +40,16 @@ function testMax() {
   assertEquals(2, e2e.fixedtiming.max(1, 2));
 }
 
+  /*
+ * Test e2e.fixedtiming.abs.
+ */
+function testAbs() {
+  assertEquals(1, e2e.fixedtiming.abs(-1));
+  assertEquals(2, e2e.fixedtiming.abs(-2));
+  assertEquals(0, e2e.fixedtiming.abs(0));
+  assertEquals(1, e2e.fixedtiming.abs(1));
+  assertEquals(2, e2e.fixedtiming.abs(2));
+}
+
 
 </script>

@@ -18,18 +18,15 @@
  * @fileoverview Type definitions for cipher keys.
  */
 
-/** @suppress {extraProvide} provide the whole namespace for simplicity */
 goog.provide('e2e.algorithm.AsymmetricKey');
 goog.provide('e2e.algorithm.KeyLocations');
 goog.provide('e2e.algorithm.WebCryptoKeyPair');
-/** @suppress {extraProvide} provide the whole namespace for simplicity */
 goog.provide('e2e.cipher.key');
 goog.provide('e2e.cipher.key.Ecdh');
 goog.provide('e2e.cipher.key.ElGamal');
 goog.provide('e2e.cipher.key.Key');
 goog.provide('e2e.cipher.key.Rsa');
 goog.provide('e2e.cipher.key.SymmetricKey');
-/** @suppress {extraProvide} provide the whole namespace for simplicity */
 goog.provide('e2e.signer.key');
 goog.provide('e2e.signer.key.Dsa');
 goog.provide('e2e.signer.key.DsaPrivateKey');
@@ -37,6 +34,8 @@ goog.provide('e2e.signer.key.DsaPublicKey');
 goog.provide('e2e.signer.key.Ecdsa');
 goog.provide('e2e.signer.key.Key');
 goog.provide('e2e.signer.key.Rsa');
+
+goog.require('e2e.ecc.PrimeCurveOid');
 
 
 /**

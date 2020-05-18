@@ -25,14 +25,14 @@ goog.provide('e2e.pkcs.Error');
 goog.require('goog.debug.Error');
 
 
-
 /**
  * Represents errors triggered by PKCS.
- * @param {string} msg The message generated form pkcs.
- * @extends {goog.debug.Error}
- * @constructor
  */
-e2e.pkcs.Error = function(msg) {
-  goog.base(this, msg);
+e2e.pkcs.Error = class extends goog.debug.Error {
+  /**
+   * @param {string} msg The message generated form pkcs.
+   */
+  constructor(msg) {
+    super(msg);
+  }
 };
-goog.inherits(e2e.pkcs.Error, goog.debug.Error);

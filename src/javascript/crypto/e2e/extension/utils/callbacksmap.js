@@ -27,46 +27,42 @@ goog.require('goog.structs.Map');
 e2e.ext.utils.CallbackPair;
 
 
-
 /**
  * A map to store callbacks and an errback to a given asynchronous request.
- * @constructor
- * @extends {goog.structs.Map.<string, !e2e.ext.utils.CallbackPair>}
  */
-e2e.ext.utils.CallbacksMap = function() {
-  goog.base(this);
-};
-goog.inherits(e2e.ext.utils.CallbacksMap, goog.structs.Map);
-
-
-/**
- * Inserts a pair of callbacks into the map under a new unique key.
- * @param {function(...)} callback The callback function.
- * @param {function(Error)} errback The function that will be called upon error.
- * @return {string} The key under which the callback have been stored.
-*/
-e2e.ext.utils.CallbacksMap.prototype.addCallbacks = function(callback,
-    errback) {
-  var requestId;
-  do {
-    requestId = goog.string.getRandomString();
-  } while (this.containsKey(requestId));
-  this.set(requestId, {callback: callback, errback: errback});
-  return requestId;
-};
-
-
-/**
- * Returns a callback pair, removing it from the map. Throws an error if a
- * key has no callbacks available.
- * @param  {string} key
- * @return {!e2e.ext.utils.CallbackPair}
- */
-e2e.ext.utils.CallbacksMap.prototype.getAndRemove = function(key) {
-  var pair = this.get(key);
-  if (!pair) {
-    throw new Error('No callbacks for a given key.');
+e2e.ext.utils.CallbacksMap = class extends goog.structs.Map {
+  constructor() {
+    super();
   }
-  this.remove(key);
-  return pair;
+
+  /**
+   * Inserts a pair of callbacks into the map under a new unique key.
+   * @param {function(...)} callback The callback function.
+   * @param {function(Error)} errback The function that will be called upon
+   *     error.
+   * @return {string} The key under which the callback have been stored.
+   */
+  addCallbacks(callback, errback) {
+    var requestId;
+    do {
+      requestId = goog.string.getRandomString();
+    } while (this.containsKey(requestId));
+    this.set(requestId, {callback: callback, errback: errback});
+    return requestId;
+  }
+
+  /**
+   * Returns a callback pair, removing it from the map. Throws an error if a
+   * key has no callbacks available.
+   * @param  {string} key
+   * @return {!e2e.ext.utils.CallbackPair}
+   */
+  getAndRemove(key) {
+    var pair = this.get(key);
+    if (!pair) {
+      throw new Error('No callbacks for a given key.');
+    }
+    this.remove(key);
+    return pair;
+  }
 };

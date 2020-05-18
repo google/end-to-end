@@ -87,7 +87,7 @@ e2e.compression.factory.getAvailable = function() {
  */
 e2e.compression.factory.require = function(algorithm) {
   var ret = e2e.compression.factory.get(algorithm);
-  if (goog.isNull(ret)) {
+  if (ret === null) {
     throw new e2e.compression.Error(
         'Required algorithm not available.');
   }

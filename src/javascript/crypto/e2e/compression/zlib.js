@@ -39,7 +39,7 @@ goog.require('goog.array');
  * @constructor
  */
 e2e.compression.Zlib = function() {
-  goog.base(this, e2e.compression.Algorithm.ZLIB);
+  e2e.compression.Zlib.base(this, 'constructor', e2e.compression.Algorithm.ZLIB);
 };
 goog.inherits(e2e.compression.Zlib,
     e2e.compression.Compression);

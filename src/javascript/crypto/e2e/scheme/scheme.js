@@ -52,14 +52,14 @@ e2e.scheme.Scheme = function(cipher) {
   this.useWebCrypto = (loc === e2e.algorithm.KeyLocations.WEB_CRYPTO);
   this.useHardwareCrypto = (loc === e2e.algorithm.KeyLocations.HARDWARE);
   if (this.useWebCrypto) {
-    this.crypto = goog.global.crypto;
-    if (!('subtle' in this.crypto && 'encrypt' in this.crypto.subtle)) {
+    var crypto = goog.global.crypto;
+    if (!('subtle' in crypto && 'encrypt' in crypto.subtle)) {
       throw new e2e.openpgp.error.UnsupportedError(
           'No WebCrypto encrypt(), but the key is stored in WebCrypto!');
     }
-    this.crypto = this.crypto.subtle;
+    this.crypto = goog.asserts.assert(crypto.subtle);
     this.key = cipher.getWebCryptoKey();
-    goog.asserts.assert(goog.isDefAndNotNull(this.key));
+    goog.asserts.assert(this.key != null);
   } else if (this.useHardwareCrypto) {
     /* TODO(user): when cl/70331225 is submitted and integrated into e2e,
      * replace with the appropriate.
@@ -74,8 +74,7 @@ e2e.scheme.Scheme = function(cipher) {
 
 /**
  * Crypto object as used by the Scheme.
- * @type {{encrypt: function(...):e2e.scheme.CryptoPromise_,
- *     decrypt: function(...):e2e.scheme.CryptoPromise_}}
+ * @type {!webCrypto.SubtleCrypto}
  */
 e2e.scheme.Scheme.prototype.crypto;
 
@@ -129,7 +128,7 @@ e2e.scheme.Scheme.prototype.ensureWebCryptoImport = function(algorithmId,
  * @extends {e2e.scheme.Scheme}
  */
 e2e.scheme.EncryptionScheme = function(cipher) {
-  goog.base(this, cipher);
+  e2e.scheme.EncryptionScheme.base(this, 'constructor', cipher);
 };
 goog.inherits(e2e.scheme.EncryptionScheme, e2e.scheme.Scheme);
 
@@ -240,7 +239,7 @@ e2e.scheme.EncryptionScheme.prototype.decryptJavaScriptKeyWithWebCrypto;
  * @extends {e2e.scheme.Scheme}
  */
 e2e.scheme.SignatureScheme = function(signer) {
-  goog.base(this, signer);
+  e2e.scheme.SignatureScheme.base(this, 'constructor', signer);
 };
 goog.inherits(e2e.scheme.SignatureScheme, e2e.scheme.Scheme);
 
@@ -278,7 +277,7 @@ e2e.scheme.SignatureScheme.prototype.sign = function(data) {
  * @return {!e2e.async.Result.<boolean>} The result of verification.
  */
 e2e.scheme.SignatureScheme.prototype.verify = function(m, sig) {
-  if (!(goog.isDefAndNotNull(m) && goog.isDefAndNotNull(sig))) {
+  if (!(m != null && sig != null)) {
     return e2e.async.Result.toResult(false);
   }
   var whitelist = e2e.scheme.SignatureScheme.WEBCRYPTO_ALGORITHMS.split(',');

@@ -28,31 +28,58 @@ goog.scope(function() {
 var api = e2e.ext.api;
 
 
-
 /**
  * Constructor for the request throttle.
- * @param {number} maxRequestsPerMinute The maximum allowed requests per minute.
- * @constructor
- * @extends {goog.Disposable}
  */
-api.RequestThrottle = function(maxRequestsPerMinute) {
-  goog.base(this);
+api.RequestThrottle = class extends goog.Disposable {
+  /**
+   * @param {number} maxRequestsPerMinute The maximum allowed requests per
+   *     minute.
+   */
+  constructor(maxRequestsPerMinute) {
+    super();
+
+    /**
+     * The timestamps of the previously processed requests.
+     * @type {!Array.<number>}
+     * @private
+     */
+    this.processedRequests_ = [];
+
+    /**
+     * The maximum allowed requests per minute.
+     * @type {number}
+     * @private
+     */
+    this.maxRequestsPerMinute_ = maxRequestsPerMinute;
+  }
+
+  /** @override */
+  disposeInternal() {
+    this.processedRequests_ = [];
+    super.disposeInternal();
+  }
 
   /**
-   * The timestamps of the previously processed requests.
-   * @type {!Array.<number>}
-   * @private
+   * Signals if the request can proceed.
+   * @return {boolean} True if the request can proceed. Otherwise false.
    */
-  this.processedRequests_ = [];
+  canProceed() {
+    var now = goog.now();
+    var cutoffTimestamp = now - api.RequestThrottle.PERIOD_OFFSET_;
+    this.processedRequests_ =
+        goog.array.filter(this.processedRequests_, function(requestTimestamp) {
+          return requestTimestamp > cutoffTimestamp;
+        });
 
-  /**
-   * The maximum allowed requests per minute.
-   * @type {number}
-   * @private
-   */
-  this.maxRequestsPerMinute_ = maxRequestsPerMinute;
+    if (this.processedRequests_.length < this.maxRequestsPerMinute_) {
+      this.processedRequests_.push(now);
+      return true;
+    }
+
+    return false;
+  }
 };
-goog.inherits(api.RequestThrottle, goog.Disposable);
 
 
 /**
@@ -64,32 +91,5 @@ goog.inherits(api.RequestThrottle, goog.Disposable);
  */
 api.RequestThrottle.PERIOD_OFFSET_ = 60 * 1000; // 1 minute.
 
-
-/** @override */
-api.RequestThrottle.prototype.disposeInternal = function() {
-  this.processedRequests_ = [];
-  goog.base(this, 'disposeInternal');
-};
-
-
-/**
- * Signals if the request can proceed.
- * @return {boolean} True if the request can proceed. Otherwise false.
- */
-api.RequestThrottle.prototype.canProceed = function() {
-  var now = goog.now();
-  var cutoffTimestamp = now - api.RequestThrottle.PERIOD_OFFSET_;
-  this.processedRequests_ = goog.array.filter(
-      this.processedRequests_, function(requestTimestamp) {
-        return requestTimestamp > cutoffTimestamp;
-      });
-
-  if (this.processedRequests_.length < this.maxRequestsPerMinute_) {
-    this.processedRequests_.push(now);
-    return true;
-  }
-
-  return false;
-};
 
 });  // goog.scope

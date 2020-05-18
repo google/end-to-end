@@ -579,7 +579,7 @@ function testEncryptSign() {
     var data = result['decrypt']['data'];
     var verify = result['verify'];
     assertEquals(plaintext, e2e.byteArrayToString(data));
-    assertTrue(goog.isDefAndNotNull(verify));
+    assertTrue(verify != null);
     assertEquals(0, verify.failure.length);
     assertEquals(1, verify.success.length);
     assertTrue(result['decrypt']['wasEncrypted']);

@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-{namespace e2e.ext.ui.templates.panels.generatekey autoescape="strict"}
+{namespace e2e.ext.ui.templates.panels.generatekey}
 
 
 /**
  * The form that enables the user to generate new PGP keys.
- * @param sectionTitle The title for the current section.
- * @param emailLabel The label to use when asking for the user's email address.
- * @param actionButtonTitle The title for the submit button.
- * @param signupCancelButtonTitle The title for the cancel button.
  */
 {template .generateKeyForm}
+  {@param sectionTitle: ?}  /** The title for the current section. */
+  {@param emailLabel: ?}  /** The label to use when asking for the user's email address. */
+  {@param actionButtonTitle: ?}  /** The title for the submit button. */
+  {@param signupCancelButtonTitle: ?}  /** The title for the cancel button. */
   {if $sectionTitle}
     <h1>{$sectionTitle}</h1>
   {/if}

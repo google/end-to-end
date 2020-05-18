@@ -26,6 +26,7 @@ goog.provide('e2e.ecc.point.Curve25519');
 
 goog.require('e2e.BigNum');
 goog.require('e2e.ecc.point.Point');
+goog.require('e2e.error.InvalidArgumentsError');
 goog.require('goog.asserts');
 
 
@@ -74,22 +75,11 @@ goog.inherits(e2e.ecc.point.Curve25519, e2e.ecc.point.Point);
 
 /** @override */
 e2e.ecc.point.Curve25519.prototype.getX = function() {
-  goog.asserts.assert(!this.isInfinity(),
-      'Cannot obtain the affine coordinate of the point at infinity.');
-  return this.getAffine_().x;
-};
-
-
-/**
- * Returns the x affine coordinate of this, with infinity converted to 0.
- * @return {!e2e.ecc.Element}
- */
-e2e.ecc.point.Curve25519.prototype.getX0 = function() {
   if (this.isInfinity()) {
-    return this.curve.ZERO;
-  } else {
-    return this.getAffine_().x;
+    throw new e2e.error.InvalidArgumentsError(
+        'Cannot obtain the affine coordinate of the point at infinity.');
   }
+  return this.getAffine_().x;
 };
 
 
@@ -146,7 +136,7 @@ e2e.ecc.point.Curve25519.prototype.isEqual = function(that) {
  */
 e2e.ecc.point.Curve25519.prototype.toByteArray = function(
     opt_compressed) {
-  var X = this.getX0().toBigNum().toByteArray().reverse();
+  var X = this.getX().toBigNum().toByteArray().reverse();
   var fieldSize = Math.ceil(this.curve.keySizeInBits() / 8);
   // Pads X if needed.
   while (X.length < fieldSize) {

@@ -52,7 +52,7 @@ goog.require('goog.array');
  */
 e2e.openpgp.packet.PKEncryptedSessionKey = function(
     version, keyId, algorithm, encryptedKey) {
-  goog.base(this, version, algorithm, encryptedKey);
+  e2e.openpgp.packet.PKEncryptedSessionKey.base(this, 'constructor', version, algorithm, encryptedKey);
   this.keyId = keyId;
 };
 goog.inherits(e2e.openpgp.packet.PKEncryptedSessionKey,
@@ -144,7 +144,7 @@ e2e.openpgp.packet.PKEncryptedSessionKey.prototype.
  * @param {e2e.openpgp.packet.Key} publicKey Encrypt session key for this
  *   public key.
  * @param {!e2e.ByteArray} sessionKey Unencrypted session key.
- * @return {e2e.async.Result.<e2e.openpgp.packet.PKEncryptedSessionKey>}
+ * @return {!e2e.async.Result.<e2e.openpgp.packet.PKEncryptedSessionKey>}
  */
 e2e.openpgp.packet.PKEncryptedSessionKey.construct = function(publicKey,
     sessionKey) {
@@ -166,7 +166,7 @@ e2e.openpgp.packet.PKEncryptedSessionKey.construct = function(publicKey,
 /**
  * Creates an {@link e2e.scheme.EncryptionScheme} for a given cipher.
  * @param {!e2e.cipher.Cipher} cipher
- * @return {!e2e.scheme.EncryptionScheme|e2e.cipher.Cipher}
+ * @return {!e2e.scheme.EncryptionScheme|!e2e.cipher.Cipher}
  * @private
  */
 e2e.openpgp.packet.PKEncryptedSessionKey.getEncryptionScheme_ =
@@ -197,7 +197,7 @@ e2e.openpgp.packet.PKEncryptedSessionKey.getEncryptionScheme_ =
  *     encrypt the session key.
  * @param {!e2e.cipher.ciphertext.Asymmetric} encrypted The encrypted
  *     session key.
- * @return {e2e.openpgp.packet.PKEncryptedSessionKey} The key packet.
+ * @return {!e2e.openpgp.packet.PKEncryptedSessionKey} The key packet.
  * @private
  */
 e2e.openpgp.packet.PKEncryptedSessionKey.createPacketForKey_ =
@@ -239,8 +239,10 @@ e2e.openpgp.packet.PKEncryptedSessionKey.createPacketForKey_ =
       encryptedKey);  // Encrypted session key in encoded format.
 };
 
-
-/** @override */
+/**
+ * @param {!e2e.ByteArray} body
+ * @return {!e2e.openpgp.packet.PKEncryptedSessionKey} The parsed packet.
+ */
 e2e.openpgp.packet.PKEncryptedSessionKey.parse = function(body) {
   var version = body.shift();
   if (version != 3) {

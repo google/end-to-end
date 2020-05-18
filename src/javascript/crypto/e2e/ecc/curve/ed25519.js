@@ -101,14 +101,6 @@ e2e.ecc.curve.Ed25519 = function(q) {
   this.B = this.pointFromYCoordinate_(four.multiply(five.inverse()), 0);
 
   /**
-   * The point at infinity
-   * @type {!e2e.ecc.point.Ed25519}
-   * @const
-   */
-  this.INFINITY = new e2e.ecc.point.Ed25519(this,
-      this.ZERO, this.ZERO, this.ZERO, this.ZERO);
-
-  /**
    * The additive identity
    * @type {!e2e.ecc.point.Ed25519}
    * @const

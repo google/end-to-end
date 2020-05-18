@@ -28,18 +28,16 @@ goog.require('e2e.hash.factory');
 goog.require('goog.crypt.Md5');
 
 
-
 /**
  * Wrapper around the goog.crypt.Md5 implementation.
- * @extends {e2e.hash.Hash}
- * @constructor
  */
-e2e.hash.Md5 = function() {
-  goog.base(this);
-  this.inst_ = new goog.crypt.Md5();
-  this.blockSize = this.inst_.blockSize;
+e2e.hash.Md5 = class extends e2e.hash.Hash {
+  constructor() {
+    super();
+    this.inst_ = new goog.crypt.Md5();
+    this.blockSize = this.inst_.blockSize;
+  }
 };
-goog.inherits(e2e.hash.Md5, e2e.hash.Hash);
 
 
 /** @inheritDoc */

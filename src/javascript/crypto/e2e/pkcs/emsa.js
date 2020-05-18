@@ -69,7 +69,7 @@ e2e.pkcs.ASN_PREFIXES[e2e.hash.Algorithm.SHA512] = [
 e2e.pkcs.EMSA_PKCS1_v1_5 = function(hash, m, ml, opt_noLeadingZero) {
   var h = hash.hash(m);
   var t = [];
-  if (!goog.isDef(e2e.pkcs.ASN_PREFIXES[hash.algorithm])) {
+  if (e2e.pkcs.ASN_PREFIXES[hash.algorithm] === undefined) {
     throw new e2e.pkcs.Error('invalid hash for signature');
   }
   goog.array.extend(t, e2e.pkcs.ASN_PREFIXES[hash.algorithm]);

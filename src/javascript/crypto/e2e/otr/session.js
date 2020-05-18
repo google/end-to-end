@@ -127,7 +127,7 @@ e2e.otr.Session.prototype.isValidAuthStateTransition_ = function(nextState) {
 /**
  * Gets a list of valid auth state transitions.
  * @private
- * @return {Array.<e2e.otr.constants.AUTHSTATE>}
+ * @return {!Array.<e2e.otr.constants.AUTHSTATE>}
  */
 e2e.otr.Session.prototype.getValidAuthStateTransitions_ = function() {
   switch (this.authState_) {
@@ -192,7 +192,7 @@ e2e.otr.Session.prototype.isValidMsgStateTransition_ = function(nextState) {
 /**
  * Gets a list of valid message state transitions.
  * @private
- * @return {Array.<!e2e.otr.constants.MSGSTATE>}
+ * @return {!Array.<!e2e.otr.constants.MSGSTATE>}
  */
 e2e.otr.Session.prototype.getValidMsgStateTransitions_ = function() {
   switch (this.msgState_) {

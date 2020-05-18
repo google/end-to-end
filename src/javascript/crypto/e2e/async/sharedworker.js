@@ -31,7 +31,7 @@ goog.require('e2e.async.ChildPeer');
  * @constructor
  */
 e2e.async.SharedWorker = function(path) {
-  goog.base(this);
+  e2e.async.SharedWorker.base(this, 'constructor');
   this.path_ = path;
 };
 goog.inherits(e2e.async.SharedWorker, e2e.async.ChildPeer);

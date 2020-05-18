@@ -52,7 +52,7 @@ e2e.cipher.TripleDes = function(algorithm, opt_keyObj) {
    */
   this.des_ = [];
   this.keySize = 24;
-  goog.base(this, algorithm, opt_keyObj);
+  e2e.cipher.TripleDes.base(this, 'constructor', algorithm, opt_keyObj);
 };
 goog.inherits(e2e.cipher.TripleDes, e2e.AlgorithmImpl);
 
@@ -63,7 +63,7 @@ e2e.cipher.TripleDes.prototype.blockSize = 8; // 64 bits.
 
 /** @inheritDoc */
 e2e.cipher.TripleDes.prototype.setKey = function(keyObj) {
-  goog.base(this, 'setKey', keyObj, keyObj.key.length);
+  e2e.cipher.TripleDes.base(this, 'setKey', keyObj, keyObj.key.length);
 
   for (var i = 0; i < 3; i++) {
     this.des_[i] = new e2e.cipher.Des(
@@ -106,7 +106,7 @@ e2e.cipher.Des = function(algorithm, opt_keyObj) {
    * @private
    */
   this.subkeys_ = [];
-  goog.base(this, algorithm, opt_keyObj);
+  e2e.cipher.Des.base(this, 'constructor', algorithm, opt_keyObj);
 };
 goog.inherits(e2e.cipher.Des, e2e.AlgorithmImpl);
 
@@ -117,7 +117,7 @@ e2e.cipher.Des.prototype.blockSize = 8; // 64 bits.
 
 /** @inheritDoc */
 e2e.cipher.Des.prototype.setKey = function(keyObj) {
-  goog.base(this, 'setKey', keyObj, keyObj.key.length);
+  e2e.cipher.Des.base(this, 'setKey', keyObj, keyObj.key.length);
   this.keyExpansion_();
 };
 

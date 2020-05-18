@@ -21,6 +21,10 @@
 
 goog.provide('e2e.ext.utils.action');
 
+goog.forwardDeclare('e2e.ext.Launcher');
+goog.requireType('e2e.ext.Preferences');
+goog.requireType('e2e.openpgp.ContextImpl');
+goog.requireType('e2e.openpgp.Key');
 goog.require('goog.array');
 
 goog.scope(function() {
@@ -44,9 +48,9 @@ action.extractUserIds = function(keys) {
 
 /**
  * Gets the End-to-End launcher.
- * @param {!function(!e2e.ext.Launcher)} callback The callback where
+ * @param {function(!e2e.ext.Launcher)} callback The callback where
  *     the PGP context is to be passed.
- * @param {!function(Error)} errorCallback The callback to invoke if an error is
+ * @param {function(Error)} errorCallback The callback to invoke if an error is
  *     encountered.
  * @param {T=} opt_scope Optional. The scope in which the function and the
  *     callbacks will be called.
@@ -70,9 +74,9 @@ action.getLauncher = function(callback, errorCallback, opt_scope) {
 
 /**
  * Gets the OpenPGP context.
- * @param {!function(!e2e.openpgp.ContextImpl)} callback The callback where
+ * @param {function(!e2e.openpgp.ContextImpl)} callback The callback where
  *     the PGP context is to be passed.
- * @param {!function(Error)} errorCallback The callback to invoke if an error is
+ * @param {function(Error)} errorCallback The callback to invoke if an error is
  *     encountered.
  * @param {T=} opt_scope Optional. The scope in which the function and the
  *     callbacks will be called.
@@ -89,9 +93,9 @@ action.getContext = function(callback, errorCallback, opt_scope) {
 
 /**
  * Gets the Preferences object.
- * @param {!function(!e2e.ext.Preferences)} callback The callback where
+ * @param {function(!e2e.ext.Preferences)} callback The callback where
  *     the Preferences object is to be passed.
- * @param {!function(Error)} errorCallback The callback to invoke if an error is
+ * @param {function(Error)} errorCallback The callback to invoke if an error is
  *     encountered.
  * @param {T=} opt_scope Optional. The scope in which the function and the
  *     callbacks will be called.

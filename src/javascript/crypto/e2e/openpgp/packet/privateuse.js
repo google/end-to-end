@@ -37,7 +37,7 @@ goog.require('e2e.openpgp.packet.factory');
  * @extends {e2e.openpgp.packet.Packet}
  */
 e2e.openpgp.packet.PrivateUse = function(data) {
-  goog.base(this);
+  e2e.openpgp.packet.PrivateUse.base(this, 'constructor');
   /**
    * Uninterpreted contents of packet
    * @type {!e2e.ByteArray}
@@ -62,13 +62,16 @@ e2e.openpgp.packet.PrivateUse.prototype.serializePacketBody = function() {
  * @extends {e2e.openpgp.packet.PrivateUse}
  */
 e2e.openpgp.packet.PrivateUse60 = function(data) {
-  goog.base(this, data);
+  e2e.openpgp.packet.PrivateUse60.base(this, 'constructor', data);
 };
 goog.inherits(e2e.openpgp.packet.PrivateUse60,
               e2e.openpgp.packet.PrivateUse);
 
 
-/** @inheritDoc */
+/**
+ * @param {!e2e.ByteArray} data
+ * @return {!e2e.openpgp.packet.PrivateUse60}
+ */
 e2e.openpgp.packet.PrivateUse60.parse = function(data) {
   return new e2e.openpgp.packet.PrivateUse60(data);
 };
@@ -86,13 +89,16 @@ e2e.openpgp.packet.PrivateUse60.prototype.tag = 60;
  * @extends {e2e.openpgp.packet.PrivateUse}
  */
 e2e.openpgp.packet.PrivateUse61 = function(data) {
-  goog.base(this, data);
+  e2e.openpgp.packet.PrivateUse61.base(this, 'constructor', data);
 };
 goog.inherits(e2e.openpgp.packet.PrivateUse61,
               e2e.openpgp.packet.PrivateUse);
 
 
-/** @inheritDoc */
+/**
+ * @param {!e2e.ByteArray} data
+ * @return {!e2e.openpgp.packet.PrivateUse61}
+ */
 e2e.openpgp.packet.PrivateUse61.parse = function(data) {
   return new e2e.openpgp.packet.PrivateUse61(data);
 };
@@ -110,13 +116,16 @@ e2e.openpgp.packet.PrivateUse61.prototype.tag = 61;
  * @extends {e2e.openpgp.packet.PrivateUse}
  */
 e2e.openpgp.packet.PrivateUse62 = function(data) {
-  goog.base(this, data);
+  e2e.openpgp.packet.PrivateUse62.base(this, 'constructor', data);
 };
 goog.inherits(e2e.openpgp.packet.PrivateUse62,
               e2e.openpgp.packet.PrivateUse);
 
 
-/** @inheritDoc */
+/**
+ * @param {!e2e.ByteArray} data
+ * @return {!e2e.openpgp.packet.PrivateUse62}
+ */
 e2e.openpgp.packet.PrivateUse62.parse = function(data) {
   return new e2e.openpgp.packet.PrivateUse62(data);
 };
@@ -134,13 +143,16 @@ e2e.openpgp.packet.PrivateUse62.prototype.tag = 62;
  * @extends {e2e.openpgp.packet.PrivateUse}
  */
 e2e.openpgp.packet.PrivateUse63 = function(data) {
-  goog.base(this, data);
+  e2e.openpgp.packet.PrivateUse63.base(this, 'constructor', data);
 };
 goog.inherits(e2e.openpgp.packet.PrivateUse63,
               e2e.openpgp.packet.PrivateUse);
 
 
-/** @inheritDoc */
+/**
+ * @param {!e2e.ByteArray} data
+ * @return {!e2e.openpgp.packet.PrivateUse63}
+ */
 e2e.openpgp.packet.PrivateUse63.parse = function(data) {
   return new e2e.openpgp.packet.PrivateUse63(data);
 };

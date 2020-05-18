@@ -35,7 +35,7 @@ goog.require('e2e.openpgp.packet.Data');
  */
 e2e.openpgp.packet.EncryptedData = function(
     encryptedData) {
-  goog.base(this);
+  e2e.openpgp.packet.EncryptedData.base(this, 'constructor');
 
   /**
    * The encrypted data.

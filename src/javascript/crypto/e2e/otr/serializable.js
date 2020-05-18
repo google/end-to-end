@@ -28,7 +28,7 @@ goog.provide('e2e.otr.Serializable');
  * An interface for serializing to Uint8Array.
  * @interface
  */
-e2e.otr.Serializable = goog.abstractMethod;
+e2e.otr.Serializable = function() {};
 
 
 /**

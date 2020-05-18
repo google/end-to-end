@@ -33,7 +33,7 @@ goog.require('e2e.openpgp.packet.Compressed');
  * @extends {e2e.openpgp.block.Message}
  */
 e2e.openpgp.block.Compressed = function(opt_signatures) {
-  goog.base(this, opt_signatures);
+  e2e.openpgp.block.Compressed.base(this, 'constructor', opt_signatures);
 };
 goog.inherits(e2e.openpgp.block.Compressed,
     e2e.openpgp.block.Message);

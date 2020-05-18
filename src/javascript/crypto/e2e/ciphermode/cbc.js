@@ -40,7 +40,7 @@ goog.require('goog.crypt');
  * @final
  */
 e2e.ciphermode.Cbc = function(cipher) {
-  goog.base(this, cipher);
+  e2e.ciphermode.Cbc.base(this, 'constructor', cipher);
 
   /**
    * The pkcs7 encoding scheme.

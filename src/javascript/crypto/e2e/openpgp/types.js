@@ -58,11 +58,18 @@ goog.provide('e2e.openpgp.VerifiedDecrypt');
 goog.provide('e2e.openpgp.VerifyDecryptPromise');
 goog.provide('e2e.openpgp.VerifyDecryptResult');
 goog.provide('e2e.openpgp.VerifyResult');
-/** @suppress {extraProvide} provide the whole namespace for simplicity */
 goog.provide('e2e.openpgp.types');
 
+goog.requireType('e2e.cipher.Algorithm');
+goog.requireType('e2e.hash.Algorithm');
+goog.forwardDeclare('e2e.openpgp.block.TransferableKey');
+goog.requireType('e2e.signer.Algorithm');
+goog.requireType('goog.structs.Map');
 /** @suppress {extraRequire} manually import typedefs due to b/15739810 */
 goog.require('e2e.ByteArray');
+goog.requireType('e2e.async.Result');
+goog.requireType('goog.Thenable');
+goog.requireType('goog.async.Deferred');
 
 
 /**

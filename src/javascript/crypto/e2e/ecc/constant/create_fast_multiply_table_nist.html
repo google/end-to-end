@@ -159,7 +159,7 @@ document.write(' * ', curve, ' curve.');
 //    document.documentElement.innerText;
 // For now, the output from loading this file needs to be cut and pasted
 // from a real browser.
-if (goog.isDef(table)) {
+if (table !== undefined) {
   outputFastMultiplyTable(table);
 } else {
   document.writeln('<h1>Unknown or unimplemented curve!</h1>');

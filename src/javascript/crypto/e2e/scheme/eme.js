@@ -33,7 +33,7 @@ goog.provide('e2e.scheme.Eme');
  * @extends {e2e.scheme.EncryptionScheme}
  */
 e2e.scheme.Eme = function(cipher) {
-  goog.base(this, cipher);
+  e2e.scheme.Eme.base(this, 'constructor', cipher);
   this.cipher = cipher;
 };
 goog.inherits(e2e.scheme.Eme, e2e.scheme.EncryptionScheme);

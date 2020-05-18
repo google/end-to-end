@@ -1,4 +1,8 @@
 /**
+ * @fileoverview
+ * @suppress {missingProperties} See: b/33430503
+ */
+/**
  * @license
  * Copyright 2014 Google Inc. All rights reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,7 +44,6 @@ goog.require('e2e.signer.Algorithm');
 goog.require('e2e.signer.Ecdsa');
 goog.require('goog.asserts');
 goog.require('goog.crypt.base64');
-goog.require('goog.string');
 
 
 /**
@@ -50,8 +53,7 @@ goog.require('goog.string');
  *     private key. If not given, a random key will be created.
  * @return {!e2e.signer.Ecdsa}
  */
-e2e.asymmetric.keygenerator.newEcdsaWithP256 = function(
-    opt_privateKey) {
+e2e.asymmetric.keygenerator.newEcdsaWithP256 = function(opt_privateKey) {
   var key = e2e.ecc.Protocol.generateKeyPair(
       e2e.ecc.PrimeCurve.P_256, opt_privateKey);
   return new e2e.signer.Ecdsa(e2e.signer.Algorithm.ECDSA, key);
@@ -65,12 +67,11 @@ e2e.asymmetric.keygenerator.newEcdsaWithP256 = function(
  *     private key. If not given, a random key will be created.
  * @return {!e2e.cipher.Ecdh}
  */
-e2e.asymmetric.keygenerator.newEcdhWithP256 = function(
-    opt_privateKey) {
+e2e.asymmetric.keygenerator.newEcdhWithP256 = function(opt_privateKey) {
   var key = e2e.ecc.Protocol.generateKeyPair(
       e2e.ecc.PrimeCurve.P_256, opt_privateKey);
-  key['kdfInfo'] = [
-    0x3, 0x1, 0x8 /* SHA256 Algo ID*/, 0x7 /* AES-128 Algo ID */];
+  key['kdfInfo'] =
+      [0x3, 0x1, 0x8 /* SHA256 Algo ID*/, 0x7 /* AES-128 Algo ID */];
   return new e2e.cipher.Ecdh(e2e.cipher.Algorithm.ECDH, key);
 };
 
@@ -83,19 +84,18 @@ e2e.asymmetric.keygenerator.newWebCryptoP256Keys = function() {
     throw new e2e.error.UnsupportedError('No WebCrypto support!');
   }
   var result = new e2e.async.Result;
-  Promise.all([
-    e2e.asymmetric.keygenerator.populateWebCrypto_(
-        new e2e.signer.Ecdsa(e2e.signer.Algorithm.ECDSA),
-        {name: 'ECDSA', namedCurve: 'P-256'},
-        ['sign', 'verify']
-    ),
-    e2e.asymmetric.keygenerator.populateWebCrypto_(
-        new e2e.cipher.Ecdh(e2e.cipher.Algorithm.ECDH),
-        {name: 'ECDH', namedCurve: 'P-256'},
-        ['deriveKey', 'deriveBits']
-    )
-  ]).then(goog.bind(result.callback, result),
-      goog.bind(result.errback, result));
+  Promise
+      .all([
+        e2e.asymmetric.keygenerator.populateWebCrypto_(
+            new e2e.signer.Ecdsa(e2e.signer.Algorithm.ECDSA),
+            {name: 'ECDSA', namedCurve: 'P-256'}, ['sign', 'verify']),
+        e2e.asymmetric.keygenerator.populateWebCrypto_(
+            new e2e.cipher.Ecdh(e2e.cipher.Algorithm.ECDH),
+            {name: 'ECDH', namedCurve: 'P-256'}, ['deriveKey', 'deriveBits'])
+      ])
+      .then(
+          goog.bind(result.callback, result),
+          goog.bind(result.errback, result));
   return result;
 };
 
@@ -107,17 +107,22 @@ e2e.asymmetric.keygenerator.newWebCryptoP256Keys = function() {
  * @return {!goog.Thenable<(!e2e.cipher.Ecdh|!e2e.signer.Ecdsa)>}
  * @private
  */
-e2e.asymmetric.keygenerator.populateWebCrypto_ = function(algorithm, aid,
-    usages) {
-  return goog.global.crypto.subtle.generateKey(aid, true, usages)
-      .then(function(keyPair) {
-        algorithm.setWebCryptoKey(keyPair);
-        return goog.global.crypto.subtle.exportKey('jwk', keyPair.privateKey);
-      }).then(function(jwkKey) {
-        var ecKey = e2e.asymmetric.keygenerator.jwkToEc(jwkKey);
-        algorithm.setKey(ecKey);
-        return algorithm;
-      });
+e2e.asymmetric.keygenerator.populateWebCrypto_ = function(
+    algorithm, aid, usages) {
+  return /** @type {!goog.Thenable<(!e2e.cipher.Ecdh|!e2e.signer.Ecdsa)>} */ (
+      goog.global.crypto.subtle.generateKey(aid, true, usages)
+          .then(function(keyPair) {
+            var typedKeyPair =
+                /** @type {!e2e.algorithm.WebCryptoKeyPair} */ (keyPair);
+            algorithm.setWebCryptoKey(typedKeyPair);
+            return goog.global.crypto.subtle.exportKey(
+                'jwk', goog.asserts.assert(typedKeyPair.privateKey));
+          })
+          .then(function(jwkKey) {
+            var ecKey = e2e.asymmetric.keygenerator.jwkToEc(jwkKey);
+            algorithm.setKey(ecKey);
+            return algorithm;
+          }));
 };
 
 
@@ -141,9 +146,8 @@ e2e.asymmetric.keygenerator.decodeP256Element_ = function(q, jwkElement) {
  * @private
  */
 e2e.asymmetric.keygenerator.encodeBase64ForWebCrypto_ = function(bytes) {
-  var str = goog.crypt.base64.encodeByteArray(bytes, true /* websafe */);
-  // goog.crypt.base64 produces padded base64, but WebCrypto demands unpadded.
-  return goog.string.removeAll(str, '.');
+  return goog.crypt.base64.encodeByteArray(
+      bytes, goog.crypt.base64.Alphabet.WEBSAFE_NO_PADDING);
 };
 
 
@@ -165,7 +169,7 @@ e2e.asymmetric.keygenerator.encodeP256Element_ = function(element) {
 /**
  * Given a JWK-formatted ECDH or ECDSA key, return a key in e2e format.
  * @param {webCrypto.JsonWebKey} jwkKey
- * @return {e2e.cipher.key.Ecdh|e2e.signer.key.Ecdsa}
+ * @return {!e2e.cipher.key.Ecdh|!e2e.signer.key.Ecdsa}
  */
 e2e.asymmetric.keygenerator.jwkToEc = function(jwkKey) {
   if (jwkKey['kty'] !== 'EC') {
@@ -179,7 +183,7 @@ e2e.asymmetric.keygenerator.jwkToEc = function(jwkKey) {
   /** @type {!Array<number>} */ var kdfInfo = [
     0x3,  // 3 bytes to follow
     0x1,  // Reserved byte
-    e2e.openpgp.constants.getId(e2e.hash.Algorithm.SHA256),  // 0x8
+    e2e.openpgp.constants.getId(e2e.hash.Algorithm.SHA256),   // 0x8
     e2e.openpgp.constants.getId(e2e.cipher.Algorithm.AES128)  // 0x7
   ];
 
@@ -190,8 +194,8 @@ e2e.asymmetric.keygenerator.jwkToEc = function(jwkKey) {
   var curveObj = new e2e.ecc.curve.Nist(q, b);
   var point = new e2e.ecc.point.Nist(curveObj, xElement, yElement);
 
-  var privKey = jwkKey.d ? goog.crypt.base64.decodeStringToByteArray(jwkKey.d) :
-      null;
+  var privKey =
+      jwkKey.d ? goog.crypt.base64.decodeStringToByteArray(jwkKey.d) : null;
 
   return {
     'curve': curve,
@@ -218,13 +222,8 @@ e2e.asymmetric.keygenerator.ecToJwk = function(pubKey, opt_privKey) {
   var xString = e2e.asymmetric.keygenerator.encodeP256Element_(point.x);
   var yString = e2e.asymmetric.keygenerator.encodeP256Element_(point.y);
 
-  var jwk = /** @type {!webCrypto.JsonWebKey} */({
-    kty: 'EC',
-    crv: 'P-256',
-    x: xString,
-    y: yString,
-    ext: true
-  });
+  var jwk = /** @type {!webCrypto.JsonWebKey} */ (
+      {kty: 'EC', crv: 'P-256', x: xString, y: yString, ext: true});
   if (opt_privKey) {
     goog.asserts.assert(opt_privKey.length == 32);
     jwk.d = e2e.asymmetric.keygenerator.encodeBase64ForWebCrypto_(opt_privKey);
@@ -241,8 +240,8 @@ e2e.asymmetric.keygenerator.ecToJwk = function(pubKey, opt_privKey) {
  * @param {!e2e.ByteArray=} opt_privKey The private key to import.
  * @return {!goog.Thenable<webCrypto.CryptoKey>}
  */
-e2e.asymmetric.keygenerator.importWebCryptoKey = function(v, aid,
-    opt_usages, opt_privKey) {
+e2e.asymmetric.keygenerator.importWebCryptoKey = function(
+    v, aid, opt_usages, opt_privKey) {
   if (aid.name != 'ECDSA' && aid.name != 'ECDH') {
     throw new Error('Algorithm name must be ECDSA or ECDH, not ' + aid.name);
   }
@@ -250,6 +249,7 @@ e2e.asymmetric.keygenerator.importWebCryptoKey = function(v, aid,
     throw new Error('Only P-256 keys are supported, not ' + aid.namedCurve);
   }
   var jwkKey = e2e.asymmetric.keygenerator.ecToJwk(v, opt_privKey);
-  return goog.global.crypto.subtle.importKey('jwk', jwkKey, aid,
-      true /* extractable */, opt_usages || []);
+  return /** @type {!goog.Thenable<webCrypto.CryptoKey>} */ (
+      goog.global.crypto.subtle.importKey(
+          'jwk', jwkKey, aid, true /* extractable */, opt_usages || []));
 };

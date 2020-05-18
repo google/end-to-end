@@ -33,7 +33,7 @@
     var ERROR_MSG = "Test error propagation.";
 
     function FakeClient(port) {
-      goog.base(this, port);
+      FakeClient.base(this, 'constructor', port);
     }
     goog.inherits(FakeClient, e2e.async.Client);
 
@@ -66,7 +66,7 @@
       }, errback);
     };
     function FakeService(port) {
-      goog.base(this, port);
+      FakeService.base(this, 'constructor', port);
     }
     goog.inherits(FakeService, e2e.async.Service);
     FakeService.prototype.getResponse = function() {
@@ -86,7 +86,7 @@
     };
 
     function FakeServiceChild(port) {
-      goog.base(this, port);
+      FakeServiceChild.base(this, 'constructor', port);
     }
     goog.inherits(FakeServiceChild, FakeService);
     FakeServiceChild.prototype._public_ping = function(msg) {
@@ -144,7 +144,7 @@
             fc.ping("loop", function(x) {
               fail('Unserializable object should trigger an error.' + x.x);
             }, function(error) {
-              assertTrue(goog.isString(error));
+              assertTrue(typeof error === 'string');
               asyncTestCase.waitForAsync("Waiting for undef RPC");
               fc.undef('1', undefined, function(result) {
                 assertEquals('1undefinedundefined', result);
@@ -166,11 +166,11 @@
     var ERROR_MSG = "Test error propagation.";
 
     function FakeClient(port) {
-      goog.base(this, port);
+      FakeClient.base(this, 'constructor', port);
     }
     goog.inherits(FakeClient, e2e.async.Client);
     function FakeService(port) {
-      goog.base(this, port);
+      FakeService.base(this, 'constructor', port);
     }
     goog.inherits(FakeService, e2e.async.Service);
     FakeService.prototype.getResponse = function() {
@@ -203,11 +203,11 @@
     var ERROR_MSG = "Test error propagation.";
     var TIMEOUT_LENGTH = 50;
     function FakeClient(port) {
-      goog.base(this, port);
+      FakeClient.base(this, 'constructor', port);
     }
     goog.inherits(FakeClient, e2e.async.Client);
     function FakeService(port) {
-      goog.base(this, port);
+      FakeService.base(this, 'constructor', port);
     }
     goog.inherits(FakeService, e2e.async.Service);
     // Increase the service delay over the discovery timeout.
@@ -248,16 +248,16 @@
     var ERROR_MSG = "Test error propagation.";
 
     function FakeClient(port) {
-      goog.base(this, port);
+      FakeClient.base(this, 'constructor', port);
     }
     goog.inherits(FakeClient, e2e.async.Client);
     function FakeService(port) {
-      goog.base(this, port);
+      FakeService.base(this, 'constructor', port);
     }
     goog.inherits(FakeService, e2e.async.Service);
     FakeService.prototype.name = TEST_SERVICE_NAME;
     function FakeServiceChild(port) {
-      goog.base(this, port);
+      FakeServiceChild.base(this, 'constructor', port);
     }
     goog.inherits(FakeServiceChild, FakeService);
 

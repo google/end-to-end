@@ -12,17 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-{namespace e2e.ext.ui.templates.dialogs.generic autoescape="strict"}
+{namespace e2e.ext.ui.templates.dialogs.generic}
 
 /**
  * Renders the required UI elements for the dialog component.
- * @param message The message to display.
- * @param inputFieldType The type of the input field (e.g. text, password, etc.).
- * @param inputPlaceholder A placeholder to display when asking for the passphrase.
- * @param actionButtonTitle The title of the prompt button.
- * @param cancelButtonTitle The title of the cancel button.
  */
 {template .dialog}
+  {@param message: ?}  /** The message to display. */
+  {@param inputFieldType: ?}  /** The type of the input field (e.g. text, password, etc.). */
+  {@param inputPlaceholder: ?}  /** A placeholder to display when asking for the passphrase. */
+  {@param actionButtonTitle: ?}  /** The title of the prompt button. */
+  {@param cancelButtonTitle: ?}  /** The title of the cancel button. */
   {if $message}
     <div>{$message|changeNewlineToBr}</div>
   {/if}

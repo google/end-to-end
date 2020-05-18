@@ -18,7 +18,6 @@
  * @fileoverview Requires all compression algorithms to load them into the
  * factory.
  */
-/** @suppress {extraProvide} this aggregation needs a namespace */
 goog.provide('e2e.compression.all');
 
 /** @suppress {extraRequire} intentional import */

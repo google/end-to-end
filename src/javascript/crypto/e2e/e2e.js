@@ -30,6 +30,7 @@ goog.require('e2e.async.Result');
 goog.require('e2e.error.InvalidArgumentsError');
 goog.require('goog.array');
 goog.require('goog.crypt');
+goog.require('goog.math.Long');
 
 
 /**
@@ -213,7 +214,7 @@ e2e.byteArrayToStringAsync = function(bytes, opt_charset) {
 
 /**
  * Converts a string into a UTF-8 encoded byte array.
- * Throws {@code e2e.error.InvalidArgumentsError} if the string
+ * Throws `e2e.error.InvalidArgumentsError` if the string
  * contains unencodable codepoints (eg: surrogate characters.)
  * @param {string} stringInput The string to convert.
  * @return {!e2e.ByteArray} The UTF-8 byte representation of the string.
@@ -310,6 +311,19 @@ e2e.isByte = function(b) {
   return (typeof b == 'number' &&
       b >= 0 &&
       b <= 255 &&
+      b - Math.floor(b) == 0);
+};
+
+
+/**
+ * Returns whether the number is a valid unsigned 32-bit integer (between 0 and
+ * 2^32 - 1)
+ * @param {number} b The number to test.
+ * @return {boolean} If the number is a uint32.
+ */
+e2e.isUint32 = function(b) {
+  return (
+      typeof b == 'number' && b >= 0 && b <= 0xffffffff &&
       b - Math.floor(b) == 0);
 };
 
@@ -468,7 +482,7 @@ e2e.ImmutableArray.prototype.getState = function() {
  * @template T
  */
 e2e.ImmutableArray.pushCopy = function(arr, element) {
-  if (goog.isDefAndNotNull(arr)) {
+  if (arr != null) {
     return new e2e.ImmutableArray(
         goog.array.concat(arr.elements_, element));
   } else {

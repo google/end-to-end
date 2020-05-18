@@ -42,7 +42,7 @@ goog.require('goog.asserts');
 e2e.signer.RsaSign = function(algorithm, opt_key) {
   goog.asserts.assert(algorithm == e2e.signer.Algorithm.RSA_SIGN,
       'Algorithm should be RSA_SIGN.');
-  goog.base(this, algorithm, opt_key);
+  e2e.signer.RsaSign.base(this, 'constructor', algorithm, opt_key);
 };
 goog.inherits(e2e.signer.RsaSign, e2e.cipher.Rsa);
 

@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-{namespace e2e.ext.ui.templates.prompt autoescape="strict"}
+{namespace e2e.ext.ui.templates.prompt}
 
 
 /**
  * Renders the base layout for the Prompt UI.
- * @param menuLabel The label for the menu icon.
- * @param popoutLabel The label for the popout icon.
  */
 {template .main}
+  {@param menuLabel: ?}  /** The label for the menu icon. */
+  {@param popoutLabel: ?}  /** The label for the popout icon. */
     <div class="{e2e.ext.constants.CssClass.PROMPT_HEADER}">
       <div>
         <div class="{e2e.ext.constants.CssClass.BUTTONS_CONTAINER}{sp}

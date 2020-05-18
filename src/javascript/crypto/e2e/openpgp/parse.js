@@ -22,6 +22,8 @@
 
 goog.provide('e2e.openpgp.parse');
 
+goog.requireType('e2e.openpgp.packet.Packet');
+goog.requireType('e2e.openpgp.ByteStream');
 goog.require('e2e.debug.Console');
 goog.require('e2e.openpgp.error.ParseError');
 goog.require('e2e.openpgp.packet.factory');
@@ -215,10 +217,10 @@ e2e.openpgp.parse.P_TAG_OLD_PACKET_SHIFT_ = 2;
 /**
  * Parses a packet and calls the specific subpacket class if available.
  * Specified in RFC 4880 Section 4.
- * Throws a {@code e2e.openpgp.error.ParseError} if the packet is invalid.
+ * Throws a `e2e.openpgp.error.ParseError` if the packet is invalid.
  * @param {!(e2e.ByteArray|e2e.openpgp.ByteStream)} data
  *     The data to parse as a packet.
- * @return {e2e.openpgp.packet.Packet} The packet generated.
+ * @return {!e2e.openpgp.packet.Packet} The packet generated.
  */
 e2e.openpgp.parse.parseSerializedPacket = function(data) {
   var ptype, body;

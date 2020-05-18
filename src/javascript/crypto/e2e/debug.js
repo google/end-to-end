@@ -201,7 +201,7 @@ e2e.debug.Console.rebindAll_ = function() {
  */
 e2e.debug.Console.rebindMethods_ = function(c) {
   var handler = e2e.debug.Console.handler_;
-  if (goog.isDefAndNotNull(handler)) {
+  if (handler != null) {
     e2e.debug.Console.bindHandler_(c, handler);
   } else {
     e2e.debug.Console.bindDefault_(c);
@@ -260,9 +260,7 @@ e2e.debug.Console.bindDefault_ = function(c) {
 e2e.debug.Console.bindDefaultMethod_ = function(name, methodName, useNoop) {
   var console = goog.global['console'];
   // Use a no-op if requested, or if we don't have a console.log
-  if (useNoop ||
-      !goog.isDefAndNotNull(console) ||
-      !goog.isFunction(console['log'])) {
+  if (useNoop || console == null || !goog.isFunction(console['log'])) {
     return goog.nullFunction;
   }
 

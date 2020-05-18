@@ -43,7 +43,7 @@ e2e.BigNum = function(opt_value) {
    * @type {!Array.<number>}
    */
   this.n = [];
-  if (goog.isDef(opt_value)) {
+  if (opt_value !== undefined) {
     if (!(
           goog.isFunction(goog.global.Uint8Array) &&
           opt_value instanceof Uint8Array

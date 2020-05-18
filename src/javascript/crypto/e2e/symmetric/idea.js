@@ -54,7 +54,7 @@ e2e.cipher.Idea = function(algorithm, opt_keyObj) {
   this.decryptSubKeys_ = [];
 
   this.keySize = 128;  // key size in bits
-  goog.base(this, algorithm, opt_keyObj);
+  e2e.cipher.Idea.base(this, 'constructor', algorithm, opt_keyObj);
 };
 goog.inherits(e2e.cipher.Idea, e2e.AlgorithmImpl);
 
@@ -81,7 +81,7 @@ e2e.cipher.Idea.prototype.blockSize = 8;  // 64 bits.
 
 /** @inheritDoc */
 e2e.cipher.Idea.prototype.setKey = function(keyObj) {
-  goog.base(this, 'setKey', keyObj, keyObj.key.length);
+  e2e.cipher.Idea.base(this, 'setKey', keyObj, keyObj.key.length);
   this.initEncryptSubkeys_();
   this.initDecryptSubkeys_();
 };
@@ -90,7 +90,7 @@ e2e.cipher.Idea.prototype.setKey = function(keyObj) {
 /***
  * Expand out the encryption subkeys
  * @private
- * @return {Array.<!e2e.BigNum>}
+ * @return {!Array.<!e2e.BigNum>}
  */
 e2e.cipher.Idea.prototype.initEncryptSubkeys_ = function() {
   var shiftInt = e2e.BigNum.fromInteger(8);
@@ -119,7 +119,7 @@ e2e.cipher.Idea.prototype.initEncryptSubkeys_ = function() {
 /***
  * Expand out the decryption subkeys
  * @private
- * @return {Array.<!e2e.BigNum>}
+ * @return {!Array.<!e2e.BigNum>}
  */
 e2e.cipher.Idea.prototype.initDecryptSubkeys_ = function() {
   var si = 0;
@@ -160,7 +160,7 @@ e2e.cipher.Idea.prototype.initDecryptSubkeys_ = function() {
  *
  * @param {Array.<!e2e.BigNum>} block
  * @param {Array.<!e2e.BigNum>} key
- * @return {Array.<!e2e.BigNum>}
+ * @return {!Array.<!e2e.BigNum>}
  */
 e2e.cipher.Idea.prototype.applyKey = function(block, key) {
   var ki = 0; // key index

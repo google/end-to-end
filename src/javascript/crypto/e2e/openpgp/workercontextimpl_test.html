@@ -48,7 +48,7 @@ function setUp() {
   clientPeer.init = servicePeer.init = goog.nullFunction;
 
   FakeService = function(port) {
-    goog.base(this, port);
+    FakeService.base(this, 'constructor', port);
   }
   goog.inherits(FakeService, e2e.async.Service);
 

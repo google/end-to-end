@@ -45,7 +45,7 @@ goog.require('e2e.cipher.factory');
  */
 e2e.cipher.Cast5 = function(algorithm, opt_keyObj) {
   this.keySize = 16;
-  goog.base(this, algorithm, opt_keyObj);
+  e2e.cipher.Cast5.base(this, 'constructor', algorithm, opt_keyObj);
 };
 goog.inherits(e2e.cipher.Cast5, e2e.AlgorithmImpl);
 
@@ -66,7 +66,7 @@ e2e.cipher.Cast5.prototype.setKey = function(keyObj) {
   keyObj.rotate = schedule.rotate;
 
   // Superclass setKey sets the key to this.key_ and keySize.
-  goog.base(this, 'setKey', keyObj, keyObj.key.length);
+  e2e.cipher.Cast5.base(this, 'setKey', keyObj, keyObj.key.length);
 };
 
 

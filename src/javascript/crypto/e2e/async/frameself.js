@@ -33,7 +33,7 @@ goog.require('e2e.async.Peer');
  * @constructor
  */
 e2e.async.FrameSelf = function(parent, opt_parentOrigin) {
-  goog.base(this);
+  e2e.async.FrameSelf.base(this, 'constructor');
   this.parent_ = parent;
   this.parentOrigin_ = opt_parentOrigin;
 };

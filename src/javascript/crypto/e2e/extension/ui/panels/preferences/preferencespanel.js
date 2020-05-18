@@ -20,12 +20,13 @@
 
 goog.provide('e2e.ext.ui.panels.PreferencesPanel');
 
+goog.requireType('e2e.ext.Preferences');
 goog.require('e2e.ext.constants.StorageKey');
 goog.require('e2e.ext.ui.panels.PreferenceEntry');
 goog.require('e2e.ext.ui.templates.panels.preferences');
 goog.require('goog.array');
+goog.require('goog.soy');
 goog.require('goog.ui.Component');
-goog.require('soy');
 
 goog.scope(function() {
 var constants = e2e.ext.constants;
@@ -33,55 +34,51 @@ var panels = e2e.ext.ui.panels;
 var templates = e2e.ext.ui.templates.panels.preferences;
 
 
-
 /**
  * Constructor for the preferences list.
- * @param {!e2e.ext.Preferences} preferences User preferences.
- * @constructor
- * @extends {goog.ui.Component}
  */
-panels.PreferencesPanel = function(preferences) {
-  goog.base(this);
-
+panels.PreferencesPanel = class extends goog.ui.Component {
   /**
-   * User preferences.
-   * @type {!e2e.ext.Preferences}
-   * @private
+   * @param {!e2e.ext.Preferences} preferences User preferences.
    */
-  this.preferences_ = preferences;
-};
-goog.inherits(panels.PreferencesPanel, goog.ui.Component);
+  constructor(preferences) {
+    super();
 
+    /**
+     * User preferences.
+     * @type {!e2e.ext.Preferences}
+     * @private
+     */
+    this.preferences_ = preferences;
+  }
 
-/** @override */
-panels.PreferencesPanel.prototype.createDom = function() {
-  goog.base(this, 'createDom');
-  this.decorateInternal(this.getElement());
-};
+  /** @override */
+  createDom() {
+    super.createDom();
+    this.decorateInternal(this.getElement());
+  }
 
+  /** @override */
+  decorateInternal(elem) {
+    super.decorateInternal(elem);
 
-/** @override */
-panels.PreferencesPanel.prototype.decorateInternal = function(elem) {
-  goog.base(this, 'decorateInternal', elem);
+    goog.soy.renderElement(
+        elem, templates.listPreferences,
+        {sectionTitle: chrome.i18n.getMessage('preferencesSectionTitle')});
 
-  soy.renderElement(elem, templates.listPreferences, {
-    sectionTitle: chrome.i18n.getMessage('preferencesSectionTitle')
-  });
-
-  var prefs = [
-    {
+    var prefs = [{
       name: constants.StorageKey.ENABLE_WELCOME_SCREEN,
       description: chrome.i18n.getMessage('preferenceWelcomeScreen'),
-      setterCallback: goog.bind(this.preferences_.setWelcomePageEnabled,
-          this.preferences_),
+      setterCallback:
+          goog.bind(this.preferences_.setWelcomePageEnabled, this.preferences_),
       isSet: this.preferences_.isWelcomePageEnabled()
-    }
-  ];
-  goog.array.forEach(prefs, function(pref) {
-    var prefEntry = new panels.PreferenceEntry(
-        pref.name, pref.description, pref.setterCallback, pref.isSet);
-    this.addChild(prefEntry, true);
-  }, this);
+    }];
+    goog.array.forEach(prefs, function(pref) {
+      var prefEntry = new panels.PreferenceEntry(
+          pref.name, pref.description, pref.setterCallback, pref.isSet);
+      this.addChild(prefEntry, true);
+    }, this);
+  }
 };
 
 

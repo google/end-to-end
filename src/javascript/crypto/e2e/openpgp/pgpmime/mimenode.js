@@ -69,11 +69,10 @@ e2e.openpgp.pgpmime.MimeNode = function(options, opt_parent) {
   this.boundary_ = '';
 
   // Set headers.
-  if (goog.isDefAndNotNull(options.optionalHeaders)) {
+  if (options.optionalHeaders != null) {
     goog.array.forEach(options.optionalHeaders, goog.bind(function(header) {
-      if (goog.isDefAndNotNull(header.name) &&
-          goog.isDefAndNotNull(header.value)) {
-        if (goog.isDefAndNotNull(header.params)) {
+      if (header.name != null && header.value != null) {
+        if (header.params != null) {
           // header.params should only be set if the header value is of type
           // e2e.openpgp.pgpmime.types.HeaderValueWithParams (i.e., Content-Type
           // or Content-Disposition headers).
@@ -91,7 +90,7 @@ e2e.openpgp.pgpmime.MimeNode = function(options, opt_parent) {
  * Adds a child to a MIME node.
  * @param {!e2e.openpgp.pgpmime.types.NodeContent} options Options to initialize
  *     for the node.
- * @return {e2e.openpgp.pgpmime.MimeNode}
+ * @return {!e2e.openpgp.pgpmime.MimeNode}
  */
 e2e.openpgp.pgpmime.MimeNode.prototype.addChild = function(options) {
   var node = new e2e.openpgp.pgpmime.MimeNode(options, this);
@@ -195,7 +194,7 @@ e2e.openpgp.pgpmime.MimeNode.prototype.mimeToString_ = function() {
   var lines = [];
   var transferEncoding = this.header_[constants.Mime.CONTENT_TRANSFER_ENCODING];
   var contentType = this.header_[constants.Mime.CONTENT_TYPE];
-  var contentIsString = goog.typeOf(this.content_) === 'string';
+  var contentIsString = typeof this.content_ === 'string';
 
   if (this.header_[constants.Mime.CONTENT_TYPE].value ===
       constants.Mime.PLAINTEXT && this.content_ && contentIsString) {

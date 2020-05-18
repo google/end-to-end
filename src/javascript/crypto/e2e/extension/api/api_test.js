@@ -253,8 +253,8 @@ function testLockedKeyring() {
   var callbackMock = mockControl.createFunctionMock();
   callbackMock(new goog.testing.mockmatchers.ArgumentMatcher(function(arg) {
     assertEquals('glassKeyringLockedError', arg.error);
-    assertFalse(goog.isDef(arg.completedAction));
-    assertFalse(goog.isDef(arg.content));
+    assertFalse(arg.completedAction !== undefined);
+    assertFalse(arg.content !== undefined);
     return true;
   }));
 

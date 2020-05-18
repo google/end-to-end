@@ -71,7 +71,7 @@ e2e.openpgp.packet.KeyCertificationState_ = {
  */
 e2e.openpgp.packet.Key = function(
     version, timestamp, cipher, opt_fingerprint, opt_keyId) {
-  goog.base(this);
+  e2e.openpgp.packet.Key.base(this, 'constructor');
   /**
    * The version of the key.
    * @type {number}
@@ -83,7 +83,7 @@ e2e.openpgp.packet.Key = function(
     keyId = opt_keyId;
   }
 
-  if (goog.isDefAndNotNull(opt_fingerprint)) {
+  if (opt_fingerprint != null) {
     /**
      * The fingerprint of the key.
      * @type {!e2e.openpgp.KeyFingerprint}
@@ -250,7 +250,7 @@ e2e.openpgp.packet.Key.prototype.verifySignatures = function(verifyingKey) {
         // one.
         return this.findNewestBindingSignature_(verifyingKey)
             .addCallback(function(newestSignature) {
-              if (goog.isNull(newestSignature)) {
+              if (newestSignature === null) {
                 return false;
               }
               // Mark our binding array as being verified, and remove all
@@ -461,7 +461,7 @@ e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type,
         [Math.floor(new Date().getTime() / 1e3)]),
     'ISSUER': bindingKey.keyId
   };
-  if (goog.isDef(opt_keyFlags)) {
+  if (opt_keyFlags !== undefined) {
     attributes.KEY_FLAGS = [opt_keyFlags];
   }
   var sigRes = e2e.openpgp.packet.Signature.construct(
@@ -493,7 +493,7 @@ e2e.openpgp.packet.Key.prototype.bindTo = function(bindingKey, type,
 
 /** @override */
 e2e.openpgp.packet.Key.prototype.serialize = function() {
-  var serialized = goog.base(this, 'serialize');
+  var serialized = e2e.openpgp.packet.Key.base(this, 'serialize');
   e2e.ImmutableArray.forEach(
       e2e.ImmutableArray.concat(this.revocations_, this.bindingSignatures_),
       function(sig) {

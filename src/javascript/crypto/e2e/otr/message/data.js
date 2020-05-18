@@ -58,7 +58,7 @@ var MSGSTATE = constants.MSGSTATE;
  * @param {number=} opt_flags The flags to set on the message.
  */
 e2e.otr.message.Data = function(session, plaintext, opt_tlvs, opt_flags) {
-  goog.base(this, session);
+  e2e.otr.message.Data.base(this, 'constructor', session);
 
   if (plaintext.indexOf('\0') > -1) {
     throw new e2e.otr.error.InvalidArgumentsError(

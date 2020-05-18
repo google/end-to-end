@@ -21,11 +21,12 @@
 goog.provide('e2e.Algorithm');
 goog.provide('e2e.AlgorithmImpl');
 
-/** @suppress {extraRequire} manually import typedefs due to b/15739810 */
+goog.forwardDeclare('e2e.cipher.Algorithm');
+goog.forwardDeclare('e2e.signer.Algorithm');
 goog.require('e2e.cipher.key');
 goog.require('goog.asserts');
 goog.require('goog.object');
-
+goog.requireType('e2e.algorithm.WebCryptoKeyPair');
 
 
 /**
@@ -107,7 +108,7 @@ e2e.Algorithm.prototype.hasWebCryptoKey;
  */
 e2e.AlgorithmImpl = function(algorithm, opt_key) {
   this.algorithm = algorithm;
-  if (goog.isDefAndNotNull(opt_key)) {
+  if (opt_key != null) {
     this.setKey(opt_key);
   }
 };
@@ -141,7 +142,7 @@ e2e.AlgorithmImpl.prototype.getKey = function() {
 /** @override */
 e2e.AlgorithmImpl.prototype.setKey = function(key, opt_keySize) {
   this.key = key;
-  if (goog.isDef(opt_keySize)) {
+  if (opt_keySize !== undefined) {
     this.keySize = opt_keySize;
   }
 };
@@ -149,12 +150,12 @@ e2e.AlgorithmImpl.prototype.setKey = function(key, opt_keySize) {
 
 /** @override */
 e2e.AlgorithmImpl.prototype.getWebCryptoKey = function() {
-  goog.asserts.assert(goog.isDef(this.webCryptoKey));
+  goog.asserts.assert(this.webCryptoKey !== undefined);
   return this.webCryptoKey;
 };
 
 
 /** @override */
 e2e.AlgorithmImpl.prototype.hasWebCryptoKey = function() {
-  return goog.isDefAndNotNull(this.webCryptoKey);
+  return this.webCryptoKey != null;
 };

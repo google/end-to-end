@@ -125,7 +125,7 @@ e2e.random.getRandomBytesInternal_ = function() {
       0, e2e.random.RNG_INTERNAL_BYTES_);
   // The result is HMAC-SHA256(key=state, 1).
   var res = hmacer.getHmac([1]);
-  if (goog.isNull(res)) {
+  if (res === null) {
     throw new Error('HMAC returned a null result.');
   }
   return /** @type {!e2e.ByteArray} */ (res);

@@ -39,7 +39,7 @@ e2e.ecc.Protocol = function(curve, opt_key) {
   this.params = e2e.ecc.DomainParam.fromCurve(curve);
   goog.asserts.assertObject(this.params.n,
       'Cannot generate protocol for this curve.');
-  if (goog.isDefAndNotNull(opt_key)) {
+  if (opt_key != null) {
     this.setKey(opt_key);
   }
 };
@@ -82,16 +82,15 @@ e2e.ecc.Protocol.prototype.privKey_;
  *     key The public and/or private key.
  */
 e2e.ecc.Protocol.prototype.setKey = function(key) {
-  if (!goog.isDefAndNotNull(key['pubKey']) &&
-      !goog.isDefAndNotNull(key['privKey'])) {
+  if (key['pubKey'] == null && key['privKey'] == null) {
     goog.asserts.fail('Either public key or private key should be defined.');
   }
-  if (goog.isDefAndNotNull(key['pubKey'])) {
+  if (key['pubKey'] != null) {
     // This also checks if the pubKey is valid.
     this.pubKey_ = key['pubKey'];
     this.pubKeyAsPoint_ = this.params.curve.pointFromByteArray(key['pubKey']);
   }
-  if (goog.isDefAndNotNull(key['privKey'])) {
+  if (key['privKey'] != null) {
     this.privKey_ = key['privKey'];
   }
 };

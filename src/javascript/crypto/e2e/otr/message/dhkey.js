@@ -46,7 +46,7 @@ var AUTHSTATE = constants.AUTHSTATE;
  * @param {!e2e.otr.Session} session The enclosing session.
  */
 e2e.otr.message.DhKey = function(session) {
-  goog.base(this, session);
+  e2e.otr.message.DhKey.base(this, 'constructor', session);
   this.dh_ = new e2e.cipher.DiffieHellman(constants.DH_MODULUS,
       [constants.DH_GENERATOR]);
   this.gy_ = this.dh_.generate();
@@ -66,7 +66,7 @@ e2e.otr.message.DhKey.prototype.prepareSend = function() {
   this.session_.authData.r = null;
   this.session_.keymanager.storeKey(this.dh_);
   this.session_.authData.dhkey = this;
-  return goog.base(this, 'prepareSend');
+  return e2e.otr.message.DhKey.base(this, 'prepareSend');
 };
 
 

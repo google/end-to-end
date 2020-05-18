@@ -62,8 +62,7 @@ e2e.openpgp.pgpmime.Utils.parseAttachmentEntity = function(node) {
   var encHeader = node.header[constants.Mime.CONTENT_TRANSFER_ENCODING];
   // Implicit content-transfer-encoding is 7bit (RFC 2045).
   var encoding = constants.Mime.SEVEN_BIT;
-  if (goog.isDefAndNotNull(encHeader) && goog.isDefAndNotNull(
-      encHeader.value)) {
+  if (encHeader != null && encHeader.value != null) {
     encoding = encHeader.value;
   }
 
@@ -74,7 +73,7 @@ e2e.openpgp.pgpmime.Utils.parseAttachmentEntity = function(node) {
   // by the Content-Disposition syntax, as defined in RFC 2183.
   var filename = 'unknown';
 
-  if (!goog.isString(node.body)) {
+  if (typeof node.body !== 'string') {
     var errMsg = e2e.openpgp.pgpmime.Utils.INVALID_MESSAGE_ +
         ' - Attachment invalid';
     throw new e2e.openpgp.error.UnsupportedError(errMsg);
@@ -150,13 +149,13 @@ e2e.openpgp.pgpmime.Utils.parseHeaderValueWithParams = function(text) {
 /**
  * Serialize a header into an array of strings.
  * @param {e2e.openpgp.pgpmime.types.Header} header The header to serialize
- * @return {Array.<string>}
+ * @return {!Array.<string>}
  */
 e2e.openpgp.pgpmime.Utils.serializeHeader = function(header) {
   var lines = [];
   goog.object.forEach(header, function(headerValue, headerName) {
     var line = [headerName + ': ' + headerValue.value];
-    if (goog.isDefAndNotNull(headerValue.params)) {
+    if (headerValue.params != null) {
       goog.object.forEach(headerValue.params, function(paramValue, paramName) {
         line.push(paramName + '=' + goog.string.quote(paramValue));
       });
@@ -197,9 +196,9 @@ e2e.openpgp.pgpmime.Utils.parseHeader_ = function(text) {
       var value = utils.parseHeaderValueBasic(parts.join(':'));
     }
 
-    if (goog.isDefAndNotNull(parsed[name]) && (name ===
-        constants.Mime.CONTENT_TYPE || name ===
-        constants.Mime.CONTENT_TRANSFER_ENCODING)) {
+    if (parsed[name] != null &&
+        (name === constants.Mime.CONTENT_TYPE ||
+         name === constants.Mime.CONTENT_TRANSFER_ENCODING)) {
       // The Content-Type and Content-Transfer-Encoding headers should only be
       // set once per node. If they appears twice, this most likely indicates an
       // invalidly formatted email.
@@ -229,7 +228,7 @@ e2e.openpgp.pgpmime.Utils.parseHeader_ = function(text) {
 /**
  * Separates MIME headers.
  * @param {string} text A string containing a variable number of MIME headers
- * @return {Array.<string>} An array in which each element is a header
+ * @return {!Array.<string>} An array in which each element is a header
  * @private
  */
 e2e.openpgp.pgpmime.Utils.splitHeaders_ = function(text) {
@@ -259,7 +258,7 @@ e2e.openpgp.pgpmime.Utils.splitHeaders_ = function(text) {
  * @param {string} text The message to split.
  * @param {string} boundary The boundary parameter, as specified in the MIME
  *     header
- * @return {Array.<string>}
+ * @return {!Array.<string>}
  * @private
  */
 e2e.openpgp.pgpmime.Utils.splitNodes_ = function(text, boundary) {
@@ -311,10 +310,9 @@ e2e.openpgp.pgpmime.Utils.parseNode = function(text) {
   var parsed = {};
   parsed.header = header;
 
-  if (goog.string.caseInsensitiveStartsWith(ctHeader.value.trim(),
-      e2e.openpgp.pgpmime.Utils.MULTIPART_) &&
-      goog.isDefAndNotNull(ctHeader.params) &&
-      goog.isDefAndNotNull(ctHeader.params['boundary'])) {
+  if (goog.string.caseInsensitiveStartsWith(
+          ctHeader.value.trim(), e2e.openpgp.pgpmime.Utils.MULTIPART_) &&
+      ctHeader.params != null && ctHeader.params['boundary'] != null) {
     // This appears to be a multipart message. Split text by boundary.
     var nodes = utils.splitNodes_(body, ctHeader.params['boundary']);
     // Recursively parse nodes.

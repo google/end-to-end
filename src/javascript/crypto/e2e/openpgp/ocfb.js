@@ -37,7 +37,7 @@ goog.require('e2e.random');
  * @constructor
  */
 e2e.openpgp.Ocfb = function(cipher, resync) {
-  goog.base(this, cipher);
+  e2e.openpgp.Ocfb.base(this, 'constructor', cipher);
   /**
    * Specifies if we should do the resynchronization step.
    * @type {boolean}

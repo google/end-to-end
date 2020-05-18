@@ -30,7 +30,7 @@ goog.require('e2e.openpgp.packet.Packet');
  * @extends {e2e.openpgp.packet.Packet}
  */
 e2e.openpgp.packet.Data = function() {
-  goog.base(this);
+  e2e.openpgp.packet.Data.base(this, 'constructor');
 };
 goog.inherits(e2e.openpgp.packet.Data,
               e2e.openpgp.packet.Packet);

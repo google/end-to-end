@@ -106,7 +106,7 @@ utils.errorHandler = function(error) {
  * @extends {Error}
  */
 utils.Error = function(defaultMsg, msgId) {
-  goog.base(this, defaultMsg);
+  e2e.ext.utils.Error.base(this, 'constructor', defaultMsg);
   this.messageId = msgId;
 };
 goog.inherits(utils.Error, Error);

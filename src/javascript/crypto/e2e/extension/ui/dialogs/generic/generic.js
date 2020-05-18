@@ -29,10 +29,10 @@ goog.require('goog.dom.TagName');
 goog.require('goog.dom.classlist');
 goog.require('goog.events.EventType');
 goog.require('goog.events.KeyCodes');
+goog.require('goog.soy');
 goog.require('goog.style');
 goog.require('goog.ui.Component');
 goog.require('goog.ui.KeyboardShortcutHandler');
-goog.require('soy');
 
 
 goog.scope(function() {
@@ -45,7 +45,7 @@ var templates = e2e.ext.ui.templates.dialogs.generic;
 
 /**
  * Constructor for the dialog.
- * @param {string|soydata.SanitizedHtml} message The message to display to
+ * @param {string|goog.soy.data.SanitizedHtml} message The message to display to
  *     the user.
  * @param {!function(string=)} callback The callback where the user's
  *     input must be passed.
@@ -63,11 +63,11 @@ var templates = e2e.ext.ui.templates.dialogs.generic;
  */
 dialogs.Generic = function(message, callback, inputType, opt_placeholder,
     opt_actionButtonTitle, opt_cancelButtonTitle) {
-  goog.base(this);
+  e2e.ext.ui.dialogs.Generic.base(this, 'constructor');
 
   /**
    * The message to display to the user.
-   * @type {string|soydata.SanitizedHtml}
+   * @type {string|goog.soy.data.SanitizedHtml}
    * @private
    */
   this.message_ = message;
@@ -138,7 +138,7 @@ dialogs.Generic.prototype.createDom = function() {
 dialogs.Generic.prototype.decorateInternal = function(elem) {
   this.setElementInternal(elem);
 
-  soy.renderElement(elem, templates.dialog, {
+  goog.soy.renderElement(elem, templates.dialog, {
     message: this.message_,
     inputFieldType: this.inputType_,
     inputPlaceholder: this.placeholder_,
@@ -152,7 +152,7 @@ dialogs.Generic.prototype.decorateInternal = function(elem) {
 
 /** @override */
 dialogs.Generic.prototype.enterDocument = function() {
-  goog.base(this, 'enterDocument');
+  e2e.ext.ui.dialogs.Generic.base(this, 'enterDocument');
 
   var body = goog.dom.getElement(constants.ElementId.BODY);
   if (body) {
@@ -203,7 +203,7 @@ dialogs.Generic.prototype.exitDocument = function() {
     goog.dom.classlist.remove(body, constants.CssClass.TRANSPARENT);
   }
 
-  goog.base(this, 'exitDocument');
+  e2e.ext.ui.dialogs.Generic.base(this, 'exitDocument');
 };
 
 

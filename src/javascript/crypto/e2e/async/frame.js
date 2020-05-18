@@ -34,7 +34,7 @@ goog.require('e2e.async.ForeignPeer');
  */
 e2e.async.Frame = function(frame) {
   this.frame_ = frame;
-  goog.base(this, goog.global);
+  e2e.async.Frame.base(this, 'constructor', goog.global);
 };
 goog.inherits(e2e.async.Frame, e2e.async.ForeignPeer);
 

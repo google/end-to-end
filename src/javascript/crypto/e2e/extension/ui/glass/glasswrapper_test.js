@@ -73,7 +73,8 @@ function testInstallAndRemoveGlass() {
 
   stubs.setPath('goog.crypt.base64.encodeString',
       mockControl.createFunctionMock('encodeString'));
-  goog.crypt.base64.encodeString('some text', true);
+  goog.crypt.base64.encodeString(
+      'some text', goog.crypt.base64.Alphabet.WEBSAFE_DOT_PADDING);
   mockControl.$replayAll();
 
   assertEquals(1, elem.childNodes.length);

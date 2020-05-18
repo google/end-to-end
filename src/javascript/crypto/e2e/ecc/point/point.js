@@ -70,12 +70,27 @@ e2e.ecc.point.Point.prototype.isIdentity = goog.abstractMethod;
 
 
 /**
+ * Adds another point to this, and return the new point. This is the group
+ *   operation.
+ * @param {!e2e.ecc.point.Point} that The other point to add
+ * @return {!e2e.ecc.point.Point}
+ */
+e2e.ecc.point.Point.prototype.add = goog.abstractMethod;
+
+/**
  * Multiplies this with a scalar, and return the new point. This operation
  *     dominates the running time of most ECC protocols.
  * @param {!e2e.BigNum} k The scalar to multiply this point with.
  * @return {!e2e.ecc.point.Point}
  */
 e2e.ecc.point.Point.prototype.multiply = goog.abstractMethod;
+
+
+/**
+ * Returns whether the point represents Infinity.
+ * @return {boolean}
+ */
+e2e.ecc.point.Point.prototype.isInfinity = goog.abstractMethod;
 
 
 /**

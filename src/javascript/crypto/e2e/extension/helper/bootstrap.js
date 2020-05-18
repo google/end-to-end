@@ -33,7 +33,7 @@ e2e.ext.helper.bootstrap = false;
 
 
 // Create the helper and start it.
-if (e2e.ext.utils.isContentScript() && !goog.isDef(window.helper)) {
+if (e2e.ext.utils.isContentScript() && window.helper === undefined) {
   /** @type {!e2e.ext.Helper} */
   window.helper = new e2e.ext.Helper(new e2e.ext.WebsiteApi());
   if (e2e.ext.utils.runsInChromeApp()) {

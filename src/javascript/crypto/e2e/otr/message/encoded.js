@@ -51,12 +51,12 @@ var MESSAGE_TYPE_VALUES = Object.keys(e2e.otr.constants.MessageType).map(
  * @param {!e2e.otr.Session} session The enclosing session.
  */
 e2e.otr.message.Encoded = function(session) {
-  goog.base(this, session);
+  e2e.otr.message.Encoded.base(this, 'constructor', session);
 
   //TODO(rcc): Remove when closure compiler issue #104 (@abstract) is resolved.
   assert(this.constructor != e2e.otr.message.Encoded);
 
-  assert(goog.isDefAndNotNull(this.constructor.MESSAGE_TYPE));
+  assert(this.constructor.MESSAGE_TYPE != null);
   assert(MESSAGE_TYPE_VALUES.indexOf(
       e2e.otr.byteToNum(this.constructor.MESSAGE_TYPE)) != -1);
 
@@ -79,7 +79,7 @@ e2e.otr.message.Encoded.prototype.prepareSend = function() {
   var receiverAsNum = e2e.otr.intToNum(this.session_.remoteInstanceTag);
   assert(!receiverAsNum || receiverAsNum >= 0x100);
 
-  return goog.base(this, 'prepareSend');
+  return e2e.otr.message.Encoded.base(this, 'prepareSend');
 };
 
 

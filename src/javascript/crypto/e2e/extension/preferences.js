@@ -21,7 +21,7 @@
 goog.provide('e2e.ext.Preferences');
 
 goog.require('e2e.ext.constants.StorageKey');
-
+goog.requireType('goog.storage.mechanism.Mechanism');
 
 
 /**

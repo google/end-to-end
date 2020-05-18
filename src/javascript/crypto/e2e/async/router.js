@@ -31,7 +31,7 @@ goog.require('goog.array');
  * @extends {e2e.async.Broker}
  */
 e2e.async.Router = function() {
-  goog.base(this, []);
+  e2e.async.Router.base(this, 'constructor', []);
 };
 goog.inherits(e2e.async.Router, e2e.async.Broker);
 

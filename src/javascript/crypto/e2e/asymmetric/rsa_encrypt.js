@@ -42,7 +42,7 @@ goog.require('goog.asserts');
 e2e.cipher.RsaEncrypt = function(algorithm, opt_key) {
   goog.asserts.assert(algorithm == e2e.cipher.Algorithm.RSA_ENCRYPT,
       'Algorithm should be RSA_ENCRYPT.');
-  goog.base(this, algorithm, opt_key);
+  e2e.cipher.RsaEncrypt.base(this, 'constructor', algorithm, opt_key);
 };
 goog.inherits(e2e.cipher.RsaEncrypt, e2e.cipher.Rsa);
 
