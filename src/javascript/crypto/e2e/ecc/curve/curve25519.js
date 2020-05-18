@@ -82,7 +82,11 @@ e2e.ecc.curve.Curve25519.prototype.pointFromByteArray = function(p) {
   // any 256-bit representation of an integer, and just used its value mod q.
   // The following code will give an error if value >= q, and in particular if
   // the high bit of p[31] is set.
-  goog.asserts.assert(p.length == 32, 'Point length must be 32 bytes');
+  goog.asserts.assert(p.length == 33, 'Point length must be 32+1 bytes');
+  // https://tools.ietf.org/html/draft-koch-eddsa-for-openpgp-04#appendix-B
+  if (p.shift() != 0x40) {
+    throw new e2e.error.InvalidArgumentsError('Bad argument');
+  }
   p = goog.array.slice(p, 0).reverse();
   var x = this.elementFromByteArray(p);
   return new e2e.ecc.point.Curve25519(this, x);
