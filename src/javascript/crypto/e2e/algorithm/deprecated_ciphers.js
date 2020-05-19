@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2013 Google Inc. All rights reserved.
+ * Copyright 2017 Google Inc. All rights reserved.
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
@@ -15,17 +15,18 @@
  */
 
 /**
- * @fileoverview Requires all ciphers to load them all into the factory.
+ * @fileoverview Requires deprecated ciphers () to load them into the factory.
  */
-goog.provide('e2e.cipher.all');
+/** @suppress {extraProvide} this aggregation needs a namespace */
+goog.provide('e2e.cipher.deprecated');
 
 /** @suppress {extraRequire} intentional import */
-goog.require('e2e.cipher.Aes');
+goog.require('e2e.cipher.Blowfish');
 /** @suppress {extraRequire} intentional import */
-goog.require('e2e.cipher.Ecdh');
+goog.require('e2e.cipher.Cast5');
 /** @suppress {extraRequire} intentional import */
-goog.require('e2e.cipher.ElGamal');
+goog.require('e2e.cipher.Des');
 /** @suppress {extraRequire} intentional import */
-goog.require('e2e.cipher.Rsa');
+goog.require('e2e.cipher.Idea');
 /** @suppress {extraRequire} intentional import */
-goog.require('e2e.cipher.RsaEncrypt');
+goog.require('e2e.cipher.TripleDes');
