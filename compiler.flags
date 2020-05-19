@@ -1,4 +1,5 @@
 --language_in=ECMASCRIPT5
+--language_in=ECMASCRIPT6
 --jscomp_error=accessControls
 --jscomp_error=ambiguousFunctionDecl
 --jscomp_error=checkDebuggerStatement
